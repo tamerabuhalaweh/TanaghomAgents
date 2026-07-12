@@ -7,8 +7,9 @@ GoHighLevel, lead contact, publishing, or spending.
 
 The database bridge is `172.30.252.0/29`. Only the fixed n8n main and worker
 addresses may open TCP 5432 to the pooler's currently resolved public IPv4
-addresses. The package chain is attached before the existing SmartLabs n8n
-chain in `DOCKER-USER`; all other traffic from the bridge is dropped.
+addresses. A package chain is attached before the existing SmartLabs n8n chain
+in `DOCKER-USER`, and a second package chain blocks database-bridge hairpin
+access in host `INPUT`; all other traffic from the bridge is dropped.
 
 Credentials are never committed. The database runtime login is a member only
 of `tanaghom_n8n_worker`. n8n imports plaintext through a short-lived mode-600
