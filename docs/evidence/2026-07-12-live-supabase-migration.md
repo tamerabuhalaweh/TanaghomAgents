@@ -50,6 +50,13 @@ confirmed:
 No legacy table or view was altered or removed. No seed, workflow, external API,
 or production side effect was executed.
 
+## Initial owner identity
+
+The first Supabase Auth UID/email pair was verified against `auth.users` and
+linked to an active human `tanaghom.app_users` record with the `owner` role. The
+bootstrap operation created one correlated immutable audit entry. The email and
+authentication subject are intentionally excluded from committed evidence.
+
 ## Idempotency verification
 
 PostgreSQL 17 and Windows line endings exposed two migration-runner assumptions:
