@@ -1,0 +1,131 @@
+# Delivery roadmap
+
+## Target outcome
+
+A polished operations platform where a business owner can create campaigns,
+observe AI agents, approve or reject content, monitor publication and
+performance, manage leads, and understand every automated decision from an
+immutable audit trail.
+
+n8n is the orchestration engine, not the final user interface. A dedicated web
+application will provide the business dashboard.
+
+## Architecture
+
+```text
+Business owner
+  -> Agent Operations Dashboard
+  -> Application API
+  -> PostgreSQL system of record
+       <- n8n agent workflows
+            -> Gemma
+            -> Postiz
+            -> GoHighLevel
+```
+
+Agents communicate through durable database records and events. They do not
+depend on hidden in-memory state or direct workflow-to-workflow coupling.
+
+## Phase 0 — Engineering foundation
+
+- Repository conventions, architecture decisions, environments, and CI
+- Secret-free configuration contract
+- Local developer bootstrap
+- Definition of done and acceptance evidence format
+
+**Gate:** clean setup succeeds from documented instructions and no secret is
+required to run tests.
+
+## Phase 1 — Shared data and audit foundation
+
+- Versioned PostgreSQL migrations
+- Campaign, strategy, content, post, lead, sales, job, approval, template,
+  notification, and audit models
+- Status constraints and transition rules
+- Idempotency keys and external-operation ledger
+- Seeded staging campaign and database tests
+
+**Gate:** migrations apply from empty state, constraints reject invalid
+transitions, and all meaningful actions can be correlated through the audit
+model.
+
+## Phase 2 — Agent Operations Dashboard
+
+- Authenticated application shell
+- Executive dashboard and campaign workspace
+- Agent roster with live state and current job
+- Approval inbox and decision history
+- Activity timeline, publishing calendar, lead pipeline, reporting, and health
+- Responsive, accessible design system
+
+**Gate:** a user can operate a seeded campaign from strategy review through
+content approval without entering n8n.
+
+## Phase 3 — Strategist and Content Producer
+
+- Structured Gemma calls with schema validation
+- Missing-information blocking
+- Strategy persistence and event emission
+- Content generation by channel and pillar
+- Rejection feedback and controlled regeneration
+- Error workflows, retries, and audit evidence
+
+**Gate:** brief -> strategy -> drafts -> human decision works end to end, and no
+content can self-approve or publish.
+
+## Phase 4 — Publisher and Performance Monitor
+
+- Postiz credential and staging-account integration
+- Approval guard immediately before every publish call
+- Scheduling, idempotency, rate-limit handling, and retries
+- Performance synchronization and attributable lead capture
+
+**Gate:** only approved staging content publishes, retries cannot duplicate a
+post, and every lead traces to a campaign and source post.
+
+## Phase 5 — Sales and CRM Agent
+
+- GoHighLevel contact upsert
+- Approved template and sequence library
+- Bounded outreach, follow-up, classification, and handoff
+- Won/lost/nurture handling and requeue eligibility
+- Revenue and weekly pipeline reporting
+
+**Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
+every message and state transition.
+
+## Phase 6 — Acceptance and recovery
+
+- Full staged campaign dry run
+- Failure injection, retry, concurrency, and duplicate-delivery tests
+- Security audit, egress validation, backup, disposable restoration, and rollback
+- Operator runbooks and acceptance evidence
+
+**Gate:** recovery is proven and no test can reach production accounts, real
+leads, or advertising spend.
+
+## Phase 7 — Public product delivery
+
+- Product domain and HTTPS
+- Secure dashboard authentication and session controls
+- Restricted webhook ingress
+- Monitoring, alerts, encrypted off-server backups, and restoration schedule
+- Production readiness review and controlled launch
+
+**Gate:** provide a working HTTPS product link only after security, recovery,
+approval enforcement, and staging acceptance all pass.
+
+## External inputs requested only when their phase needs them
+
+- Product name, logo, colors, and tone before final Phase 2 visual polish
+- Domain/subdomain before Phase 7
+- Postiz credentials and social channels before Phase 4 integration testing
+- GoHighLevel credentials before Phase 5 integration testing
+- Approved sales templates before outreach is enabled
+- Notification destination before production alerting
+
+## Global definition of done
+
+A feature is done only when its code, migration or workflow, automated tests,
+operator documentation, audit behavior, security implications, and rollback
+path are all reviewed.
