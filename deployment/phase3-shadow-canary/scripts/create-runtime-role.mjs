@@ -21,7 +21,7 @@ try {
     );
   }
   const statement = await client.query(
-    "SELECT format('ALTER ROLE tanaghom_n8n_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD %L', $1) AS sql",
+    "SELECT format('ALTER ROLE tanaghom_n8n_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD %L', $1::text) AS sql",
     [password],
   );
   await client.query(statement.rows[0].sql);
