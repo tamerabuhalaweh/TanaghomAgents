@@ -3,8 +3,9 @@ import { resolve } from "node:path";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  output: "standalone",
   turbopack: {
-    root: resolve(process.cwd(), "../.."),
+    root: resolve(process.cwd()),
   },
 };
 

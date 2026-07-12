@@ -32,8 +32,9 @@ external decisions.
 
 ## Dashboard development
 
-The Phase 2 dashboard lives in `apps/dashboard` and uses fixture data until the
-authenticated API adapter is introduced.
+The Phase 2 dashboard lives in `apps/dashboard`. Its operational screens use
+authenticated, server-side API adapters backed by the `tanaghom` PostgreSQL
+schema; no sample business records are presented as live work.
 
 ```bash
 npm install

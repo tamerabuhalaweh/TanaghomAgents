@@ -8,9 +8,10 @@ npm install
 npm run dev:dashboard
 ```
 
-Current Phase 2 screens use safe fixture data while application authentication
-and database access are introduced behind explicit server-side adapters. No
-fixture button performs an external action.
+Current Phase 2 screens use authenticated server-side adapters for approvals,
+audit history, campaigns, agent jobs, leads, reporting, notifications, and
+system health. Configured agent-role definitions remain static until their live
+Phase 3-5 workflows are activated.
 
 ## Server API foundation
 
@@ -31,7 +32,6 @@ subject must map to `tanaghom.app_users.auth_subject`. Next.js Proxy performs on
 an optimistic page redirect; every data route still verifies the token and role.
 Database credentials and Supabase secret keys are never sent to browser code.
 
-These endpoints are intentionally not connected to the fixture UI yet. Approval
-decisions write the human approval, protected content transition, correlated
+Approval decisions write the human approval, protected content transition, correlated
 audit entry, durable outbox event, and replayable response in one transaction.
 They do not call n8n or an external service.

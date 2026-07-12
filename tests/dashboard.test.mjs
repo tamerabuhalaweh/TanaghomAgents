@@ -109,3 +109,21 @@ test("remaining operational screens use the live snapshot without business fixtu
   assert.doesNotMatch(fixtures, /export const (approvals|campaigns|recentActivity)/);
   assert.match(fixtures, /Configured role; live workflow begins/);
 });
+
+test("private dashboard canary is localhost-only, bounded, and secret-free by shape", async () => {
+  const deployment = new URL("../../deployment/dashboard-canary/", dashboard);
+  const compose = await readFile(new URL("docker-compose.yml", deployment), "utf8");
+  const dockerfile = await readFile(new URL("Dockerfile", deployment), "utf8");
+  const entrypoint = await readFile(new URL("entrypoint.sh", deployment), "utf8");
+  const dockerignore = await readFile(new URL("../../.dockerignore", dashboard), "utf8");
+  assert.match(compose, /127\.0\.0\.1:3200:3000/);
+  assert.match(compose, /read_only: true/);
+  assert.match(compose, /no-new-privileges:true/);
+  assert.match(compose, /cap_drop:\s+- ALL/);
+  assert.match(compose, /mem_limit: 768m/);
+  assert.match(dockerfile, /node:24\.18\.0-alpine3\.24@sha256:/);
+  assert.match(entrypoint, /\/run\/secrets\/\$2/);
+  assert.doesNotMatch(compose + dockerfile + entrypoint, /sb_publishable_|postgresql:\/\/postgres\./);
+  assert.match(dockerignore, /^\.env$/m);
+  assert.match(dockerignore, /deployment\/\*\*\/secrets\/\*/);
+});

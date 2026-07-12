@@ -1,0 +1,4 @@
+secrets/*
+!secrets/.gitkeep
+!secrets/README.md
+*.log
