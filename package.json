@@ -20,8 +20,9 @@
     "db:migrate": "node --env-file-if-exists=.env scripts/database.mjs migrate",
     "db:rollback": "node --env-file-if-exists=.env scripts/database.mjs rollback",
     "db:inspect:readonly": "node --env-file-if-exists=.env scripts/database-inspect-readonly.mjs",
-    "dev:dashboard": "npm run dev --workspace @tanaghom/dashboard",
-    "build:dashboard": "npm run build --workspace @tanaghom/dashboard",
+    "dev:dashboard": "node scripts/dashboard.mjs dev",
+    "build:dashboard": "node scripts/dashboard.mjs build",
+    "start:dashboard": "node scripts/dashboard.mjs start",
     "typecheck:dashboard": "npm run typecheck --workspace @tanaghom/dashboard",
     "test": "node --test tests/*.test.mjs",
     "test:database": "node scripts/database-test.mjs"

@@ -23,8 +23,10 @@ The initial server-only API exposes:
   `Idempotency-Key` header.
 
 Protected routes require a Supabase access token in the `Authorization: Bearer`
-header. JWT signatures, issuer, and audience are verified against the configured
-project JWKS. The token subject must map to `tanaghom.app_users.auth_subject`.
+header or the HttpOnly session cookie issued by `/api/auth/login`. JWT signatures,
+issuer, and audience are verified against the configured project JWKS. The token
+subject must map to `tanaghom.app_users.auth_subject`. Next.js Proxy performs only
+an optimistic page redirect; every data route still verifies the token and role.
 Database credentials and Supabase secret keys are never sent to browser code.
 
 These endpoints are intentionally not connected to the fixture UI yet. Approval

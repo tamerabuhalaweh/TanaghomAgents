@@ -54,3 +54,13 @@ test("login uses server-mediated Supabase Auth and HttpOnly session cookies", as
   assert.match(route, /sameSite: "strict"/);
   assert.doesNotMatch(form, /SUPABASE|publishable|apikey/);
 });
+
+test("page protection stays optimistic while data authorization remains server-side", async () => {
+  const proxy = await readFile(new URL("proxy.ts", dashboard), "utf8");
+  const session = await readFile(new URL("app/api/auth/session/route.ts", dashboard), "utf8");
+  const decision = await readFile(new URL("lib/server/content-decision.ts", dashboard), "utf8");
+  assert.match(proxy, /tanaghom_access_token/);
+  assert.match(proxy, /NextResponse\.redirect/);
+  assert.match(session, /authorize/);
+  assert.match(decision, /enforceSameOriginForCookieMutation/);
+});

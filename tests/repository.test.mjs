@@ -31,3 +31,12 @@ test('migration runner accepts PostgreSQL boolean output variants', async () => 
   assert.match(runner, /\.split\(\/\\r\?\\n\/\)/);
   assert.match(runner, /\.map\(\(version\) => version\.trim\(\)\)/);
 });
+
+test('dashboard runtime loads the ignored root environment explicitly', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const launcher = await readFile(new URL('../scripts/dashboard.mjs', import.meta.url), 'utf8');
+  assert.match(manifest.scripts['dev:dashboard'], /scripts\/dashboard\.mjs dev/);
+  assert.match(manifest.scripts['build:dashboard'], /scripts\/dashboard\.mjs build/);
+  assert.match(manifest.scripts['start:dashboard'], /scripts\/dashboard\.mjs start/);
+  assert.match(launcher, /process\.loadEnvFile/);
+});

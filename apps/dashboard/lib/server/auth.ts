@@ -29,6 +29,14 @@ function requestToken(request: NextRequest) {
   throw new AuthenticationError("Session token required");
 }
 
+export function enforceSameOriginForCookieMutation(request: NextRequest) {
+  if (request.headers.has("authorization")) return;
+  const origin = request.headers.get("origin");
+  if (!origin || origin !== request.nextUrl.origin) {
+    throw new AuthenticationError("Cookie-authenticated mutation requires a same-origin request");
+  }
+}
+
 export async function authenticate(request: NextRequest): Promise<JWTPayload & { sub: string }> {
   try {
     const configuration = authConfiguration();

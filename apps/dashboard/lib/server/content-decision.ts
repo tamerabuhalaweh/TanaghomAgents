@@ -3,6 +3,7 @@ import "server-only";
 import { createHash, randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 
+import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
 import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { noStore } from "@/lib/server/responses";
@@ -74,6 +75,7 @@ function fingerprint(contentItemId: string, input: DecisionInput) {
 
 export async function decideContent(request: NextRequest, contentItemId: string) {
   try {
+    enforceSameOriginForCookieMutation(request);
     if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(contentItemId)) {
       throw new DecisionRequestError("invalid_content_item_id", 400);
     }
