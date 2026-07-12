@@ -45,3 +45,12 @@ test("approval decisions are transactional, idempotent, audited, and queued", as
   assert.match(source, /ROLLBACK/);
   assert.doesNotMatch(source, /fetch\(|axios|https?:\/\//);
 });
+
+test("login uses server-mediated Supabase Auth and HttpOnly session cookies", async () => {
+  const route = await readFile(new URL("app/api/auth/login/route.ts", dashboard), "utf8");
+  const form = await readFile(new URL("components/login-form.tsx", dashboard), "utf8");
+  assert.match(route, /grant_type=password/);
+  assert.match(route, /httpOnly: true/);
+  assert.match(route, /sameSite: "strict"/);
+  assert.doesNotMatch(form, /SUPABASE|publishable|apikey/);
+});

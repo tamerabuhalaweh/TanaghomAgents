@@ -20,11 +20,13 @@ function authConfiguration() {
   };
 }
 
-function bearerToken(request: NextRequest) {
+function requestToken(request: NextRequest) {
   const authorization = request.headers.get("authorization");
   const match = authorization?.match(/^Bearer\s+(.+)$/i);
-  if (!match) throw new AuthenticationError("Bearer token required");
-  return match[1];
+  if (match) return match[1];
+  const cookieToken = request.cookies.get("tanaghom_access_token")?.value;
+  if (cookieToken) return cookieToken;
+  throw new AuthenticationError("Session token required");
 }
 
 export async function authenticate(request: NextRequest): Promise<JWTPayload & { sub: string }> {
@@ -35,7 +37,7 @@ export async function authenticate(request: NextRequest): Promise<JWTPayload & {
       cachedJwks = createRemoteJWKSet(new URL(configuration.jwksUrl));
     }
 
-    const { payload } = await jwtVerify(bearerToken(request), cachedJwks, {
+    const { payload } = await jwtVerify(requestToken(request), cachedJwks, {
       issuer: configuration.issuer,
       audience: "authenticated",
     });

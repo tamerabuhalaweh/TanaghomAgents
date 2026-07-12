@@ -411,3 +411,53 @@ td a, td > strong { font-weight: 670; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
+
+.login-page { display: grid; min-height: 100svh; grid-template-columns: minmax(0, 1.08fr) minmax(26rem, 0.92fr); background: var(--bg); }
+.login-context { display: flex; min-height: 100%; flex-direction: column; justify-content: space-between; padding: clamp(2rem, 5vw, 5.5rem); background: var(--primary); color: var(--bg); }
+.login-brand { width: fit-content; color: var(--bg); font-size: 1.05rem; }
+.login-context .brand-mark { background: var(--bg); }
+.login-context .brand-mark span { background: var(--primary); }
+.login-context .brand-mark span:nth-child(2), .login-context .brand-mark span:nth-child(3) { background: oklch(0.68 0.08 185); }
+.login-promise { max-width: 41rem; padding-block: clamp(4rem, 12vh, 8rem); }
+.login-context-label, .login-access-label { margin-block-end: 1rem; font-size: 0.8rem; font-weight: 680; }
+.login-promise h1 { max-width: 12ch; font-size: clamp(2.75rem, 5.5vw, 5.5rem); line-height: 0.98; letter-spacing: -0.04em; }
+.login-promise > p:last-child { max-width: 36rem; margin-block-start: 1.75rem; color: oklch(0.91 0.018 185); font-size: clamp(1rem, 1.4vw, 1.18rem); }
+.login-trust-line { display: flex; max-width: 35rem; align-items: flex-start; gap: 0.7rem; color: oklch(0.91 0.018 185); font-size: 0.82rem; }
+.login-trust-line svg { flex: 0 0 auto; margin-block-start: 0.05rem; }
+.login-access { display: grid; place-items: center; padding: clamp(1.5rem, 5vw, 5rem); }
+.login-panel { width: min(100%, 27rem); }
+.login-mobile-brand { display: none; }
+.login-access-label { color: var(--primary); }
+.login-panel h2 { font-size: clamp(2rem, 3vw, 2.75rem); line-height: 1.08; letter-spacing: -0.035em; }
+.login-intro { max-width: 38ch; margin-block-start: 0.8rem; color: var(--muted); font-size: 0.92rem; }
+.login-form { display: flex; flex-direction: column; gap: 1.15rem; margin-block-start: 2.25rem; }
+.form-field { display: flex; flex-direction: column; gap: 0.45rem; }
+.form-field label { font-size: 0.78rem; font-weight: 680; }
+.field-label-row { display: flex; align-items: center; justify-content: space-between; }
+.field-label-row span { color: var(--muted); font-size: 0.68rem; }
+.form-field input { width: 100%; min-height: 3rem; padding-inline: 0.85rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink); transition: border-color 160ms ease-out, box-shadow 160ms ease-out; }
+.form-field input:hover { border-color: var(--primary); }
+.form-field input:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px var(--primary-soft); }
+.login-error { min-height: 1.2rem; color: var(--danger); font-size: 0.76rem; }
+.login-submit { display: flex; min-height: 3rem; align-items: center; justify-content: space-between; padding-inline: 1rem; border: 0; border-radius: var(--radius-sm); background: var(--primary); color: var(--bg); cursor: pointer; font-size: 0.84rem; font-weight: 680; transition: background-color 160ms ease-out, transform 160ms ease-out; }
+.login-submit:hover { background: var(--primary-hover); }
+.login-submit:active { transform: translateY(1px); }
+.login-submit:disabled { cursor: wait; opacity: 0.72; }
+.login-support { margin-block-start: 1.5rem; color: var(--muted); font-size: 0.72rem; }
+
+@media (max-width: 800px) {
+  .login-page { display: block; }
+  .login-context { display: none; }
+  .login-access { min-height: 100svh; align-content: center; padding: 1.5rem; }
+  .login-mobile-brand { display: flex; align-items: center; gap: 0.65rem; margin-block-end: 4rem; font-weight: 720; letter-spacing: -0.02em; }
+}
+
+@media (max-width: 430px) {
+  .login-access { align-content: start; padding-block-start: max(2rem, env(safe-area-inset-top)); }
+  .login-mobile-brand { margin-block-end: clamp(4rem, 16vh, 7rem); }
+  .login-panel h2 { font-size: 2.15rem; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .form-field input, .login-submit { transition: none; }
+}

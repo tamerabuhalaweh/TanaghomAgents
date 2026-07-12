@@ -1,6 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
-import { AppShell } from "@/components/app-shell";
+import { RootFrame } from "@/components/root-frame";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
@@ -21,7 +21,7 @@ export default function RootLayout({ children }: Readonly<{ children: React.Reac
   return (
     <html lang="en" dir="ltr">
       <body className={inter.variable}>
-        <AppShell>{children}</AppShell>
+        <RootFrame>{children}</RootFrame>
       </body>
     </html>
   );
