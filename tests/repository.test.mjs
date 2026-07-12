@@ -102,7 +102,9 @@ test('Phase 3 n8n exports are inactive and constrained to controlled boundaries'
     assert.ok(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.scheduleTrigger'));
     assert.ok(workflow.nodes.every((node) => !['n8n-nodes-base.webhook', 'n8n-nodes-base.executeCommand', 'n8n-nodes-base.readWriteFile', 'n8n-nodes-base.ssh'].includes(node.type)));
     const http = workflow.nodes.find((node) => node.name === 'Call Gemma');
-    assert.equal(http.parameters.url, 'https://api.thesmartlabs.net/v1/chat/completions');
+    assert.equal(http.parameters.url, 'https://api.thesmartlabs.net/gemma4/v1/chat/completions');
+    const requestNode = workflow.nodes.find((node) => node.name === 'Build Gemma Request');
+    assert.match(requestNode.parameters.jsCode, /model: 'gemma4-26b-a4b-canary'/);
     const postgres = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.postgres');
     assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_agent_job|persist_strategy_result|persist_content_result|record_agent_job_failure)/.test(node.parameters.query)));
     assert.ok(postgres.every((node) => node.credentials.postgres.id === '62000000-0000-4000-8000-000000000001'));

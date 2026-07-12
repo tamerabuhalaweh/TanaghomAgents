@@ -56,7 +56,7 @@
     },
     {
       "parameters": {
-        "jsCode": "const claimed = $json;\nif (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');\nreturn [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: \"# Campaign Strategist — v1\\n\\nYou are Tanaghom's Campaign Strategist. Prepare strategy only. Never publish,\\ncontact leads, spend budget, invent facts, or claim an external action occurred.\\n\\nReturn JSON that validates against `strategist-output.v1.schema.json`. Include\\n`contract_version: \\\"phase3.strategist-output.v1\\\"`. If product type, raw offer\\nbrief, target geography, or an age range/clear audience description is absent,\\nreturn `blocked_missing_info` and list exact missing field paths. Do not fill\\nmissing critical inputs with defaults.\\n\\nFor a valid brief, ground every recommendation in the supplied campaign. Return\\n3–5 key messages, 4–8 content pillars, one or more allowed lowercase channels,\\nand a channel-keyed cadence. Strategy is advisory until persisted by Tanaghom's\\ncontrolled database function.\" }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];"
+        "jsCode": "const claimed = $json;\nif (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');\nreturn [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: \"# Campaign Strategist — v1\\n\\nYou are Tanaghom's Campaign Strategist. Prepare strategy only. Never publish,\\ncontact leads, spend budget, invent facts, or claim an external action occurred.\\n\\nReturn JSON that validates against `strategist-output.v1.schema.json`. Include\\n`contract_version: \\\"phase3.strategist-output.v1\\\"`. If product type, raw offer\\nbrief, target geography, or an age range/clear audience description is absent,\\nreturn `blocked_missing_info` and list exact missing field paths. Do not fill\\nmissing critical inputs with defaults.\\n\\nFor a valid brief, ground every recommendation in the supplied campaign. Return\\n3–5 key messages, 4–8 content pillars, one or more allowed lowercase channels,\\nand a channel-keyed cadence. Strategy is advisory until persisted by Tanaghom's\\ncontrolled database function.\" }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];"
       },
       "id": "strategist-request",
       "name": "Build Gemma Request",
@@ -70,7 +70,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.thesmartlabs.net/v1/chat/completions",
+        "url": "https://api.thesmartlabs.net/gemma4/v1/chat/completions",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendBody": true,
@@ -150,7 +150,7 @@
         "operation": "executeQuery",
         "query": "SELECT tanaghom.persist_strategy_result($1::uuid, $2::jsonb, $3::text, $4::text) AS result;",
         "options": {
-          "queryReplacement": "={{ [$json.job_id, JSON.stringify($json.output), 'gemma-4', 'campaign-strategist/v1'] }}"
+          "queryReplacement": "={{ [$json.job_id, JSON.stringify($json.output), 'gemma4-26b-a4b-canary', 'campaign-strategist/v1'] }}"
         }
       },
       "id": "strategist-persist",

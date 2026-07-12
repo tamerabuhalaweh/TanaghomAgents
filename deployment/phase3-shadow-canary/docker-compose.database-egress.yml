@@ -1,0 +1,30 @@
+services:
+  n8n:
+    environment:
+      NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
+      NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com
+    volumes:
+      - ./certificates/supabase-root-2021-ca.pem:/etc/tanaghom/certificates/supabase-root-2021-ca.pem:ro
+    networks:
+      database-egress:
+        ipv4_address: 172.30.252.2
+
+  n8n-worker:
+    environment:
+      NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
+      NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com
+    volumes:
+      - ./certificates/supabase-root-2021-ca.pem:/etc/tanaghom/certificates/supabase-root-2021-ca.pem:ro
+    networks:
+      database-egress:
+        ipv4_address: 172.30.252.3
+
+networks:
+  database-egress:
+    name: tanaghom-n8n-database-egress
+    driver: bridge
+    driver_opts:
+      com.docker.network.bridge.name: br-tan-n8n-db
+    ipam:
+      config:
+        - subnet: 172.30.252.0/29

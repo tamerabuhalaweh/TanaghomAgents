@@ -48,11 +48,11 @@ return [{ json: { ...claimed, ok: true, output: data } }];`;
     node(`${prefix}-request`, "Build Gemma Request", "n8n-nodes-base.code", 2, [480, 270], {
       jsCode: `const claimed = $json;
 if (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');
-return [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
+return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
     }),
     node(`${prefix}-gemma`, "Call Gemma", "n8n-nodes-base.httpRequest", 4.2, [720, 270], {
       method: "POST",
-      url: "https://api.thesmartlabs.net/v1/chat/completions",
+      url: "https://api.thesmartlabs.net/gemma4/v1/chat/completions",
       authentication: "genericCredentialType",
       genericAuthType: "httpHeaderAuth",
       sendBody: true,
@@ -67,7 +67,7 @@ return [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, res
     node(`${prefix}-persist`, "Persist Valid Result", "n8n-nodes-base.postgres", 2.6, [1440, 180], {
       operation: "executeQuery",
       query: `SELECT tanaghom.${persistFunction}($1::uuid, $2::jsonb, $3::text, $4::text) AS result;`,
-      options: { queryReplacement: `={{ [$json.job_id, JSON.stringify($json.output), 'gemma-4', '${promptVersion}'] }}` },
+      options: { queryReplacement: `={{ [$json.job_id, JSON.stringify($json.output), 'gemma4-26b-a4b-canary', '${promptVersion}'] }}` },
     }, { credentials: postgresCredential }),
     node(`${prefix}-failure`, "Record Failure", "n8n-nodes-base.postgres", 2.6, [1440, 360], {
       operation: "executeQuery",
