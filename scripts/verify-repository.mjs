@@ -25,7 +25,7 @@ async function collect(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
   const files = [];
   for (const entry of entries) {
-    if (ignored.has(entry.name)) continue;
+    if (ignored.has(entry.name) || entry.name.startsWith('.tmp-postgres-')) continue;
     const path = join(directory, entry.name);
     if (entry.isDirectory()) files.push(...await collect(path));
     else files.push(path);

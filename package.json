@@ -8,6 +8,9 @@
   },
   "scripts": {
     "check": "node scripts/verify-repository.mjs",
-    "test": "node --test tests/*.test.mjs"
+    "db:migrate": "node scripts/database.mjs migrate",
+    "db:rollback": "node scripts/database.mjs rollback",
+    "test": "node --test tests/*.test.mjs",
+    "test:database": "node scripts/database-test.mjs"
   }
 }
