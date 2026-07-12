@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { createServer } from "node:http";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { spawn } from "node:child_process";
@@ -74,6 +74,9 @@ try {
     http.parameters.url = `http://127.0.0.1:${gemmaPort}/v1/chat/completions`;
     await writeFile(join(temporary, file), JSON.stringify(workflow));
   }
+  await chmod(temporary, 0o755);
+  await Promise.all(["credentials.json", "campaign-strategist.v1.json", "content-producer.v1.json"]
+    .map((file) => chmod(join(temporary, file), 0o644)));
 
   await run("docker", ["volume", "create", volume]);
   const dockerBase = ["run", "--rm", "--network", "host", "-e", "N8N_ENCRYPTION_KEY=integration-only-encryption-key-32", "-e", "N8N_USER_MANAGEMENT_DISABLED=true", "-e", "N8N_DIAGNOSTICS_ENABLED=false", "-e", "N8N_SSRF_PROTECTION_ENABLED=false", "-v", `${volume}:/home/node/.n8n`, "-v", `${temporary}:/fixtures:ro`, image];
