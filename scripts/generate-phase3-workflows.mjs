@@ -85,6 +85,7 @@ return [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, res
     "Contract Valid?": { main: [[{ node: "Persist Valid Result", type: "main", index: 0 }], [{ node: "Record Failure", type: "main", index: 0 }]] },
   };
   return {
+    id: agent === "campaign_strategist" ? "phase3StrategistV1" : "phase3ContentProducerV1",
     name, nodes, connections, active: false,
     settings: { executionOrder: "v1", saveDataErrorExecution: "all", saveDataSuccessExecution: "all", executionTimeout: 300 },
     meta: { templateCredsSetupCompleted: false },

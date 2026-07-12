@@ -93,8 +93,10 @@ test('Phase 3 worker mutations use explicit controlled functions', async () => {
 
 test('Phase 3 n8n exports are inactive and constrained to controlled boundaries', async () => {
   const files = ['campaign-strategist.v1.json', 'content-producer.v1.json'];
-  for (const file of files) {
+  const ids = ['phase3StrategistV1', 'phase3ContentProducerV1'];
+  for (const [index, file] of files.entries()) {
     const workflow = JSON.parse(await readFile(new URL(`../n8n/workflows/phase3/${file}`, import.meta.url), 'utf8'));
+    assert.equal(workflow.id, ids[index]);
     assert.equal(workflow.active, false);
     assert.ok(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.manualTrigger'));
     assert.ok(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.scheduleTrigger'));
