@@ -17,11 +17,22 @@ function node(id, name, type, typeVersion, position, parameters, extra = {}) {
   return { parameters, id, name, type, typeVersion, position, ...extra };
 }
 
-function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, persistFunction }) {
+function guidedDecodingSchema(value) {
+  if (Array.isArray(value)) return value.map(guidedDecodingSchema);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => !["$schema", "$id", "title", "uniqueItems", "format"].includes(key))
+    .map(([key, entry]) => [key, guidedDecodingSchema(entry)]));
+}
+
+function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, outputSchemaPath, outputSchemaName, persistFunction }) {
   const prompt = readFileSync(join(root, promptPath), "utf8").replace(/\r\n/g, "\n").trim();
+  const outputSchema = guidedDecodingSchema(JSON.parse(readFileSync(join(root, outputSchemaPath), "utf8")));
+  const responseFormat = { type: "json_schema", json_schema: { name: outputSchemaName, schema: outputSchema } };
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const parseCode = `const claimed = $('Claim Job').first().json;
 const response = $json;
+if (response?.error) return [{ json: { ...claimed, ok: false, error_code: 'gemma_request_error', error_message: String(response.error.message ?? response.error).slice(0, 1000) } }];
 const statusCode = Number(response.statusCode ?? response.status ?? 200);
 const body = response.body ?? response;
 if (statusCode >= 400) return [{ json: { ...claimed, ok: false, error_code: statusCode === 429 ? 'gemma_rate_limited' : 'gemma_http_error', error_message: String(body?.error?.message ?? body?.message ?? statusCode).slice(0, 1000) } }];
@@ -48,18 +59,18 @@ return [{ json: { ...claimed, ok: true, output: data } }];`;
     node(`${prefix}-request`, "Build Gemma Request", "n8n-nodes-base.code", 2, [480, 270], {
       jsCode: `const claimed = $json;
 if (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');
-return [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
+return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.2, response_format: ${JSON.stringify(responseFormat)}, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
     }),
     node(`${prefix}-gemma`, "Call Gemma", "n8n-nodes-base.httpRequest", 4.2, [720, 270], {
       method: "POST",
-      url: "https://api.thesmartlabs.net/v1/chat/completions",
+      url: "https://api.thesmartlabs.net/gemma4/v1/chat/completions",
       authentication: "genericCredentialType",
       genericAuthType: "httpHeaderAuth",
       sendBody: true,
       specifyBody: "json",
       jsonBody: "={{ JSON.stringify($json.request) }}",
       options: { timeout: 180000, response: { response: { fullResponse: true, neverError: true } } },
-    }, { credentials: gemmaCredential }),
+    }, { credentials: gemmaCredential, onError: "continueRegularOutput" }),
     node(`${prefix}-parse`, "Parse and Check Contract", "n8n-nodes-base.code", 2, [960, 270], { jsCode: parseCode }),
     node(`${prefix}-valid`, "Contract Valid?", "n8n-nodes-base.if", 2.2, [1200, 270], {
       conditions: { options: { caseSensitive: true, typeValidation: "strict" }, conditions: [{ id: `${prefix}-ok`, leftValue: "={{ $json.ok }}", rightValue: true, operator: { type: "boolean", operation: "equals" } }], combinator: "and" }, options: {},
@@ -67,7 +78,7 @@ return [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, res
     node(`${prefix}-persist`, "Persist Valid Result", "n8n-nodes-base.postgres", 2.6, [1440, 180], {
       operation: "executeQuery",
       query: `SELECT tanaghom.${persistFunction}($1::uuid, $2::jsonb, $3::text, $4::text) AS result;`,
-      options: { queryReplacement: `={{ [$json.job_id, JSON.stringify($json.output), 'gemma-4', '${promptVersion}'] }}` },
+      options: { queryReplacement: `={{ [$json.job_id, JSON.stringify($json.output), 'gemma4-26b-a4b-canary', '${promptVersion}'] }}` },
     }, { credentials: postgresCredential }),
     node(`${prefix}-failure`, "Record Failure", "n8n-nodes-base.postgres", 2.6, [1440, 360], {
       operation: "executeQuery",
@@ -96,7 +107,7 @@ return [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, res
 }
 
 const definitions = [
-  ["campaign-strategist.v1.json", workflow({ name: "Tanaghom — Campaign Strategist v1", agent: "campaign_strategist", jobType: "campaign.strategy.generate", promptPath: "prompts/campaign-strategist/v1.md", promptVersion: "campaign-strategist/v1", outputVersion: "phase3.strategist-output.v1", persistFunction: "persist_strategy_result" })],
-  ["content-producer.v1.json", workflow({ name: "Tanaghom — Content Producer v1", agent: "content_producer", jobType: "campaign.content.generate", promptPath: "prompts/content-producer/v1.md", promptVersion: "content-producer/v1", outputVersion: "phase3.content-producer-output.v1", persistFunction: "persist_content_result" })],
+  ["campaign-strategist.v1.json", workflow({ name: "Tanaghom — Campaign Strategist v1", agent: "campaign_strategist", jobType: "campaign.strategy.generate", promptPath: "prompts/campaign-strategist/v1.md", promptVersion: "campaign-strategist/v1", outputVersion: "phase3.strategist-output.v1", outputSchemaPath: "packages/contracts/schemas/phase3/strategist-output.v1.schema.json", outputSchemaName: "tanaghom_strategist_output_v1", persistFunction: "persist_strategy_result" })],
+  ["content-producer.v1.json", workflow({ name: "Tanaghom — Content Producer v1", agent: "content_producer", jobType: "campaign.content.generate", promptPath: "prompts/content-producer/v1.md", promptVersion: "content-producer/v1", outputVersion: "phase3.content-producer-output.v1", outputSchemaPath: "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json", outputSchemaName: "tanaghom_content_producer_output_v1", persistFunction: "persist_content_result" })],
 ];
 for (const [file, definition] of definitions) writeFileSync(join(outputDir, file), `${JSON.stringify(definition, null, 2)}\n`);
