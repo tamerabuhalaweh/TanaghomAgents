@@ -92,3 +92,20 @@ test("operations API reads every remaining dashboard domain in one protected sna
   }
   assert.doesNotMatch(operations, /INSERT|UPDATE|DELETE/);
 });
+
+test("remaining operational screens use the live snapshot without business fixtures", async () => {
+  const components = await Promise.all([
+    "overview-dashboard.tsx",
+    "campaigns-view.tsx",
+    "leads-view.tsx",
+    "reports-view.tsx",
+    "system-view.tsx",
+  ].map((file) => readFile(new URL(`components/${file}`, dashboard), "utf8")));
+  for (const source of components) {
+    assert.match(source, /useOperations/);
+    assert.doesNotMatch(source, /Summer Camp|339,800|1,248/);
+  }
+  const fixtures = await readFile(new URL("data/fixtures.ts", dashboard), "utf8");
+  assert.doesNotMatch(fixtures, /export const (approvals|campaigns|recentActivity)/);
+  assert.match(fixtures, /Configured role; live workflow begins/);
+});
