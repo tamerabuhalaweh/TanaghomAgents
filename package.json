@@ -19,7 +19,7 @@
     "check": "node scripts/verify-repository.mjs",
     "db:migrate": "node scripts/database.mjs migrate",
     "db:rollback": "node scripts/database.mjs rollback",
-    "db:inspect:readonly": "node scripts/database-inspect-readonly.mjs",
+    "db:inspect:readonly": "node --env-file-if-exists=.env scripts/database-inspect-readonly.mjs",
     "dev:dashboard": "npm run dev --workspace @tanaghom/dashboard",
     "build:dashboard": "npm run build --workspace @tanaghom/dashboard",
     "typecheck:dashboard": "npm run typecheck --workspace @tanaghom/dashboard",
