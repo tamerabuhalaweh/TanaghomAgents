@@ -42,6 +42,13 @@ mutations will be exposed through narrow `SECURITY DEFINER` functions that:
 - emit correlated audit/outbox evidence;
 - never insert `content_approvals` or impersonate a human actor.
 
+Phase 3 worker mutations are exposed only through explicitly granted,
+transactional `SECURITY DEFINER` functions with a fixed `pg_catalog, pg_temp`
+search path. The functions validate contract versions and state transitions,
+write correlated audit/outbox evidence, and cannot complete a content job while
+any generated item still lacks a protected human decision. Direct n8n table
+writes remain denied.
+
 Each function must explicitly revoke PUBLIC execution and grant execution only
 to `tanaghom_n8n_worker`.
 

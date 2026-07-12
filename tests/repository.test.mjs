@@ -74,3 +74,19 @@ test('Phase 3 Gemma contracts and prompts are versioned and non-operational', as
   assert.match(producer, /Never approve, schedule, publish/);
   assert.match(producer, /authenticated human/);
 });
+
+test('Phase 3 worker mutations use explicit controlled functions', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0005_controlled_worker_functions.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0005_controlled_worker_functions.down.sql', import.meta.url), 'utf8');
+  const assertions = await readFile(new URL('../packages/database/tests/controlled_worker_functions.sql', import.meta.url), 'utf8');
+  for (const name of ['claim_agent_job', 'persist_strategy_result', 'persist_content_result', 'record_agent_job_failure', 'complete_content_job']) {
+    assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
+    assert.match(migration, new RegExp(`GRANT EXECUTE ON FUNCTION tanaghom\\.${name}`));
+    assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
+  }
+  assert.equal((migration.match(/SECURITY DEFINER/g) || []).length, 5);
+  assert.equal((migration.match(/SET search_path = pg_catalog, pg_temp/g) || []).length, 5);
+  assert.doesNotMatch(migration, /GRANT (INSERT|UPDATE|DELETE).+tanaghom_n8n_worker/);
+  assert.match(assertions, /content job completed without a human decision/);
+  assert.match(assertions, /worker function forged a human approval/);
+});
