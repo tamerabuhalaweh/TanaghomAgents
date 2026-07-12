@@ -43,10 +43,10 @@ export const approvals = [
 ];
 
 export const agents = [
-  { code: "CS", name: "Campaign Strategist", state: "On track", detail: "Strategy defined and segments verified", tone: "success" as Tone },
-  { code: "CP", name: "Content Producer", state: "Working", detail: "Creating assets for human review", tone: "working" as Tone },
-  { code: "PM", name: "Publisher & Monitor", state: "On track", detail: "Scheduling ready content after approval", tone: "success" as Tone },
-  { code: "SC", name: "Sales & CRM", state: "On track", detail: "Lead capture flow is active", tone: "success" as Tone },
+  { code: "CS", name: "Campaign Strategist", state: "Not activated", detail: "Configured role; live workflow begins in Phase 3", tone: "neutral" as Tone },
+  { code: "CP", name: "Content Producer", state: "Not activated", detail: "Configured role; live workflow begins in Phase 3", tone: "neutral" as Tone },
+  { code: "PM", name: "Publisher & Monitor", state: "Not activated", detail: "Configured role; live workflow begins in Phase 4", tone: "neutral" as Tone },
+  { code: "SC", name: "Sales & CRM", state: "Not activated", detail: "Configured role; live workflow begins in Phase 5", tone: "neutral" as Tone },
 ];
 
 export const campaigns = [

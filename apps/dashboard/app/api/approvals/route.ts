@@ -19,6 +19,7 @@ export async function GET(request: NextRequest) {
               content.media_brief,
               content.media_url,
               content.generation,
+              content.scheduled_time,
               strategy.version AS strategy_version,
               content.created_at
          FROM tanaghom.content_items AS content

@@ -9,11 +9,10 @@ test("dashboard exposes the Phase 2 operational routes", async () => {
   await Promise.all(routes.map((route) => readFile(new URL(route, dashboard), "utf8")));
 });
 
-test("fixture approval workspace clearly prevents external action", async () => {
+test("live approval workspace queues decisions without direct external calls", async () => {
   const source = await readFile(new URL("components/approval-workspace.tsx", dashboard), "utf8");
-  assert.match(source, /Fixture mode:/);
-  assert.match(source, /cannot publish content or call an external service/);
-  assert.doesNotMatch(source, /fetch\(|axios|https?:\/\//);
+  assert.match(source, /Publishing work has been queued/);
+  assert.doesNotMatch(source, /axios|https?:\/\//);
 });
 
 test("dashboard includes reduced-motion and responsive navigation behavior", async () => {
@@ -63,4 +62,23 @@ test("page protection stays optimistic while data authorization remains server-s
   assert.match(proxy, /NextResponse\.redirect/);
   assert.match(session, /authorize/);
   assert.match(decision, /enforceSameOriginForCookieMutation/);
+});
+
+test("approvals and audit activity load live data with honest operational states", async () => {
+  const approvals = await readFile(new URL("components/approval-workspace.tsx", dashboard), "utf8");
+  const activity = await readFile(new URL("components/live-activity.tsx", dashboard), "utf8");
+  assert.match(approvals, /fetch\("\/api\/approvals"/);
+  assert.match(approvals, /Approval queue is clear/);
+  assert.match(approvals, /approval request failed/);
+  assert.match(activity, /fetch\("\/api\/audit\?limit=20"/);
+  assert.doesNotMatch(approvals, /@\/data\/fixtures/);
+  assert.doesNotMatch(activity, /@\/data\/fixtures/);
+});
+
+test("shared shell uses live session identity and no fixture notification counts", async () => {
+  const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
+  const profile = await readFile(new URL("components/session-profile.tsx", dashboard), "utf8");
+  assert.match(shell, /SessionProfile/);
+  assert.match(profile, /fetch\("\/api\/auth\/session"/);
+  assert.doesNotMatch(shell, /Kim Morgan|count: 3|2 alerts/);
 });

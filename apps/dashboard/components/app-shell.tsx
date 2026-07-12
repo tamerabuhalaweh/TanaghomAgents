@@ -8,7 +8,6 @@ import {
   BriefcaseBusiness,
   ChartNoAxesCombined,
   CheckCheck,
-  ChevronDown,
   CircleHelp,
   ContactRound,
   LayoutDashboard,
@@ -19,11 +18,12 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { BrandMark } from "./brand-mark";
+import { SessionProfile } from "./session-profile";
 
 const primaryNavigation = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/campaigns", label: "Campaigns", icon: BriefcaseBusiness },
-  { href: "/approvals", label: "Approvals", icon: CheckCheck, count: 3 },
+  { href: "/approvals", label: "Approvals", icon: CheckCheck },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/leads", label: "Leads", icon: ContactRound },
   { href: "/reports", label: "Reports", icon: ChartNoAxesCombined },
@@ -53,13 +53,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
 
         <nav id="primary-navigation" className="primary-navigation" aria-label="Primary navigation">
-          {primaryNavigation.map(({ href, label, icon: Icon, count }) => {
+          {primaryNavigation.map(({ href, label, icon: Icon }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
               <Link key={href} href={href} className={`nav-link ${active ? "nav-link-active" : ""}`} aria-current={active ? "page" : undefined} onClick={() => setMenuOpen(false)}>
                 <Icon size={18} strokeWidth={1.8} />
                 <span>{label}</span>
-                {count ? <span className="nav-count" aria-label={`${count} pending`}>{count}</span> : null}
               </Link>
             );
           })}
@@ -69,17 +68,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <Link href="/system" className="nav-link">
             <Bell size={18} />
             <span>Alerts</span>
-            <span className="nav-count nav-count-warning" aria-label="2 alerts">2</span>
           </Link>
           <Link href="/system" className="nav-link">
             <Settings size={18} />
             <span>System</span>
           </Link>
-          <button className="profile-switcher" type="button">
-            <span className="avatar">KM</span>
-            <span className="profile-copy"><strong>Kim Morgan</strong><small>Operations lead</small></span>
-            <ChevronDown size={16} aria-hidden="true" />
-          </button>
+          <SessionProfile />
         </div>
       </aside>
 
@@ -102,11 +96,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="mobile-navigation" aria-label="Mobile navigation">
-        {primaryNavigation.slice(0, 5).map(({ href, label, icon: Icon, count }) => {
+        {primaryNavigation.slice(0, 5).map(({ href, label, icon: Icon }) => {
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link key={href} href={href} className={active ? "mobile-nav-active" : ""} aria-current={active ? "page" : undefined}>
-              <span className="mobile-nav-icon"><Icon size={20} />{count ? <i>{count}</i> : null}</span>
+              <span className="mobile-nav-icon"><Icon size={20} /></span>
               <span>{label}</span>
             </Link>
           );
