@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase3/strategist-output.v1.schema.json",
+  "title": "Campaign Strategist output v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "status", "positioning", "key_messages", "channels", "posting_cadence", "content_pillars"],
+      "properties": {
+        "contract_version": { "const": "phase3.strategist-output.v1" },
+        "status": { "const": "ok" },
+        "positioning": { "type": "string", "minLength": 1, "maxLength": 2000 },
+        "key_messages": { "type": "array", "minItems": 3, "maxItems": 5, "uniqueItems": true, "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
+        "channels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["instagram", "tiktok", "facebook", "linkedin", "youtube", "email", "whatsapp_status"] } },
+        "posting_cadence": { "type": "object", "minProperties": 1 },
+        "content_pillars": {
+          "type": "array", "minItems": 4, "maxItems": 8,
+          "items": {
+            "type": "object", "additionalProperties": false,
+            "required": ["name", "description", "example_angles"],
+            "properties": {
+              "name": { "type": "string", "minLength": 1, "maxLength": 160 },
+              "description": { "type": "string", "minLength": 1, "maxLength": 1000 },
+              "example_angles": { "type": "array", "minItems": 1, "maxItems": 8, "items": { "type": "string", "minLength": 1, "maxLength": 500 } }
+            }
+          }
+        }
+      }
+    },
+    {
+      "type": "object", "additionalProperties": false,
+      "required": ["contract_version", "status", "missing_fields", "message"],
+      "properties": {
+        "contract_version": { "const": "phase3.strategist-output.v1" },
+        "status": { "const": "blocked_missing_info" },
+        "missing_fields": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "type": "string", "pattern": "^[a-z][a-z0-9_.]*$" } },
+        "message": { "type": "string", "minLength": 1, "maxLength": 2000 }
+      }
+    }
+  ]
+}

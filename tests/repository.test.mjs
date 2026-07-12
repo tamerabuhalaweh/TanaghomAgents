@@ -53,3 +53,24 @@ test('database roles keep n8n outside the human approval boundary', async () => 
   assert.match(assertions, /n8n content update unexpectedly succeeded/);
   assert.match(assertions, /readonly insert unexpectedly succeeded/);
 });
+
+test('Phase 3 Gemma contracts and prompts are versioned and non-operational', async () => {
+  const root = new URL('../packages/contracts/schemas/phase3/', import.meta.url);
+  const names = [
+    'strategist-job.v1.schema.json',
+    'strategist-output.v1.schema.json',
+    'content-producer-job.v1.schema.json',
+    'content-producer-output.v1.schema.json',
+  ];
+  const schemas = await Promise.all(names.map(async (name) => JSON.parse(await readFile(new URL(name, root), 'utf8'))));
+  for (const schema of schemas) {
+    assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+    assert.match(schema.$id, /\.v1\.schema\.json$/);
+  }
+  const strategist = await readFile(new URL('../prompts/campaign-strategist/v1.md', import.meta.url), 'utf8');
+  const producer = await readFile(new URL('../prompts/content-producer/v1.md', import.meta.url), 'utf8');
+  assert.match(strategist, /Never publish/);
+  assert.match(strategist, /blocked_missing_info/);
+  assert.match(producer, /Never approve, schedule, publish/);
+  assert.match(producer, /authenticated human/);
+});

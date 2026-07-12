@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase3/strategist-job.v1.schema.json",
+  "title": "Campaign Strategist job v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "job_id", "correlation_id", "campaign"],
+  "properties": {
+    "contract_version": { "const": "phase3.strategist-job.v1" },
+    "job_id": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" },
+    "campaign": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["id", "name", "brief", "product_type", "target_audience", "currency"],
+      "properties": {
+        "id": { "type": "string", "format": "uuid" },
+        "name": { "type": "string", "minLength": 1, "maxLength": 200 },
+        "brief": { "type": "string", "minLength": 1, "maxLength": 12000 },
+        "product_type": { "enum": ["camp", "book", "coaching_program", "course"] },
+        "target_audience": { "type": "object" },
+        "budget_target": { "type": ["number", "null"], "minimum": 0 },
+        "revenue_target": { "type": ["number", "null"], "minimum": 0 },
+        "currency": { "type": "string", "pattern": "^[A-Z]{3}$" }
+      }
+    }
+  }
+}
