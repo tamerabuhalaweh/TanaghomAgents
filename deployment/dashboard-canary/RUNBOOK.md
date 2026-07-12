@@ -60,7 +60,8 @@ docker compose -p tanaghom-dashboard-canary -f docker-compose.yml build --pull d
 docker image inspect tanaghom-dashboard-canary:canary --format '{{.Id}}'
 docker compose -p tanaghom-dashboard-canary -f docker-compose.yml up -d dashboard
 docker compose -p tanaghom-dashboard-canary -f docker-compose.yml ps
-curl -fsS http://127.0.0.1:3200/api/health
+docker compose -p tanaghom-dashboard-canary -f docker-compose.yml exec -T dashboard \
+  node -e "fetch('http://127.0.0.1:3000/api/health').then(async r=>{console.log(await r.text());process.exit(r.ok?0:1)}).catch(()=>process.exit(1))"
 ```
 
 Recheck every protected unit and its existing HTTP health endpoints. Deployment
@@ -73,11 +74,12 @@ the deployment evidence so the locally built image remains traceable.
 Keep this tunnel open:
 
 ```powershell
-ssh -L 3200:127.0.0.1:3200 administrator@38.247.187.232
+ssh -L 3200:172.30.251.2:3000 administrator@38.247.187.232
 ```
 
-Then open `http://127.0.0.1:3200`. The SSH tunnel is encrypted; the canary is
-not reachable from the public internet.
+Then open `http://127.0.0.1:3200`. The tunnel targets the package-owned fixed
+container address because Docker userland proxying is disabled on this server.
+The SSH tunnel is encrypted; the canary is not reachable from the public internet.
 
 ## Rollback
 
