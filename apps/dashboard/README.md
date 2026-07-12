@@ -19,6 +19,8 @@ The initial server-only API exposes:
 - `GET /api/health` with truthful configuration/connectivity state;
 - `GET /api/approvals` for authenticated active application users;
 - `GET /api/audit` for authenticated active application users.
+- `GET /api/operations` for a consistent read-only snapshot used by overview,
+  campaign, agent, lead, report, notification, and health surfaces.
 - `POST /api/approvals/:id/decision` for owner/reviewer decisions with an
   `Idempotency-Key` header.
 

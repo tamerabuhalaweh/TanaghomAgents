@@ -82,3 +82,13 @@ test("shared shell uses live session identity and no fixture notification counts
   assert.match(profile, /fetch\("\/api\/auth\/session"/);
   assert.doesNotMatch(shell, /Kim Morgan|count: 3|2 alerts/);
 });
+
+test("operations API reads every remaining dashboard domain in one protected snapshot", async () => {
+  const operations = await readFile(new URL("app/api/operations/route.ts", dashboard), "utf8");
+  assert.match(operations, /authorize/);
+  assert.match(operations, /BEGIN TRANSACTION READ ONLY/);
+  for (const domain of ["campaigns", "agent_jobs", "leads", "posts", "notifications"]) {
+    assert.match(operations, new RegExp(`tanaghom\\.${domain}`));
+  }
+  assert.doesNotMatch(operations, /INSERT|UPDATE|DELETE/);
+});
