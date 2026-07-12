@@ -14,6 +14,12 @@
   shared PostgreSQL pooler. This initial private canary does not claim a strict
   network-level egress allowlist; public deployment requires that additional
   control and a renewed review.
+- PostgreSQL uses full TLS verification against the project pooler's Supabase
+  Root 2021 CA. The pinned root certificate SHA-256 fingerprint is
+  `80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA`.
+  The certificate chain and fingerprint were independently matched from the
+  developer workstation and GPU server; rotation is required before its 2031
+  expiry or when Supabase rotates the project certificate.
 
 ## Mandatory preflight
 
