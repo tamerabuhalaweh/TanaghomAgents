@@ -9,9 +9,6 @@ export function proxy(request: NextRequest) {
     login.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(login);
   }
-  if (authenticated && loginRoute) {
-    return NextResponse.redirect(new URL("/", request.url));
-  }
   return NextResponse.next();
 }
 

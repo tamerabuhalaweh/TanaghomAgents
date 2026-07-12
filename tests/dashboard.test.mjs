@@ -48,11 +48,25 @@ test("approval decisions are transactional, idempotent, audited, and queued", as
 
 test("login uses server-mediated Supabase Auth and HttpOnly session cookies", async () => {
   const route = await readFile(new URL("app/api/auth/login/route.ts", dashboard), "utf8");
+  const cookies = await readFile(new URL("lib/server/session-cookies.ts", dashboard), "utf8");
   const form = await readFile(new URL("components/login-form.tsx", dashboard), "utf8");
   assert.match(route, /grant_type=password/);
-  assert.match(route, /httpOnly: true/);
-  assert.match(route, /sameSite: "strict"/);
+  assert.match(route, /setSessionCookies/);
+  assert.match(cookies, /httpOnly: true/);
+  assert.match(cookies, /sameSite: "strict"/);
   assert.doesNotMatch(form, /SUPABASE|publishable|apikey/);
+});
+
+test("expired sessions rotate HttpOnly tokens once and retry the original request", async () => {
+  const refresh = await readFile(new URL("app/api/auth/refresh/route.ts", dashboard), "utf8");
+  const client = await readFile(new URL("lib/client/authenticated-fetch.ts", dashboard), "utf8");
+  assert.match(refresh, /grant_type=refresh_token/);
+  assert.match(refresh, /invalid_origin/);
+  assert.match(refresh, /clearSessionCookies/);
+  assert.match(refresh, /setSessionCookies/);
+  assert.match(client, /refreshInFlight/);
+  assert.match(client, /request\.clone/);
+  assert.match(client, /return fetch\(retry\)/);
 });
 
 test("page protection stays optimistic while data authorization remains server-side", async () => {
@@ -68,10 +82,10 @@ test("page protection stays optimistic while data authorization remains server-s
 test("approvals and audit activity load live data with honest operational states", async () => {
   const approvals = await readFile(new URL("components/approval-workspace.tsx", dashboard), "utf8");
   const activity = await readFile(new URL("components/live-activity.tsx", dashboard), "utf8");
-  assert.match(approvals, /fetch\("\/api\/approvals"/);
+  assert.match(approvals, /authenticatedFetch\("\/api\/approvals"/);
   assert.match(approvals, /Approval queue is clear/);
   assert.match(approvals, /approval request failed/);
-  assert.match(activity, /fetch\("\/api\/audit\?limit=20"/);
+  assert.match(activity, /authenticatedFetch\("\/api\/audit\?limit=20"/);
   assert.doesNotMatch(approvals, /@\/data\/fixtures/);
   assert.doesNotMatch(activity, /@\/data\/fixtures/);
 });
@@ -80,7 +94,7 @@ test("shared shell uses live session identity and no fixture notification counts
   const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
   const profile = await readFile(new URL("components/session-profile.tsx", dashboard), "utf8");
   assert.match(shell, /SessionProfile/);
-  assert.match(profile, /fetch\("\/api\/auth\/session"/);
+  assert.match(profile, /authenticatedFetch\("\/api\/auth\/session"/);
   assert.doesNotMatch(shell, /Kim Morgan|count: 3|2 alerts/);
 });
 

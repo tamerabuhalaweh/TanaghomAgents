@@ -25,6 +25,7 @@
     "start:dashboard": "node scripts/dashboard.mjs start",
     "typecheck:dashboard": "npm run typecheck --workspace @tanaghom/dashboard",
     "test": "node --test tests/*.test.mjs",
-    "test:database": "node scripts/database-test.mjs"
+    "test:database": "node scripts/database-test.mjs",
+    "test:dashboard-api": "node scripts/dashboard-api-integration.mjs"
   }
 }
