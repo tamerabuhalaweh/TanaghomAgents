@@ -1,0 +1,293 @@
+{
+  "name": "Tanaghom — Content Producer v1",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "producer-manual",
+      "name": "Manual Test Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "producer-schedule",
+      "name": "Poll Every Minute",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        360
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tanaghom.claim_agent_job('content_producer', ARRAY['campaign.content.generate']);",
+        "options": {}
+      },
+      "id": "producer-claim",
+      "name": "Claim Job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        270
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const claimed = $json;\nif (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');\nreturn [{ json: { ...claimed, request: { model: 'gemma-4', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: \"# Content Producer — v1\\r\\n\\r\\nYou are Tanaghom's Content Producer. Create review drafts and visual briefs\\r\\nonly. Never approve, schedule, publish, contact leads, spend budget, or claim a\\r\\nfile was generated.\\r\\n\\r\\nReturn JSON that validates against `content-producer-output.v1.schema.json` and\\r\\ninclude `contract_version: \\\"phase3.content-producer-output.v1\\\"`. Use only\\r\\nchannels and pillars from the persisted strategy. Match channel conventions,\\r\\nthe supplied audience/language, and the campaign's stated offer. Never invent\\r\\nscarcity, prices, dates, results, testimonials, or guarantees.\\r\\n\\r\\nWhen `regeneration` is present, return exactly one replacement for the same\\r\\nchannel and content type, preserve lineage, and address the rejection reason.\\r\\nAll output remains `pending_approval`; only an authenticated human can decide.\" }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];"
+      },
+      "id": "producer-request",
+      "name": "Build Gemma Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.thesmartlabs.net/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.request) }}",
+        "options": {
+          "timeout": 180000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "producer-gemma",
+      "name": "Call Gemma",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        270
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "62000000-0000-4000-8000-000000000002",
+          "name": "Tanaghom Gemma API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const claimed = $('Claim Job').first().json;\nconst response = $json;\nconst statusCode = Number(response.statusCode ?? response.status ?? 200);\nconst body = response.body ?? response;\nif (statusCode >= 400) return [{ json: { ...claimed, ok: false, error_code: statusCode === 429 ? 'gemma_rate_limited' : 'gemma_http_error', error_message: String(body?.error?.message ?? body?.message ?? statusCode).slice(0, 1000) } }];\nconst raw = body?.choices?.[0]?.message?.content ?? body?.message?.content;\nif (typeof raw !== 'string' || !raw.trim()) return [{ json: { ...claimed, ok: false, error_code: 'gemma_empty_response', error_message: 'Gemma returned no message content' } }];\nlet data;\nlet text = raw.trim();\nif (text.charCodeAt(0) === 96) text = text.replace(/^.{3}(?:json)?\\s*/i, '').replace(/\\s*.{3}$/, '');\ntry { data = JSON.parse(text); }\ncatch (error) { return [{ json: { ...claimed, ok: false, error_code: 'gemma_invalid_json', error_message: String(error.message).slice(0, 1000) } }]; }\nif (data?.contract_version !== 'phase3.content-producer-output.v1') return [{ json: { ...claimed, ok: false, error_code: 'gemma_contract_mismatch', error_message: 'Unexpected output contract version' } }];\nreturn [{ json: { ...claimed, ok: true, output: data } }];"
+      },
+      "id": "producer-parse",
+      "name": "Parse and Check Contract",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "producer-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "producer-valid",
+      "name": "Contract Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT tanaghom.persist_content_result($1::uuid, $2::jsonb, $3::text, $4::text) AS result;",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id, JSON.stringify($json.output), 'gemma-4', 'content-producer/v1'] }}"
+        }
+      },
+      "id": "producer-persist",
+      "name": "Persist Valid Result",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        180
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT tanaghom.record_agent_job_failure($1::uuid, $2::text, $3::text, 60) AS next_status;",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id, $json.error_code, $json.error_message] }}"
+        }
+      },
+      "id": "producer-failure",
+      "name": "Record Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        360
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Test Trigger": {
+      "main": [
+        [
+          {
+            "node": "Claim Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Poll Every Minute": {
+      "main": [
+        [
+          {
+            "node": "Claim Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Job": {
+      "main": [
+        [
+          {
+            "node": "Build Gemma Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Gemma Request": {
+      "main": [
+        [
+          {
+            "node": "Call Gemma",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Call Gemma": {
+      "main": [
+        [
+          {
+            "node": "Parse and Check Contract",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse and Check Contract": {
+      "main": [
+        [
+          {
+            "node": "Contract Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contract Valid?": {
+      "main": [
+        [
+          {
+            "node": "Persist Valid Result",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "all",
+    "saveDataSuccessExecution": "all",
+    "executionTimeout": 300
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [],
+  "pinData": {},
+  "versionId": "61000000-0000-4000-8000-000000000002"
+}
