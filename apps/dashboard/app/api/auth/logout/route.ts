@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { noStore } from "@/lib/server/responses";
+import { clearSessionCookies } from "@/lib/server/session-cookies";
 
 export const runtime = "nodejs";
 
@@ -9,7 +10,6 @@ export async function POST(request: NextRequest) {
     return noStore({ error: "invalid_origin" }, { status: 403 });
   }
   const response = noStore({ ok: true });
-  response.cookies.set("tanaghom_access_token", "", { httpOnly: true, maxAge: 0, path: "/" });
-  response.cookies.set("tanaghom_refresh_token", "", { httpOnly: true, maxAge: 0, path: "/api/auth" });
+  clearSessionCookies(response);
   return response;
 }

@@ -2,6 +2,7 @@
 
 import { Clock3, RefreshCw } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
+import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 
 interface AuditAction {
   id: string;
@@ -27,8 +28,8 @@ export function LiveActivity() {
   const load = useCallback(async () => {
     setState("loading");
     try {
-      const response = await fetch("/api/audit?limit=20", { cache: "no-store" });
-      if (response.status === 401) { window.location.assign("/login"); return; }
+      const response = await authenticatedFetch("/api/audit?limit=20", { cache: "no-store" });
+      if (response.status === 401) return;
       if (!response.ok) throw new Error("audit request failed");
       const payload = await response.json() as { actions: AuditAction[] };
       setActions(payload.actions);

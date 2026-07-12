@@ -2,6 +2,7 @@
 
 import { LogOut } from "lucide-react";
 import { useEffect, useState } from "react";
+import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 
 interface SessionUser {
   displayName: string;
@@ -17,8 +18,8 @@ export function SessionProfile() {
   const [signingOut, setSigningOut] = useState(false);
 
   useEffect(() => {
-    void fetch("/api/auth/session", { cache: "no-store" }).then(async (response) => {
-      if (response.status === 401) { window.location.assign("/login"); return; }
+    void authenticatedFetch("/api/auth/session", { cache: "no-store" }).then(async (response) => {
+      if (response.status === 401) return;
       if (!response.ok) return;
       const payload = await response.json() as { user: SessionUser };
       setUser(payload.user);

@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 import { noStore } from "@/lib/server/responses";
+import { setSessionCookies } from "@/lib/server/session-cookies";
 
 export const runtime = "nodejs";
 
@@ -45,12 +46,6 @@ export async function POST(request: NextRequest) {
     expires_in: number;
   };
   const response = noStore({ ok: true });
-  const secure = process.env.APP_ENV === "production";
-  response.cookies.set("tanaghom_access_token", session.access_token, {
-    httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: session.expires_in,
-  });
-  response.cookies.set("tanaghom_refresh_token", session.refresh_token, {
-    httpOnly: true, secure, sameSite: "strict", path: "/api/auth", maxAge: 60 * 60 * 24 * 30,
-  });
+  setSessionCookies(response, session);
   return response;
 }

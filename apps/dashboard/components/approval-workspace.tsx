@@ -13,6 +13,7 @@ import {
   X,
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -61,11 +62,8 @@ export function ApprovalWorkspace() {
     setLoadState("loading");
     setFeedback("");
     try {
-      const response = await fetch("/api/approvals", { cache: "no-store" });
-      if (response.status === 401) {
-        window.location.assign("/login");
-        return;
-      }
+      const response = await authenticatedFetch("/api/approvals", { cache: "no-store" });
+      if (response.status === 401) return;
       if (!response.ok) throw new Error("approval request failed");
       const payload = await response.json() as { items: ApprovalItem[] };
       setItems(payload.items);
@@ -99,7 +97,7 @@ export function ApprovalWorkspace() {
     setSubmitting(true);
     setFeedback("");
     try {
-      const response = await fetch(`/api/approvals/${active.id}/decision`, {
+      const response = await authenticatedFetch(`/api/approvals/${active.id}/decision`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -110,10 +108,7 @@ export function ApprovalWorkspace() {
           rejection_reason: decision === "rejected" ? reason.trim() : null,
         }),
       });
-      if (response.status === 401) {
-        window.location.assign("/login");
-        return;
-      }
+      if (response.status === 401) return;
       if (!response.ok) throw new Error("decision failed");
       const nextItems = items.filter((item) => item.id !== active.id);
       setItems(nextItems);

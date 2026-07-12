@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from "react";
+import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 
 export interface OperationsCampaign {
   id: string;
@@ -90,8 +91,8 @@ export function OperationsProvider({ children }: { children: React.ReactNode }) 
   const load = useCallback(async () => {
     setStatus("loading");
     try {
-      const response = await fetch("/api/operations", { cache: "no-store" });
-      if (response.status === 401) { window.location.assign("/login"); return; }
+      const response = await authenticatedFetch("/api/operations", { cache: "no-store" });
+      if (response.status === 401) return;
       if (!response.ok) throw new Error("operations request failed");
       setData(await response.json() as OperationsSnapshot);
       setStatus("ready");
