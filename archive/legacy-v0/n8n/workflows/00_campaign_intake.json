@@ -1,0 +1,210 @@
+{
+  "name": "00 — Campaign Intake Form",
+  "nodes": [
+    {
+      "parameters": {
+        "formTitle": "New Campaign Brief",
+        "formDescription": "Submit a campaign. Agent 1 (Campaign Strategist) runs automatically. Content never publishes without human approval.",
+        "formFields": {
+          "values": [
+            {
+              "fieldLabel": "Campaign name",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Summer Camp 2026 — Youth GCC/Egypt"
+            },
+            {
+              "fieldLabel": "Product type",
+              "fieldType": "dropdown",
+              "requiredField": true,
+              "fieldOptions": {
+                "values": [
+                  { "option": "camp" },
+                  { "option": "book" },
+                  { "option": "coaching_program" },
+                  { "option": "course" }
+                ]
+              }
+            },
+            {
+              "fieldLabel": "Brief",
+              "fieldType": "textarea",
+              "requiredField": true,
+              "placeholder": "Offer, CTA, tone, constraints, cohort details…"
+            },
+            {
+              "fieldLabel": "Geographies (comma-separated)",
+              "fieldType": "text",
+              "requiredField": true,
+              "placeholder": "Egypt, KSA, UAE"
+            },
+            {
+              "fieldLabel": "Age min",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Age max",
+              "fieldType": "number",
+              "requiredField": true
+            },
+            {
+              "fieldLabel": "Interests (comma-separated)",
+              "fieldType": "text",
+              "requiredField": false,
+              "placeholder": "personal growth, community"
+            },
+            {
+              "fieldLabel": "Budget target",
+              "fieldType": "number",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Revenue target",
+              "fieldType": "number",
+              "requiredField": false
+            },
+            {
+              "fieldLabel": "Currency",
+              "fieldType": "text",
+              "requiredField": false,
+              "placeholder": "USD"
+            }
+          ]
+        },
+        "options": {
+          "appendAttribution": false
+        }
+      },
+      "id": "intake-form",
+      "name": "Campaign Form",
+      "type": "n8n-nodes-base.formTrigger",
+      "typeVersion": 2.2,
+      "position": [0, 300],
+      "webhookId": "campaign-intake-form"
+    },
+    {
+      "parameters": {
+        "jsCode": "const f = items[0].json;\nconst geos = String(f['Geographies (comma-separated)'] || f.geographies || '')\n  .split(',').map(s => s.trim()).filter(Boolean);\nconst interests = String(f['Interests (comma-separated)'] || f.interests || '')\n  .split(',').map(s => s.trim()).filter(Boolean);\nreturn [{\n  json: {\n    name: f['Campaign name'] || f.name,\n    product_type: f['Product type'] || f.product_type,\n    brief: f.Brief || f.brief,\n    budget_target: f['Budget target'] ?? f.budget_target ?? null,\n    revenue_target: f['Revenue target'] ?? f.revenue_target ?? null,\n    currency: f.Currency || f.currency || 'USD',\n    target_audience: {\n      age_min: Number(f['Age min'] ?? f.age_min),\n      age_max: Number(f['Age max'] ?? f.age_max),\n      geographies: geos,\n      interests\n    }\n  }\n}];"
+      },
+      "id": "intake-map",
+      "name": "Map Form Fields",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO campaigns (\n  name, brief, product_type, target_audience, status,\n  budget_target, revenue_target, currency\n) VALUES (\n  $1, $2, $3, $4::jsonb, 'draft',\n  $5, $6, $7\n)\nRETURNING *;",
+        "options": {
+          "queryReplacement": "={{ [ $json.name, $json.brief, $json.product_type, JSON.stringify($json.target_audience), $json.budget_target, $json.revenue_target, $json.currency ] }}"
+        }
+      },
+      "id": "intake-insert",
+      "name": "Insert Campaign Draft",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [520, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'human_intake',\n  'create_campaign',\n  'campaign',\n  $1::uuid,\n  $2::jsonb,\n  'success'\n);",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, JSON.stringify({ name: $json.name, product_type: $json.product_type }) ] }}"
+        }
+      },
+      "id": "intake-log",
+      "name": "Log Intake",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [780, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.PUBLIC_WEBHOOK_BASE || 'http://localhost:5678') + '/webhook/agent-1-campaign-strategist' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_WEBHOOK_SECRET || '' }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'campaign_created', campaign_id: $('Insert Campaign Draft').item.json.id }) }}",
+        "options": {
+          "timeout": 120000,
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "intake-fire-a1",
+      "name": "Fire Agent 1",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1040, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO event_outbox (event_type, payload, target_agent, status, delivered_at)\nVALUES (\n  'campaign_created',\n  $1::jsonb,\n  'agent_1',\n  'delivered',\n  now()\n);",
+        "options": {
+          "queryReplacement": "={{ [ JSON.stringify({ campaign_id: $('Insert Campaign Draft').item.json.id }) ] }}"
+        }
+      },
+      "id": "intake-outbox",
+      "name": "Mark Outbox Delivered",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1300, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Campaign Form": {
+      "main": [[{ "node": "Map Form Fields", "type": "main", "index": 0 }]]
+    },
+    "Map Form Fields": {
+      "main": [[{ "node": "Insert Campaign Draft", "type": "main", "index": 0 }]]
+    },
+    "Insert Campaign Draft": {
+      "main": [[{ "node": "Log Intake", "type": "main", "index": 0 }]]
+    },
+    "Log Intake": {
+      "main": [[{ "node": "Fire Agent 1", "type": "main", "index": 0 }]]
+    },
+    "Fire Agent 1": {
+      "main": [[{ "node": "Mark Outbox Delivered", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "intake" },
+    { "name": "content-to-sales" }
+  ]
+}

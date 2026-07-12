@@ -1,0 +1,173 @@
+{
+  "name": "05 — External Lead Capture Webhook",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "lead-capture",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "lc-webhook",
+      "name": "Lead Capture Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "lead-capture"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || items[0].json || {};\n// Supports Meta Lead Ads style, landing page forms, or generic payloads\nconst campaign_id = body.campaign_id || body.campaignId || null;\nconst source_post_id = body.source_post_id || body.post_id || null;\nif (!campaign_id) {\n  return [{ json: { ok: false, error: 'campaign_id is required' } }];\n}\nreturn [{\n  json: {\n    ok: true,\n    campaign_id,\n    source_post_id,\n    name: body.name || body.full_name || [body.first_name, body.last_name].filter(Boolean).join(' ') || null,\n    contact_email: body.email || body.contact_email || null,\n    contact_phone: body.phone || body.contact_phone || null,\n    temperature: body.temperature || 'warm',\n    raw: body\n  }\n}];"
+      },
+      "id": "lc-normalize",
+      "name": "Normalize Lead Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "lc-if",
+      "name": "Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, error: $json.error } }}",
+        "options": { "responseCode": 400 }
+      },
+      "id": "lc-bad",
+      "name": "Respond 400",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [760, 460]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (campaign_id, source_post_id, name, contact_email, contact_phone, status, temperature)\nVALUES ($1::uuid, $2::uuid, $3, $4, $5, 'new', $6)\nON CONFLICT DO NOTHING\nRETURNING *;",
+        "options": {
+          "queryReplacement": "={{ [ $json.campaign_id, $json.source_post_id, $json.name, $json.contact_email, $json.contact_phone, $json.temperature ] }}"
+        }
+      },
+      "id": "lc-insert",
+      "name": "Insert Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [760, 200],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES ('lead_capture','ingest_lead','lead',$1::uuid,$2::jsonb,'success');",
+        "options": {
+          "queryReplacement": "={{ [ $json.id, JSON.stringify({ campaign_id: $json.campaign_id, source_post_id: $json.source_post_id }) ] }}"
+        }
+      },
+      "id": "lc-log",
+      "name": "Log Capture",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1000, 200],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.PUBLIC_WEBHOOK_BASE || 'http://localhost:5678') + '/webhook/agent-4-sales-crm' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_WEBHOOK_SECRET || '' }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'new_lead', lead_id: $('Insert Lead').item.json.id, campaign_id: $('Insert Lead').item.json.campaign_id }) }}",
+        "options": {
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "lc-agent4",
+      "name": "Fire Agent 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1240, 200]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, lead_id: $('Insert Lead').item.json.id } }}",
+        "options": {}
+      },
+      "id": "lc-ok",
+      "name": "Respond OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1480, 200]
+    }
+  ],
+  "connections": {
+    "Lead Capture Webhook": {
+      "main": [[{ "node": "Normalize Lead Payload", "type": "main", "index": 0 }]]
+    },
+    "Normalize Lead Payload": {
+      "main": [[{ "node": "Valid?", "type": "main", "index": 0 }]]
+    },
+    "Valid?": {
+      "main": [
+        [{ "node": "Insert Lead", "type": "main", "index": 0 }],
+        [{ "node": "Respond 400", "type": "main", "index": 0 }]
+      ]
+    },
+    "Insert Lead": {
+      "main": [[{ "node": "Log Capture", "type": "main", "index": 0 }]]
+    },
+    "Log Capture": {
+      "main": [[{ "node": "Fire Agent 4", "type": "main", "index": 0 }]]
+    },
+    "Fire Agent 4": {
+      "main": [[{ "node": "Respond OK", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "leads" },
+    { "name": "content-to-sales" }
+  ]
+}

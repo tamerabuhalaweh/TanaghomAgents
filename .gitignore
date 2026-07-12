@@ -8,6 +8,7 @@ dist/
 tmp/
 .tmp-postgres-*/
 *.log
+*.tsbuildinfo
 *.local
 .DS_Store
 Thumbs.db

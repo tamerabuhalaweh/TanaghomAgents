@@ -1,0 +1,356 @@
+{
+  "name": "Agent 3b — Performance Monitor",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 */2 * * *" }]
+        }
+      },
+      "id": "a3b-schedule",
+      "name": "Every 2 Hours",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agent-3-performance-monitor",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a3b-webhook",
+      "name": "Manual Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 500],
+      "webhookId": "agent-3-performance-monitor"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT p.*, ci.draft_copy\nFROM posts p\nJOIN content_items ci ON ci.id = p.content_item_id\nWHERE p.status IN ('live', 'scheduled')\n  AND p.postiz_post_id IS NOT NULL\nORDER BY p.last_synced_at NULLS FIRST, p.posted_at DESC\nLIMIT 50;",
+        "options": {}
+      },
+      "id": "a3b-load-posts",
+      "name": "Load Live Posts",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [280, 360],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "GET",
+        "url": "={{ ($env.POSTIZ_API_BASE || 'https://api.postiz.com/public/v1') + '/posts/' + $json.postiz_post_id }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ $env.POSTIZ_API_KEY }}" }
+          ]
+        },
+        "options": {
+          "timeout": 30000,
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "a3b-fetch-metrics",
+      "name": "Fetch Postiz Metrics",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [540, 360]
+    },
+    {
+      "parameters": {
+        "jsCode": "const post = $('Load Live Posts').item.json;\nconst resp = items[0].json;\nconst body = resp.body || resp;\nconst statusCode = resp.statusCode || 200;\nconst failed = statusCode >= 400;\n\nif (failed) {\n  return [{\n    json: {\n      ok: false,\n      post_id: post.id,\n      postiz_post_id: post.postiz_post_id,\n      campaign_id: post.campaign_id,\n      error: body.error || body.message || `HTTP ${statusCode}`,\n      sync_failures: (post.sync_failures || 0) + 1\n    }\n  }];\n}\n\nconst impressions = body.impressions ?? body.analytics?.impressions ?? body.statistics?.impressions ?? post.impressions ?? 0;\nconst clicks = body.clicks ?? body.analytics?.clicks ?? body.statistics?.clicks ?? post.clicks ?? 0;\nconst engagement = body.engagement_rate ?? body.analytics?.engagement_rate ?? body.statistics?.engagementRate ?? post.engagement_rate ?? 0;\nconst spend = body.spend ?? body.analytics?.spend ?? post.spend ?? 0;\nconst liveStatus = body.state === 'published' || body.releaseURL ? 'live' : (post.status || 'live');\n\nreturn [{\n  json: {\n    ok: true,\n    post_id: post.id,\n    postiz_post_id: post.postiz_post_id,\n    campaign_id: post.campaign_id,\n    impressions: Number(impressions) || 0,\n    clicks: Number(clicks) || 0,\n    engagement_rate: Number(engagement) || 0,\n    spend: Number(spend) || 0,\n    status: liveStatus,\n    // Optional leads array if platform/Postiz returns conversions\n    leads: body.leads || body.analytics?.leads || []\n  }\n}];"
+      },
+      "id": "a3b-parse",
+      "name": "Parse Metrics",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [780, 360]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3b-if-ok",
+      "name": "Sync OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1020, 360]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE posts SET\n  impressions = $2,\n  clicks = $3,\n  engagement_rate = $4,\n  spend = $5,\n  status = $6,\n  last_synced_at = now(),\n  last_error = NULL,\n  sync_failures = 0\nWHERE id = $1::uuid\nRETURNING id;\n\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'performance_monitor',\n  'sync_metrics',\n  'post',\n  $1::uuid,\n  $7::jsonb,\n  'success'\n);",
+        "options": {
+          "queryReplacement": "={{ [ $json.post_id, $json.impressions, $json.clicks, $json.engagement_rate, $json.spend, $json.status, JSON.stringify({ impressions: $json.impressions, clicks: $json.clicks, engagement_rate: $json.engagement_rate, spend: $json.spend }) ] }}"
+        }
+      },
+      "id": "a3b-update-ok",
+      "name": "Update Metrics",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1280, 240],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE posts SET\n  sync_failures = $2,\n  last_error = $3,\n  last_synced_at = now()\nWHERE id = $1::uuid\nRETURNING id, sync_failures;\n\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result, error_message)\nVALUES (\n  'performance_monitor',\n  'sync_metrics_failed',\n  'post',\n  $1::uuid,\n  $4::jsonb,\n  'failed',\n  $3\n);",
+        "options": {
+          "queryReplacement": "={{ [ $json.post_id, $json.sync_failures, $json.error, JSON.stringify({ sync_failures: $json.sync_failures }) ] }}"
+        }
+      },
+      "id": "a3b-update-fail",
+      "name": "Log Sync Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1280, 480],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "alert",
+              "leftValue": "={{ Number($json.sync_failures) }}",
+              "rightValue": 5,
+              "operator": { "type": "number", "operation": "gte" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3b-if-alert",
+      "name": "Alert Threshold?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1520, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ALERT_WEBHOOK_URL }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: `Performance sync failed ${$json.sync_failures} times for post ${$('Parse Metrics').item.json.post_id}: ${$('Parse Metrics').item.json.error}` }) }}",
+        "options": {
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "a3b-alert",
+      "name": "Fire Alert Webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1760, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "const metrics = $('Parse Metrics').item.json;\nconst leads = metrics.leads || [];\nif (!metrics.ok || !Array.isArray(leads) || leads.length === 0) {\n  return [{ json: { has_leads: false } }];\n}\nreturn leads.map((lead) => ({\n  json: {\n    has_leads: true,\n    campaign_id: metrics.campaign_id,\n    source_post_id: metrics.post_id,\n    name: lead.name || lead.full_name || null,\n    contact_email: lead.email || lead.contact_email || null,\n    contact_phone: lead.phone || lead.contact_phone || null,\n    temperature: lead.temperature || 'warm'\n  }\n}));"
+      },
+      "id": "a3b-extract-leads",
+      "name": "Extract New Leads",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1520, 240]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "has",
+              "leftValue": "={{ $json.has_leads }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3b-if-leads",
+      "name": "Has Leads?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1760, 240]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO leads (campaign_id, source_post_id, name, contact_email, contact_phone, status, temperature)\nVALUES ($1::uuid, $2::uuid, $3, $4, $5, 'new', $6)\nON CONFLICT DO NOTHING\nRETURNING *;",
+        "options": {
+          "queryReplacement": "={{ [ $json.campaign_id, $json.source_post_id, $json.name, $json.contact_email, $json.contact_phone, $json.temperature ] }}"
+        }
+      },
+      "id": "a3b-insert-lead",
+      "name": "Insert Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2000, 160],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.PUBLIC_WEBHOOK_BASE || 'http://localhost:5678') + '/webhook/agent-4-sales-crm' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_WEBHOOK_SECRET || '' }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'new_lead', lead_id: $json.id, campaign_id: $json.campaign_id }) }}",
+        "options": {
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "a3b-fire-agent4",
+      "name": "Fire Agent 4",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2240, 160]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES ('performance_monitor','capture_lead','lead',$1::uuid,$2::jsonb,'success');",
+        "options": {
+          "queryReplacement": "={{ [ $('Insert Lead').item.json.id, JSON.stringify({ source_post_id: $('Insert Lead').item.json.source_post_id, campaign_id: $('Insert Lead').item.json.campaign_id }) ] }}"
+        }
+      },
+      "id": "a3b-log-lead",
+      "name": "Log Lead Capture",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2480, 160],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, message: 'Performance monitor run complete' } }}",
+        "options": {}
+      },
+      "id": "a3b-respond",
+      "name": "Respond",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [280, 560]
+    }
+  ],
+  "connections": {
+    "Every 2 Hours": {
+      "main": [[{ "node": "Load Live Posts", "type": "main", "index": 0 }]]
+    },
+    "Manual Webhook": {
+      "main": [
+        [
+          { "node": "Load Live Posts", "type": "main", "index": 0 },
+          { "node": "Respond", "type": "main", "index": 0 }
+        ]
+      ]
+    },
+    "Load Live Posts": {
+      "main": [[{ "node": "Fetch Postiz Metrics", "type": "main", "index": 0 }]]
+    },
+    "Fetch Postiz Metrics": {
+      "main": [[{ "node": "Parse Metrics", "type": "main", "index": 0 }]]
+    },
+    "Parse Metrics": {
+      "main": [[{ "node": "Sync OK?", "type": "main", "index": 0 }]]
+    },
+    "Sync OK?": {
+      "main": [
+        [{ "node": "Update Metrics", "type": "main", "index": 0 }],
+        [{ "node": "Log Sync Failure", "type": "main", "index": 0 }]
+      ]
+    },
+    "Update Metrics": {
+      "main": [[{ "node": "Extract New Leads", "type": "main", "index": 0 }]]
+    },
+    "Log Sync Failure": {
+      "main": [[{ "node": "Alert Threshold?", "type": "main", "index": 0 }]]
+    },
+    "Alert Threshold?": {
+      "main": [
+        [{ "node": "Fire Alert Webhook", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Extract New Leads": {
+      "main": [[{ "node": "Has Leads?", "type": "main", "index": 0 }]]
+    },
+    "Has Leads?": {
+      "main": [
+        [{ "node": "Insert Lead", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Insert Lead": {
+      "main": [[{ "node": "Fire Agent 4", "type": "main", "index": 0 }]]
+    },
+    "Fire Agent 4": {
+      "main": [[{ "node": "Log Lead Capture", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "ERROR — Agent Failure Logger"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "agent-3" },
+    { "name": "content-to-sales" }
+  ]
+}

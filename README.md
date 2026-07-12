@@ -29,3 +29,32 @@ notifications, and system-health surfaces.
 
 See [the delivery roadmap](docs/ROADMAP.md) for phases, acceptance gates, and
 external decisions.
+
+## Dashboard development
+
+The Phase 2 dashboard lives in `apps/dashboard` and uses fixture data until the
+authenticated API adapter is introduced.
+
+```bash
+npm install
+npm run dev:dashboard
+npm run typecheck:dashboard
+npm run build:dashboard
+```
+
+The n8n editor is an engineering console and is not the customer-facing product.
+
+## Reconciliation status
+
+The original local Groky implementation was audited before Phase 2 integration.
+Its secret-free source is retained in `archive/legacy-v0` for recovery and
+requirements traceability, but it is not compatible with the authoritative
+Phase 1 schema and must not be deployed. See
+[`docs/reconciliation/GROKY_V0_AUDIT.md`](docs/reconciliation/GROKY_V0_AUDIT.md).
+
+Before any migration against an existing environment, validate catalog access
+without writes:
+
+```bash
+npm run db:inspect:readonly
+```
