@@ -24,3 +24,10 @@ test('roadmap preserves the human publishing approval gate', async () => {
   assert.match(roadmap, /human decision/i);
   assert.match(roadmap, /no\s+content can self-approve or publish/i);
 });
+
+test('migration runner accepts PostgreSQL boolean output variants', async () => {
+  const runner = await readFile(new URL('../scripts/database.mjs', import.meta.url), 'utf8');
+  assert.match(runner, /\['t', 'true', '1'\]\.includes/);
+  assert.match(runner, /\.split\(\/\\r\?\\n\/\)/);
+  assert.match(runner, /\.map\(\(version\) => version\.trim\(\)\)/);
+});

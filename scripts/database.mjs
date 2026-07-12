@@ -45,9 +45,15 @@ function run(file) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
-const ledgerExists = query("SELECT to_regclass('public.schema_migrations') IS NOT NULL;") === 't';
+const ledgerAnswer = query("SELECT to_regclass('public.schema_migrations') IS NOT NULL;").toLowerCase();
+const ledgerExists = ['t', 'true', '1'].includes(ledgerAnswer);
 const applied = ledgerExists
-  ? new Set(query('SELECT version FROM public.schema_migrations ORDER BY version;').split('\n').filter(Boolean))
+  ? new Set(
+      query('SELECT version FROM public.schema_migrations ORDER BY version;')
+        .split(/\r?\n/)
+        .map((version) => version.trim())
+        .filter(Boolean),
+    )
   : new Set();
 
 if (command === 'migrate') {

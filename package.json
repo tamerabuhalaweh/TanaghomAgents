@@ -17,8 +17,8 @@
   },
   "scripts": {
     "check": "node scripts/verify-repository.mjs",
-    "db:migrate": "node scripts/database.mjs migrate",
-    "db:rollback": "node scripts/database.mjs rollback",
+    "db:migrate": "node --env-file-if-exists=.env scripts/database.mjs migrate",
+    "db:rollback": "node --env-file-if-exists=.env scripts/database.mjs rollback",
     "db:inspect:readonly": "node --env-file-if-exists=.env scripts/database-inspect-readonly.mjs",
     "dev:dashboard": "npm run dev --workspace @tanaghom/dashboard",
     "build:dashboard": "npm run build --workspace @tanaghom/dashboard",
