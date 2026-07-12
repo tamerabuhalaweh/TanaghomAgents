@@ -29,3 +29,17 @@ notifications, and system-health surfaces.
 
 See [the delivery roadmap](docs/ROADMAP.md) for phases, acceptance gates, and
 external decisions.
+
+## Dashboard development
+
+The Phase 2 dashboard lives in `apps/dashboard` and uses fixture data until the
+authenticated API adapter is introduced.
+
+```bash
+npm install
+npm run dev:dashboard
+npm run typecheck:dashboard
+npm run build:dashboard
+```
+
+The n8n editor is an engineering console and is not the customer-facing product.

@@ -1,4 +1,13 @@
-# Dashboard
+# Tanaghom dashboard
 
-Human-facing Agent Operations Dashboard. Implementation begins in Phase 2 after
-the Phase 1 database contracts are accepted.
+The human-facing Agent Operations Dashboard. It is a Next.js application and
+does not expose the n8n editor.
+
+```bash
+npm install
+npm run dev:dashboard
+```
+
+Current Phase 2 screens use safe fixture data while application authentication
+and database access are introduced behind explicit server-side adapters. No
+fixture button performs an external action.

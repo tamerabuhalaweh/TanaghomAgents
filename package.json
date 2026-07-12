@@ -2,6 +2,15 @@
   "name": "tanaghom-agents",
   "version": "0.1.0",
   "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "overrides": {
+    "next": {
+      "postcss": "8.5.17"
+    }
+  },
   "description": "Autonomous content-to-sales operations platform with human approval gates",
   "engines": {
     "node": ">=22"
@@ -10,6 +19,9 @@
     "check": "node scripts/verify-repository.mjs",
     "db:migrate": "node scripts/database.mjs migrate",
     "db:rollback": "node scripts/database.mjs rollback",
+    "dev:dashboard": "npm run dev --workspace @tanaghom/dashboard",
+    "build:dashboard": "npm run build --workspace @tanaghom/dashboard",
+    "typecheck:dashboard": "npm run typecheck --workspace @tanaghom/dashboard",
     "test": "node --test tests/*.test.mjs",
     "test:database": "node scripts/database-test.mjs"
   }
