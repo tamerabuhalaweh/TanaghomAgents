@@ -8,7 +8,7 @@ PROTECTED_HOST=38.247.187.232
 NODE_IMAGE='node:24.18.0-alpine3.24@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd'
 
 docker inspect "$N8N_CONTAINER" >/dev/null
-docker run --rm --network "container:$N8N_CONTAINER" --entrypoint node "$NODE_IMAGE" - "$POOLER_HOST" "$POOLER_PORT" "$PROTECTED_HOST" <<'JS'
+docker run --rm -i --network "container:$N8N_CONTAINER" --entrypoint node "$NODE_IMAGE" - "$POOLER_HOST" "$POOLER_PORT" "$PROTECTED_HOST" <<'JS'
 const net = require('node:net');
 const [host, portText, protectedHost] = process.argv.slice(2);
 const port = Number(portText);
