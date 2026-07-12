@@ -38,8 +38,7 @@ SELECT
       'channels', values.channels, 'posting_cadence', values.posting_cadence,
       'content_pillars', values.content_pillars
     ),
-    'max_items', 2,
-    'regeneration', NULL
+    'max_items', 2
   )
 FROM job_values values
 JOIN tanaghom.agents agent ON agent.code = 'content_producer'

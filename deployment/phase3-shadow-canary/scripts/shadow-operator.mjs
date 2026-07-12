@@ -3,8 +3,8 @@ import pg from "pg";
 
 const [action, campaignName] = process.argv.slice(2);
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
-if (!['seed', 'retry-strategist', 'queue-content', 'verify'].includes(action) || !campaignName?.endsWith('.test')) {
-  throw new Error("usage: shadow-operator.mjs seed|retry-strategist|queue-content|verify NAME.test");
+if (!['seed', 'retry-strategist', 'queue-content', 'retry-content', 'verify'].includes(action) || !campaignName?.endsWith('.test')) {
+  throw new Error("usage: shadow-operator.mjs seed|retry-strategist|queue-content|retry-content|verify NAME.test");
 }
 
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
@@ -82,7 +82,7 @@ async function queueContent() {
       contract_version: 'phase3.content-producer-job.v1', job_id: jobId, correlation_id: correlationId,
       campaign: { id: row.id, name: row.name, brief: row.brief, product_type: row.product_type, target_audience: row.target_audience },
       strategy: { id: row.strategy_id, version: row.version, positioning: row.positioning, key_messages: row.key_messages, channels: row.channels, posting_cadence: row.posting_cadence, content_pillars: row.content_pillars },
-      max_items: 2, regeneration: null,
+      max_items: 2,
     };
     await client.query(`
       INSERT INTO tanaghom.agent_jobs
@@ -124,6 +124,33 @@ async function retryStrategist() {
   }
 }
 
+async function retryContent() {
+  await client.query('BEGIN');
+  try {
+    const result = await client.query(`
+      UPDATE tanaghom.agent_jobs job
+      SET status='queued', attempt=0, started_at=NULL, finished_at=NULL,
+          error_code=NULL, error_message=NULL, available_at=now(),
+          input=job.input - 'regeneration'
+      FROM tanaghom.campaigns campaign, tanaghom.agents agent
+      WHERE job.campaign_id=campaign.id AND job.agent_id=agent.id
+        AND campaign.name=$1 AND campaign.status='strategy_ready'
+        AND agent.code='content_producer'
+        AND job.job_type='campaign.content.generate'
+        AND job.status='running' AND job.attempt=1 AND job.max_attempts=1
+        AND NOT EXISTS (SELECT 1 FROM tanaghom.content_items content WHERE content.campaign_id=campaign.id)
+      RETURNING job.id, job.agent_id
+    `, [campaignName]);
+    if (result.rowCount !== 1) throw new Error('one recoverable content job was expected');
+    await client.query("UPDATE tanaghom.agents SET status='idle', last_heartbeat_at=now() WHERE id=$1", [result.rows[0].agent_id]);
+    await client.query('COMMIT');
+    console.log(JSON.stringify({ content_job_id: result.rows[0].id, status: 'queued', attempt: 0 }));
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  }
+}
+
 async function verify() {
   const result = await client.query(`
     SELECT campaign.id, campaign.status, campaign.budget_target, campaign.revenue_target,
@@ -150,6 +177,7 @@ try {
   if (action === 'seed') await seed();
   else if (action === 'retry-strategist') await retryStrategist();
   else if (action === 'queue-content') await queueContent();
+  else if (action === 'retry-content') await retryContent();
   else await verify();
 } finally {
   await client.end();
