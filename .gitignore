@@ -6,6 +6,7 @@ node_modules/
 coverage/
 dist/
 tmp/
+.tmp-postgres-*/
 *.log
 *.local
 .DS_Store
