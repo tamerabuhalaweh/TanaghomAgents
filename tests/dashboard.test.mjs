@@ -115,6 +115,7 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   const compose = await readFile(new URL("docker-compose.yml", deployment), "utf8");
   const dockerfile = await readFile(new URL("Dockerfile", deployment), "utf8");
   const entrypoint = await readFile(new URL("entrypoint.sh", deployment), "utf8");
+  const installer = await readFile(new URL("scripts/deploy-staged.sh", deployment), "utf8");
   const dockerignore = await readFile(new URL("../../.dockerignore", dashboard), "utf8");
   assert.match(compose, /127\.0\.0\.1:3200:3000/);
   assert.match(compose, /read_only: true/);
@@ -123,7 +124,10 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   assert.match(compose, /mem_limit: 768m/);
   assert.match(dockerfile, /node:24\.18\.0-alpine3\.24@sha256:/);
   assert.match(entrypoint, /\/run\/secrets\/\$2/);
-  assert.doesNotMatch(compose + dockerfile + entrypoint, /sb_publishable_|postgresql:\/\/postgres\./);
+  assert.match(installer, /protected unit changed state/);
+  assert.match(installer, /candidate\.overlaps/);
+  assert.match(installer, /cleanup/);
+  assert.doesNotMatch(compose + dockerfile + entrypoint + installer, /sb_publishable_|postgresql:\/\/postgres\./);
   assert.match(dockerignore, /^\.env$/m);
   assert.match(dockerignore, /deployment\/\*\*\/secrets\/\*/);
 });
