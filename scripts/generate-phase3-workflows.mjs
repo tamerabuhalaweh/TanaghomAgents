@@ -17,12 +17,17 @@ function node(id, name, type, typeVersion, position, parameters, extra = {}) {
   return { parameters, id, name, type, typeVersion, position, ...extra };
 }
 
+function guidedDecodingSchema(value) {
+  if (Array.isArray(value)) return value.map(guidedDecodingSchema);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => !["$schema", "$id", "title", "uniqueItems", "format"].includes(key))
+    .map(([key, entry]) => [key, guidedDecodingSchema(entry)]));
+}
+
 function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, outputSchemaPath, outputSchemaName, persistFunction }) {
   const prompt = readFileSync(join(root, promptPath), "utf8").replace(/\r\n/g, "\n").trim();
-  const outputSchema = JSON.parse(readFileSync(join(root, outputSchemaPath), "utf8"));
-  delete outputSchema.$schema;
-  delete outputSchema.$id;
-  delete outputSchema.title;
+  const outputSchema = guidedDecodingSchema(JSON.parse(readFileSync(join(root, outputSchemaPath), "utf8")));
   const responseFormat = { type: "json_schema", json_schema: { name: outputSchemaName, schema: outputSchema } };
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const parseCode = `const claimed = $('Claim Job').first().json;
