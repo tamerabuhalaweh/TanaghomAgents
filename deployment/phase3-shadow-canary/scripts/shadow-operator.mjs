@@ -3,8 +3,8 @@ import pg from "pg";
 
 const [action, campaignName] = process.argv.slice(2);
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
-if (!['seed', 'queue-content', 'verify'].includes(action) || !campaignName?.endsWith('.test')) {
-  throw new Error("usage: shadow-operator.mjs seed|queue-content|verify NAME.test");
+if (!['seed', 'retry-strategist', 'queue-content', 'verify'].includes(action) || !campaignName?.endsWith('.test')) {
+  throw new Error("usage: shadow-operator.mjs seed|retry-strategist|queue-content|verify NAME.test");
 }
 
 const client = new pg.Client({ connectionString: process.env.DATABASE_URL });
@@ -97,6 +97,32 @@ async function queueContent() {
   }
 }
 
+async function retryStrategist() {
+  await client.query('BEGIN');
+  try {
+    const result = await client.query(`
+      UPDATE tanaghom.agent_jobs job
+      SET status='queued', attempt=0, started_at=NULL, finished_at=NULL,
+          error_code=NULL, error_message=NULL, available_at=now()
+      FROM tanaghom.campaigns campaign, tanaghom.agents agent
+      WHERE job.campaign_id=campaign.id AND job.agent_id=agent.id
+        AND campaign.name=$1 AND campaign.status='draft'
+        AND agent.code='campaign_strategist'
+        AND job.job_type='campaign.strategy.generate'
+        AND job.status='running' AND job.attempt=1 AND job.max_attempts=1
+        AND NOT EXISTS (SELECT 1 FROM tanaghom.campaign_strategies strategy WHERE strategy.campaign_id=campaign.id)
+      RETURNING job.id, job.agent_id
+    `, [campaignName]);
+    if (result.rowCount !== 1) throw new Error('one recoverable strategist job was expected');
+    await client.query("UPDATE tanaghom.agents SET status='idle', last_heartbeat_at=now() WHERE id=$1", [result.rows[0].agent_id]);
+    await client.query('COMMIT');
+    console.log(JSON.stringify({ strategist_job_id: result.rows[0].id, status: 'queued', attempt: 0 }));
+  } catch (error) {
+    await client.query('ROLLBACK');
+    throw error;
+  }
+}
+
 async function verify() {
   const result = await client.query(`
     SELECT campaign.id, campaign.status, campaign.budget_target, campaign.revenue_target,
@@ -121,6 +147,7 @@ async function verify() {
 
 try {
   if (action === 'seed') await seed();
+  else if (action === 'retry-strategist') await retryStrategist();
   else if (action === 'queue-content') await queueContent();
   else await verify();
 } finally {

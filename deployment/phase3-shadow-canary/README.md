@@ -17,6 +17,10 @@ file, encrypts it with the existing instance key, and removes staging files.
 The Gemma key rotation script rolls back automatically if the model health gate
 does not recover.
 
+SSRF protection remains enabled. Its hostname exception contains exactly
+`api.thesmartlabs.net`; Squid and the host firewall independently restrict that
+name to the approved HTTPS Gemma path and prevent direct host/private access.
+
 ## Controlled order
 
 1. Validate the merged Compose model and confirm `172.30.252.0/29` is unused.

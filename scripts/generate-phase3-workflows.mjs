@@ -27,6 +27,7 @@ function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersi
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const parseCode = `const claimed = $('Claim Job').first().json;
 const response = $json;
+if (response?.error) return [{ json: { ...claimed, ok: false, error_code: 'gemma_request_error', error_message: String(response.error.message ?? response.error).slice(0, 1000) } }];
 const statusCode = Number(response.statusCode ?? response.status ?? 200);
 const body = response.body ?? response;
 if (statusCode >= 400) return [{ json: { ...claimed, ok: false, error_code: statusCode === 429 ? 'gemma_rate_limited' : 'gemma_http_error', error_message: String(body?.error?.message ?? body?.message ?? statusCode).slice(0, 1000) } }];
@@ -64,7 +65,7 @@ return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', tempera
       specifyBody: "json",
       jsonBody: "={{ JSON.stringify($json.request) }}",
       options: { timeout: 180000, response: { response: { fullResponse: true, neverError: true } } },
-    }, { credentials: gemmaCredential }),
+    }, { credentials: gemmaCredential, onError: "continueRegularOutput" }),
     node(`${prefix}-parse`, "Parse and Check Contract", "n8n-nodes-base.code", 2, [960, 270], { jsCode: parseCode }),
     node(`${prefix}-valid`, "Contract Valid?", "n8n-nodes-base.if", 2.2, [1200, 270], {
       conditions: { options: { caseSensitive: true, typeValidation: "strict" }, conditions: [{ id: `${prefix}-ok`, leftValue: "={{ $json.ok }}", rightValue: true, operator: { type: "boolean", operation: "equals" } }], combinator: "and" }, options: {},
