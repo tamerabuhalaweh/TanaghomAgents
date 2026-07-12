@@ -11,6 +11,30 @@ BEGIN
     RAISE EXCEPTION 'expected four seeded agents';
   END IF;
 
+  BEGIN
+    INSERT INTO tanaghom.app_users (
+      email, display_name, kind, role, auth_subject
+    ) VALUES (
+      'duplicate-subject@example.test', 'Duplicate Subject', 'human', 'reviewer',
+      '90000000-0000-4000-8000-000000000001'
+    );
+    RAISE EXCEPTION 'duplicate auth subject unexpectedly succeeded';
+  EXCEPTION WHEN unique_violation THEN
+    NULL;
+  END;
+
+  BEGIN
+    INSERT INTO tanaghom.app_users (
+      email, display_name, kind, role, auth_subject
+    ) VALUES (
+      'service-subject@example.test', 'Invalid Service Subject', 'service', 'service',
+      '90000000-0000-4000-8000-000000000002'
+    );
+    RAISE EXCEPTION 'service auth subject unexpectedly succeeded';
+  EXCEPTION WHEN check_violation THEN
+    NULL;
+  END;
+
   INSERT INTO tanaghom.campaign_strategies (
     campaign_id, version, positioning, key_messages, channels,
     posting_cadence, content_pillars, model_name, prompt_version

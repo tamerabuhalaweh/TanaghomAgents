@@ -16,6 +16,18 @@ function psql(...args) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
+function query(sql) {
+  const result = spawnSync('psql', [databaseUrl, '-X', '-v', 'ON_ERROR_STOP=1', '-At', '-c', sql], {
+    encoding: 'utf8',
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) {
+    process.stderr.write(result.stderr);
+    process.exit(result.status ?? 1);
+  }
+  return result.stdout.trim();
+}
+
 function database(command) {
   const result = spawnSync(process.execPath, [join(root, 'scripts', 'database.mjs'), command], {
     env: { ...process.env, DATABASE_URL: databaseUrl },
@@ -32,7 +44,9 @@ database('migrate');
 database('migrate');
 psql('-f', seed);
 psql('-f', assertions);
-database('rollback');
+while (query("SELECT count(*) FROM public.schema_migrations;") !== '0') {
+  database('rollback');
+}
 psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'tanaghom') THEN RAISE EXCEPTION 'rollback left tanaghom schema behind'; END IF; END $$;");
 database('migrate');
 psql('-c', "SELECT 'PASS: migration rollback and clean reapply succeeded.' AS result;");

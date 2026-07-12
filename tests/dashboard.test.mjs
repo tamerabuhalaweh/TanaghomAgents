@@ -22,3 +22,14 @@ test("dashboard includes reduced-motion and responsive navigation behavior", asy
   assert.match(css, /\.mobile-navigation/);
   assert.match(css, /min-height: 2\.75rem/);
 });
+
+test("server API verifies Supabase JWTs and keeps fixture mutations disconnected", async () => {
+  const auth = await readFile(new URL("lib/server/auth.ts", dashboard), "utf8");
+  const approvals = await readFile(new URL("app/api/approvals/route.ts", dashboard), "utf8");
+  const readme = await readFile(new URL("README.md", dashboard), "utf8");
+  assert.match(auth, /jwtVerify/);
+  assert.match(auth, /audience: "authenticated"/);
+  assert.match(approvals, /pending_approval/);
+  assert.doesNotMatch(approvals, /UPDATE|INSERT|DELETE/);
+  assert.match(readme, /Approval\s+mutations remain disabled/);
+});
