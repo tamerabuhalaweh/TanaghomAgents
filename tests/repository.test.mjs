@@ -90,3 +90,22 @@ test('Phase 3 worker mutations use explicit controlled functions', async () => {
   assert.match(assertions, /content job completed without a human decision/);
   assert.match(assertions, /worker function forged a human approval/);
 });
+
+test('Phase 3 n8n exports are inactive and constrained to controlled boundaries', async () => {
+  const files = ['campaign-strategist.v1.json', 'content-producer.v1.json'];
+  const ids = ['phase3StrategistV1', 'phase3ContentProducerV1'];
+  for (const [index, file] of files.entries()) {
+    const workflow = JSON.parse(await readFile(new URL(`../n8n/workflows/phase3/${file}`, import.meta.url), 'utf8'));
+    assert.equal(workflow.id, ids[index]);
+    assert.equal(workflow.active, false);
+    assert.ok(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.manualTrigger'));
+    assert.ok(workflow.nodes.some((node) => node.type === 'n8n-nodes-base.scheduleTrigger'));
+    assert.ok(workflow.nodes.every((node) => !['n8n-nodes-base.webhook', 'n8n-nodes-base.executeCommand', 'n8n-nodes-base.readWriteFile', 'n8n-nodes-base.ssh'].includes(node.type)));
+    const http = workflow.nodes.find((node) => node.name === 'Call Gemma');
+    assert.equal(http.parameters.url, 'https://api.thesmartlabs.net/v1/chat/completions');
+    const postgres = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.postgres');
+    assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_agent_job|persist_strategy_result|persist_content_result|record_agent_job_failure)/.test(node.parameters.query)));
+    assert.ok(postgres.every((node) => node.credentials.postgres.id === '62000000-0000-4000-8000-000000000001'));
+    assert.equal(http.credentials.httpHeaderAuth.id, '62000000-0000-4000-8000-000000000002');
+  }
+});

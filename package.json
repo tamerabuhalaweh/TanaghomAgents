@@ -26,6 +26,8 @@
     "typecheck:dashboard": "npm run typecheck --workspace @tanaghom/dashboard",
     "test": "node --test tests/*.test.mjs",
     "test:database": "node scripts/database-test.mjs",
-    "test:dashboard-api": "node scripts/dashboard-api-integration.mjs"
+    "test:dashboard-api": "node scripts/dashboard-api-integration.mjs",
+    "generate:phase3-workflows": "node scripts/generate-phase3-workflows.mjs",
+    "test:phase3-workflows": "node scripts/n8n-workflow-integration.mjs"
   }
 }
