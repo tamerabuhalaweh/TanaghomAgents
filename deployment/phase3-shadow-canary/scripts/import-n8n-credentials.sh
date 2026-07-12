@@ -21,6 +21,7 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 IFS= read -r db_password
+db_password=$(printf %s "$db_password" | tr -d '\r')
 printf '%s\n' "$db_password" > "$secret_input"
 unset db_password
 

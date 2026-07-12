@@ -17,6 +17,7 @@ docker run --rm -i --network "container:$N8N_CONTAINER" \
   -v "$CA_FILE:/run/tanaghom/supabase-ca.pem:ro" \
   --entrypoint /bin/sh "$POSTGRES_IMAGE" -ec '
     IFS= read -r password
+    password=$(printf %s "$password" | tr -d "\r")
     export PGPASSWORD="$password"
     psql "host=$1 port=5432 dbname=$2 user=$3 sslmode=verify-full sslrootcert=/run/tanaghom/supabase-ca.pem" \
       -v ON_ERROR_STOP=1 -Atqc "
