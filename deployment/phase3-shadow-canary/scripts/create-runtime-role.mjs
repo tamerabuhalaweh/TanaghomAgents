@@ -15,14 +15,12 @@ try {
   const exists = await client.query(
     "SELECT EXISTS (SELECT 1 FROM pg_roles WHERE rolname = 'tanaghom_n8n_runtime') AS present",
   );
-  if (!exists.rows[0].present) {
-    await client.query(
-      "CREATE ROLE tanaghom_n8n_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS",
-    );
-  }
+  const statementTemplate = exists.rows[0].present
+    ? "ALTER ROLE tanaghom_n8n_runtime PASSWORD %L"
+    : "CREATE ROLE tanaghom_n8n_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD %L";
   const statement = await client.query(
-    "SELECT format('ALTER ROLE tanaghom_n8n_runtime LOGIN NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD %L', $1::text) AS sql",
-    [password],
+    "SELECT format($1::text, $2::text) AS sql",
+    [statementTemplate, password],
   );
   await client.query(statement.rows[0].sql);
   await client.query("GRANT tanaghom_n8n_worker TO tanaghom_n8n_runtime");
