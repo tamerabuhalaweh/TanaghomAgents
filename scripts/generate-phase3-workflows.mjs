@@ -18,7 +18,7 @@ function node(id, name, type, typeVersion, position, parameters, extra = {}) {
 }
 
 function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, persistFunction }) {
-  const prompt = readFileSync(join(root, promptPath), "utf8").trim();
+  const prompt = readFileSync(join(root, promptPath), "utf8").replace(/\r\n/g, "\n").trim();
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const parseCode = `const claimed = $('Claim Job').first().json;
 const response = $json;
