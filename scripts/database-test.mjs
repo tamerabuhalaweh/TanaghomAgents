@@ -39,14 +39,17 @@ function database(command) {
 
 const seed = join(root, 'packages', 'database', 'seeds', 'staging.sql');
 const assertions = join(root, 'packages', 'database', 'tests', 'foundation.sql');
+const roleAssertions = join(root, 'packages', 'database', 'tests', 'least_privilege_roles.sql');
 
 database('migrate');
 database('migrate');
 psql('-f', seed);
 psql('-f', assertions);
+psql('-f', roleAssertions);
 while (query("SELECT count(*) FROM public.schema_migrations;") !== '0') {
   database('rollback');
 }
 psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'tanaghom') THEN RAISE EXCEPTION 'rollback left tanaghom schema behind'; END IF; END $$;");
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname IN ('tanaghom_api', 'tanaghom_n8n_worker', 'tanaghom_readonly')) THEN RAISE EXCEPTION 'rollback left package roles behind'; END IF; END $$;");
 database('migrate');
 psql('-c', "SELECT 'PASS: migration rollback and clean reapply succeeded.' AS result;");

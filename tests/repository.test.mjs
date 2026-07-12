@@ -40,3 +40,16 @@ test('dashboard runtime loads the ignored root environment explicitly', async ()
   assert.match(manifest.scripts['start:dashboard'], /scripts\/dashboard\.mjs start/);
   assert.match(launcher, /process\.loadEnvFile/);
 });
+
+test('database roles keep n8n outside the human approval boundary', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0004_least_privilege_roles.up.sql', import.meta.url), 'utf8');
+  const assertions = await readFile(new URL('../packages/database/tests/least_privilege_roles.sql', import.meta.url), 'utf8');
+  assert.match(migration, /CREATE ROLE tanaghom_n8n_worker NOLOGIN/);
+  assert.match(migration, /REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA tanaghom FROM PUBLIC/);
+  assert.match(migration, /GRANT SELECT ON[\s\S]+TO tanaghom_n8n_worker/);
+  const n8nGrants = migration.split(';').filter((statement) => /TO tanaghom_n8n_worker/.test(statement));
+  assert.ok(n8nGrants.every((statement) => !/GRANT (INSERT|UPDATE|DELETE)/.test(statement)));
+  assert.match(assertions, /n8n approval insert unexpectedly succeeded/);
+  assert.match(assertions, /n8n content update unexpectedly succeeded/);
+  assert.match(assertions, /readonly insert unexpectedly succeeded/);
+});
