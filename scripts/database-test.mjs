@@ -40,12 +40,16 @@ function database(command) {
 const seed = join(root, 'packages', 'database', 'seeds', 'staging.sql');
 const assertions = join(root, 'packages', 'database', 'tests', 'foundation.sql');
 const roleAssertions = join(root, 'packages', 'database', 'tests', 'least_privilege_roles.sql');
+const workerAssertions = join(root, 'packages', 'database', 'tests', 'controlled_worker_functions.sql');
 
 database('migrate');
 database('migrate');
 psql('-f', seed);
 psql('-f', assertions);
 psql('-f', roleAssertions);
+psql('-f', workerAssertions);
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regprocedure('tanaghom.claim_agent_job(text,text[])') IS NOT NULL THEN RAISE EXCEPTION '0005 rollback left worker functions behind'; END IF; END $$;");
 while (query("SELECT count(*) FROM public.schema_migrations;") !== '0') {
   database('rollback');
 }
