@@ -59,6 +59,7 @@ pathlib.Path(output).write_text(json.dumps(credentials))
 PY
 
 docker cp "$credential_json" "$N8N_CONTAINER:/tmp/tanaghom-credentials.json" >/dev/null
+docker exec "$N8N_CONTAINER" chown node:node /tmp/tanaghom-credentials.json
 docker exec --user node "$N8N_CONTAINER" n8n import:credentials --input=/tmp/tanaghom-credentials.json
 docker exec "$N8N_CONTAINER" rm -f /tmp/tanaghom-credentials.json
 echo "Encrypted n8n credentials imported; plaintext staging files removed."
