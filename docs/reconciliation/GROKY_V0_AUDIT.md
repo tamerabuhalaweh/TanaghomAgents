@@ -124,8 +124,10 @@ The existing local environment is populated, and no value was copied or
 committed. Read-only checks found:
 
 - the configured project/JWKS endpoint responds;
-- both configured browser API keys are rejected;
 - the legacy anon token identifies a different project than the configured URL;
+- the initial publishable-key check queried the protected Data API schema root
+  and was therefore inconclusive; later Auth settings verification confirmed
+  that the current publishable key is accepted by the configured project;
 - the configured PostgreSQL endpoint refuses the connection.
 
 Therefore the live schema cannot yet be treated as verified. No migration may
