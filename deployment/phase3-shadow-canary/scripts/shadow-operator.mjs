@@ -28,6 +28,13 @@ async function seed() {
       JSON.stringify({ geography: 'Amman, Jordan', age_range: 'Parents aged 28-50 with children aged 7-14', language: 'Arabic and English', test_only: true }),
       owner.rows[0].id,
     ]);
+    await client.query(`
+      INSERT INTO tanaghom.agents (code, name, description)
+      VALUES
+        ('campaign_strategist', 'Campaign Strategist', 'Builds bounded campaign strategy for human-governed operations.'),
+        ('content_producer', 'Content Producer', 'Creates review-only content drafts from an approved strategy boundary.')
+      ON CONFLICT (code) DO NOTHING
+    `);
     const agent = await client.query("SELECT id FROM tanaghom.agents WHERE code='campaign_strategist' AND status <> 'disabled'");
     if (agent.rowCount !== 1) throw new Error('campaign strategist agent is unavailable');
     const jobId = randomUUID();
