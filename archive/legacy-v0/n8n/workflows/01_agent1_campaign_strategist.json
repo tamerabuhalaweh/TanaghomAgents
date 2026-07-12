@@ -1,0 +1,376 @@
+{
+  "name": "Agent 1 — Campaign Strategist",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agent-1-campaign-strategist",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a1-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "agent-1-campaign-strategist"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM campaigns\nWHERE id = $1::uuid\n   OR (status = 'draft' AND ($1::text IS NULL OR $1::text = ''))\nORDER BY created_at ASC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ $json.body.campaign_id || $json.campaign_id || null }}"
+        }
+      },
+      "id": "a1-load-campaign",
+      "name": "Load Campaign",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [260, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const campaign = items[0].json;\nif (!campaign || !campaign.id) {\n  return [{ json: { ok: false, error: 'No draft campaign found', skip: true } }];\n}\nconst audience = campaign.target_audience || {};\nconst missing = [];\nif (!campaign.brief || String(campaign.brief).trim().length < 20) missing.push('brief');\nif (!campaign.product_type) missing.push('product_type');\nconst geos = audience.geographies || audience.geography || audience.countries;\nif (!geos || (Array.isArray(geos) && geos.length === 0)) missing.push('target_audience.geographies');\nconst hasAge = audience.age_min != null || audience.age_max != null || audience.age_range || audience.description;\nif (!hasAge) missing.push('target_audience.age_range_or_description');\n\nreturn [{\n  json: {\n    ok: missing.length === 0,\n    missing_fields: missing,\n    message: missing.length ? `Missing critical fields: ${missing.join(', ')}. Do not invent values.` : null,\n    campaign\n  }\n}];"
+      },
+      "id": "a1-validate",
+      "name": "Validate Critical Inputs",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [500, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "ok-check",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1-if-ok",
+      "name": "Inputs Complete?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [740, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE campaigns\nSET status = 'blocked_missing_info',\n    blocked_reason = $2\nWHERE id = $1::uuid\nRETURNING id, status, blocked_reason;",
+        "options": {
+          "queryReplacement": "={{ [$json.campaign.id, $json.message] }}"
+        }
+      },
+      "id": "a1-block-campaign",
+      "name": "Block Missing Info",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1000, 480],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'campaign_strategist',\n  'block_missing_info',\n  'campaign',\n  $1::uuid,\n  $2::jsonb,\n  'blocked_missing_info'\n)\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [$('Validate Critical Inputs').item.json.campaign.id, JSON.stringify({ missing_fields: $('Validate Critical Inputs').item.json.missing_fields, message: $('Validate Critical Inputs').item.json.message })] }}"
+        }
+      },
+      "id": "a1-log-blocked",
+      "name": "Log Blocked",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1240, 480],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, status: 'blocked_missing_info', campaign_id: $('Validate Critical Inputs').item.json.campaign.id, missing_fields: $('Validate Critical Inputs').item.json.missing_fields, message: $('Validate Critical Inputs').item.json.message } }}",
+        "options": {}
+      },
+      "id": "a1-respond-blocked",
+      "name": "Respond Blocked",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1480, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.OPENAI_BASE_URL || 'https://api.openai.com/v1') + '/chat/completions' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $env.LLM_MODEL_STRATEGY || $env.LLM_MODEL || 'gpt-4o', temperature: 0.3, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are the Campaign Strategist for a content-to-sales business (camps, books, coaching, courses). Rules: (1) Prepare strategy only — never publish. (2) Do not invent missing critical inputs. (3) Output strict JSON only.\\n\\nSuccess schema: {\"status\":\"ok\",\"positioning\":\"...\",\"key_messages\":[\"...\"],\"channels\":[\"instagram\"],\"posting_cadence\":{\"instagram\":{\"posts_per_week\":4,\"best_windows_local\":[\"18:00-21:00\"]}},\"content_pillars\":[{\"name\":\"...\",\"description\":\"...\",\"example_angles\":[\"...\"]}]}\\nConstraints: key_messages 3-5, content_pillars 4-8, channels lowercase.\\nBlocked schema if critical inputs missing: {\"status\":\"blocked_missing_info\",\"missing_fields\":[\"...\"],\"message\":\"...\"}\\nChannel heuristics: 18-34 MENA/GCC → instagram,tiktok; professional 30-50 → linkedin,facebook,email; books → linkedin,email,youtube; camps → instagram,tiktok,facebook.' }, { role: 'user', content: JSON.stringify({ campaign_name: $('Validate Critical Inputs').item.json.campaign.name, product_type: $('Validate Critical Inputs').item.json.campaign.product_type, brief: $('Validate Critical Inputs').item.json.campaign.brief, target_audience: $('Validate Critical Inputs').item.json.campaign.target_audience, budget_target: $('Validate Critical Inputs').item.json.campaign.budget_target, revenue_target: $('Validate Critical Inputs').item.json.campaign.revenue_target, currency: $('Validate Critical Inputs').item.json.campaign.currency }) } ] }) }}",
+        "options": { "timeout": 120000 }
+      },
+      "id": "a1-llm",
+      "name": "LLM Strategy",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1000, 160],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OPENAI_HEADER_CRED_ID",
+          "name": "OpenAI API Key Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = items[0].json.choices?.[0]?.message?.content\n  || items[0].json.message?.content\n  || items[0].json.content\n  || '';\nlet text = String(raw).trim();\nif (text.startsWith('```')) {\n  text = text.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '');\n}\nconst data = JSON.parse(text);\nconst campaign = $('Validate Critical Inputs').item.json.campaign;\n\nif (data.status === 'blocked_missing_info') {\n  return [{ json: { kind: 'blocked', data, campaign } }];\n}\nif (data.status !== 'ok') throw new Error('Unexpected strategy status: ' + data.status);\nif (!data.positioning || !Array.isArray(data.key_messages) || data.key_messages.length < 3) {\n  throw new Error('Strategy missing positioning or key_messages (need 3–5)');\n}\nif (!Array.isArray(data.content_pillars) || data.content_pillars.length < 4) {\n  throw new Error('Strategy needs 4–8 content_pillars');\n}\nif (!Array.isArray(data.channels) || data.channels.length < 1) {\n  throw new Error('Strategy needs at least one channel');\n}\nreturn [{ json: { kind: 'ok', data, campaign } }];"
+      },
+      "id": "a1-parse",
+      "name": "Parse Strategy JSON",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 160]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "kind-ok",
+              "leftValue": "={{ $json.kind }}",
+              "rightValue": "ok",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a1-if-strategy",
+      "name": "Strategy OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1480, 160]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO campaign_strategies (\n  campaign_id, positioning, key_messages, channels, posting_cadence, content_pillars, raw_strategy\n) VALUES (\n  $1::uuid, $2, $3::jsonb, $4::jsonb, $5::jsonb, $6::jsonb, $7::jsonb\n)\nON CONFLICT (campaign_id) DO UPDATE SET\n  positioning = EXCLUDED.positioning,\n  key_messages = EXCLUDED.key_messages,\n  channels = EXCLUDED.channels,\n  posting_cadence = EXCLUDED.posting_cadence,\n  content_pillars = EXCLUDED.content_pillars,\n  raw_strategy = EXCLUDED.raw_strategy,\n  created_at = now()\nRETURNING *;",
+        "options": {
+          "queryReplacement": "={{ [ $json.campaign.id, $json.data.positioning, JSON.stringify($json.data.key_messages), JSON.stringify($json.data.channels), JSON.stringify($json.data.posting_cadence || {}), JSON.stringify($json.data.content_pillars), JSON.stringify($json.data) ] }}"
+        }
+      },
+      "id": "a1-insert-strategy",
+      "name": "Upsert Strategy",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1720, 60],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE campaigns SET status = 'strategy_ready', blocked_reason = NULL WHERE id = $1::uuid RETURNING id, status;",
+        "options": {
+          "queryReplacement": "={{ [$('Parse Strategy JSON').item.json.campaign.id] }}"
+        }
+      },
+      "id": "a1-update-status",
+      "name": "Mark Strategy Ready",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1960, 60],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'campaign_strategist',\n  'create_strategy',\n  'campaign',\n  $1::uuid,\n  $2::jsonb,\n  'success'\n);\nINSERT INTO event_outbox (event_type, payload, target_agent, status)\nVALUES (\n  'strategy_ready',\n  $2::jsonb,\n  'agent_2',\n  'pending'\n)\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Parse Strategy JSON').item.json.campaign.id, JSON.stringify({ campaign_id: $('Parse Strategy JSON').item.json.campaign.id, strategy_id: $('Upsert Strategy').item.json.id }) ] }}"
+        }
+      },
+      "id": "a1-log-success",
+      "name": "Log + Outbox",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2200, 60],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.PUBLIC_WEBHOOK_BASE || 'http://localhost:5678') + '/webhook/agent-2-content-producer' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Content-Type", "value": "application/json" },
+            { "name": "X-Internal-Secret", "value": "={{ $env.INTERNAL_WEBHOOK_SECRET || '' }}" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ event: 'strategy_ready', campaign_id: $('Parse Strategy JSON').item.json.campaign.id, strategy_id: $('Upsert Strategy').item.json.id }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "a1-fire-agent2",
+      "name": "Fire Agent 2 Webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [2440, 60]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, status: 'strategy_ready', campaign_id: $('Parse Strategy JSON').item.json.campaign.id, strategy_id: $('Upsert Strategy').item.json.id, strategy: $('Parse Strategy JSON').item.json.data } }}",
+        "options": {}
+      },
+      "id": "a1-respond-ok",
+      "name": "Respond Success",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2680, 60]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE campaigns\nSET status = 'blocked_missing_info',\n    blocked_reason = $2\nWHERE id = $1::uuid;\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES ('campaign_strategist','llm_blocked_missing_info','campaign',$1::uuid,$3::jsonb,'blocked_missing_info')\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.campaign.id, $json.data.message || 'LLM reported missing info', JSON.stringify($json.data) ] }}"
+        }
+      },
+      "id": "a1-llm-blocked",
+      "name": "LLM Blocked Persist",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1720, 280],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, status: 'blocked_missing_info', campaign_id: $('Parse Strategy JSON').item.json.campaign.id, details: $('Parse Strategy JSON').item.json.data } }}",
+        "options": {}
+      },
+      "id": "a1-respond-llm-blocked",
+      "name": "Respond LLM Blocked",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1960, 280]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Load Campaign", "type": "main", "index": 0 }]]
+    },
+    "Load Campaign": {
+      "main": [[{ "node": "Validate Critical Inputs", "type": "main", "index": 0 }]]
+    },
+    "Validate Critical Inputs": {
+      "main": [[{ "node": "Inputs Complete?", "type": "main", "index": 0 }]]
+    },
+    "Inputs Complete?": {
+      "main": [
+        [{ "node": "LLM Strategy", "type": "main", "index": 0 }],
+        [{ "node": "Block Missing Info", "type": "main", "index": 0 }]
+      ]
+    },
+    "Block Missing Info": {
+      "main": [[{ "node": "Log Blocked", "type": "main", "index": 0 }]]
+    },
+    "Log Blocked": {
+      "main": [[{ "node": "Respond Blocked", "type": "main", "index": 0 }]]
+    },
+    "LLM Strategy": {
+      "main": [[{ "node": "Parse Strategy JSON", "type": "main", "index": 0 }]]
+    },
+    "Parse Strategy JSON": {
+      "main": [[{ "node": "Strategy OK?", "type": "main", "index": 0 }]]
+    },
+    "Strategy OK?": {
+      "main": [
+        [{ "node": "Upsert Strategy", "type": "main", "index": 0 }],
+        [{ "node": "LLM Blocked Persist", "type": "main", "index": 0 }]
+      ]
+    },
+    "Upsert Strategy": {
+      "main": [[{ "node": "Mark Strategy Ready", "type": "main", "index": 0 }]]
+    },
+    "Mark Strategy Ready": {
+      "main": [[{ "node": "Log + Outbox", "type": "main", "index": 0 }]]
+    },
+    "Log + Outbox": {
+      "main": [[{ "node": "Fire Agent 2 Webhook", "type": "main", "index": 0 }]]
+    },
+    "Fire Agent 2 Webhook": {
+      "main": [[{ "node": "Respond Success", "type": "main", "index": 0 }]]
+    },
+    "LLM Blocked Persist": {
+      "main": [[{ "node": "Respond LLM Blocked", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "ERROR — Agent Failure Logger"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "agent-1" },
+    { "name": "content-to-sales" }
+  ]
+}

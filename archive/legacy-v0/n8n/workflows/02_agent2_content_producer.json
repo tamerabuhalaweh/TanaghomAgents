@@ -1,0 +1,301 @@
+{
+  "name": "Agent 2 — Content Producer",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agent-2-content-producer",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a2-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 300],
+      "webhookId": "agent-2-content-producer"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 9 * * *" }]
+        }
+      },
+      "id": "a2-schedule",
+      "name": "Daily Cadence Schedule",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 520]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || items[0].json || {};\nconst isRegen = body.event === 'content_rejected' || body.mode === 'regenerate';\nreturn [{\n  json: {\n    mode: isRegen ? 'regenerate' : (body.event === 'strategy_ready' ? 'from_strategy' : 'cadence'),\n    campaign_id: body.campaign_id || null,\n    content_item_id: body.content_item_id || null,\n    rejection_reason: body.rejection_reason || null,\n    strategy_id: body.strategy_id || null\n  }\n}];"
+      },
+      "id": "a2-normalize",
+      "name": "Normalize Trigger",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { mode: 'cadence', campaign_id: null, content_item_id: null, rejection_reason: null } }];"
+      },
+      "id": "a2-normalize-sched",
+      "name": "Normalize Schedule",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 520]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "mode-regen",
+              "leftValue": "={{ $json.mode }}",
+              "rightValue": "regenerate",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a2-if-regen",
+      "name": "Is Regeneration?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [480, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  ci.*,\n  c.name AS campaign_name,\n  c.brief,\n  c.product_type,\n  c.target_audience,\n  cs.id AS strategy_id,\n  cs.positioning,\n  cs.key_messages,\n  cs.channels,\n  cs.posting_cadence,\n  cs.content_pillars\nFROM content_items ci\nJOIN campaigns c ON c.id = ci.campaign_id\nLEFT JOIN campaign_strategies cs ON cs.campaign_id = c.id\nWHERE ci.id = $1::uuid;",
+        "options": {
+          "queryReplacement": "={{ [$json.content_item_id] }}"
+        }
+      },
+      "id": "a2-load-rejected",
+      "name": "Load Rejected Item",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [740, 160],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  c.id AS campaign_id,\n  c.name AS campaign_name,\n  c.brief,\n  c.product_type,\n  c.target_audience,\n  c.status AS campaign_status,\n  cs.id AS strategy_id,\n  cs.positioning,\n  cs.key_messages,\n  cs.channels,\n  cs.posting_cadence,\n  cs.content_pillars\nFROM campaigns c\nJOIN campaign_strategies cs ON cs.campaign_id = c.id\nWHERE ($1::uuid IS NULL AND c.status IN ('strategy_ready', 'content_in_progress', 'active'))\n   OR c.id = $1::uuid\nORDER BY c.updated_at DESC\nLIMIT 5;",
+        "options": {
+          "queryReplacement": "={{ [$json.campaign_id] }}"
+        }
+      },
+      "id": "a2-load-strategy",
+      "name": "Load Strategy Context",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [740, 400],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const row = items[0].json;\nif (!row || !row.campaign_id && !row.id) {\n  return [{ json: { skip: true, reason: 'No campaign/strategy context' } }];\n}\nconst isRegen = !!row.rejection_reason || !!$('Normalize Trigger').isExecuted && $('Normalize Trigger').item.json.mode === 'regenerate';\nconst rejection = $('Normalize Trigger').isExecuted ? $('Normalize Trigger').item.json.rejection_reason : null;\nconst campaign = {\n  id: row.campaign_id || row.id,\n  name: row.campaign_name,\n  brief: row.brief,\n  product_type: row.product_type,\n  target_audience: row.target_audience,\n  strategy: {\n    id: row.strategy_id,\n    positioning: row.positioning,\n    key_messages: row.key_messages,\n    channels: row.channels,\n    posting_cadence: row.posting_cadence,\n    content_pillars: row.content_pillars\n  },\n  regenerate: isRegen || !!rejection,\n  previous_draft: isRegen || rejection ? {\n    content_item_id: row.id,\n    channel: row.channel,\n    content_type: row.content_type,\n    content_pillar: row.content_pillar,\n    draft_copy: row.draft_copy,\n    media_brief: row.media_brief,\n    rejection_reason: rejection || row.rejection_reason\n  } : null\n};\nif (!campaign.strategy.positioning) {\n  return [{ json: { skip: true, reason: 'No strategy row — Agent 1 must run first', campaign_id: campaign.id } }];\n}\nreturn [{ json: { skip: false, campaign } }];"
+      },
+      "id": "a2-build-ctx",
+      "name": "Build LLM Context",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "skip",
+              "leftValue": "={{ $json.skip }}",
+              "rightValue": false,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a2-if-proceed",
+      "name": "Proceed?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1220, 300]
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, skipped: true, reason: $json.reason } }}",
+        "options": {}
+      },
+      "id": "a2-respond-skip",
+      "name": "Respond Skipped",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1460, 480]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.OPENAI_BASE_URL || 'https://api.openai.com/v1') + '/chat/completions' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $env.LLM_MODEL_CONTENT || $env.LLM_MODEL || 'gpt-4o', temperature: 0.7, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: 'You are the Content Producer. Produce drafts + media briefs only. Never publish. Output strict JSON: {\"items\":[{\"channel\":\"instagram\",\"content_type\":\"post|reel_script|ad_copy|email\",\"content_pillar\":\"...\",\"draft_copy\":\"...\",\"media_brief\":\"...\",\"scheduled_time_suggestion\":null}]}. Match channel norms. Include clear CTA. Media briefs describe visuals only. If rejection_reason is provided, produce ONE improved replacement item for the same channel/pillar.' }, { role: 'user', content: JSON.stringify($json.campaign) } ] }) }}",
+        "options": { "timeout": 180000 }
+      },
+      "id": "a2-llm",
+      "name": "LLM Generate Drafts",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1460, 180],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OPENAI_HEADER_CRED_ID",
+          "name": "OpenAI API Key Header"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const raw = items[0].json.choices?.[0]?.message?.content || '';\nlet text = String(raw).trim();\nif (text.startsWith('```')) text = text.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '');\nconst data = JSON.parse(text);\nconst list = Array.isArray(data) ? data : data.items;\nif (!Array.isArray(list) || !list.length) throw new Error('No content items returned');\nconst campaign = $('Build LLM Context').item.json.campaign;\nconst parentId = campaign.previous_draft?.content_item_id || null;\nreturn list.map((item) => ({\n  json: {\n    campaign_id: campaign.id,\n    strategy_id: campaign.strategy.id,\n    channel: String(item.channel || '').toLowerCase(),\n    content_type: item.content_type || 'post',\n    content_pillar: item.content_pillar || campaign.previous_draft?.content_pillar || null,\n    draft_copy: item.draft_copy,\n    media_brief: item.media_brief || null,\n    scheduled_time: item.scheduled_time_suggestion || null,\n    parent_item_id: parentId,\n    status: 'pending_approval'\n  }\n}));"
+      },
+      "id": "a2-parse",
+      "name": "Parse Content Items",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1700, 180]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO content_items (\n  campaign_id, strategy_id, channel, content_type, content_pillar,\n  draft_copy, media_brief, status, scheduled_time, parent_item_id\n) VALUES (\n  $1::uuid, $2::uuid, $3, $4, $5,\n  $6, $7, 'pending_approval', $8::timestamptz, $9::uuid\n)\nRETURNING id, campaign_id, channel, status, created_at;",
+        "options": {
+          "queryReplacement": "={{ [ $json.campaign_id, $json.strategy_id, $json.channel, $json.content_type, $json.content_pillar, $json.draft_copy, $json.media_brief, $json.scheduled_time, $json.parent_item_id ] }}"
+        }
+      },
+      "id": "a2-insert",
+      "name": "Insert Pending Items",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1940, 180],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE campaigns\nSET status = CASE WHEN status IN ('strategy_ready','draft') THEN 'content_in_progress' ELSE status END\nWHERE id = $1::uuid;\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'content_producer',\n  'queue_for_approval',\n  'content_item',\n  $2::uuid,\n  $3::jsonb,\n  'blocked_pending_approval'\n)\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.campaign_id, $json.id, JSON.stringify({ channel: $json.channel, status: $json.status }) ] }}"
+        }
+      },
+      "id": "a2-log",
+      "name": "Log Approval Queue",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2180, 180],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, message: 'Drafts queued for human approval. Agent 2 does not publish.', items_created: $('Insert Pending Items').all().map(i => ({ id: i.json.id, channel: i.json.channel, status: i.json.status })) } }}",
+        "options": {}
+      },
+      "id": "a2-respond-ok",
+      "name": "Respond Queued",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2420, 180]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Normalize Trigger", "type": "main", "index": 0 }]]
+    },
+    "Daily Cadence Schedule": {
+      "main": [[{ "node": "Normalize Schedule", "type": "main", "index": 0 }]]
+    },
+    "Normalize Trigger": {
+      "main": [[{ "node": "Is Regeneration?", "type": "main", "index": 0 }]]
+    },
+    "Normalize Schedule": {
+      "main": [[{ "node": "Load Strategy Context", "type": "main", "index": 0 }]]
+    },
+    "Is Regeneration?": {
+      "main": [
+        [{ "node": "Load Rejected Item", "type": "main", "index": 0 }],
+        [{ "node": "Load Strategy Context", "type": "main", "index": 0 }]
+      ]
+    },
+    "Load Rejected Item": {
+      "main": [[{ "node": "Build LLM Context", "type": "main", "index": 0 }]]
+    },
+    "Load Strategy Context": {
+      "main": [[{ "node": "Build LLM Context", "type": "main", "index": 0 }]]
+    },
+    "Build LLM Context": {
+      "main": [[{ "node": "Proceed?", "type": "main", "index": 0 }]]
+    },
+    "Proceed?": {
+      "main": [
+        [{ "node": "LLM Generate Drafts", "type": "main", "index": 0 }],
+        [{ "node": "Respond Skipped", "type": "main", "index": 0 }]
+      ]
+    },
+    "LLM Generate Drafts": {
+      "main": [[{ "node": "Parse Content Items", "type": "main", "index": 0 }]]
+    },
+    "Parse Content Items": {
+      "main": [[{ "node": "Insert Pending Items", "type": "main", "index": 0 }]]
+    },
+    "Insert Pending Items": {
+      "main": [[{ "node": "Log Approval Queue", "type": "main", "index": 0 }]]
+    },
+    "Log Approval Queue": {
+      "main": [[{ "node": "Respond Queued", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "ERROR — Agent Failure Logger"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "agent-2" },
+    { "name": "content-to-sales" }
+  ]
+}

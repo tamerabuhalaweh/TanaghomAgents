@@ -1,0 +1,692 @@
+{
+  "name": "Agent 4 — Sales & CRM",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agent-4-sales-crm",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a4-webhook",
+      "name": "Webhook New Lead",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 200],
+      "webhookId": "agent-4-sales-crm"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 * * * *" }]
+        }
+      },
+      "id": "a4-hourly",
+      "name": "Hourly Follow-up Sweep",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 420]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "0 8 * * 1" }]
+        }
+      },
+      "id": "a4-weekly",
+      "name": "Weekly Sales Report",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 640]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || items[0].json || {};\nreturn [{ json: { mode: 'new_lead', lead_id: body.lead_id, campaign_id: body.campaign_id, event: body.event || 'new_lead' } }];"
+      },
+      "id": "a4-norm-lead",
+      "name": "Mode: New Lead",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 200]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { mode: 'follow_up_sweep' } }];"
+      },
+      "id": "a4-norm-sweep",
+      "name": "Mode: Follow-up Sweep",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 420]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { mode: 'weekly_report' } }];"
+      },
+      "id": "a4-norm-report",
+      "name": "Mode: Weekly Report",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 640]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT\n  l.*,\n  c.name AS campaign_name,\n  c.brief AS campaign_brief,\n  c.product_type,\n  c.target_audience,\n  c.revenue_target,\n  c.currency,\n  c.is_staging,\n  c.environment\nFROM leads l\nJOIN campaigns c ON c.id = l.campaign_id\nWHERE l.id = $1::uuid\n  AND l.status NOT IN ('won', 'lost');",
+        "options": {
+          "queryReplacement": "={{ [$json.lead_id] }}"
+        }
+      },
+      "id": "a4-load-lead",
+      "name": "Load Lead + Campaign",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [500, 200],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "has",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4-if-lead",
+      "name": "Lead Actionable?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [740, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES ('sales_crm', 'skip_lead', 'lead', $1::uuid, $2::jsonb, 'skipped');",
+        "options": {
+          "queryReplacement": "={{ [ $('Mode: New Lead').item.json.lead_id, JSON.stringify({ reason: 'Lead missing, won, or lost' }) ] }}"
+        }
+      },
+      "id": "a4-log-skip",
+      "name": "Log Skip Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1000, 360],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, skipped: true, reason: 'Lead not actionable' } }}",
+        "options": {}
+      },
+      "id": "a4-respond-skip",
+      "name": "Respond Skip",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1240, 360]
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = items[0].json;\n// IDEMPOTENCY: if ghl_contact_id already set, skip create — update only path later\nreturn [{\n  json: {\n    lead,\n    needs_ghl_create: !lead.ghl_contact_id,\n    is_staging: lead.is_staging === true || lead.environment === 'staging'\n  }\n}];"
+      },
+      "id": "a4-idem-ghl",
+      "name": "GHL Idempotency Check",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "need",
+              "leftValue": "={{ $json.needs_ghl_create }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4-if-ghl",
+      "name": "Need GHL Create?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1240, 100]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.GHL_API_BASE || 'https://services.leadconnectorhq.com') + '/contacts/upsert' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Version", "value": "2021-07-28" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ locationId: $env.GHL_LOCATION_ID, firstName: ($json.lead.name || 'Lead').split(' ')[0], lastName: ($json.lead.name || '').split(' ').slice(1).join(' ') || undefined, email: $json.lead.contact_email || undefined, phone: $json.lead.contact_phone || undefined, source: $json.is_staging ? 'cts_staging' : 'content_to_sales_agent', tags: [ $json.is_staging ? 'env:staging' : 'env:production', 'campaign:' + $json.lead.campaign_id, 'temp:' + ($json.lead.temperature || 'warm') ] }) }}",
+        "options": {
+          "timeout": 30000,
+          "response": { "response": { "neverError": true, "fullResponse": true } }
+        }
+      },
+      "id": "a4-ghl-upsert",
+      "name": "GHL Upsert Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1500, 0],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GHL_HEADER_CRED_ID",
+          "name": "GoHighLevel API Header"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('GHL Idempotency Check').item.json;\nconst lead = ctx.lead;\nlet ghlId = lead.ghl_contact_id;\nlet ghlOk = true;\nlet ghlError = null;\n\nif (ctx.needs_ghl_create) {\n  const resp = items[0].json;\n  const statusCode = resp.statusCode || 200;\n  const body = resp.body || resp;\n  if (statusCode === 429) {\n    ghlOk = false;\n    ghlError = 'rate_limited';\n  } else if (statusCode >= 400) {\n    ghlOk = false;\n    ghlError = body.message || body.error || `HTTP ${statusCode}`;\n  } else {\n    ghlId = body.contact?.id || body.id || null;\n    if (!ghlId) { ghlOk = false; ghlError = 'No contact id in GHL response'; }\n  }\n}\n\nreturn [{ json: { lead, ghl_contact_id: ghlId, ghl_ok: ghlOk, ghl_error: ghlError, is_staging: ctx.is_staging } }];"
+      },
+      "id": "a4-parse-ghl",
+      "name": "Parse GHL",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1740, 100]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads SET ghl_contact_id = COALESCE($2, ghl_contact_id) WHERE id = $1::uuid RETURNING id, ghl_contact_id;",
+        "options": {
+          "queryReplacement": "={{ [ $json.lead.id, $json.ghl_contact_id ] }}"
+        }
+      },
+      "id": "a4-store-ghl",
+      "name": "Store ghl_contact_id",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1980, 100],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- First-touch: only approved template #1 in sequence. NEVER freestyle sales copy.\nSELECT mt.*\nFROM message_templates mt\nWHERE mt.sequence_key = COALESCE($1, 'default_sales')\n  AND mt.status = 'approved'\n  AND mt.sequence_order = 1\nORDER BY mt.version DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [ $('Parse GHL').item.json.lead.template_sequence_key || 'default_sales' ] }}"
+        }
+      },
+      "id": "a4-load-template",
+      "name": "Load Approved First-Touch Template",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2220, 100],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const ghl = $('Parse GHL').item.json;\nconst lead = ghl.lead;\nconst tpl = items[0].json;\n\nif (!tpl || !tpl.template_key || tpl.status !== 'approved') {\n  return [{\n    json: {\n      blocked: true,\n      lead_id: lead.id,\n      reason: 'No approved first-touch template. Agent 4 will not freelance sales copy.',\n      ghl_contact_id: ghl.ghl_contact_id\n    }\n  }];\n}\n\nconst booking = $env.BOOKING_LINK || 'https://example.com/book';\nconst rendered = String(tpl.body)\n  .replaceAll('{{name}}', lead.name || 'there')\n  .replaceAll('{{campaign_name}}', lead.campaign_name || 'our program')\n  .replaceAll('{{booking_link}}', booking);\n\nconst subject = tpl.subject\n  ? String(tpl.subject)\n      .replaceAll('{{name}}', lead.name || 'there')\n      .replaceAll('{{campaign_name}}', lead.campaign_name || 'our program')\n  : null;\n\n// Staging: never send real outreach — log only\nif (ghl.is_staging || lead.environment === 'staging') {\n  return [{\n    json: {\n      blocked: false,\n      dry_run: true,\n      lead_id: lead.id,\n      campaign_id: lead.campaign_id,\n      ghl_contact_id: ghl.ghl_contact_id,\n      template_key: tpl.template_key,\n      template_version: tpl.version,\n      channel: tpl.channel,\n      subject,\n      rendered_body: rendered,\n      ghl_workflow_id: tpl.ghl_workflow_id || $env.GHL_DEFAULT_WORKFLOW_ID || null,\n      days_after_prev: tpl.days_after_prev || 2,\n      sequence_order: tpl.sequence_order || 1\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    blocked: false,\n    dry_run: false,\n    lead_id: lead.id,\n    campaign_id: lead.campaign_id,\n    ghl_contact_id: ghl.ghl_contact_id,\n    template_key: tpl.template_key,\n    template_version: tpl.version,\n    channel: tpl.channel,\n    subject,\n    rendered_body: rendered,\n    ghl_workflow_id: tpl.ghl_workflow_id || $env.GHL_DEFAULT_WORKFLOW_ID || null,\n    days_after_prev: tpl.days_after_prev || 2,\n    sequence_order: tpl.sequence_order || 1\n  }\n}];"
+      },
+      "id": "a4-render-template",
+      "name": "Render Template (No Freelance)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [2460, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "blocked",
+              "leftValue": "={{ $json.blocked }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4-if-tpl-blocked",
+      "name": "Template Blocked?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2700, 100]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO sales_activities (lead_id, activity_type, channel, notes, outcome, payload)\nVALUES ($1::uuid, 'template_blocked', 'system', $2, 'blocked', $3::jsonb);\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result, error_message)\nVALUES ('sales_crm', 'template_blocked', 'lead', $1::uuid, $3::jsonb, 'blocked_pending_approval', $2);",
+        "options": {
+          "queryReplacement": "={{ [ $json.lead_id, $json.reason, JSON.stringify({ reason: $json.reason }) ] }}"
+        }
+      },
+      "id": "a4-log-tpl-block",
+      "name": "Log Template Blocked",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2940, 240],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: false, blocked: true, reason: $('Render Template (No Freelance)').item.json.reason } }}",
+        "options": {}
+      },
+      "id": "a4-respond-tpl-block",
+      "name": "Respond Template Blocked",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [3180, 240]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "dry",
+              "leftValue": "={{ $json.dry_run }}",
+              "rightValue": false,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4-if-send",
+      "name": "Live Send?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2940, 40]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.GHL_API_BASE || 'https://services.leadconnectorhq.com') + '/contacts/' + $json.ghl_contact_id + '/workflow/' + $json.ghl_workflow_id }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Version", "value": "2021-07-28" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={}",
+        "options": {
+          "timeout": 30000,
+          "response": { "response": { "neverError": true, "fullResponse": true } }
+        }
+      },
+      "id": "a4-ghl-workflow",
+      "name": "GHL Trigger Approved Workflow",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [3180, -40],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "GHL_HEADER_CRED_ID",
+          "name": "GoHighLevel API Header"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads SET\n  status = 'contacted',\n  temperature = CASE WHEN temperature = 'cold' THEN 'warm' ELSE temperature END,\n  last_touch_at = now(),\n  follow_up_step = GREATEST(follow_up_step, $2),\n  next_follow_up_at = now() + ($3 || ' days')::interval,\n  available_for_requeue = false,\n  notes = COALESCE(notes,'') || E'\\n[' || now()::text || '] first_touch template=' || $4 || CASE WHEN $5 THEN ' (staging dry-run)' ELSE '' END\nWHERE id = $1::uuid;\n\nINSERT INTO sales_activities (\n  lead_id, activity_type, channel, notes, outcome,\n  template_key, template_version, rendered_body, payload\n) VALUES (\n  $1::uuid, 'outreach', $6, $7, $8,\n  $4, $9, $10, $11::jsonb\n);\n\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'sales_crm',\n  CASE WHEN $5 THEN 'first_touch_dry_run' ELSE 'first_touch' END,\n  'lead',\n  $1::uuid,\n  $11::jsonb,\n  'success'\n);",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.lead_id,\n  $json.sequence_order,\n  String($json.days_after_prev || 2),\n  $json.template_key,\n  $json.dry_run,\n  $json.channel === 'ghl_automation' ? 'ghl_automation' : ($json.channel || 'whatsapp'),\n  ($json.dry_run ? '[STAGING DRY-RUN] ' : '') + 'template=' + $json.template_key,\n  $json.dry_run ? 'dry_run' : 'sent',\n  $json.template_version,\n  $json.rendered_body,\n  JSON.stringify({ template_key: $json.template_key, dry_run: $json.dry_run, ghl_contact_id: $json.ghl_contact_id, channel: $json.channel })\n] }}"
+        }
+      },
+      "id": "a4-log-touch",
+      "name": "Log Touch + Update Lead",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [3420, 40],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, lead_id: $('Render Template (No Freelance)').item.json.lead_id, template_key: $('Render Template (No Freelance)').item.json.template_key, dry_run: $('Render Template (No Freelance)').item.json.dry_run, ghl_contact_id: $('Render Template (No Freelance)').item.json.ghl_contact_id } }}",
+        "options": {}
+      },
+      "id": "a4-respond-ok",
+      "name": "Respond First Touch OK",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [3660, 40]
+    },
+
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Follow-up cadence + temperature classification\n-- no response after N days → cold; meeting booked activities → qualified handled separately\nWITH due AS (\n  SELECT l.*, c.name AS campaign_name, c.is_staging, c.environment\n  FROM leads l\n  JOIN campaigns c ON c.id = l.campaign_id\n  WHERE l.status IN ('new', 'contacted', 'qualified')\n    AND (l.next_follow_up_at IS NULL OR l.next_follow_up_at <= now())\n    AND l.available_for_requeue = false\n  ORDER BY l.next_follow_up_at NULLS FIRST\n  LIMIT 50\n),\nclassified AS (\n  SELECT d.*,\n    CASE\n      WHEN d.last_inbound_at IS NOT NULL AND d.last_inbound_at > coalesce(d.last_touch_at, d.created_at) THEN 'warm'\n      WHEN coalesce(d.last_touch_at, d.created_at) < now() - interval '5 days' THEN 'cold'\n      ELSE coalesce(d.temperature, 'warm')\n    END AS new_temperature,\n    EXTRACT(DAY FROM now() - coalesce(d.last_touch_at, d.created_at))::int AS computed_no_response_days\n  FROM due d\n)\nSELECT * FROM classified;",
+        "options": {}
+      },
+      "id": "a4-load-due",
+      "name": "Load Due Follow-ups",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [500, 420],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT mt.*\nFROM message_templates mt\nWHERE mt.sequence_key = COALESCE($1, 'default_sales')\n  AND mt.status = 'approved'\n  AND mt.sequence_order = $2\nORDER BY mt.version DESC\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [ $json.template_sequence_key || 'default_sales', Number($json.follow_up_step || 0) + 1 ] }}"
+        }
+      },
+      "id": "a4-next-tpl",
+      "name": "Load Next Approved Template",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [760, 420],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const lead = $('Load Due Follow-ups').item.json;\nif (!lead || !lead.id) {\n  return [{ json: { skip: true, reason: 'no_due_leads' } }];\n}\nconst tpl = items[0].json;\nconst noResp = Number(lead.computed_no_response_days || lead.no_response_days || 0);\nconst temp = lead.new_temperature || lead.temperature || 'warm';\n\n// Stall path: after last template or cold for too long → nurture/requeue (never abandon)\nif (!tpl || !tpl.template_key) {\n  return [{\n    json: {\n      skip: false,\n      action: 'nurture_requeue',\n      lead_id: lead.id,\n      campaign_id: lead.campaign_id,\n      temperature: temp,\n      no_response_days: noResp,\n      reason: 'sequence_exhausted_or_no_approved_template'\n    }\n  }];\n}\n\nif (temp === 'cold' && noResp >= 7) {\n  return [{\n    json: {\n      skip: false,\n      action: 'nurture_requeue',\n      lead_id: lead.id,\n      campaign_id: lead.campaign_id,\n      temperature: 'cold',\n      no_response_days: noResp,\n      reason: 'no_response_cold'\n    }\n  }];\n}\n\nconst booking = $env.BOOKING_LINK || 'https://example.com/book';\nconst rendered = String(tpl.body)\n  .replaceAll('{{name}}', lead.name || 'there')\n  .replaceAll('{{campaign_name}}', lead.campaign_name || 'our program')\n  .replaceAll('{{booking_link}}', booking);\n\nconst dry = lead.is_staging === true || lead.environment === 'staging';\nreturn [{\n  json: {\n    skip: false,\n    action: 'follow_up',\n    dry_run: dry,\n    lead_id: lead.id,\n    campaign_id: lead.campaign_id,\n    ghl_contact_id: lead.ghl_contact_id,\n    temperature: temp,\n    no_response_days: noResp,\n    template_key: tpl.template_key,\n    template_version: tpl.version,\n    channel: tpl.channel,\n    rendered_body: rendered,\n    sequence_order: tpl.sequence_order,\n    days_after_prev: tpl.days_after_prev || 2,\n    ghl_workflow_id: tpl.ghl_workflow_id || null\n  }\n}];"
+      },
+      "id": "a4-decide-follow",
+      "name": "Decide Follow-up or Requeue",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1000, 420]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "act",
+              "leftValue": "={{ $json.action }}",
+              "rightValue": "nurture_requeue",
+              "operator": { "type": "string", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a4-if-nurture",
+      "name": "Nurture Path?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1240, 420]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- Non-buyers are NEVER lost without a path back\nUPDATE leads SET\n  status = 'nurture',\n  temperature = $2,\n  available_for_requeue = true,\n  next_follow_up_at = NULL,\n  no_response_days = $3,\n  last_touch_at = now(),\n  notes = COALESCE(notes,'') || E'\\n[' || now()::text || '] nurture_requeue: ' || $4\nWHERE id = $1::uuid;\n\nINSERT INTO sales_activities (lead_id, activity_type, channel, notes, outcome, payload)\nVALUES ($1::uuid, 'nurture_requeue', 'system', $4, 'nurture', $5::jsonb);\n\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES ('sales_crm', 'nurture_requeue', 'lead', $1::uuid, $5::jsonb, 'success');",
+        "options": {
+          "queryReplacement": "={{ [ $json.lead_id, $json.temperature || 'cold', $json.no_response_days || 0, $json.reason, JSON.stringify({ reason: $json.reason, available_for_requeue: true }) ] }}"
+        }
+      },
+      "id": "a4-do-nurture",
+      "name": "Flag Requeue + Nurture",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1500, 520],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE leads SET\n  status = 'contacted',\n  temperature = $2,\n  no_response_days = $3,\n  last_touch_at = now(),\n  follow_up_step = $4,\n  next_follow_up_at = now() + ($5 || ' days')::interval\nWHERE id = $1::uuid;\n\nINSERT INTO sales_activities (\n  lead_id, activity_type, channel, notes, outcome,\n  template_key, template_version, rendered_body, payload\n) VALUES (\n  $1::uuid, 'follow_up', $6,\n  CASE WHEN $7 THEN '[STAGING DRY-RUN] ' ELSE '' END || 'template=' || $8,\n  CASE WHEN $7 THEN 'dry_run' ELSE 'sent' END,\n  $8, $9, $10, $11::jsonb\n);\n\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES ('sales_crm', CASE WHEN $7 THEN 'follow_up_dry_run' ELSE 'follow_up' END, 'lead', $1::uuid, $11::jsonb, 'success');",
+        "options": {
+          "queryReplacement": "={{ [\n  $json.lead_id,\n  $json.temperature,\n  $json.no_response_days,\n  $json.sequence_order,\n  String($json.days_after_prev || 2),\n  $json.channel || 'whatsapp',\n  $json.dry_run,\n  $json.template_key,\n  $json.template_version,\n  $json.rendered_body,\n  JSON.stringify({ template_key: $json.template_key, dry_run: $json.dry_run })\n] }}"
+        }
+      },
+      "id": "a4-do-follow",
+      "name": "Log Follow-up Touch",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1500, 320],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "WITH bounds AS (\n  SELECT date_trunc('week', now()) - interval '7 days' AS period_start,\n         date_trunc('week', now()) AS period_end\n),\ncampaign_stats AS (\n  SELECT\n    c.id AS campaign_id,\n    c.name,\n    c.revenue_target,\n    c.currency,\n    c.environment,\n    count(*) FILTER (WHERE l.status = 'won') AS won_count,\n    count(*) FILTER (WHERE l.status = 'lost') AS lost_count,\n    count(*) FILTER (WHERE l.status = 'nurture') AS nurture_count,\n    count(*) FILTER (WHERE l.status IN ('new','contacted','qualified')) AS in_progress,\n    coalesce(sum(l.revenue_amount) FILTER (WHERE l.status = 'won'), 0) AS revenue_won,\n    count(*) FILTER (WHERE l.available_for_requeue) AS requeue_pool\n  FROM campaigns c\n  LEFT JOIN leads l ON l.campaign_id = c.id\n  GROUP BY c.id\n),\nagg AS (\n  SELECT\n    (SELECT period_start FROM bounds) AS period_start,\n    (SELECT period_end FROM bounds) AS period_end,\n    sum(won_count)::int AS won_count,\n    sum(lost_count)::int AS lost_count,\n    sum(nurture_count)::int AS nurture_count,\n    sum(in_progress)::int AS in_progress,\n    sum(revenue_won) AS revenue_won,\n    sum(revenue_target) AS revenue_target,\n    sum(requeue_pool)::int AS requeue_pool,\n    jsonb_agg(jsonb_build_object(\n      'campaign_id', campaign_id,\n      'name', name,\n      'won', won_count,\n      'lost', lost_count,\n      'nurture', nurture_count,\n      'in_progress', in_progress,\n      'revenue_won', revenue_won,\n      'revenue_target', revenue_target,\n      'requeue_pool', requeue_pool,\n      'environment', environment\n    )) AS by_campaign\n  FROM campaign_stats\n)\nINSERT INTO sales_reports (\n  period_start, period_end, campaign_id,\n  won_count, lost_count, nurture_count, in_progress,\n  revenue_won, revenue_target, currency, report_json, delivered_to\n)\nSELECT\n  period_start, period_end, NULL,\n  won_count, lost_count, nurture_count, in_progress,\n  revenue_won, revenue_target, 'USD',\n  jsonb_build_object(\n    'by_campaign', by_campaign,\n    'requeue_pool', requeue_pool,\n    'generated_at', now()\n  ),\n  '[]'::jsonb\nFROM agg\nRETURNING *;",
+        "options": {}
+      },
+      "id": "a4-gen-report",
+      "name": "Generate Weekly Report",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [500, 640],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ALERT_WEBHOOK_URL || $env.SALES_REPORT_WEBHOOK_URL || 'http://127.0.0.1:9/no-report-webhook' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ type: 'weekly_sales_report', report_id: $json.id, period_start: $json.period_start, period_end: $json.period_end, won: $json.won_count, lost: $json.lost_count, nurture: $json.nurture_count, in_progress: $json.in_progress, revenue_won: $json.revenue_won, revenue_target: $json.revenue_target, text: `Weekly sales: won=${$json.won_count} lost=${$json.lost_count} nurture=${$json.nurture_count} in_progress=${$json.in_progress} revenue=${$json.revenue_won}/${$json.revenue_target}` }) }}",
+        "options": {
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "a4-deliver-report",
+      "name": "Deliver Report Digest",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [760, 640]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE sales_reports\nSET delivered_to = delivered_to || $2::jsonb\nWHERE id = $1::uuid;\n\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES ('sales_crm', 'weekly_report', 'sales_report', $1::uuid, $3::jsonb, 'success');",
+        "options": {
+          "queryReplacement": "={{ [ $json.id || $('Generate Weekly Report').item.json.id, JSON.stringify([{ channel: 'webhook', at: new Date().toISOString() }]), JSON.stringify({ report_id: $('Generate Weekly Report').item.json.id, won: $('Generate Weekly Report').item.json.won_count, revenue_won: $('Generate Weekly Report').item.json.revenue_won }) ] }}"
+        }
+      },
+      "id": "a4-log-report",
+      "name": "Log Report Delivered",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1020, 640],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Webhook New Lead": {
+      "main": [[{ "node": "Mode: New Lead", "type": "main", "index": 0 }]]
+    },
+    "Hourly Follow-up Sweep": {
+      "main": [[{ "node": "Mode: Follow-up Sweep", "type": "main", "index": 0 }]]
+    },
+    "Weekly Sales Report": {
+      "main": [[{ "node": "Mode: Weekly Report", "type": "main", "index": 0 }]]
+    },
+    "Mode: New Lead": {
+      "main": [[{ "node": "Load Lead + Campaign", "type": "main", "index": 0 }]]
+    },
+    "Mode: Follow-up Sweep": {
+      "main": [[{ "node": "Load Due Follow-ups", "type": "main", "index": 0 }]]
+    },
+    "Mode: Weekly Report": {
+      "main": [[{ "node": "Generate Weekly Report", "type": "main", "index": 0 }]]
+    },
+    "Load Lead + Campaign": {
+      "main": [[{ "node": "Lead Actionable?", "type": "main", "index": 0 }]]
+    },
+    "Lead Actionable?": {
+      "main": [
+        [{ "node": "GHL Idempotency Check", "type": "main", "index": 0 }],
+        [{ "node": "Log Skip Lead", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Skip Lead": {
+      "main": [[{ "node": "Respond Skip", "type": "main", "index": 0 }]]
+    },
+    "GHL Idempotency Check": {
+      "main": [[{ "node": "Need GHL Create?", "type": "main", "index": 0 }]]
+    },
+    "Need GHL Create?": {
+      "main": [
+        [{ "node": "GHL Upsert Contact", "type": "main", "index": 0 }],
+        [{ "node": "Parse GHL", "type": "main", "index": 0 }]
+      ]
+    },
+    "GHL Upsert Contact": {
+      "main": [[{ "node": "Parse GHL", "type": "main", "index": 0 }]]
+    },
+    "Parse GHL": {
+      "main": [[{ "node": "Store ghl_contact_id", "type": "main", "index": 0 }]]
+    },
+    "Store ghl_contact_id": {
+      "main": [[{ "node": "Load Approved First-Touch Template", "type": "main", "index": 0 }]]
+    },
+    "Load Approved First-Touch Template": {
+      "main": [[{ "node": "Render Template (No Freelance)", "type": "main", "index": 0 }]]
+    },
+    "Render Template (No Freelance)": {
+      "main": [[{ "node": "Template Blocked?", "type": "main", "index": 0 }]]
+    },
+    "Template Blocked?": {
+      "main": [
+        [{ "node": "Log Template Blocked", "type": "main", "index": 0 }],
+        [{ "node": "Live Send?", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Template Blocked": {
+      "main": [[{ "node": "Respond Template Blocked", "type": "main", "index": 0 }]]
+    },
+    "Live Send?": {
+      "main": [
+        [{ "node": "GHL Trigger Approved Workflow", "type": "main", "index": 0 }],
+        [{ "node": "Log Touch + Update Lead", "type": "main", "index": 0 }]
+      ]
+    },
+    "GHL Trigger Approved Workflow": {
+      "main": [[{ "node": "Log Touch + Update Lead", "type": "main", "index": 0 }]]
+    },
+    "Log Touch + Update Lead": {
+      "main": [[{ "node": "Respond First Touch OK", "type": "main", "index": 0 }]]
+    },
+    "Load Due Follow-ups": {
+      "main": [[{ "node": "Load Next Approved Template", "type": "main", "index": 0 }]]
+    },
+    "Load Next Approved Template": {
+      "main": [[{ "node": "Decide Follow-up or Requeue", "type": "main", "index": 0 }]]
+    },
+    "Decide Follow-up or Requeue": {
+      "main": [[{ "node": "Nurture Path?", "type": "main", "index": 0 }]]
+    },
+    "Nurture Path?": {
+      "main": [
+        [{ "node": "Flag Requeue + Nurture", "type": "main", "index": 0 }],
+        [{ "node": "Log Follow-up Touch", "type": "main", "index": 0 }]
+      ]
+    },
+    "Generate Weekly Report": {
+      "main": [[{ "node": "Deliver Report Digest", "type": "main", "index": 0 }]]
+    },
+    "Deliver Report Digest": {
+      "main": [[{ "node": "Log Report Delivered", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "ERROR — Agent Failure Logger"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "agent-4" },
+    { "name": "content-to-sales" }
+  ]
+}

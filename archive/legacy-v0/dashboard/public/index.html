@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Content Approval — Human Checkpoint</title>
+  <link rel="stylesheet" href="/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark">◉</span>
+      <div>
+        <h1>Human Approval</h1>
+        <p class="sub">AI prepares · Humans approve · System records everything</p>
+      </div>
+    </div>
+    <nav class="tabs">
+      <button class="tab active" data-tab="queue">Approval queue</button>
+      <button class="tab" data-tab="pipeline">Campaign pipeline</button>
+      <button class="tab" data-tab="templates">Sales templates</button>
+      <button class="tab" data-tab="sales">Sales report</button>
+      <button class="tab" data-tab="audit">Audit log</button>
+    </nav>
+    <button id="refreshBtn" class="btn ghost">Refresh</button>
+  </header>
+
+  <main>
+    <section id="panel-queue" class="panel active">
+      <div class="panel-head">
+        <h2>Pending content</h2>
+        <span id="pendingCount" class="badge">0</span>
+      </div>
+      <div id="queueEmpty" class="empty hidden">
+        No items waiting for approval. Agent 2 will land drafts here.
+      </div>
+      <div id="queueList" class="cards"></div>
+    </section>
+
+    <section id="panel-pipeline" class="panel">
+      <div class="panel-head">
+        <h2>Campaign pipeline</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Campaign</th>
+              <th>Status</th>
+              <th>Type</th>
+              <th>Content</th>
+              <th>Pending</th>
+              <th>Posted</th>
+              <th>Leads</th>
+              <th>Won</th>
+            </tr>
+          </thead>
+          <tbody id="pipelineBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panel-templates" class="panel">
+      <div class="panel-head">
+        <h2>Sales message templates</h2>
+        <span class="badge">Agent 4 only sends approved</span>
+      </div>
+      <p class="hint">Same governance as content: no freelanced sales copy. Approve templates before outreach runs.</p>
+      <div id="templatesList" class="cards"></div>
+    </section>
+
+    <section id="panel-sales" class="panel">
+      <div class="panel-head">
+        <h2>Sales reports &amp; requeue pool</h2>
+      </div>
+      <div id="salesReportCards" class="cards"></div>
+      <div class="panel-head" style="margin-top:1.5rem">
+        <h2>Available for requeue</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Source campaign</th>
+              <th>Temp</th>
+              <th>Status</th>
+              <th>Email</th>
+              <th>Last touch</th>
+            </tr>
+          </thead>
+          <tbody id="requeueBody"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="panel-audit" class="panel">
+      <div class="panel-head">
+        <h2>Agent actions log</h2>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Time</th>
+              <th>Agent</th>
+              <th>Action</th>
+              <th>Entity</th>
+              <th>Result</th>
+            </tr>
+          </thead>
+          <tbody id="auditBody"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="rejectDialog">
+    <form method="dialog" id="rejectForm">
+      <h3>Reject content</h3>
+      <p>Rejection reason is required and is fed back to Agent 2 for regeneration.</p>
+      <textarea id="rejectReason" rows="4" placeholder="What should change?" required></textarea>
+      <div class="dialog-actions">
+        <button type="button" class="btn ghost" id="rejectCancel">Cancel</button>
+        <button type="submit" class="btn danger">Reject &amp; regenerate</button>
+      </div>
+    </form>
+  </dialog>
+
+  <div id="toast" class="toast hidden"></div>
+  <script src="/app.js"></script>
+</body>
+</html>

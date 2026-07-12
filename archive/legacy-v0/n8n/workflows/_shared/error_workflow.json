@@ -1,0 +1,150 @@
+{
+  "name": "ERROR — Agent Failure Logger",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "err-trigger",
+      "name": "Error Trigger",
+      "type": "n8n-nodes-base.errorTrigger",
+      "typeVersion": 1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const e = items[0].json;\nconst exec = e.execution || {};\nconst wf = e.workflow || {};\nconst lastNode = e.execution?.lastNodeExecuted || e.lastNodeExecuted || 'unknown';\nconst errMsg = e.execution?.error?.message || e.message || e.error?.message || JSON.stringify(e).slice(0, 800);\nconst workflowName = wf.name || e.workflow?.name || 'unknown_workflow';\nconst executionId = exec.id || e.executionId || null;\n\nreturn [{\n  json: {\n    agent_name: workflowName,\n    action_type: 'workflow_error',\n    entity_type: 'workflow_execution',\n    entity_id: null,\n    result: 'failed',\n    error_message: String(errMsg).slice(0, 2000),\n    payload: {\n      workflow_name: workflowName,\n      workflow_id: wf.id || null,\n      execution_id: executionId,\n      last_node: lastNode,\n      mode: e.mode || null\n    }\n  }\n}];"
+      },
+      "id": "err-normalize",
+      "name": "Normalize Error",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log\n  (agent_name, action_type, entity_type, entity_id, payload, result, error_message)\nVALUES ($1, $2, $3, $4::uuid, $5::jsonb, 'failed', $6)\nRETURNING id;\n\nINSERT INTO workflow_failure_counters (workflow_name, failure_count, last_error, last_failed_at)\nVALUES ($1, 1, $6, now())\nON CONFLICT (workflow_name) DO UPDATE SET\n  failure_count = workflow_failure_counters.failure_count + 1,\n  last_error = EXCLUDED.last_error,\n  last_failed_at = now()\nRETURNING workflow_name, failure_count;",
+        "options": {
+          "queryReplacement": "={{ [ $json.agent_name, $json.action_type, $json.entity_type, $json.entity_id, JSON.stringify($json.payload), $json.error_message ] }}"
+        }
+      },
+      "id": "err-log-db",
+      "name": "Log Failure + Counter",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [520, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT workflow_name, failure_count, last_error, alerted_at\nFROM workflow_failure_counters\nWHERE workflow_name = $1;",
+        "options": {
+          "queryReplacement": "={{ [$('Normalize Error').item.json.agent_name] }}"
+        }
+      },
+      "id": "err-load-counter",
+      "name": "Load Failure Counter",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [780, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "threshold",
+              "leftValue": "={{ Number($json.failure_count) }}",
+              "rightValue": 3,
+              "operator": { "type": "number", "operation": "gte" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "err-if-alert",
+      "name": "Repeated Failures?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1040, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.ALERT_WEBHOOK_URL || 'http://127.0.0.1:9/no-alert-configured' }}",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ text: `🚨 n8n agent failure (x${$json.failure_count}): ${$json.workflow_name}\\n${$json.last_error || $('Normalize Error').item.json.error_message}`, workflow: $json.workflow_name, failure_count: $json.failure_count, error: $json.last_error || $('Normalize Error').item.json.error_message }) }}",
+        "options": {
+          "timeout": 10000,
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "err-alert",
+      "name": "Notify Slack/Email Webhook",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1280, 200]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "UPDATE workflow_failure_counters\nSET alerted_at = now()\nWHERE workflow_name = $1;",
+        "options": {
+          "queryReplacement": "={{ [$('Normalize Error').item.json.agent_name] }}"
+        }
+      },
+      "id": "err-mark-alerted",
+      "name": "Mark Alerted",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1520, 200],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Error Trigger": {
+      "main": [[{ "node": "Normalize Error", "type": "main", "index": 0 }]]
+    },
+    "Normalize Error": {
+      "main": [[{ "node": "Log Failure + Counter", "type": "main", "index": 0 }]]
+    },
+    "Log Failure + Counter": {
+      "main": [[{ "node": "Load Failure Counter", "type": "main", "index": 0 }]]
+    },
+    "Load Failure Counter": {
+      "main": [[{ "node": "Repeated Failures?", "type": "main", "index": 0 }]]
+    },
+    "Repeated Failures?": {
+      "main": [
+        [{ "node": "Notify Slack/Email Webhook", "type": "main", "index": 0 }],
+        []
+      ]
+    },
+    "Notify Slack/Email Webhook": {
+      "main": [[{ "node": "Mark Alerted", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": [{ "name": "error-workflow" }, { "name": "content-to-sales" }]
+}

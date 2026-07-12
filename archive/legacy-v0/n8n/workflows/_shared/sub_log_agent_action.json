@@ -1,0 +1,55 @@
+{
+  "name": "SUB — Log Agent Action",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "sub-log-trigger",
+      "name": "When Called by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const i = items[0].json;\nconst required = ['agent_name', 'action_type', 'result'];\nfor (const k of required) {\n  if (!i[k]) throw new Error(`log_agent_action missing ${k}`);\n}\nconst allowed = ['success','failed','blocked_pending_approval','blocked_missing_info','skipped'];\nif (!allowed.includes(i.result)) throw new Error(`invalid result: ${i.result}`);\nreturn [{\n  json: {\n    agent_name: i.agent_name,\n    action_type: i.action_type,\n    entity_type: i.entity_type || null,\n    entity_id: i.entity_id || null,\n    payload: i.payload || {},\n    result: i.result,\n    error_message: i.error_message || null\n  }\n}];"
+      },
+      "id": "sub-log-validate",
+      "name": "Validate Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 300]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log\n  (agent_name, action_type, entity_type, entity_id, payload, result, error_message)\nVALUES ($1, $2, $3, $4::uuid, $5::jsonb, $6, $7)\nRETURNING id, created_at;",
+        "options": {
+          "queryReplacement": "={{ [ $json.agent_name, $json.action_type, $json.entity_type, $json.entity_id, JSON.stringify($json.payload || {}), $json.result, $json.error_message ] }}"
+        }
+      },
+      "id": "sub-log-insert",
+      "name": "Insert Audit Row",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [520, 300],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Called by Another Workflow": {
+      "main": [[{ "node": "Validate Payload", "type": "main", "index": 0 }]]
+    },
+    "Validate Payload": {
+      "main": [[{ "node": "Insert Audit Row", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": [{ "name": "sub-workflow" }, { "name": "content-to-sales" }]
+}

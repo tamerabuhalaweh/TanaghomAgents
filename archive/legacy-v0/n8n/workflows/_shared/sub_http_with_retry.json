@@ -1,0 +1,153 @@
+{
+  "name": "SUB — HTTP with 429 Retry",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "sub-http-trigger",
+      "name": "When Called by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const i = items[0].json;\nif (!i.url || !i.method) throw new Error('url and method required');\nreturn [{\n  json: {\n    url: i.url,\n    method: String(i.method).toUpperCase(),\n    headers: i.headers || {},\n    body: i.body != null ? i.body : null,\n    max_retries: Number(i.max_retries != null ? i.max_retries : 3),\n    attempt: Number(i.attempt || 0),\n    base_wait_ms: Number(i.base_wait_ms || 2000),\n    meta: i.meta || {}\n  }\n}];"
+      },
+      "id": "sub-http-prep",
+      "name": "Normalize Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "={{ $json.method }}",
+        "url": "={{ $json.url }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "={{ $json.headers['Content-Type'] || $json.headers['content-type'] || 'application/json' }}"
+            },
+            {
+              "name": "Authorization",
+              "value": "={{ $json.headers.Authorization || $json.headers.authorization || '' }}"
+            },
+            {
+              "name": "Version",
+              "value": "={{ $json.headers.Version || $json.headers.version || '' }}"
+            }
+          ]
+        },
+        "sendBody": "={{ $json.body != null }}",
+        "specifyBody": "json",
+        "jsonBody": "={{ $json.body != null ? JSON.stringify($json.body) : '{}' }}",
+        "options": {
+          "timeout": 60000,
+          "response": { "response": { "neverError": true, "fullResponse": true } }
+        }
+      },
+      "id": "sub-http-call",
+      "name": "HTTP Call",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const req = $('Normalize Request').item.json;\nconst resp = items[0].json;\nconst statusCode = resp.statusCode || resp.status || 0;\nconst body = resp.body !== undefined ? resp.body : resp;\nconst retryable = statusCode === 429 || statusCode >= 500;\nconst attempt = req.attempt;\nconst canRetry = retryable && attempt < req.max_retries;\n\nif (canRetry) {\n  const waitMs = req.base_wait_ms * Math.pow(2, attempt);\n  return [{\n    json: {\n      ok: false,\n      should_retry: true,\n      wait_ms: waitMs,\n      attempt: attempt + 1,\n      max_retries: req.max_retries,\n      statusCode,\n      url: req.url,\n      method: req.method,\n      headers: req.headers,\n      body: req.body,\n      base_wait_ms: req.base_wait_ms,\n      meta: req.meta,\n      error: statusCode === 429 ? 'rate_limited' : `http_${statusCode}`\n    }\n  }];\n}\n\nif (statusCode >= 400 || statusCode === 0) {\n  return [{\n    json: {\n      ok: false,\n      should_retry: false,\n      statusCode,\n      body,\n      error: body?.message || body?.error || `HTTP ${statusCode}`,\n      meta: req.meta\n    }\n  }];\n}\n\nreturn [{\n  json: {\n    ok: true,\n    should_retry: false,\n    statusCode,\n    body,\n    meta: req.meta\n  }\n}];"
+      },
+      "id": "sub-http-eval",
+      "name": "Evaluate Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "retry",
+              "leftValue": "={{ $json.should_retry }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "sub-http-if-retry",
+      "name": "Should Retry?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [960, 300]
+    },
+    {
+      "parameters": {
+        "amount": "={{ Math.ceil(($json.wait_ms || 2000) / 1000) }}",
+        "unit": "seconds"
+      },
+      "id": "sub-http-wait",
+      "name": "Backoff Wait",
+      "type": "n8n-nodes-base.wait",
+      "typeVersion": 1.1,
+      "position": [1200, 180],
+      "webhookId": "sub-http-backoff-wait"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Loop retry by returning same shape as Normalize Request output\nconst j = items[0].json;\nreturn [{\n  json: {\n    url: j.url,\n    method: j.method,\n    headers: j.headers,\n    body: j.body,\n    max_retries: j.max_retries,\n    attempt: j.attempt,\n    base_wait_ms: j.base_wait_ms,\n    meta: j.meta\n  }\n}];"
+      },
+      "id": "sub-http-reprep",
+      "name": "Reprep Retry",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1440, 180]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Final output (success or terminal failure)\nreturn items;"
+      },
+      "id": "sub-http-done",
+      "name": "Done",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1200, 400]
+    }
+  ],
+  "connections": {
+    "When Called by Another Workflow": {
+      "main": [[{ "node": "Normalize Request", "type": "main", "index": 0 }]]
+    },
+    "Normalize Request": {
+      "main": [[{ "node": "HTTP Call", "type": "main", "index": 0 }]]
+    },
+    "HTTP Call": {
+      "main": [[{ "node": "Evaluate Response", "type": "main", "index": 0 }]]
+    },
+    "Evaluate Response": {
+      "main": [[{ "node": "Should Retry?", "type": "main", "index": 0 }]]
+    },
+    "Should Retry?": {
+      "main": [
+        [{ "node": "Backoff Wait", "type": "main", "index": 0 }],
+        [{ "node": "Done", "type": "main", "index": 0 }]
+      ]
+    },
+    "Backoff Wait": {
+      "main": [[{ "node": "Reprep Retry", "type": "main", "index": 0 }]]
+    },
+    "Reprep Retry": {
+      "main": [[{ "node": "HTTP Call", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": [{ "name": "sub-workflow" }, { "name": "content-to-sales" }]
+}

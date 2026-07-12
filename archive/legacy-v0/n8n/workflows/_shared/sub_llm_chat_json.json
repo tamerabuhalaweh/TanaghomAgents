@@ -1,0 +1,75 @@
+{
+  "name": "SUB — Call LLM and Parse JSON",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "sub-llm-trigger",
+      "name": "When Called by Another Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [0, 300]
+    },
+    {
+      "parameters": {
+        "jsCode": "const i = items[0].json;\nif (!i.system_prompt || !i.user_payload) {\n  throw new Error('system_prompt and user_payload are required');\n}\nconst model = i.model || $env.LLM_MODEL || 'gpt-4o';\nconst temperature = i.temperature != null ? Number(i.temperature) : 0.3;\nreturn [{\n  json: {\n    model,\n    temperature,\n    system_prompt: i.system_prompt,\n    user_content: typeof i.user_payload === 'string' ? i.user_payload : JSON.stringify(i.user_payload),\n    meta: i.meta || {}\n  }\n}];"
+      },
+      "id": "sub-llm-prep",
+      "name": "Prep Request",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 300]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.OPENAI_BASE_URL || 'https://api.openai.com/v1') + '/chat/completions' }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ model: $json.model, temperature: $json.temperature, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: $json.system_prompt }, { role: 'user', content: $json.user_content } ] }) }}",
+        "options": {
+          "timeout": 180000,
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "sub-llm-http",
+      "name": "OpenAI Chat Completions",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [480, 300],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "OPENAI_HEADER_CRED_ID",
+          "name": "OpenAI API Key Header"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const resp = items[0].json;\nconst statusCode = resp.statusCode || resp.status || 200;\nconst body = resp.body || resp;\nconst meta = $('Prep Request').item.json.meta || {};\n\nif (statusCode === 429) {\n  return [{ json: { ok: false, retryable: true, statusCode: 429, error: 'rate_limited', meta } }];\n}\nif (statusCode >= 400) {\n  return [{ json: { ok: false, retryable: statusCode >= 500, statusCode, error: body.error?.message || body.message || JSON.stringify(body).slice(0, 400), meta } }];\n}\n\nlet raw = body.choices?.[0]?.message?.content || body.message?.content || '';\nlet text = String(raw).trim();\nif (text.startsWith('```')) {\n  text = text.replace(/^```(?:json)?\\s*/i, '').replace(/\\s*```$/, '');\n}\nlet parsed;\ntry {\n  parsed = JSON.parse(text);\n} catch (e) {\n  return [{ json: { ok: false, retryable: false, statusCode: 200, error: 'invalid_json: ' + e.message, raw: text.slice(0, 500), meta } }];\n}\nreturn [{ json: { ok: true, data: parsed, raw_text: text, meta, usage: body.usage || null } }];"
+      },
+      "id": "sub-llm-parse",
+      "name": "Parse JSON Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [720, 300]
+    }
+  ],
+  "connections": {
+    "When Called by Another Workflow": {
+      "main": [[{ "node": "Prep Request", "type": "main", "index": 0 }]]
+    },
+    "Prep Request": {
+      "main": [[{ "node": "OpenAI Chat Completions", "type": "main", "index": 0 }]]
+    },
+    "OpenAI Chat Completions": {
+      "main": [[{ "node": "Parse JSON Response", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": { "executionOrder": "v1" },
+  "meta": { "templateCredsSetupCompleted": false },
+  "tags": [{ "name": "sub-workflow" }, { "name": "content-to-sales" }]
+}

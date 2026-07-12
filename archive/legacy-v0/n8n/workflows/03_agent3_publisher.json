@@ -1,0 +1,377 @@
+{
+  "name": "Agent 3 — Publisher",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "agent-3-publisher",
+        "responseMode": "responseNode",
+        "options": {}
+      },
+      "id": "a3-webhook",
+      "name": "Webhook Trigger",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [0, 240],
+      "webhookId": "agent-3-publisher"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [{ "field": "cronExpression", "expression": "*/15 * * * *" }]
+        }
+      },
+      "id": "a3-schedule",
+      "name": "Scheduled Posts Poller",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [0, 480]
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = items[0].json.body || items[0].json || {};\nreturn [{ json: { content_item_id: body.content_item_id || null, source: 'webhook' } }];"
+      },
+      "id": "a3-norm-webhook",
+      "name": "Normalize Webhook",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 240]
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { content_item_id: null, source: 'scheduler' } }];"
+      },
+      "id": "a3-norm-sched",
+      "name": "Normalize Scheduler",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [240, 480]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "-- HARD GUARD: only approved content may proceed. Never trust upstream trigger alone.\n-- IDEMPOTENCY: skip if postiz_post_id already set or posts row exists (webhook retries).\n-- STAGING: production publishes only when campaign.environment = production AND is_staging = false\n--   (override with env ALLOW_STAGING_PUBLISH=true for dry post tests).\nSELECT ci.*, c.name AS campaign_name, c.is_staging, c.environment\nFROM content_items ci\nJOIN campaigns c ON c.id = ci.campaign_id\nWHERE ci.status = 'approved'\n  AND ci.postiz_post_id IS NULL\n  AND (\n    ($1::uuid IS NOT NULL AND ci.id = $1::uuid)\n    OR (\n      $1::uuid IS NULL\n      AND (ci.scheduled_time IS NULL OR ci.scheduled_time <= now())\n    )\n  )\n  AND NOT EXISTS (\n    SELECT 1 FROM posts p\n    WHERE p.content_item_id = ci.id\n      AND p.status IN ('scheduled','live')\n  )\nORDER BY ci.scheduled_time NULLS FIRST, ci.approved_at ASC\nLIMIT 20;",
+        "options": {
+          "queryReplacement": "={{ [$json.content_item_id] }}"
+        }
+      },
+      "id": "a3-load-approved",
+      "name": "Load Approved Only",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [500, 320],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "loose" },
+          "conditions": [
+            {
+              "id": "has-id",
+              "leftValue": "={{ $json.id }}",
+              "rightValue": "",
+              "operator": { "type": "string", "operation": "notEmpty" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3-if-has",
+      "name": "Has Approved Items?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [740, 320]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'publisher',\n  'abort_not_approved_or_empty',\n  'content_item',\n  $1::uuid,\n  $2::jsonb,\n  'skipped'\n)\nRETURNING id;",
+        "options": {
+          "queryReplacement": "={{ [ $('Normalize Webhook').isExecuted ? $('Normalize Webhook').item.json.content_item_id : null, JSON.stringify({ reason: 'No approved content_items ready to publish. Guard clause enforced.' }) ] }}"
+        }
+      },
+      "id": "a3-log-skip",
+      "name": "Log Skip Guard",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1000, 500],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, published: 0, message: 'No approved items to publish (or not yet due). Guard clause: status must be approved in DB.' } }}",
+        "options": {}
+      },
+      "id": "a3-respond-empty",
+      "name": "Respond Empty",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [1240, 500]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT postiz_integration_id, postiz_settings, channel, is_active\nFROM channel_integrations\nWHERE channel = $1 AND is_active = true\nLIMIT 1;",
+        "options": {
+          "queryReplacement": "={{ [$json.channel] }}"
+        }
+      },
+      "id": "a3-load-integration",
+      "name": "Load Postiz Integration",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1000, 180],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const content = $('Load Approved Only').item.json;\nconst integ = items[0].json;\n// IDEMPOTENCY: already published\nif (content.postiz_post_id) {\n  return [{ json: { abort: true, content_item_id: content.id, reason: 'Idempotent skip: postiz_post_id already set' } }];\n}\n// STAGING isolation: block real publish unless explicitly allowed\nconst allowStaging = String($env.ALLOW_STAGING_PUBLISH || '').toLowerCase() === 'true';\nif ((content.is_staging || content.environment === 'staging') && !allowStaging) {\n  return [{ json: { abort: true, content_item_id: content.id, reason: 'Staging campaign — publish blocked (set ALLOW_STAGING_PUBLISH=true only for controlled dry posts)' } }];\n}\nif (!integ || !integ.postiz_integration_id || integ.is_active === false) {\n  return [{\n    json: {\n      abort: true,\n      content_item_id: content.id,\n      reason: `No active Postiz integration for channel=${content.channel}`\n    }\n  }];\n}\nconst scheduledTime = content.scheduled_time;\nconst type = scheduledTime && new Date(scheduledTime) > new Date() ? 'schedule' : 'now';\nconst date = scheduledTime || new Date().toISOString();\nconst image = content.media_url ? [{ id: 'external', path: content.media_url }] : [];\nconst settings = integ.postiz_settings || { __type: content.channel };\nconst payload = {\n  type,\n  date,\n  shortLink: false,\n  tags: [],\n  posts: [{\n    integration: { id: integ.postiz_integration_id },\n    value: [{ content: content.draft_copy, image }],\n    settings\n  }]\n};\nreturn [{\n  json: {\n    abort: false,\n    content_item_id: content.id,\n    campaign_id: content.campaign_id,\n    channel: content.channel,\n    postiz_payload: payload\n  }\n}];"
+      },
+      "id": "a3-build-payload",
+      "name": "Build Postiz Payload",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1240, 180]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "abort",
+              "leftValue": "={{ $json.abort }}",
+              "rightValue": false,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3-if-integ",
+      "name": "Integration Ready?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [1480, 180]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO posts (content_item_id, campaign_id, channel, status, last_error)\nVALUES ($1::uuid, $2::uuid, $3, 'failed', $4)\nON CONFLICT (content_item_id) DO UPDATE SET status = 'failed', last_error = EXCLUDED.last_error\nRETURNING id;\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result, error_message)\nVALUES ('publisher','publish_aborted','content_item',$1::uuid,$5::jsonb,'failed',$4);",
+        "options": {
+          "queryReplacement": "={{ [ $json.content_item_id, $('Load Approved Only').item.json.campaign_id, $('Load Approved Only').item.json.channel, $json.reason, JSON.stringify({ reason: $json.reason }) ] }}"
+        }
+      },
+      "id": "a3-fail-integ",
+      "name": "Log Integration Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [1720, 340],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ ($env.POSTIZ_API_BASE || 'https://api.postiz.com/public/v1') + '/posts' }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            { "name": "Authorization", "value": "={{ $env.POSTIZ_API_KEY }}" },
+            { "name": "Content-Type", "value": "application/json" }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.postiz_payload) }}",
+        "options": {
+          "timeout": 60000,
+          "response": { "response": { "neverError": true } }
+        }
+      },
+      "id": "a3-postiz",
+      "name": "Postiz Create Post",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [1720, 100]
+    },
+    {
+      "parameters": {
+        "jsCode": "const resp = items[0].json;\nconst ctx = $('Build Postiz Payload').item.json;\nconst statusCode = resp.statusCode || resp.status || 200;\n// n8n may put body at root when neverError\nconst body = resp.body || resp;\nconst failed = (statusCode >= 400) || body.error || body.message === 'Unauthorized';\nconst postizId = body.id || body.postId || body[0]?.postId || body[0]?.id || null;\nif (failed || !postizId) {\n  return [{\n    json: {\n      ok: false,\n      content_item_id: ctx.content_item_id,\n      campaign_id: ctx.campaign_id,\n      channel: ctx.channel,\n      error: body.error || body.message || JSON.stringify(body).slice(0, 500),\n      postiz_post_id: null\n    }\n  }];\n}\nreturn [{\n  json: {\n    ok: true,\n    content_item_id: ctx.content_item_id,\n    campaign_id: ctx.campaign_id,\n    channel: ctx.channel,\n    postiz_post_id: String(postizId),\n    post_status: ctx.postiz_payload.type === 'schedule' ? 'scheduled' : 'live'\n  }\n}];"
+      },
+      "id": "a3-parse-postiz",
+      "name": "Parse Postiz Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [1960, 100]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": { "caseSensitive": true, "leftValue": "", "typeValidation": "strict" },
+          "conditions": [
+            {
+              "id": "ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": { "type": "boolean", "operation": "equals" }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a3-if-post-ok",
+      "name": "Postiz OK?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [2200, 100]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO posts (\n  content_item_id, campaign_id, postiz_post_id, channel, posted_at, status\n) VALUES (\n  $1::uuid, $2::uuid, $3, $4, now(), $5\n)\nON CONFLICT (content_item_id) DO UPDATE SET\n  postiz_post_id = EXCLUDED.postiz_post_id,\n  status = EXCLUDED.status,\n  posted_at = EXCLUDED.posted_at,\n  last_error = NULL\nRETURNING *;\n\nUPDATE content_items\nSET status = 'posted', postiz_post_id = $3\nWHERE id = $1::uuid;\n\nUPDATE campaigns SET status = 'active'\nWHERE id = $2::uuid AND status IN ('content_in_progress', 'strategy_ready');\n\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result)\nVALUES (\n  'publisher',\n  'publish_post',\n  'content_item',\n  $1::uuid,\n  $6::jsonb,\n  'success'\n);",
+        "options": {
+          "queryReplacement": "={{ [ $json.content_item_id, $json.campaign_id, $json.postiz_post_id, $json.channel, $json.post_status, JSON.stringify({ postiz_post_id: $json.postiz_post_id, channel: $json.channel }) ] }}"
+        }
+      },
+      "id": "a3-persist-ok",
+      "name": "Persist Post Success",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2440, 0],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "INSERT INTO posts (content_item_id, campaign_id, channel, status, last_error)\nVALUES ($1::uuid, $2::uuid, $3, 'failed', $4)\nON CONFLICT (content_item_id) DO UPDATE SET status = 'failed', last_error = EXCLUDED.last_error, sync_failures = posts.sync_failures + 1\nRETURNING id;\nINSERT INTO agent_actions_log (agent_name, action_type, entity_type, entity_id, payload, result, error_message)\nVALUES ('publisher','publish_failed','content_item',$1::uuid,$5::jsonb,'failed',$4);",
+        "options": {
+          "queryReplacement": "={{ [ $json.content_item_id, $json.campaign_id, $json.channel, $json.error, JSON.stringify({ error: $json.error }) ] }}"
+        }
+      },
+      "id": "a3-persist-fail",
+      "name": "Persist Post Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.5,
+      "position": [2440, 200],
+      "credentials": {
+        "postgres": {
+          "id": "POSTGRES_CREDENTIAL_ID",
+          "name": "Content Sales Postgres"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ { ok: true, message: 'Publisher run complete. Check agent_actions_log and posts table for per-item results.' } }}",
+        "options": {}
+      },
+      "id": "a3-respond-done",
+      "name": "Respond Done",
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.1,
+      "position": [2680, 100]
+    }
+  ],
+  "connections": {
+    "Webhook Trigger": {
+      "main": [[{ "node": "Normalize Webhook", "type": "main", "index": 0 }]]
+    },
+    "Scheduled Posts Poller": {
+      "main": [[{ "node": "Normalize Scheduler", "type": "main", "index": 0 }]]
+    },
+    "Normalize Webhook": {
+      "main": [[{ "node": "Load Approved Only", "type": "main", "index": 0 }]]
+    },
+    "Normalize Scheduler": {
+      "main": [[{ "node": "Load Approved Only", "type": "main", "index": 0 }]]
+    },
+    "Load Approved Only": {
+      "main": [[{ "node": "Has Approved Items?", "type": "main", "index": 0 }]]
+    },
+    "Has Approved Items?": {
+      "main": [
+        [{ "node": "Load Postiz Integration", "type": "main", "index": 0 }],
+        [{ "node": "Log Skip Guard", "type": "main", "index": 0 }]
+      ]
+    },
+    "Log Skip Guard": {
+      "main": [[{ "node": "Respond Empty", "type": "main", "index": 0 }]]
+    },
+    "Load Postiz Integration": {
+      "main": [[{ "node": "Build Postiz Payload", "type": "main", "index": 0 }]]
+    },
+    "Build Postiz Payload": {
+      "main": [[{ "node": "Integration Ready?", "type": "main", "index": 0 }]]
+    },
+    "Integration Ready?": {
+      "main": [
+        [{ "node": "Postiz Create Post", "type": "main", "index": 0 }],
+        [{ "node": "Log Integration Failure", "type": "main", "index": 0 }]
+      ]
+    },
+    "Postiz Create Post": {
+      "main": [[{ "node": "Parse Postiz Response", "type": "main", "index": 0 }]]
+    },
+    "Parse Postiz Response": {
+      "main": [[{ "node": "Postiz OK?", "type": "main", "index": 0 }]]
+    },
+    "Postiz OK?": {
+      "main": [
+        [{ "node": "Persist Post Success", "type": "main", "index": 0 }],
+        [{ "node": "Persist Post Failure", "type": "main", "index": 0 }]
+      ]
+    },
+    "Persist Post Success": {
+      "main": [[{ "node": "Respond Done", "type": "main", "index": 0 }]]
+    },
+    "Persist Post Failure": {
+      "main": [[{ "node": "Respond Done", "type": "main", "index": 0 }]]
+    },
+    "Log Integration Failure": {
+      "main": [[{ "node": "Respond Done", "type": "main", "index": 0 }]]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "errorWorkflow": "ERROR — Agent Failure Logger"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [
+    { "name": "agent-3" },
+    { "name": "content-to-sales" }
+  ]
+}
