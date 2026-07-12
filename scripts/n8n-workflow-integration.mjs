@@ -84,14 +84,14 @@ try {
 
   const campaignId = "20000000-0000-4000-8000-000000000001";
   await pool.query(`INSERT INTO tanaghom.agent_jobs (id, correlation_id, agent_id, campaign_id, job_type, input) VALUES ('70000000-0000-4000-8000-000000000001','71000000-0000-4000-8000-000000000001','10000000-0000-4000-8000-000000000001',$1,'campaign.strategy.generate',$2::jsonb)`, [campaignId, JSON.stringify({ contract_version: "phase3.strategist-job.v1", job_id: "70000000-0000-4000-8000-000000000001", correlation_id: "71000000-0000-4000-8000-000000000001", campaign: { id: campaignId, name: "Staging Summer Camp", brief: "Integration-only offer brief", product_type: "camp", target_audience: { geographies: ["test"], description: "test adults" }, budget_target: 0, revenue_target: 0, currency: "USD" } })]);
-  await run("docker", [...dockerBase, "execute", "--file=/fixtures/campaign-strategist.v1.json", "--rawOutput"]);
-  assert.equal((await pool.query("SELECT status FROM tanaghom.agent_jobs WHERE id='70000000-0000-4000-8000-000000000001'")).rows[0].status, "succeeded");
+  const strategistExecution = await run("docker", [...dockerBase, "execute", "--file=/fixtures/campaign-strategist.v1.json", "--rawOutput"]);
+  assert.equal((await pool.query("SELECT status FROM tanaghom.agent_jobs WHERE id='70000000-0000-4000-8000-000000000001'")).rows[0].status, "succeeded", strategistExecution.slice(-4000));
 
   const strategy = (await pool.query("SELECT * FROM tanaghom.campaign_strategies WHERE campaign_id=$1 ORDER BY version DESC LIMIT 1", [campaignId])).rows[0];
   const contentInput = { contract_version: "phase3.content-producer-job.v1", job_id: "70000000-0000-4000-8000-000000000002", correlation_id: "71000000-0000-4000-8000-000000000002", campaign: { id: campaignId, name: "Staging Summer Camp", brief: "Integration-only offer brief", product_type: "camp", target_audience: { geographies: ["test"] } }, strategy: { id: strategy.id, version: strategy.version, positioning: strategy.positioning, key_messages: strategy.key_messages, channels: strategy.channels, posting_cadence: strategy.posting_cadence, content_pillars: strategy.content_pillars }, max_items: 1 };
   await pool.query(`INSERT INTO tanaghom.agent_jobs (id, correlation_id, agent_id, campaign_id, job_type, input) VALUES ('70000000-0000-4000-8000-000000000002','71000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000002',$1,'campaign.content.generate',$2::jsonb)`, [campaignId, JSON.stringify(contentInput)]);
-  await run("docker", [...dockerBase, "execute", "--file=/fixtures/content-producer.v1.json", "--rawOutput"]);
-  assert.equal((await pool.query("SELECT status FROM tanaghom.agent_jobs WHERE id='70000000-0000-4000-8000-000000000002'")).rows[0].status, "waiting_approval");
+  const producerExecution = await run("docker", [...dockerBase, "execute", "--file=/fixtures/content-producer.v1.json", "--rawOutput"]);
+  assert.equal((await pool.query("SELECT status FROM tanaghom.agent_jobs WHERE id='70000000-0000-4000-8000-000000000002'")).rows[0].status, "waiting_approval", producerExecution.slice(-4000));
   assert.equal((await pool.query("SELECT count(*)::int count FROM tanaghom.content_items WHERE draft_copy='Integration-only draft' AND status='pending_approval'")).rows[0].count, 1);
 
   responseMode = "invalid";
