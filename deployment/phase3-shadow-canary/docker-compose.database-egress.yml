@@ -3,7 +3,7 @@ services:
     environment:
       NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
       NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com
-      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net
+      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy
     volumes:
       - ./phase3-shadow-canary/certificates/supabase-root-2021-ca.pem:/etc/tanaghom/certificates/supabase-root-2021-ca.pem:ro
     networks:
@@ -14,7 +14,7 @@ services:
     environment:
       NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
       NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com
-      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net
+      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy
     volumes:
       - ./phase3-shadow-canary/certificates/supabase-root-2021-ca.pem:/etc/tanaghom/certificates/supabase-root-2021-ca.pem:ro
     networks:

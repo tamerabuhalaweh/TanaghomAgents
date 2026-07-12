@@ -17,9 +17,10 @@ file, encrypts it with the existing instance key, and removes staging files.
 The Gemma key rotation script rolls back automatically if the model health gate
 does not recover.
 
-SSRF protection remains enabled. Its hostname exception contains exactly
-`api.thesmartlabs.net`; Squid and the host firewall independently restrict that
-name to the approved HTTPS Gemma path and prevent direct host/private access.
+SSRF protection remains enabled. Its hostname exceptions contain exactly
+`api.thesmartlabs.net` and the internal `egress-proxy` service that carries the
+request; Squid and the host firewall independently restrict that route to the
+approved HTTPS Gemma path and prevent direct host/private access.
 
 ## Controlled order
 

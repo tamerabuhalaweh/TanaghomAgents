@@ -109,7 +109,8 @@ async function retryStrategist() {
         AND campaign.name=$1 AND campaign.status='draft'
         AND agent.code='campaign_strategist'
         AND job.job_type='campaign.strategy.generate'
-        AND job.status='running' AND job.attempt=1 AND job.max_attempts=1
+        AND job.status IN ('running','failed') AND job.attempt=1 AND job.max_attempts=1
+        AND (job.status <> 'failed' OR job.error_code='gemma_request_error')
         AND NOT EXISTS (SELECT 1 FROM tanaghom.campaign_strategies strategy WHERE strategy.campaign_id=campaign.id)
       RETURNING job.id, job.agent_id
     `, [campaignName]);
