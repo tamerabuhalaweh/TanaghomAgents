@@ -49,7 +49,9 @@ install -d -m 0700 deployment/dashboard-canary/secrets
 Create the four files documented in `secrets/README.md` with `umask 077`.
 Copy values from the existing ignored developer `.env` through an encrypted
 channel without printing them. Do not use shell history, Compose environment
-values, or Git for secret transfer.
+values, or Git for secret transfer. The transactional installer changes only
+these files to `root:1000` mode `0640` before container startup; Compose file
+secrets preserve host ownership when mounted outside Swarm.
 
 ## Validate and deploy
 

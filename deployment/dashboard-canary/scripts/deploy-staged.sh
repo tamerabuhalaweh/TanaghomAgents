@@ -55,8 +55,11 @@ trap cleanup EXIT HUP INT TERM
 install -d -m 0755 "$target_dir"
 cp -a "$source_dir/." "$target_dir/"
 chown -R root:root "$target_dir"
-chmod 0700 "$package_dir/secrets"
-chmod 0600 "$package_dir"/secrets/database_url "$package_dir"/secrets/supabase_url \
+chown root:1000 "$package_dir/secrets" "$package_dir"/secrets/database_url \
+  "$package_dir"/secrets/supabase_url "$package_dir"/secrets/supabase_publishable_key \
+  "$package_dir"/secrets/supabase_jwks_url
+chmod 0710 "$package_dir/secrets"
+chmod 0640 "$package_dir"/secrets/database_url "$package_dir"/secrets/supabase_url \
   "$package_dir"/secrets/supabase_publishable_key "$package_dir"/secrets/supabase_jwks_url
 
 cd "$package_dir"

@@ -127,6 +127,8 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   assert.match(installer, /protected unit changed state/);
   assert.match(installer, /candidate\.overlaps/);
   assert.match(installer, /cleanup/);
+  assert.match(installer, /chown root:1000/);
+  assert.match(installer, /chmod 0640/);
   assert.doesNotMatch(compose + dockerfile + entrypoint + installer, /sb_publishable_|postgresql:\/\/postgres\./);
   assert.match(dockerignore, /^\.env$/m);
   assert.match(dockerignore, /deployment\/\*\*\/secrets\/\*/);
