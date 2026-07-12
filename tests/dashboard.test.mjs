@@ -23,7 +23,7 @@ test("dashboard includes reduced-motion and responsive navigation behavior", asy
   assert.match(css, /min-height: 2\.75rem/);
 });
 
-test("server API verifies Supabase JWTs and keeps fixture mutations disconnected", async () => {
+test("server API verifies Supabase JWTs and keeps fixture UI disconnected", async () => {
   const auth = await readFile(new URL("lib/server/auth.ts", dashboard), "utf8");
   const approvals = await readFile(new URL("app/api/approvals/route.ts", dashboard), "utf8");
   const readme = await readFile(new URL("README.md", dashboard), "utf8");
@@ -31,5 +31,17 @@ test("server API verifies Supabase JWTs and keeps fixture mutations disconnected
   assert.match(auth, /audience: "authenticated"/);
   assert.match(approvals, /pending_approval/);
   assert.doesNotMatch(approvals, /UPDATE|INSERT|DELETE/);
-  assert.match(readme, /Approval\s+mutations remain disabled/);
+  assert.match(readme, /They do not call n8n or an external service/);
+});
+
+test("approval decisions are transactional, idempotent, audited, and queued", async () => {
+  const source = await readFile(new URL("lib/server/content-decision.ts", dashboard), "utf8");
+  assert.match(source, /api_idempotency_keys/);
+  assert.match(source, /content_approvals/);
+  assert.match(source, /agent_actions_log/);
+  assert.match(source, /outbox_events/);
+  assert.match(source, /BEGIN/);
+  assert.match(source, /COMMIT/);
+  assert.match(source, /ROLLBACK/);
+  assert.doesNotMatch(source, /fetch\(|axios|https?:\/\//);
 });

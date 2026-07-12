@@ -127,6 +127,27 @@ BEGIN
   EXCEPTION WHEN unique_violation THEN
     NULL;
   END;
+
+  INSERT INTO tanaghom.api_idempotency_keys (
+    actor_user_id, operation_type, idempotency_key, request_hash
+  ) VALUES (
+    '00000000-0000-4000-8000-000000000001', 'content.decision',
+    'fixture-decision-1',
+    'sha256:0000000000000000000000000000000000000000000000000000000000000000'
+  );
+
+  BEGIN
+    INSERT INTO tanaghom.api_idempotency_keys (
+      actor_user_id, operation_type, idempotency_key, request_hash
+    ) VALUES (
+      '00000000-0000-4000-8000-000000000001', 'content.decision',
+      'fixture-decision-1',
+      'sha256:1111111111111111111111111111111111111111111111111111111111111111'
+    );
+    RAISE EXCEPTION 'duplicate API idempotency key unexpectedly succeeded';
+  EXCEPTION WHEN unique_violation THEN
+    NULL;
+  END;
 END;
 $$;
 

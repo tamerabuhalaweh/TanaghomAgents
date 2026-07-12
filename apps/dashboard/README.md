@@ -19,6 +19,8 @@ The initial server-only API exposes:
 - `GET /api/health` with truthful configuration/connectivity state;
 - `GET /api/approvals` for authenticated active application users;
 - `GET /api/audit` for authenticated active application users.
+- `POST /api/approvals/:id/decision` for owner/reviewer decisions with an
+  `Idempotency-Key` header.
 
 Protected routes require a Supabase access token in the `Authorization: Bearer`
 header. JWT signatures, issuer, and audience are verified against the configured
@@ -26,5 +28,6 @@ project JWKS. The token subject must map to `tanaghom.app_users.auth_subject`.
 Database credentials and Supabase secret keys are never sent to browser code.
 
 These endpoints are intentionally not connected to the fixture UI yet. Approval
-mutations remain disabled until authenticated transaction, idempotency, conflict,
-and recovery tests are complete.
+decisions write the human approval, protected content transition, correlated
+audit entry, durable outbox event, and replayable response in one transaction.
+They do not call n8n or an external service.
