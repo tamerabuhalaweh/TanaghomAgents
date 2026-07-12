@@ -58,3 +58,12 @@ jobs:
       - run: npm audit --audit-level=moderate
       - run: npm run typecheck:dashboard
       - run: npm run build:dashboard
+
+  dashboard-image-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: sh -n deployment/dashboard-canary/entrypoint.sh deployment/dashboard-canary/scripts/*.sh
+      - run: docker compose -f deployment/dashboard-canary/docker-compose.yml config --quiet
+      - run: docker build --pull -f deployment/dashboard-canary/Dockerfile -t tanaghom-dashboard-canary:test .

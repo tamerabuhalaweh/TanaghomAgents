@@ -1,0 +1,14 @@
+.git
+.env
+.env.*
+**/node_modules
+**/.next
+archive
+coverage
+dist
+docs
+tmp
+.tmp-postgres-*
+deployment/**/secrets/*
+*.log
+*.local
