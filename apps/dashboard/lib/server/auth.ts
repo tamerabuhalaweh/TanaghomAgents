@@ -29,10 +29,23 @@ function requestToken(request: NextRequest) {
   throw new AuthenticationError("Session token required");
 }
 
+export function hasValidSameOrigin(request: NextRequest) {
+  const origin = request.headers.get("origin");
+  if (!origin) return false;
+  const accepted = new Set([request.nextUrl.origin]);
+  const host = request.headers.get("x-forwarded-host")?.split(",", 1)[0]?.trim()
+    || request.headers.get("host");
+  if (host) {
+    const protocol = request.headers.get("x-forwarded-proto")?.split(",", 1)[0]?.trim()
+      || request.nextUrl.protocol.replace(":", "");
+    accepted.add(`${protocol}://${host}`);
+  }
+  return accepted.has(origin);
+}
+
 export function enforceSameOriginForCookieMutation(request: NextRequest) {
   if (request.headers.has("authorization")) return;
-  const origin = request.headers.get("origin");
-  if (!origin || origin !== request.nextUrl.origin) {
+  if (!hasValidSameOrigin(request)) {
     throw new AuthenticationError("Cookie-authenticated mutation requires a same-origin request");
   }
 }

@@ -62,6 +62,7 @@ test("expired sessions rotate HttpOnly tokens once and retry the original reques
   const client = await readFile(new URL("lib/client/authenticated-fetch.ts", dashboard), "utf8");
   assert.match(refresh, /grant_type=refresh_token/);
   assert.match(refresh, /invalid_origin/);
+  assert.match(refresh, /hasValidSameOrigin/);
   assert.match(refresh, /clearSessionCookies/);
   assert.match(refresh, /setSessionCookies/);
   assert.match(client, /refreshInFlight/);
