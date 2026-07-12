@@ -13,6 +13,22 @@ SELECT jsonb_pretty(jsonb_build_object(
   'server_version', current_setting('server_version'),
   'current_database', current_database(),
   'current_user', current_user,
+  'current_user_capabilities', COALESCE((
+    SELECT jsonb_build_object(
+      'can_login', rolcanlogin,
+      'is_superuser', rolsuper,
+      'can_create_role', rolcreaterole,
+      'can_create_database', rolcreatedb,
+      'bypasses_rls', rolbypassrls
+    )
+    FROM pg_roles
+    WHERE rolname = current_user
+  ), '{}'::jsonb),
+  'package_roles', COALESCE((
+    SELECT jsonb_agg(rolname ORDER BY rolname)
+    FROM pg_roles
+    WHERE rolname IN ('tanaghom_api', 'tanaghom_n8n_worker', 'tanaghom_readonly')
+  ), '[]'::jsonb),
   'schemas', COALESCE((
     SELECT jsonb_agg(schema_name ORDER BY schema_name)
     FROM information_schema.schemata
