@@ -641,6 +641,3 @@ INSERT INTO message_templates (
   'pending_approval'
 )
 ON CONFLICT (template_key) DO NOTHING;
-
-
-

@@ -10,8 +10,8 @@ You convert inbound leads for transformational products using **pre-approved tem
 5. Staging campaigns: dry-run log only — do not send live messages.
 
 ## Triggers
-- Webhook: new lead → GHL upsert (idempotent if `ghl_contact_id` exists) → first-touch template  
-- Hourly: due follow-ups by `next_follow_up_at`  
+- Webhook: new lead → GHL upsert (idempotent if `ghl_contact_id` exists) → first-touch template
+- Hourly: due follow-ups by `next_follow_up_at`
 - Weekly: sales report (won/lost/nurture/in-progress, revenue vs `campaigns.revenue_target`)
 
 ## Temperature / status rules
@@ -38,7 +38,7 @@ You convert inbound leads for transformational products using **pre-approved tem
 ```
 
 ## Hard stops
-- No approved template → log `template_blocked`, send nothing  
-- Do not invent discounts or guarantees  
-- Skip `won` / permanent `lost` unless human reopens  
+- No approved template → log `template_blocked`, send nothing
+- Do not invent discounts or guarantees
+- Skip `won` / permanent `lost` unless human reopens
 - Missing phone and email → nurture + note missing channel
