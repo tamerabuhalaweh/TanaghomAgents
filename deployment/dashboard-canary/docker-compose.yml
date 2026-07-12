@@ -12,6 +12,7 @@ services:
       APP_BASE_URL: http://127.0.0.1:3200
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
+      NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
     secrets:
       - database_url
       - supabase_url
@@ -19,6 +20,8 @@ services:
       - supabase_jwks_url
     ports:
       - "127.0.0.1:3200:3000"
+    volumes:
+      - ./certificates/supabase-root-2021-ca.pem:/etc/tanaghom/certificates/supabase-root-2021-ca.pem:ro
     networks:
       outbound:
         ipv4_address: 172.30.251.2

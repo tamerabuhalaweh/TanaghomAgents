@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { X509Certificate } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -117,11 +118,13 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   const entrypoint = await readFile(new URL("entrypoint.sh", deployment), "utf8");
   const installer = await readFile(new URL("scripts/deploy-staged.sh", deployment), "utf8");
   const dockerignore = await readFile(new URL("../../.dockerignore", dashboard), "utf8");
+  const databaseCa = await readFile(new URL("certificates/supabase-root-2021-ca.pem", deployment), "utf8");
   assert.match(compose, /127\.0\.0\.1:3200:3000/);
   assert.match(compose, /read_only: true/);
   assert.match(compose, /no-new-privileges:true/);
   assert.match(compose, /cap_drop:\s+- ALL/);
   assert.match(compose, /mem_limit: 768m/);
+  assert.match(compose, /NODE_EXTRA_CA_CERTS/);
   assert.match(dockerfile, /node:24\.18\.0-alpine3\.24@sha256:/);
   assert.match(entrypoint, /\/run\/secrets\/\$2/);
   assert.match(installer, /protected unit changed state/);
@@ -132,4 +135,5 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   assert.doesNotMatch(compose + dockerfile + entrypoint + installer, /sb_publishable_|postgresql:\/\/postgres\./);
   assert.match(dockerignore, /^\.env$/m);
   assert.match(dockerignore, /deployment\/\*\*\/secrets\/\*/);
+  assert.equal(new X509Certificate(databaseCa).fingerprint256, "80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA");
 });
