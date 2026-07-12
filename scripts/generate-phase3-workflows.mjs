@@ -17,8 +17,13 @@ function node(id, name, type, typeVersion, position, parameters, extra = {}) {
   return { parameters, id, name, type, typeVersion, position, ...extra };
 }
 
-function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, persistFunction }) {
+function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, outputSchemaPath, outputSchemaName, persistFunction }) {
   const prompt = readFileSync(join(root, promptPath), "utf8").replace(/\r\n/g, "\n").trim();
+  const outputSchema = JSON.parse(readFileSync(join(root, outputSchemaPath), "utf8"));
+  delete outputSchema.$schema;
+  delete outputSchema.$id;
+  delete outputSchema.title;
+  const responseFormat = { type: "json_schema", json_schema: { name: outputSchemaName, schema: outputSchema } };
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const parseCode = `const claimed = $('Claim Job').first().json;
 const response = $json;
@@ -48,7 +53,7 @@ return [{ json: { ...claimed, ok: true, output: data } }];`;
     node(`${prefix}-request`, "Build Gemma Request", "n8n-nodes-base.code", 2, [480, 270], {
       jsCode: `const claimed = $json;
 if (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');
-return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.2, response_format: { type: 'json_object' }, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
+return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.2, response_format: ${JSON.stringify(responseFormat)}, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
     }),
     node(`${prefix}-gemma`, "Call Gemma", "n8n-nodes-base.httpRequest", 4.2, [720, 270], {
       method: "POST",
@@ -96,7 +101,7 @@ return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', tempera
 }
 
 const definitions = [
-  ["campaign-strategist.v1.json", workflow({ name: "Tanaghom — Campaign Strategist v1", agent: "campaign_strategist", jobType: "campaign.strategy.generate", promptPath: "prompts/campaign-strategist/v1.md", promptVersion: "campaign-strategist/v1", outputVersion: "phase3.strategist-output.v1", persistFunction: "persist_strategy_result" })],
-  ["content-producer.v1.json", workflow({ name: "Tanaghom — Content Producer v1", agent: "content_producer", jobType: "campaign.content.generate", promptPath: "prompts/content-producer/v1.md", promptVersion: "content-producer/v1", outputVersion: "phase3.content-producer-output.v1", persistFunction: "persist_content_result" })],
+  ["campaign-strategist.v1.json", workflow({ name: "Tanaghom — Campaign Strategist v1", agent: "campaign_strategist", jobType: "campaign.strategy.generate", promptPath: "prompts/campaign-strategist/v1.md", promptVersion: "campaign-strategist/v1", outputVersion: "phase3.strategist-output.v1", outputSchemaPath: "packages/contracts/schemas/phase3/strategist-output.v1.schema.json", outputSchemaName: "tanaghom_strategist_output_v1", persistFunction: "persist_strategy_result" })],
+  ["content-producer.v1.json", workflow({ name: "Tanaghom — Content Producer v1", agent: "content_producer", jobType: "campaign.content.generate", promptPath: "prompts/content-producer/v1.md", promptVersion: "content-producer/v1", outputVersion: "phase3.content-producer-output.v1", outputSchemaPath: "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json", outputSchemaName: "tanaghom_content_producer_output_v1", persistFunction: "persist_content_result" })],
 ];
 for (const [file, definition] of definitions) writeFileSync(join(outputDir, file), `${JSON.stringify(definition, null, 2)}\n`);
