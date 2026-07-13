@@ -1,12 +1,14 @@
 services:
   n8n:
     environment:
-      NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com,tanaghom-integration-gateway
-      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy,tanaghom-integration-gateway
-      TANAGHOM_INTEGRATION_GATEWAY_URL: http://tanaghom-integration-gateway:3000
+      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy,tanaghom.38-247-187-232.sslip.io
+      TANAGHOM_INTEGRATION_GATEWAY_URL: https://tanaghom.38-247-187-232.sslip.io
 
   n8n-worker:
     environment:
-      NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com,tanaghom-integration-gateway
-      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy,tanaghom-integration-gateway
-      TANAGHOM_INTEGRATION_GATEWAY_URL: http://tanaghom-integration-gateway:3000
+      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy,tanaghom.38-247-187-232.sslip.io
+      TANAGHOM_INTEGRATION_GATEWAY_URL: https://tanaghom.38-247-187-232.sslip.io
+
+  egress-proxy:
+    volumes:
+      - /opt/tanaghom-dashboard/deployment/phase4-postiz-activation/egress/squid.conf:/etc/squid/squid.conf:ro

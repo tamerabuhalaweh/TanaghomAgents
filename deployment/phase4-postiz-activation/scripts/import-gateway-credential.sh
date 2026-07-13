@@ -19,7 +19,8 @@ cleanup() {
   docker exec --user node "$N8N_CONTAINER" rm -f "$CONTAINER_FILE" >/dev/null 2>&1 || true
 }
 trap cleanup EXIT HUP INT TERM
-IFS= read -r token
+token=
+IFS= read -r token || true
 token="$(printf %s "$token" | tr -d '\r')"
 test "${#token}" -ge 32 || { echo "worker token is too short" >&2; exit 64; }
 printf '%s' "$token" > "$token_file"
