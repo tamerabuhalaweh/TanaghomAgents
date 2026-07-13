@@ -23,5 +23,7 @@ read_secret SUPABASE_URL supabase_url
 read_secret SUPABASE_PUBLISHABLE_KEY supabase_publishable_key
 read_secret SUPABASE_JWKS_URL supabase_jwks_url
 read_optional_secret SUPABASE_SECRET_KEY supabase_secret_key
+read_optional_secret INTEGRATION_CREDENTIAL_KEY integration_credential_key
+read_optional_secret INTEGRATION_WORKER_TOKEN integration_worker_token
 
 exec node apps/dashboard/server.js

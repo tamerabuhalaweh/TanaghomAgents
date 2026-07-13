@@ -9,8 +9,9 @@ test('environment template contains placeholders, not integration credentials', 
   assert.match(template, /SUPABASE_SECRET_KEY=\r?\n/);
   assert.match(template, /INTERNAL_WEBHOOK_SECRET=\r?\n/);
   assert.match(template, /GEMMA_API_BASE_URL=\r?\n/);
-  assert.match(template, /POSTIZ_API_BASE_URL=\r?\n/);
-  assert.match(template, /GHL_API_BASE_URL=\r?\n/);
+  assert.match(template, /INTEGRATION_CREDENTIAL_KEY=\r?\n/);
+  assert.match(template, /INTEGRATION_WORKER_TOKEN=\r?\n/);
+  assert.doesNotMatch(template, /POSTIZ_API_KEY|GHL_API_KEY/);
 });
 
 test('legacy recovery snapshot is explicitly non-deployable and secret-free by shape', async () => {
@@ -115,6 +116,8 @@ test('Phase 3 n8n exports are inactive and constrained to controlled boundaries'
 
 test('Phase 4 Postiz handoff is draft-only, inactive, and approval guarded', async () => {
   const migration = await readFile(new URL('../packages/database/migrations/0007_postiz_draft_handoff.up.sql', import.meta.url), 'utf8');
+  const integrationMigration = await readFile(new URL('../packages/database/migrations/0008_customer_integrations.up.sql', import.meta.url), 'utf8');
+  const gateway = await readFile(new URL('../apps/dashboard/app/api/internal/integrations/postiz/draft/route.ts', import.meta.url), 'utf8');
   const workflow = JSON.parse(await readFile(new URL('../n8n/workflows/phase4/postiz-draft-publisher.v1.json', import.meta.url), 'utf8'));
   assert.match(migration, /CREATE FUNCTION tanaghom\.queue_postiz_draft/);
   assert.match(migration, /CREATE FUNCTION tanaghom\.prepare_postiz_draft/);
@@ -125,8 +128,13 @@ test('Phase 4 Postiz handoff is draft-only, inactive, and approval guarded', asy
   assert.equal(workflow.nodes.find((node) => node.name === 'Polling Disabled Pending Approval').disabled, true);
   assert.ok(workflow.nodes.every((node) => !['n8n-nodes-base.webhook', 'n8n-nodes-base.executeCommand', 'n8n-nodes-base.readWriteFile', 'n8n-nodes-base.ssh'].includes(node.type)));
   const http = workflow.nodes.find((node) => node.name === 'Create Postiz Draft');
-  assert.equal(http.parameters.url, 'https://api.postiz.com/public/v1/posts');
-  assert.equal(http.credentials.httpHeaderAuth.id, '62000000-0000-4000-8000-000000000003');
+  assert.match(http.parameters.url, /TANAGHOM_INTEGRATION_GATEWAY_URL/);
+  assert.doesNotMatch(JSON.stringify(workflow), /api\.postiz\.com|Tanaghom Postiz Staging API/);
+  assert.equal(http.credentials.httpHeaderAuth.id, '62000000-0000-4000-8000-000000000004');
+  assert.match(integrationMigration, /credential_ciphertext bytea/);
+  assert.match(integrationMigration, /organization_id = v_organization_id/);
+  assert.match(gateway, /operation\.response_summary IS NULL/);
+  assert.match(gateway, /gateway_dispatched_at/);
   const postgres = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.postgres');
   assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_agent_job|prepare_postiz_draft|complete_postiz_draft|record_postiz_draft_failure)/.test(node.parameters.query)));
   assert.ok(postgres.every((node) => node.credentials.postgres.id === '62000000-0000-4000-8000-000000000001'));

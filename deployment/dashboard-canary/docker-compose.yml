@@ -12,6 +12,7 @@ services:
       APP_BASE_URL: http://127.0.0.1:3200
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
+      INTEGRATION_CREDENTIAL_KEY_VERSION: "1"
       NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
     secrets:
       - database_url
@@ -19,6 +20,8 @@ services:
       - supabase_publishable_key
       - supabase_jwks_url
       - supabase_secret_key
+      - integration_credential_key
+      - integration_worker_token
     ports:
       - "127.0.0.1:3200:3000"
     volumes:
@@ -68,3 +71,7 @@ secrets:
     file: ./secrets/supabase_jwks_url
   supabase_secret_key:
     file: ./secrets/supabase_secret_key
+  integration_credential_key:
+    file: ./secrets/integration_credential_key
+  integration_worker_token:
+    file: ./secrets/integration_worker_token

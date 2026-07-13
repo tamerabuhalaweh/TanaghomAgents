@@ -9,6 +9,7 @@ export type ApplicationRole = "owner" | "reviewer" | "operator" | "viewer";
 
 export interface ApplicationUser {
   id: string;
+  organizationId: string;
   displayName: string;
   role: ApplicationRole;
 }
@@ -22,10 +23,11 @@ export async function authorize(
   const identity = await authenticate(request);
   const result = await database().query<{
     id: string;
+    organization_id: string;
     display_name: string;
     role: ApplicationRole;
   }>(
-    `SELECT id, display_name, role
+    `SELECT id, organization_id, display_name, role
        FROM tanaghom.app_users
       WHERE auth_subject = $1::uuid
         AND kind = 'human'
@@ -39,5 +41,5 @@ export async function authorize(
     throw new AuthorizationError("User is not authorized");
   }
 
-  return { id: user.id, displayName: user.display_name, role: user.role };
+  return { id: user.id, organizationId: user.organization_id, displayName: user.display_name, role: user.role };
 }

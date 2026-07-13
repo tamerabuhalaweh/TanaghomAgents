@@ -52,11 +52,19 @@ git checkout <APPROVED_MAIN_COMMIT>
 install -d -m 0700 deployment/dashboard-canary/secrets
 ```
 
-Create five files with `umask 077`: `database_url`, `supabase_url`,
-`supabase_publishable_key`, `supabase_jwks_url`, and `supabase_secret_key`.
+Create seven files with `umask 077`: `database_url`, `supabase_url`,
+`supabase_publishable_key`, `supabase_jwks_url`, `supabase_secret_key`,
+`integration_credential_key`, and `integration_worker_token`.
 The secret key is server-only and exists solely for owner-triggered Supabase
 Auth invitations; it is never sent to the dashboard browser. The file may be
 empty for a deployment where invitations are intentionally disabled.
+`integration_credential_key` is a base64-encoded 32-byte random key used for
+AES-256-GCM envelope encryption. `integration_worker_token` is an independent
+random value of at least 32 characters used only by the restricted internal
+workflow gateway. Generate both on the server, keep them out of shell history,
+and back them up in the encrypted off-server recovery package. Losing the
+encryption key makes saved customer credentials unrecoverable; rotation must
+use the versioned application procedure before replacing the file.
 Copy values from the existing ignored developer `.env` through an encrypted
 channel without printing them. Do not use shell history, Compose environment
 values, or Git for secret transfer. The transactional installer changes only

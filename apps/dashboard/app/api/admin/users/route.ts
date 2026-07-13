@@ -17,7 +17,9 @@ export async function GET(request: NextRequest) {
          FROM tanaghom.app_users member
          LEFT JOIN tanaghom.app_users inviter ON inviter.id = member.invited_by
         WHERE member.kind = 'human'
+          AND member.organization_id = $1
         ORDER BY (member.role = 'owner') DESC, member.created_at ASC`,
+      [owner.organizationId],
     );
     return noStore({
       users: result.rows,

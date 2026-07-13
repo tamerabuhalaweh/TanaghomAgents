@@ -82,7 +82,7 @@
     {
       "parameters": {
         "method": "POST",
-        "url": "https://api.postiz.com/public/v1/posts",
+        "url": "={{ $env.TANAGHOM_INTEGRATION_GATEWAY_URL }}/api/internal/integrations/postiz/draft",
         "authentication": "genericCredentialType",
         "genericAuthType": "httpHeaderAuth",
         "sendHeaders": true,
@@ -96,7 +96,7 @@
         },
         "sendBody": true,
         "specifyBody": "json",
-        "jsonBody": "={{ JSON.stringify($json.request_body) }}",
+        "jsonBody": "={{ JSON.stringify({ job_id: $json.job_id, request_body: $json.request_body }) }}",
         "options": {
           "timeout": 60000,
           "response": {
@@ -117,8 +117,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "62000000-0000-4000-8000-000000000003",
-          "name": "Tanaghom Postiz Staging API"
+          "id": "62000000-0000-4000-8000-000000000004",
+          "name": "Tanaghom Integration Gateway"
         }
       },
       "onError": "continueRegularOutput"
@@ -303,7 +303,7 @@
   "settings": {
     "executionOrder": "v1",
     "saveDataErrorExecution": "all",
-    "saveDataSuccessExecution": "all",
+    "saveDataSuccessExecution": "none",
     "executionTimeout": 120
   },
   "meta": {
@@ -311,5 +311,5 @@
   },
   "tags": [],
   "pinData": {},
-  "versionId": "61000000-0000-4000-8000-000000000003"
+  "versionId": "61000000-0000-4000-8000-000000000004"
 }

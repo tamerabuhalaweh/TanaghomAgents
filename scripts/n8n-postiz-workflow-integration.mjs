@@ -36,18 +36,18 @@ async function requestBody(request) {
 }
 
 const server = createServer(async (request, response) => {
-  if (request.method !== "POST" || request.url !== "/public/v1/posts") {
+  if (request.method !== "POST" || request.url !== "/api/internal/integrations/postiz/draft") {
     response.writeHead(404).end();
     return;
   }
   requestCount += 1;
   const body = await requestBody(request);
-  assert.equal(request.headers.authorization, "integration-only-postiz");
+  assert.equal(request.headers.authorization, "Bearer integration-only-worker-token-32");
   assert.equal(request.headers["idempotency-key"], "postiz-draft:53000000-0000-4000-8000-000000000001");
-  assert.equal(body.type, "draft");
-  assert.equal(body.posts.length, 1);
-  assert.equal(body.posts[0].integration.id, "integration-channel-1");
-  assert.equal(body.posts[0].value[0].content, "Workflow Postiz draft");
+  assert.equal(body.request_body.type, "draft");
+  assert.equal(body.request_body.posts.length, 1);
+  assert.equal(body.request_body.posts[0].integration.id, "integration-channel-1");
+  assert.equal(body.request_body.posts[0].value[0].content, "Workflow Postiz draft");
   response.writeHead(200, { "Content-Type": "application/json" });
   response.end(JSON.stringify([{ postId: "postiz-draft-123", integration: "integration-channel-1" }]));
 });
@@ -58,9 +58,9 @@ try {
   await once(server, "listening");
   await pool.query("ALTER ROLE tanaghom_n8n_worker LOGIN PASSWORD 'integration-only'");
   await pool.query(`INSERT INTO tanaghom.publishing_channels
-    (provider, channel, provider_integration_id, provider_settings)
-    VALUES ('postiz','instagram','integration-channel-1','{"__type":"instagram","post_type":"post"}')
-    ON CONFLICT (provider, channel) DO UPDATE SET
+    (organization_id, provider, channel, provider_integration_id, provider_settings)
+    VALUES ('10000000-0000-4000-8000-000000000001','postiz','instagram','integration-channel-1','{"__type":"instagram","post_type":"post"}')
+    ON CONFLICT (organization_id, provider, channel) DO UPDATE SET
       provider_integration_id=excluded.provider_integration_id,
       provider_settings=excluded.provider_settings,
       is_active=true`);
@@ -96,10 +96,10 @@ try {
       },
     },
     {
-      id: "62000000-0000-4000-8000-000000000003",
-      name: "Tanaghom Postiz Staging API",
+      id: "62000000-0000-4000-8000-000000000004",
+      name: "Tanaghom Integration Gateway",
       type: "httpHeaderAuth",
-      data: { name: "Authorization", value: "integration-only-postiz" },
+      data: { name: "Authorization", value: "Bearer integration-only-worker-token-32" },
     },
   ];
   await writeFile(join(temporary, "credentials.json"), JSON.stringify(credentials));
@@ -108,7 +108,7 @@ try {
     "utf8",
   ));
   workflow.nodes.find((entry) => entry.name === "Create Postiz Draft").parameters.url =
-    `http://127.0.0.1:${postizPort}/public/v1/posts`;
+    `http://127.0.0.1:${postizPort}/api/internal/integrations/postiz/draft`;
   await writeFile(join(temporary, "workflow.json"), JSON.stringify(workflow));
   await chmod(temporary, 0o755);
   await Promise.all(["credentials.json", "workflow.json"].map((file) => chmod(join(temporary, file), 0o644)));
@@ -120,6 +120,7 @@ try {
     "-e", "N8N_USER_MANAGEMENT_DISABLED=true",
     "-e", "N8N_DIAGNOSTICS_ENABLED=false",
     "-e", "N8N_SSRF_PROTECTION_ENABLED=false",
+    `-e`, `TANAGHOM_INTEGRATION_GATEWAY_URL=http://127.0.0.1:${postizPort}`,
     "-v", `${volume}:/home/node/.n8n`,
     "-v", `${temporary}:/fixtures:ro`,
     image,
@@ -151,7 +152,7 @@ try {
     (correlation_id,agent_id,campaign_id,job_type,input)
     VALUES ('54000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000003',
       '20000000-0000-4000-8000-000000000001','content.postiz.draft',
-      '{"contract_version":"phase4.postiz-draft-job.v1","content_item_id":"53000000-0000-4000-8000-000000000002"}')`);
+      '{"contract_version":"phase4.postiz-draft-job.v1","content_item_id":"53000000-0000-4000-8000-000000000002","organization_id":"10000000-0000-4000-8000-000000000001"}')`);
   await assert.rejects(
     run("docker", [...dockerBase, "execute", "--id=phase4PostizDraftV1", "--rawOutput"]),
     /content is no longer approved/,
@@ -160,6 +161,29 @@ try {
   console.log("PASS: inactive Postiz workflow created one draft and blocked replay plus forged unapproved content.");
 } finally {
   server.close();
+  await pool.query(`
+    DELETE FROM tanaghom.posts WHERE content_item_id IN
+      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
+    DELETE FROM tanaghom.external_operations WHERE idempotency_key IN
+      ('postiz-draft:53000000-0000-4000-8000-000000000001','postiz-draft:53000000-0000-4000-8000-000000000002');
+    DELETE FROM tanaghom.outbox_events WHERE aggregate_id IN
+      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
+    ALTER TABLE tanaghom.agent_actions_log DISABLE TRIGGER audit_no_update;
+    ALTER TABLE tanaghom.agent_actions_log DISABLE TRIGGER audit_no_delete;
+    DELETE FROM tanaghom.agent_actions_log WHERE entity_id IN
+      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002')
+      OR job_id IN (SELECT id FROM tanaghom.agent_jobs WHERE job_type='content.postiz.draft'
+        AND input->>'content_item_id' IN ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002'));
+    DELETE FROM tanaghom.agent_jobs WHERE job_type='content.postiz.draft'
+      AND input->>'content_item_id' IN ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
+    ALTER TABLE tanaghom.agent_actions_log ENABLE TRIGGER audit_no_update;
+    ALTER TABLE tanaghom.agent_actions_log ENABLE TRIGGER audit_no_delete;
+    DELETE FROM tanaghom.content_items WHERE id IN
+      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
+    DELETE FROM tanaghom.campaign_strategies
+      WHERE campaign_id='20000000-0000-4000-8000-000000000001' AND version=401;
+    UPDATE tanaghom.agents SET status='idle' WHERE code='publisher_monitor' AND status <> 'disabled';
+  `).catch(() => {});
   await pool.end();
   await run("docker", ["volume", "rm", "-f", volume]).catch(() => {});
   await rm(temporary, { recursive: true, force: true });

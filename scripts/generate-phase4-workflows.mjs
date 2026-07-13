@@ -9,8 +9,8 @@ mkdirSync(outputDir, { recursive: true });
 const postgresCredential = {
   postgres: { id: "62000000-0000-4000-8000-000000000001", name: "Tanaghom Worker PostgreSQL" },
 };
-const postizCredential = {
-  httpHeaderAuth: { id: "62000000-0000-4000-8000-000000000003", name: "Tanaghom Postiz Staging API" },
+const gatewayCredential = {
+  httpHeaderAuth: { id: "62000000-0000-4000-8000-000000000004", name: "Tanaghom Integration Gateway" },
 };
 
 function node(id, name, type, typeVersion, position, parameters, extra = {}) {
@@ -55,7 +55,7 @@ const workflow = {
     }, { credentials: postgresCredential }),
     node("postiz-request", "Create Postiz Draft", "n8n-nodes-base.httpRequest", 4.2, [720, 270], {
       method: "POST",
-      url: "https://api.postiz.com/public/v1/posts",
+      url: "={{ $env.TANAGHOM_INTEGRATION_GATEWAY_URL }}/api/internal/integrations/postiz/draft",
       authentication: "genericCredentialType",
       genericAuthType: "httpHeaderAuth",
       sendHeaders: true,
@@ -64,12 +64,12 @@ const workflow = {
       },
       sendBody: true,
       specifyBody: "json",
-      jsonBody: "={{ JSON.stringify($json.request_body) }}",
+      jsonBody: "={{ JSON.stringify({ job_id: $json.job_id, request_body: $json.request_body }) }}",
       options: {
         timeout: 60000,
         response: { response: { fullResponse: true, neverError: true } },
       },
-    }, { credentials: postizCredential, onError: "continueRegularOutput" }),
+    }, { credentials: gatewayCredential, onError: "continueRegularOutput" }),
     node("postiz-parse", "Validate Draft Response", "n8n-nodes-base.code", 2, [960, 270], { jsCode: parseCode }),
     node("postiz-valid", "Draft Created?", "n8n-nodes-base.if", 2.2, [1200, 270], {
       conditions: {
@@ -112,13 +112,13 @@ const workflow = {
   settings: {
     executionOrder: "v1",
     saveDataErrorExecution: "all",
-    saveDataSuccessExecution: "all",
+    saveDataSuccessExecution: "none",
     executionTimeout: 120,
   },
   meta: { templateCredsSetupCompleted: false },
   tags: [],
   pinData: {},
-  versionId: "61000000-0000-4000-8000-000000000003",
+  versionId: "61000000-0000-4000-8000-000000000004",
 };
 
 writeFileSync(

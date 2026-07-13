@@ -75,9 +75,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Bell size={18} />
             <span>Alerts</span>
           </Link>
-          <Link href="/system" className="nav-link">
+          <Link href="/settings/integrations" className={`nav-link ${pathname.startsWith("/settings") ? "nav-link-active" : ""}`}>
             <Settings size={18} />
-            <span>System</span>
+            <span>Settings</span>
           </Link>
           <SessionProfile />
         </div>

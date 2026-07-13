@@ -49,7 +49,10 @@ export async function inviteTeamMember(request: NextRequest) {
     throw new TeamRequestError("invalid_invitation", 400);
   }
 
-  const duplicate = await database().query(`SELECT 1 FROM tanaghom.app_users WHERE lower(email) = $1`, [email]);
+  const duplicate = await database().query(
+    `SELECT 1 FROM tanaghom.app_users WHERE organization_id = $1 AND lower(email) = $2`,
+    [owner.organizationId, email],
+  );
   if (duplicate.rows[0]) throw new TeamRequestError("email_already_added", 409);
 
   const authUser = await inviteAuthUser({
@@ -62,10 +65,10 @@ export async function inviteTeamMember(request: NextRequest) {
     await client.query("BEGIN");
     const created = await client.query<{ id: string }>(
       `INSERT INTO tanaghom.app_users
-        (email, display_name, kind, role, is_active, auth_subject, invited_by, invited_at)
-       VALUES ($1, $2, 'human', $3, true, $4, $5, now())
+        (email, display_name, kind, role, is_active, auth_subject, invited_by, invited_at, organization_id)
+       VALUES ($1, $2, 'human', $3, true, $4, $5, now(), $6)
        RETURNING id`,
-      [email, displayName, role, authUser.id, owner.id],
+      [email, displayName, role, authUser.id, owner.id, owner.organizationId],
     );
     await client.query(
       `INSERT INTO tanaghom.agent_actions_log
@@ -105,19 +108,22 @@ export async function updateTeamMember(request: NextRequest, userId: string) {
     await client.query("BEGIN");
     const existing = await client.query<{ role: ApplicationRole; is_active: boolean }>(
       `SELECT role, is_active FROM tanaghom.app_users
-        WHERE id = $1 AND kind = 'human' FOR UPDATE`, [userId],
+        WHERE id = $1 AND organization_id = $2 AND kind = 'human' FOR UPDATE`,
+      [userId, owner.organizationId],
     );
     if (!existing.rows[0]) throw new TeamRequestError("user_not_found", 404);
     if (existing.rows[0].role === "owner" && existing.rows[0].is_active && (role !== "owner" || !isActive)) {
       const owners = await client.query<{ count: number }>(
         `SELECT count(*)::int AS count FROM tanaghom.app_users
-          WHERE kind = 'human' AND role = 'owner' AND is_active = true`,
+          WHERE organization_id = $1 AND kind = 'human' AND role = 'owner' AND is_active = true`,
+        [owner.organizationId],
       );
       if (owners.rows[0].count <= 1) throw new TeamRequestError("last_owner_protected", 409);
     }
     await client.query(
-      `UPDATE tanaghom.app_users SET role = $2, is_active = $3 WHERE id = $1`,
-      [userId, role, isActive],
+      `UPDATE tanaghom.app_users SET role = $2, is_active = $3
+        WHERE id = $1 AND organization_id = $4`,
+      [userId, role, isActive, owner.organizationId],
     );
     await client.query(
       `INSERT INTO tanaghom.agent_actions_log
