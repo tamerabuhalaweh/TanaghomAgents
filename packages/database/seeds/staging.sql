@@ -1,13 +1,14 @@
 BEGIN;
 
-INSERT INTO tanaghom.app_users (id, email, display_name, kind, role, auth_subject)
+INSERT INTO tanaghom.app_users (id, email, display_name, kind, role, auth_subject, accepted_at)
 VALUES (
   '00000000-0000-4000-8000-000000000001',
   'owner@example.test',
   'Staging Owner',
   'human',
   'owner',
-  '90000000-0000-4000-8000-000000000001'
+  '90000000-0000-4000-8000-000000000001',
+  now()
 );
 
 INSERT INTO tanaghom.agents (id, code, name, description)

@@ -13,10 +13,10 @@ BEGIN
 
   BEGIN
     INSERT INTO tanaghom.app_users (
-      email, display_name, kind, role, auth_subject
+      email, display_name, kind, role, auth_subject, accepted_at
     ) VALUES (
       'duplicate-subject@example.test', 'Duplicate Subject', 'human', 'reviewer',
-      '90000000-0000-4000-8000-000000000001'
+      '90000000-0000-4000-8000-000000000001', now()
     );
     RAISE EXCEPTION 'duplicate auth subject unexpectedly succeeded';
   EXCEPTION WHEN unique_violation THEN

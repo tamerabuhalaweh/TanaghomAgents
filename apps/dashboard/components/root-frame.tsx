@@ -6,6 +6,6 @@ import { OperationsProvider } from "@/components/operations-context";
 
 export function RootFrame({ children }: Readonly<{ children: React.ReactNode }>) {
   const pathname = usePathname();
-  if (pathname === "/login") return children;
+  if (pathname === "/login" || pathname === "/accept-invite") return children;
   return <OperationsProvider><AppShell>{children}</AppShell></OperationsProvider>;
 }

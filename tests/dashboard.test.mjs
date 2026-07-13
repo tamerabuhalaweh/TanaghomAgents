@@ -10,10 +10,34 @@ test("dashboard exposes the Phase 2 operational routes", async () => {
   await Promise.all(routes.map((route) => readFile(new URL(route, dashboard), "utf8")));
 });
 
-test("live approval workspace queues decisions without direct external calls", async () => {
+test("live approval workspace retains approved content without direct external calls", async () => {
   const source = await readFile(new URL("components/approval-workspace.tsx", dashboard), "utf8");
-  assert.match(source, /Publishing work has been queued/);
+  assert.match(source, /available in the Content Library/);
   assert.doesNotMatch(source, /axios|https?:\/\//);
+});
+
+test("Phase 4 team management is owner-only and preserves the final admin", async () => {
+  const team = await readFile(new URL("lib/server/team-management.ts", dashboard), "utf8");
+  const adminApi = await readFile(new URL("app/api/admin/users/route.ts", dashboard), "utf8");
+  const invite = await readFile(new URL("lib/server/supabase-admin.ts", dashboard), "utf8");
+  assert.match(team, /authorize\(request, \["owner"\]\)/);
+  assert.match(team, /last_owner_protected/);
+  assert.match(team, /cannot_change_own_owner_access/);
+  assert.match(team, /team\.user_(invited|updated)/);
+  assert.match(adminApi, /kind = 'human'/);
+  assert.match(invite, /SUPABASE_SECRET_KEY/);
+  assert.doesNotMatch((await readFile(new URL("components/team-management.tsx", dashboard), "utf8")), /SUPABASE_SECRET_KEY|apikey/);
+});
+
+test("Content Library is live, keeps approval evidence, and guards Postiz handoff", async () => {
+  const route = await readFile(new URL("app/api/content/route.ts", dashboard), "utf8");
+  const component = await readFile(new URL("components/content-library.tsx", dashboard), "utf8");
+  assert.match(route, /content_approvals/);
+  assert.match(route, /tanaghom\.posts/);
+  assert.match(route, /postiz_ready: false/);
+  assert.match(component, /Send to Postiz as draft/);
+  assert.match(component, /disabled=\{!integration\?\.postiz_ready\}/);
+  assert.doesNotMatch(component, /@\/data\/fixtures|https?:\/\//);
 });
 
 test("dashboard includes reduced-motion and responsive navigation behavior", async () => {
@@ -142,6 +166,7 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   assert.match(compose, /NODE_EXTRA_CA_CERTS/);
   assert.match(dockerfile, /node:24\.18\.0-alpine3\.24@sha256:/);
   assert.match(entrypoint, /\/run\/secrets\/\$2/);
+  assert.match(entrypoint, /SUPABASE_SECRET_KEY supabase_secret_key/);
   assert.match(installer, /protected unit changed state/);
   assert.match(installer, /candidate\.overlaps/);
   assert.match(installer, /cleanup/);

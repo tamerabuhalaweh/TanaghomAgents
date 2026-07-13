@@ -12,7 +12,7 @@ grep -Fq 'read_only: true' docker-compose.yml
 grep -Fq 'no-new-privileges:true' docker-compose.yml
 grep -Fq 'cap_drop:' docker-compose.yml
 
-for secret in database_url supabase_url supabase_publishable_key supabase_jwks_url; do
+for secret in database_url supabase_url supabase_publishable_key supabase_jwks_url supabase_secret_key; do
   test ! -e "secrets/$secret" || { echo "runtime secret exists in source package: $secret" >&2; exit 1; }
 done
 
