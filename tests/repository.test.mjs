@@ -148,3 +148,28 @@ test('Phase 4 Postiz handoff is draft-only, inactive, and approval guarded', asy
   assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_postiz_draft_job|prepare_postiz_draft|complete_postiz_draft|record_postiz_draft_failure)/.test(node.parameters.query)));
   assert.ok(postgres.every((node) => node.credentials.postgres.id === '62000000-0000-4000-8000-000000000001'));
 });
+
+test('Phase 4F gateway activation package is private, transactional, and reversible', async () => {
+  const root = new URL('../deployment/phase4-postiz-activation/', import.meta.url);
+  const dashboard = await readFile(new URL('docker-compose.dashboard-gateway.yml', root), 'utf8');
+  const n8n = await readFile(new URL('docker-compose.n8n-gateway.yml', root), 'utf8');
+  const install = await readFile(new URL('scripts/update-gateway-firewall.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-gateway-firewall.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-gateway-boundary.sh', root), 'utf8');
+  const credential = await readFile(new URL('scripts/import-gateway-credential.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  assert.match(dashboard, /172\.30\.252\.4/);
+  assert.match(dashboard, /external: true/);
+  assert.match(n8n, /http:\/\/tanaghom-integration-gateway:3000/);
+  assert.match(install, /TANAGHOM_N8N_GATEWAY_EGRESS/);
+  assert.match(install, /rollback_partial/);
+  assert.match(install, /--dport 3000/);
+  assert.match(install, /-s "\$SUBNET" -j DROP/);
+  assert.match(rollback, /iptables -I DOCKER-USER 1 -j "\$OLD_CHAIN"/);
+  assert.match(validate, /unauthorized\.status !== 401/);
+  assert.match(validate, /authorized\.status !== 400/);
+  assert.match(credential, /n8n import:credentials/);
+  assert.match(credential, /Tanaghom Integration Gateway/);
+  assert.match(runbook, /source workflow remains\s+inactive/i);
+  assert.doesNotMatch(`${dashboard}\n${n8n}\n${install}\n${rollback}\n${validate}\n${credential}`, /Bearer\s+[A-Za-z0-9_-]{20,}/);
+});

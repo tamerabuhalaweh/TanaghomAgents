@@ -1,0 +1,12 @@
+services:
+  n8n:
+    environment:
+      NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com,tanaghom-integration-gateway
+      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy,tanaghom-integration-gateway
+      TANAGHOM_INTEGRATION_GATEWAY_URL: http://tanaghom-integration-gateway:3000
+
+  n8n-worker:
+    environment:
+      NO_PROXY: postgres,redis,localhost,127.0.0.1,aws-1-ap-south-1.pooler.supabase.com,tanaghom-integration-gateway
+      N8N_SSRF_ALLOWED_HOSTNAMES: api.thesmartlabs.net,egress-proxy,tanaghom-integration-gateway
+      TANAGHOM_INTEGRATION_GATEWAY_URL: http://tanaghom-integration-gateway:3000
