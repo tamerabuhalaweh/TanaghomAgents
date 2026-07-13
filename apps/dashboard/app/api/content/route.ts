@@ -55,15 +55,17 @@ export async function GET(request: NextRequest) {
           AND operation.idempotency_key = 'postiz-draft:' || content.id::text
          LEFT JOIN tanaghom.publishing_channels channel_mapping
            ON channel_mapping.provider = 'postiz'
+          AND channel_mapping.organization_id = campaign.organization_id
           AND channel_mapping.channel = content.channel
           AND channel_mapping.is_active
         WHERE ($1::text IS NULL OR content.status = $1)
+          AND campaign.organization_id = $3
           AND ($2::text = '' OR campaign.name ILIKE '%' || $2 || '%'
                OR content.draft_copy ILIKE '%' || $2 || '%'
                OR content.channel ILIKE '%' || $2 || '%')
         ORDER BY content.updated_at DESC, content.created_at DESC
         LIMIT 250`,
-      [status, search],
+      [status, search, user.organizationId],
     );
     return noStore({
       items: result.rows,

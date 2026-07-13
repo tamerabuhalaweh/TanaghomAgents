@@ -42,6 +42,7 @@ const assertions = join(root, 'packages', 'database', 'tests', 'foundation.sql')
 const roleAssertions = join(root, 'packages', 'database', 'tests', 'least_privilege_roles.sql');
 const workerAssertions = join(root, 'packages', 'database', 'tests', 'controlled_worker_functions.sql');
 const postizAssertions = join(root, 'packages', 'database', 'tests', 'postiz_draft_handoff.sql');
+const integrationAssertions = join(root, 'packages', 'database', 'tests', 'customer_integrations.sql');
 
 database('migrate');
 database('migrate');
@@ -50,6 +51,9 @@ psql('-f', assertions);
 psql('-f', roleAssertions);
 psql('-f', workerAssertions);
 psql('-f', postizAssertions);
+psql('-f', integrationAssertions);
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.integration_connections') IS NOT NULL THEN RAISE EXCEPTION '0008 rollback left integration tables behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regprocedure('tanaghom.queue_postiz_draft(uuid,uuid)') IS NOT NULL THEN RAISE EXCEPTION '0007 rollback left Postiz functions behind'; END IF; END $$;");
 database('rollback');

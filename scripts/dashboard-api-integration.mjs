@@ -10,8 +10,10 @@ if (!databaseUrl) throw new Error("DATABASE_TEST_URL is required");
 
 const authPort = 43191;
 const dashboardPort = 43192;
+const providerPort = 43193;
 const authOrigin = `http://127.0.0.1:${authPort}`;
 const dashboardOrigin = `http://127.0.0.1:${dashboardPort}`;
+const providerOrigin = `http://127.0.0.1:${providerPort}`;
 const subject = "90000000-0000-4000-8000-000000000001";
 const invitedSubject = "90000000-0000-4000-8000-000000000002";
 const ownerId = "00000000-0000-4000-8000-000000000001";
@@ -19,6 +21,7 @@ const campaignId = "20000000-0000-4000-8000-000000000001";
 const { privateKey, publicKey } = await generateKeyPair("RS256");
 const publicJwk = { ...await exportJWK(publicKey), kid: "integration-key", alg: "RS256", use: "sig" };
 let refreshGeneration = 0;
+let providerDraftRequests = 0;
 
 async function accessToken(seconds, tokenSubject = subject, email = "owner@example.test") {
   return new SignJWT({ role: "authenticated", email })
@@ -97,6 +100,35 @@ const authServer = createServer(async (request, response) => {
   response.writeHead(400).end();
 });
 
+const providerServer = createServer(async (request, response) => {
+  const url = new URL(request.url, providerOrigin);
+  if (request.headers.authorization !== "integration-customer-postiz-key") {
+    response.writeHead(401, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ error: "unauthorized" }));
+    return;
+  }
+  if (request.method === "GET" && url.pathname === "/public/v1/is-connected") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ connected: true }));
+    return;
+  }
+  if (request.method === "GET" && url.pathname === "/public/v1/integrations") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify([{ id: "integration-test-channel", name: "Test Instagram", identifier: "instagram", profile: "@tanaghom-test", disabled: false }]));
+    return;
+  }
+  if (request.method === "POST" && url.pathname === "/public/v1/posts") {
+    providerDraftRequests += 1;
+    const body = await jsonBody(request);
+    assert.equal(body.type, "draft");
+    assert.equal(body.posts[0].integration.id, "integration-test-channel");
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify([{ postId: "gateway-draft-1", integration: "integration-test-channel" }]));
+    return;
+  }
+  response.writeHead(404).end();
+});
+
 function cookies(response) {
   return response.headers.getSetCookie().map((value) => value.split(";", 1)[0]);
 }
@@ -125,6 +157,8 @@ let dashboard;
 try {
   authServer.listen(authPort, "127.0.0.1");
   await once(authServer, "listening");
+  providerServer.listen(providerPort, "127.0.0.1");
+  await once(providerServer, "listening");
   dashboard = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "apps/dashboard", "-p", String(dashboardPort)], {
     cwd: process.cwd(),
     env: {
@@ -135,6 +169,10 @@ try {
       SUPABASE_PUBLISHABLE_KEY: "integration-publishable-key",
       SUPABASE_SECRET_KEY: "integration-secret-key",
       POSTIZ_HANDOFF_ENABLED: "true",
+      INTEGRATION_CREDENTIAL_KEY: Buffer.alloc(32, 7).toString("base64"),
+      INTEGRATION_CREDENTIAL_KEY_VERSION: "1",
+      INTEGRATION_WORKER_TOKEN: "integration-worker-token-at-least-32-characters",
+      INTEGRATION_TEST_BASE_URLS: `${providerOrigin}/public/v1`,
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -166,6 +204,36 @@ try {
   session = await fetch(`${dashboardOrigin}/api/auth/session`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(session.status, 200);
 
+  const initialIntegrations = await fetch(`${dashboardOrigin}/api/admin/integrations`, { headers: { Cookie: jar.join("; ") } });
+  assert.equal(initialIntegrations.status, 200);
+  assert.equal((await initialIntegrations.json()).secure_storage_configured, true);
+  const savedPostiz = await fetch(`${dashboardOrigin}/api/admin/integrations/postiz`, {
+    method: "PUT",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ secret: "integration-customer-postiz-key", base_url: `${providerOrigin}/public/v1`, configuration: {} }),
+  });
+  assert.equal(savedPostiz.status, 200);
+  const savedPostizBody = await savedPostiz.json();
+  assert.equal(savedPostizBody.connection.credential_mask, "••••••••-key");
+  assert.doesNotMatch(JSON.stringify(savedPostizBody), /integration-customer-postiz-key/);
+  const encryptedCredential = await pool.query(`SELECT encode(credential_ciphertext, 'hex') ciphertext,
+    credential_nonce, credential_auth_tag FROM tanaghom.integration_connections WHERE provider='postiz'`);
+  assert.ok(encryptedCredential.rows[0].ciphertext.length > 20);
+  assert.equal(encryptedCredential.rows[0].credential_nonce.length, 12);
+  assert.equal(encryptedCredential.rows[0].credential_auth_tag.length, 16);
+  assert.doesNotMatch(encryptedCredential.rows[0].ciphertext, /integration-customer-postiz-key/);
+  const testedPostiz = await fetch(`${dashboardOrigin}/api/admin/integrations/postiz/test`, {
+    method: "POST", headers: { Cookie: jar.join("; "), Origin: dashboardOrigin },
+  });
+  assert.equal(testedPostiz.status, 200);
+  assert.equal((await testedPostiz.json()).connection.status, "connected");
+  const mappedPostiz = await fetch(`${dashboardOrigin}/api/admin/integrations/postiz/channels`, {
+    method: "PUT",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ mappings: [{ channel: "instagram", provider_integration_id: "integration-test-channel" }] }),
+  });
+  assert.equal(mappedPostiz.status, 200);
+
   const strategy = await pool.query(
     `INSERT INTO tanaghom.campaign_strategies
        (campaign_id, version, positioning, key_messages, channels, posting_cadence, content_pillars, model_name, prompt_version)
@@ -176,7 +244,7 @@ try {
   const createContent = async (generation) => (await pool.query(
     `INSERT INTO tanaghom.content_items
        (campaign_id, strategy_id, generation, channel, content_type, draft_copy, media_brief, status)
-     VALUES ($1, $2, $3, 'test', 'post', 'Integration draft', 'No external media', 'pending_approval')
+     VALUES ($1, $2, $3, 'instagram', 'post', 'Integration draft', 'No external media', 'pending_approval')
      RETURNING id`,
     [campaignId, strategy.rows[0].id, generation],
   )).rows[0].id;
@@ -217,10 +285,6 @@ try {
   );
   assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 1, audit: 1, idempotency: 1 });
 
-  await pool.query(`INSERT INTO tanaghom.publishing_channels
-    (provider, channel, provider_integration_id, provider_settings)
-    VALUES ('postiz','test','integration-test-channel','{"__type":"test"}')`);
-
   const library = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(library.status, 200);
   const libraryBody = await library.json();
@@ -253,9 +317,31 @@ try {
     [contentId],
   );
   assert.deepEqual(handoffState.rows[0], { jobs: 1, operations: 0, posts: 0 });
+  const claimed = await pool.query(`SELECT * FROM tanaghom.claim_agent_job('publisher_monitor', ARRAY['content.postiz.draft'])`);
+  assert.equal(claimed.rows[0].job_id, handoffBody.job_id);
+  const prepared = await pool.query(`SELECT * FROM tanaghom.prepare_postiz_draft($1::uuid)`, [handoffBody.job_id]);
+  const gateway = await fetch(`${dashboardOrigin}/api/internal/integrations/postiz/draft`, {
+    method: "POST",
+    headers: { Authorization: "Bearer integration-worker-token-at-least-32-characters", "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id: handoffBody.job_id, request_body: prepared.rows[0].request_body }),
+  });
+  assert.equal(gateway.status, 200);
+  const gatewayBody = await gateway.json();
+  assert.equal(gatewayBody[0].postId, "gateway-draft-1");
+  assert.equal(providerDraftRequests, 1);
+  const gatewayReplay = await fetch(`${dashboardOrigin}/api/internal/integrations/postiz/draft`, {
+    method: "POST",
+    headers: { Authorization: "Bearer integration-worker-token-at-least-32-characters", "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id: handoffBody.job_id, request_body: prepared.rows[0].request_body }),
+  });
+  assert.equal(gatewayReplay.status, 409);
+  assert.equal(providerDraftRequests, 1);
+  await pool.query(`SELECT tanaghom.complete_postiz_draft($1::uuid, $2::text, $3::jsonb)`, [
+    handoffBody.job_id, gatewayBody[0].postId, JSON.stringify(gatewayBody[0]),
+  ]);
   const queuedLibrary = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
   const queuedLibraryBody = await queuedLibrary.json();
-  assert.ok(queuedLibraryBody.items.some((item) => item.id === contentId && item.handoff_status === "queued"));
+  assert.ok(queuedLibraryBody.items.some((item) => item.id === contentId && item.handoff_status === "succeeded" && item.post_status === "draft"));
 
   const unapprovedContentId = await createContent(2);
   const blockedHandoff = await fetch(`${dashboardOrigin}/api/content/${unapprovedContentId}/postiz-draft`, {
@@ -264,6 +350,15 @@ try {
   });
   assert.equal(blockedHandoff.status, 409);
   assert.equal((await blockedHandoff.json()).error, "content_not_approved");
+
+  const disconnectedPostiz = await fetch(`${dashboardOrigin}/api/admin/integrations/postiz`, {
+    method: "DELETE", headers: { Cookie: jar.join("; "), Origin: dashboardOrigin },
+  });
+  assert.equal(disconnectedPostiz.status, 200);
+  const disconnectedState = await pool.query(`SELECT status, credential_ciphertext IS NULL AS secret_destroyed,
+    (SELECT count(*)::int FROM tanaghom.publishing_channels WHERE provider='postiz') mappings
+    FROM tanaghom.integration_connections WHERE provider='postiz'`);
+  assert.deepEqual(disconnectedState.rows[0], { status: "disconnected", secret_destroyed: true, mappings: 0 });
 
   const team = await fetch(`${dashboardOrigin}/api/admin/users`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(team.status, 200);
@@ -321,9 +416,12 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: session, approval, guarded Postiz queue, Content Library, and owner-managed invitation contracts verified.");
+  console.log("PASS: session, approvals, encrypted customer integrations, gateway isolation, Content Library, and owner-managed invitations verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();
+  providerServer.close();
+  await pool.query("DROP TRIGGER IF EXISTS integration_reject_outbox ON tanaghom.outbox_events").catch(() => {});
+  await pool.query("DROP FUNCTION IF EXISTS tanaghom.integration_reject_outbox()").catch(() => {});
   await pool.end();
 }
