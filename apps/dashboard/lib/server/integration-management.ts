@@ -5,6 +5,7 @@ import type { NextRequest } from "next/server";
 import type { PoolClient } from "pg";
 
 import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
+import { getPostizAutomationStatus } from "@/lib/server/automation-management";
 import { authorize, type ApplicationUser } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import {
@@ -122,18 +123,17 @@ export function integrationApiError(error: unknown) { return knownError(error); 
 
 export async function listIntegrations(request: NextRequest) {
   const owner = await authorize(request, ["owner"]);
-  const result = await database().query<ConnectionRow>(
+  const [result, mappings, automation] = await Promise.all([database().query<ConnectionRow>(
     `SELECT * FROM tanaghom.integration_connections
       WHERE organization_id = $1 ORDER BY provider`,
     [owner.organizationId],
-  );
-  const mappings = await database().query(
+  ), database().query(
     `SELECT channel, provider_integration_id, provider_settings, is_active
        FROM tanaghom.publishing_channels
       WHERE organization_id = $1 AND provider = 'postiz'
       ORDER BY channel`,
     [owner.organizationId],
-  );
+  ), getPostizAutomationStatus(owner.organizationId)]);
   const byProvider = new Map(result.rows.map((row) => [row.provider, publicConnection(row)]));
   return {
     secure_storage_configured: integrationEncryptionConfigured(),
@@ -144,6 +144,7 @@ export async function listIntegrations(request: NextRequest) {
       connection: byProvider.get(provider) || null,
     })),
     postiz_mappings: mappings.rows,
+    postiz_automation: automation,
   };
 }
 

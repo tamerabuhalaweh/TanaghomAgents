@@ -45,7 +45,7 @@ const workflow = {
     }, { disabled: true }),
     node("postiz-claim", "Claim Publisher Job", "n8n-nodes-base.postgres", 2.6, [240, 270], {
       operation: "executeQuery",
-      query: "SELECT * FROM tanaghom.claim_agent_job('publisher_monitor', ARRAY['content.postiz.draft']);",
+      query: "SELECT * FROM tanaghom.claim_postiz_draft_job();",
       options: {},
     }, { credentials: postgresCredential }),
     node("postiz-prepare", "Prepare Postiz Draft", "n8n-nodes-base.postgres", 2.6, [480, 270], {

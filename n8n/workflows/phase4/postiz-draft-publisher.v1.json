@@ -38,7 +38,7 @@
     {
       "parameters": {
         "operation": "executeQuery",
-        "query": "SELECT * FROM tanaghom.claim_agent_job('publisher_monitor', ARRAY['content.postiz.draft']);",
+        "query": "SELECT * FROM tanaghom.claim_postiz_draft_job();",
         "options": {}
       },
       "id": "postiz-claim",

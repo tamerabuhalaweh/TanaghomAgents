@@ -3,10 +3,13 @@
 import {
   CheckCircle2,
   CircleAlert,
+  CirclePause,
+  Clock3,
   KeyRound,
   Link2,
   PlugZap,
   RefreshCw,
+  Send,
   ShieldCheck,
   Trash2,
 } from "lucide-react";
@@ -52,10 +55,29 @@ interface ProviderRecord {
 
 interface Mapping { channel: string; provider_integration_id: string; is_active: boolean }
 
+type AutomationMode = "manual" | "automatic" | "paused";
+
+interface AutomationStatus {
+  mode: AutomationMode;
+  changed_at: string | null;
+  changed_by: { id: string; display_name: string } | null;
+  emergency_stop: boolean;
+  emergency_stop_reason: string;
+  readiness: {
+    runtime_ready: boolean;
+    connection_ready: boolean;
+    channel_mapping_ready: boolean;
+    operations_clear: boolean;
+    ready_for_automatic: boolean;
+    blockers: string[];
+  };
+}
+
 interface IntegrationsPayload {
   secure_storage_configured: boolean;
   providers: ProviderRecord[];
   postiz_mappings: Mapping[];
+  postiz_automation: AutomationStatus;
 }
 
 const errorCopy: Record<string, string> = {
@@ -66,6 +88,11 @@ const errorCopy: Record<string, string> = {
   integration_test_failed: "The provider connection test did not pass.",
   ghl_location_id_required: "A valid GoHighLevel Location ID is required.",
   postiz_mapping_duplicate_channel: "Choose only one Postiz account for each Tanaghom channel.",
+  automation_runtime_not_ready: "The protected background worker is not ready for automatic drafts.",
+  automation_emergency_stopped: "Tanaghom operations have applied the emergency stop.",
+  postiz_connection_not_ready: "Connect and test Postiz before enabling automatic drafts.",
+  postiz_channel_mapping_not_ready: "Map at least one supported Postiz channel first.",
+  indeterminate_postiz_operation: "Resolve the uncertain Postiz operation before enabling automation.",
 };
 
 function date(value: string | null) {
@@ -119,12 +146,112 @@ export function IntegrationsSettings() {
           onChanged={load}
         />)}
       </div>
+      <PostizAutomationControl automation={payload.postiz_automation} onChanged={load} />
       <section className="integration-boundary">
         <KeyRound size={19} />
         <div><strong>Customer credentials stay outside n8n</strong><p>Agent workflows use a restricted Tanaghom gateway. Provider tokens are decrypted only for the authorized request and are excluded from execution history.</p></div>
       </section>
     </> : null}
   </div>;
+}
+
+const modeContent: Record<AutomationMode, { title: string; copy: string; icon: React.ReactNode }> = {
+  manual: { title: "Manual only", copy: "An approved item moves only when a person selects Sync to Postiz.", icon: <Send size={18} /> },
+  automatic: { title: "Automatic drafts", copy: "Newly approved, mapped content is queued for background draft creation.", icon: <Clock3 size={18} /> },
+  paused: { title: "Paused", copy: "Stop new Postiz queueing and worker claims while preserving every record.", icon: <CirclePause size={18} /> },
+};
+
+const blockerCopy: Record<string, string> = {
+  runtime_not_enabled: "Background worker activation is awaiting controlled deployment.",
+  credential_vault_not_ready: "Credential vault is not ready.",
+  worker_authentication_not_ready: "Worker authentication is not ready.",
+  gateway_not_ready: "Restricted provider gateway is not ready.",
+  platform_emergency_stop: "Platform emergency stop is active.",
+  postiz_connection_not_ready: "Postiz connection has not passed verification.",
+  postiz_channel_mapping_not_ready: "No active Postiz channel mapping exists.",
+  indeterminate_postiz_operation: "An uncertain Postiz operation requires human review.",
+};
+
+function PostizAutomationControl({ automation, onChanged }: { automation: AutomationStatus; onChanged: () => Promise<void> }) {
+  const [selected, setSelected] = useState<AutomationMode>(automation.mode);
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState("");
+
+  useEffect(() => { setSelected(automation.mode); }, [automation.mode]);
+
+  async function save() {
+    setBusy(true); setFeedback("");
+    try {
+      const response = await authenticatedFetch("/api/admin/automation/postiz", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: selected }),
+      });
+      const body = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(body.error || "automation_update_failed");
+      setFeedback(selected === "automatic"
+        ? "Automatic draft queueing enabled. Publishing still requires a human in Postiz."
+        : selected === "paused"
+          ? "Postiz draft automation paused. Existing records were preserved."
+          : "Manual-only draft synchronization restored.");
+      await onChanged();
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "automation_update_failed";
+      setFeedback(errorCopy[code] || "Tanaghom could not update the automation policy.");
+    } finally { setBusy(false); }
+  }
+
+  const changed = selected !== automation.mode;
+  const automaticUnavailable = selected === "automatic" && !automation.readiness.ready_for_automatic;
+  const statusTone = automation.emergency_stop || automation.mode === "paused" ? "attention" : automation.mode === "automatic" ? "success" : "neutral";
+
+  return <section className="automation-control" aria-labelledby="postiz-automation-title">
+    <header className="automation-control-header">
+      <div><h2 id="postiz-automation-title">Postiz draft automation</h2><p>Choose when approved content may enter the draft-delivery queue. This control cannot publish content.</p></div>
+      <StatusPill tone={statusTone}>{automation.emergency_stop ? "Platform stopped" : modeContent[automation.mode].title}</StatusPill>
+    </header>
+    <div className="automation-control-body">
+      <div className="automation-modes" role="radiogroup" aria-label="Postiz draft automation mode">
+        {(Object.keys(modeContent) as AutomationMode[]).map((mode) => {
+          const content = modeContent[mode];
+          const disabled = mode === "automatic" && !automation.readiness.ready_for_automatic && automation.mode !== "automatic";
+          return <button
+            key={mode}
+            className={`automation-mode ${selected === mode ? "automation-mode-selected" : ""}`}
+            type="button"
+            role="radio"
+            aria-checked={selected === mode}
+            disabled={busy || disabled}
+            onClick={() => { setSelected(mode); setFeedback(""); }}
+          >
+            <span className="automation-mode-icon">{content.icon}</span>
+            <span><strong>{content.title}</strong><small>{content.copy}</small></span>
+            <span className="automation-radio" aria-hidden="true" />
+          </button>;
+        })}
+      </div>
+      <aside className="automation-readiness" aria-label="Automatic draft readiness">
+        <h3>Readiness</h3>
+        <ul>
+          <ReadinessItem ready={automation.readiness.runtime_ready}>Protected worker and gateway</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.connection_ready}>Verified Postiz connection</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.channel_mapping_ready}>Active channel mapping</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.operations_clear}>No uncertain operation</ReadinessItem>
+        </ul>
+        {automation.readiness.blockers.length ? <p className="readiness-blocker">{automation.emergency_stop ? automation.emergency_stop_reason : blockerCopy[automation.readiness.blockers[0]] || "Automatic drafts are not ready."}</p> : <p className="readiness-ready">All automatic-draft gates are ready.</p>}
+        <p className="automation-history">{automation.changed_at ? `Last changed ${date(automation.changed_at)} by ${automation.changed_by?.display_name || "a Tanaghom Admin"}.` : "Using Tanaghom’s safe manual default."}</p>
+      </aside>
+    </div>
+    <footer className="automation-control-footer">
+      <div><ShieldCheck size={17} /><span><strong>Draft-only boundary</strong><small>Automatic means queue and create a Postiz draft—never publish.</small></span></div>
+      <button className={selected === "paused" ? "danger-button" : "primary-button"} type="button" disabled={!changed || busy || automaticUnavailable} onClick={() => void save()}>{busy ? "Saving policy…" : selected === "automatic" ? "Enable automatic drafts" : selected === "paused" ? "Pause draft automation" : "Use manual only"}</button>
+    </footer>
+    {feedback ? <p className="integration-feedback" role="status" aria-live="polite">{feedback}</p> : null}
+  </section>;
+}
+
+function ReadinessItem({ ready, children }: { ready: boolean; children: React.ReactNode }) {
+  return <li className={ready ? "readiness-item-ready" : ""}>{ready ? <CheckCircle2 size={16} /> : <CircleAlert size={16} />}<span>{children}</span></li>;
 }
 
 function ProviderPanel({ record, storageReady, mappings, onChanged }: {

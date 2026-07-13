@@ -169,6 +169,8 @@ try {
       SUPABASE_PUBLISHABLE_KEY: "integration-publishable-key",
       SUPABASE_SECRET_KEY: "integration-secret-key",
       POSTIZ_HANDOFF_ENABLED: "true",
+      POSTIZ_AUTOMATION_RUNTIME_READY: "true",
+      TANAGHOM_INTEGRATION_GATEWAY_URL: dashboardOrigin,
       INTEGRATION_CREDENTIAL_KEY: Buffer.alloc(32, 7).toString("base64"),
       INTEGRATION_CREDENTIAL_KEY_VERSION: "1",
       INTEGRATION_WORKER_TOKEN: "integration-worker-token-at-least-32-characters",
@@ -177,6 +179,10 @@ try {
     stdio: ["ignore", "pipe", "pipe"],
   });
   await waitForDashboard(dashboard);
+
+  await pool.query(`UPDATE tanaghom.automation_platform_controls
+    SET emergency_stop=false, reason='Disposable dashboard integration test'
+    WHERE provider='postiz'`);
 
   const login = await fetch(`${dashboardOrigin}/api/auth/login`, {
     method: "POST",
@@ -206,7 +212,9 @@ try {
 
   const initialIntegrations = await fetch(`${dashboardOrigin}/api/admin/integrations`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(initialIntegrations.status, 200);
-  assert.equal((await initialIntegrations.json()).secure_storage_configured, true);
+  const initialIntegrationsBody = await initialIntegrations.json();
+  assert.equal(initialIntegrationsBody.secure_storage_configured, true);
+  assert.equal(initialIntegrationsBody.postiz_automation.mode, "manual");
   const savedPostiz = await fetch(`${dashboardOrigin}/api/admin/integrations/postiz`, {
     method: "PUT",
     headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
@@ -233,6 +241,13 @@ try {
     body: JSON.stringify({ mappings: [{ channel: "instagram", provider_integration_id: "integration-test-channel" }] }),
   });
   assert.equal(mappedPostiz.status, 200);
+  const automaticMode = await fetch(`${dashboardOrigin}/api/admin/automation/postiz`, {
+    method: "PUT",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "automatic" }),
+  });
+  assert.equal(automaticMode.status, 200);
+  assert.equal((await automaticMode.json()).automation.mode, "automatic");
 
   const strategy = await pool.query(
     `INSERT INTO tanaghom.campaign_strategies
@@ -257,7 +272,9 @@ try {
     method: "POST", headers: { ...decisionHeaders, "Idempotency-Key": "integration-replay-1" }, body: decisionBody,
   });
   assert.equal(first.status, 200);
-  assert.equal((await first.json()).delivery, "queued");
+  const firstBody = await first.json();
+  assert.equal(firstBody.delivery, "queued");
+  assert.equal(firstBody.postiz_draft.queued, true);
   const replay = await fetch(`${dashboardOrigin}/api/approvals/${contentId}/decision`, {
     method: "POST", headers: { ...decisionHeaders, "Idempotency-Key": "integration-replay-1" }, body: decisionBody,
   });
@@ -283,7 +300,7 @@ try {
        (SELECT count(*)::int FROM tanaghom.api_idempotency_keys WHERE actor_user_id = $2 AND idempotency_key LIKE 'integration-%') idempotency`,
     [contentId, ownerId],
   );
-  assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 1, audit: 1, idempotency: 1 });
+  assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 2, audit: 2, idempotency: 1 });
 
   const library = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(library.status, 200);
@@ -317,7 +334,7 @@ try {
     [contentId],
   );
   assert.deepEqual(handoffState.rows[0], { jobs: 1, operations: 0, posts: 0 });
-  const claimed = await pool.query(`SELECT * FROM tanaghom.claim_agent_job('publisher_monitor', ARRAY['content.postiz.draft'])`);
+  const claimed = await pool.query(`SELECT * FROM tanaghom.claim_postiz_draft_job()`);
   assert.equal(claimed.rows[0].job_id, handoffBody.job_id);
   const prepared = await pool.query(`SELECT * FROM tanaghom.prepare_postiz_draft($1::uuid)`, [handoffBody.job_id]);
   const gateway = await fetch(`${dashboardOrigin}/api/internal/integrations/postiz/draft`, {
@@ -342,6 +359,27 @@ try {
   const queuedLibrary = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
   const queuedLibraryBody = await queuedLibrary.json();
   assert.ok(queuedLibraryBody.items.some((item) => item.id === contentId && item.handoff_status === "succeeded" && item.post_status === "draft"));
+
+  const pauseMode = await fetch(`${dashboardOrigin}/api/admin/automation/postiz`, {
+    method: "PUT",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ mode: "paused" }),
+  });
+  assert.equal(pauseMode.status, 200);
+  const pausedContentId = await createContent(4);
+  const approveWhilePaused = await fetch(`${dashboardOrigin}/api/approvals/${pausedContentId}/decision`, {
+    method: "POST",
+    headers: { ...decisionHeaders, "Idempotency-Key": "integration-paused-approval" },
+    body: decisionBody,
+  });
+  assert.equal(approveWhilePaused.status, 200);
+  assert.equal((await approveWhilePaused.json()).postiz_draft.reason, "paused");
+  const blockedByPause = await fetch(`${dashboardOrigin}/api/content/${pausedContentId}/postiz-draft`, {
+    method: "POST",
+    headers: { ...handoffHeaders, "Idempotency-Key": "integration-postiz-paused" },
+  });
+  assert.equal(blockedByPause.status, 409);
+  assert.equal((await blockedByPause.json()).error, "postiz_automation_paused");
 
   const unapprovedContentId = await createContent(2);
   const blockedHandoff = await fetch(`${dashboardOrigin}/api/content/${unapprovedContentId}/postiz-draft`, {
@@ -416,7 +454,7 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: session, approvals, encrypted customer integrations, gateway isolation, Content Library, and owner-managed invitations verified.");
+  console.log("PASS: session, approvals, customer automation policy, encrypted integrations, gateway isolation, Content Library, and owner-managed invitations verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();

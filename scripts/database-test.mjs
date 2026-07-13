@@ -43,6 +43,7 @@ const roleAssertions = join(root, 'packages', 'database', 'tests', 'least_privil
 const workerAssertions = join(root, 'packages', 'database', 'tests', 'controlled_worker_functions.sql');
 const postizAssertions = join(root, 'packages', 'database', 'tests', 'postiz_draft_handoff.sql');
 const integrationAssertions = join(root, 'packages', 'database', 'tests', 'customer_integrations.sql');
+const automationAssertions = join(root, 'packages', 'database', 'tests', 'postiz_automation_controls.sql');
 
 database('migrate');
 database('migrate');
@@ -52,6 +53,9 @@ psql('-f', roleAssertions);
 psql('-f', workerAssertions);
 psql('-f', postizAssertions);
 psql('-f', integrationAssertions);
+psql('-f', automationAssertions);
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.organization_automation_policies') IS NOT NULL THEN RAISE EXCEPTION '0009 rollback left automation policy tables behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.integration_connections') IS NOT NULL THEN RAISE EXCEPTION '0008 rollback left integration tables behind'; END IF; END $$;");
 database('rollback');
