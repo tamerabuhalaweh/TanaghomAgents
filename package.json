@@ -33,6 +33,7 @@
     "test:phase4-workflows": "node scripts/n8n-postiz-workflow-integration.mjs",
     "generate:phase5-workflows": "node scripts/generate-phase5-workflows.mjs",
     "test:phase5-workflows": "node scripts/n8n-ghl-workflow-integration.mjs",
-    "test:phase5-inbound": "node scripts/ghl-inbound-gateway-integration.mjs"
+    "test:phase5-inbound": "node scripts/ghl-inbound-gateway-integration.mjs",
+    "test:phase5-intelligence": "node scripts/conversation-intelligence-evaluation.mjs"
   }
 }

@@ -24,3 +24,9 @@ Phase 5B adds a normalized GHL webhook event, a metadata-only durable job, and
 a no-external-action processing result. Provider bodies are treated as
 untrusted input, reduced to bounded supported fields, and never authorize a
 message, appointment, opportunity update, or other provider action.
+
+Phase 5C adds an event-bound conversation-intelligence request, a grounded
+proposal output with active source/version citations, and a reproducible
+bounded summary contract. Customer messages and context remain untrusted;
+invalid output, missing approved knowledge, low confidence, and sensitive
+categories fail closed to human escalation with zero external actions.

@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase5/conversation-intelligence-output.v1.schema.json",
+  "title": "Conversation intelligence output v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "prompt_version", "model_name", "language", "intent", "urgency", "sentiment", "sales_stage", "risk_categories", "next_best_action", "confidence", "answer_status", "proposed_reply", "citations", "escalation", "conversation_summary", "external_action_count"],
+  "properties": {
+    "contract_version": { "const": "phase5.conversation-intelligence-output.v1" },
+    "prompt_version": { "const": "phase5.conversation-intelligence.prompt.v1" },
+    "model_name": { "type": "string", "minLength": 1, "maxLength": 120 },
+    "language": { "enum": ["en", "ar"] },
+    "intent": { "enum": ["product_question", "pricing", "availability", "objection", "purchase_intent", "booking", "complaint", "refund", "payment", "legal", "abuse", "policy_exception", "sensitive_data", "greeting", "unknown"] },
+    "urgency": { "enum": ["low", "normal", "high", "critical"] },
+    "sentiment": { "enum": ["positive", "neutral", "negative", "mixed"] },
+    "sales_stage": { "enum": ["discovery", "qualification", "consideration", "decision", "customer_support", "unknown"] },
+    "risk_categories": { "type": "array", "maxItems": 8, "uniqueItems": true, "items": { "enum": ["complaint", "legal", "payment", "refund", "abuse", "policy_exception", "sensitive_data", "prompt_injection", "none"] } },
+    "next_best_action": { "enum": ["respond", "ask_clarifying_question", "escalate_to_human", "no_action"] },
+    "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+    "answer_status": { "enum": ["proposal", "escalate", "no_approved_answer"] },
+    "proposed_reply": { "type": ["string", "null"], "maxLength": 5000 },
+    "citations": {
+      "type": "array",
+      "maxItems": 12,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "source_version_id", "content_fingerprint"],
+        "properties": {
+          "source_id": { "type": "string", "format": "uuid" },
+          "source_version_id": { "type": "string", "format": "uuid" },
+          "content_fingerprint": { "type": "string", "pattern": "^md5:[0-9a-f]{32}$" }
+        }
+      }
+    },
+    "escalation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["required", "category", "reason"],
+      "properties": {
+        "required": { "type": "boolean" },
+        "category": { "type": ["string", "null"], "maxLength": 100 },
+        "reason": { "type": ["string", "null"], "maxLength": 1000 }
+      }
+    },
+    "conversation_summary": {
+      "oneOf": [
+        { "type": "null" },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["language", "summary", "input_event_ids"],
+          "properties": {
+            "language": { "enum": ["en", "ar"] },
+            "summary": { "type": "string", "minLength": 1, "maxLength": 4000 },
+            "input_event_ids": { "type": "array", "minItems": 1, "maxItems": 12, "uniqueItems": true, "items": { "type": "string", "format": "uuid" } }
+          }
+        }
+      ]
+    },
+    "external_action_count": { "const": 0 }
+  },
+  "allOf": [
+    {
+      "if": { "properties": { "answer_status": { "const": "proposal" } } },
+      "then": { "properties": { "proposed_reply": { "type": "string", "minLength": 1 }, "citations": { "minItems": 1 } } }
+    },
+    {
+      "if": { "properties": { "answer_status": { "const": "no_approved_answer" } } },
+      "then": { "properties": { "citations": { "maxItems": 0 }, "escalation": { "properties": { "required": { "const": true } } } } }
+    }
+  ]
+}

@@ -6,7 +6,7 @@ import test from "node:test";
 const dashboard = new URL("../apps/dashboard/", import.meta.url);
 
 test("dashboard exposes the Phase 2 operational routes", async () => {
-  const routes = ["app/page.tsx", "app/approvals/page.tsx", "app/campaigns/page.tsx", "app/agents/page.tsx", "app/leads/page.tsx", "app/reports/page.tsx", "app/system/page.tsx"];
+  const routes = ["app/page.tsx", "app/approvals/page.tsx", "app/campaigns/page.tsx", "app/agents/page.tsx", "app/leads/page.tsx", "app/reports/page.tsx", "app/system/page.tsx", "app/knowledge/page.tsx"];
   await Promise.all(routes.map((route) => readFile(new URL(route, dashboard), "utf8")));
 });
 
