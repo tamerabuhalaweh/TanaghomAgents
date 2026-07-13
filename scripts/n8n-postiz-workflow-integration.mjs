@@ -163,17 +163,16 @@ try {
     WHERE job_type='content.postiz.draft'
       AND input->>'content_item_id'='53000000-0000-4000-8000-000000000001'`)).rows[0].count, 1);
 
-  await pool.query(`INSERT INTO tanaghom.agent_jobs
-    (correlation_id,agent_id,campaign_id,job_type,input)
-    VALUES ('54000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000003',
-      '20000000-0000-4000-8000-000000000001','content.postiz.draft',
-      '{"contract_version":"phase4.postiz-draft-job.v1","content_item_id":"53000000-0000-4000-8000-000000000002","organization_id":"10000000-0000-4000-8000-000000000001"}')`);
   await assert.rejects(
-    run("docker", [...dockerBase, "execute", "--id=phase4PostizDraftV1", "--rawOutput"]),
-    /content is no longer approved/,
+    pool.query(`INSERT INTO tanaghom.agent_jobs
+      (correlation_id,agent_id,campaign_id,job_type,input)
+      VALUES ('54000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000003',
+        '20000000-0000-4000-8000-000000000001','content.postiz.draft',
+        '{"contract_version":"phase4.postiz-draft-job.v1","content_item_id":"53000000-0000-4000-8000-000000000002","organization_id":"10000000-0000-4000-8000-000000000001"}')`),
+    /approved content with active human approval required/,
   );
   assert.equal(requestCount, 1, "forged unapproved job reached simulated Postiz");
-  console.log("PASS: inactive Postiz workflow created one draft and blocked replay plus forged unapproved content.");
+  console.log("PASS: inactive Postiz workflow created one draft and blocked replay plus forged jobs before worker or provider access.");
 } finally {
   server.close();
   await pool.query(`

@@ -191,6 +191,26 @@ BEGIN
     IF NEW.job_type <> 'content.postiz.draft' THEN RETURN NEW; END IF;
     SELECT campaign.organization_id INTO v_organization_id
     FROM tanaghom.campaigns campaign WHERE campaign.id = NEW.campaign_id;
+
+    IF NOT EXISTS (
+      SELECT 1
+      FROM tanaghom.content_items content
+      JOIN tanaghom.content_approvals approval
+        ON approval.content_item_id = content.id
+       AND approval.decision = 'approved'
+      JOIN tanaghom.app_users reviewer
+        ON reviewer.id = approval.decided_by
+       AND reviewer.kind = 'human'
+       AND reviewer.role IN ('owner', 'reviewer')
+       AND reviewer.is_active
+       AND reviewer.accepted_at IS NOT NULL
+      WHERE content.id::text = NEW.input->>'content_item_id'
+        AND content.campaign_id = NEW.campaign_id
+        AND content.status = 'approved'
+        AND NEW.input->>'organization_id' = v_organization_id::text
+    ) THEN
+      RAISE EXCEPTION 'approved content with active human approval required';
+    END IF;
   ELSE
     IF NEW.provider <> 'postiz' OR NEW.operation_type <> 'create_draft'
        OR NEW.status <> 'in_progress' THEN RETURN NEW; END IF;

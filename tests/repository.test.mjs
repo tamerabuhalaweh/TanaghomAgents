@@ -139,6 +139,7 @@ test('Phase 4 Postiz handoff is draft-only, inactive, and approval guarded', asy
   assert.match(automationMigration, /emergency_stop boolean NOT NULL DEFAULT true/);
   assert.match(automationMigration, /CREATE FUNCTION tanaghom\.claim_postiz_draft_job/);
   assert.match(automationMigration, /postiz\.automation_mode_changed/);
+  assert.match(automationMigration, /approved content with active human approval required/);
   assert.match(automationUi, /Automatic drafts/);
   assert.match(automationUi, /never publish/i);
   assert.match(gateway, /operation\.response_summary IS NULL/);
