@@ -15,6 +15,7 @@ const temporary = await mkdtemp(join(tmpdir(), "tanaghom-postiz-n8n-"));
 const volume = `tanaghom-postiz-n8n-test-${process.pid}`;
 const postizPort = 43202;
 let requestCount = 0;
+let analyticsRequestCount = 0;
 
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
@@ -36,6 +37,20 @@ async function requestBody(request) {
 }
 
 const server = createServer(async (request, response) => {
+  if (request.method === "POST" && request.url === "/api/internal/integrations/postiz/analytics") {
+    analyticsRequestCount += 1;
+    const body = await requestBody(request);
+    assert.equal(request.headers.authorization, "Bearer integration-only-worker-token-32");
+    assert.equal(body.request_body.provider_post_id, "postiz-live-performance-1");
+    assert.equal(body.request_body.date, 30);
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify([
+      { label: "Impressions", data: [{ total: "1500", date: "2026-07-12" }], percentageChange: 12.5 },
+      { label: "Likes", data: [{ total: "120", date: "2026-07-12" }], percentageChange: 8.1 },
+      { label: "Comments", data: [{ total: "18", date: "2026-07-12" }], percentageChange: 2.2 },
+    ]));
+    return;
+  }
   if (request.method !== "POST" || request.url !== "/api/internal/integrations/postiz/draft") {
     response.writeHead(404).end();
     return;
@@ -87,14 +102,26 @@ try {
     (id, campaign_id, strategy_id, generation, channel, content_type, draft_copy, media_brief, status)
     VALUES
       ('53000000-0000-4000-8000-000000000001','20000000-0000-4000-8000-000000000001',$1,401,'instagram','post','Workflow Postiz draft','No external media','pending_approval'),
-      ('53000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001',$1,402,'instagram','post','Unapproved forged draft','No external media','pending_approval')`, [strategy.rows[0].id]);
+      ('53000000-0000-4000-8000-000000000002','20000000-0000-4000-8000-000000000001',$1,402,'instagram','post','Unapproved forged draft','No external media','pending_approval'),
+      ('53000000-0000-4000-8000-000000000003','20000000-0000-4000-8000-000000000001',$1,403,'instagram','post','Published performance fixture','No external media','pending_approval')`, [strategy.rows[0].id]);
   await pool.query(`INSERT INTO tanaghom.content_approvals (content_item_id, decision, decided_by)
     VALUES ('53000000-0000-4000-8000-000000000001','approved','00000000-0000-4000-8000-000000000001')`);
   await pool.query(`UPDATE tanaghom.content_items SET status='approved'
     WHERE id='53000000-0000-4000-8000-000000000001'`);
+  await pool.query(`INSERT INTO tanaghom.content_approvals (content_item_id, decision, decided_by)
+    VALUES ('53000000-0000-4000-8000-000000000003','approved','00000000-0000-4000-8000-000000000001')`);
+  await pool.query(`UPDATE tanaghom.content_items SET status='approved'
+    WHERE id='53000000-0000-4000-8000-000000000003'`);
+  const performancePost = await pool.query(`INSERT INTO tanaghom.posts
+    (content_item_id, provider, provider_post_id, channel, status, posted_at)
+    VALUES ('53000000-0000-4000-8000-000000000003','postiz','postiz-live-performance-1','instagram','live',statement_timestamp())
+    RETURNING id`);
   const queued = await pool.query(`SELECT * FROM tanaghom.queue_postiz_draft(
     '53000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001')`);
   const jobId = queued.rows[0].job_id;
+  const performanceQueued = await pool.query(`SELECT * FROM tanaghom.queue_postiz_performance_sync(
+    $1,'00000000-0000-4000-8000-000000000001',30)`, [performancePost.rows[0].id]);
+  const performanceJobId = performanceQueued.rows[0].job_id;
 
   const credentials = [
     {
@@ -125,8 +152,15 @@ try {
   workflow.nodes.find((entry) => entry.name === "Create Postiz Draft").parameters.url =
     `http://127.0.0.1:${postizPort}/api/internal/integrations/postiz/draft`;
   await writeFile(join(temporary, "workflow.json"), JSON.stringify(workflow));
+  const performanceWorkflow = JSON.parse(await readFile(
+    join(root, "n8n", "workflows", "phase4", "postiz-performance-monitor.v1.json"),
+    "utf8",
+  ));
+  performanceWorkflow.nodes.find((entry) => entry.name === "Fetch Postiz Analytics").parameters.url =
+    `http://127.0.0.1:${postizPort}/api/internal/integrations/postiz/analytics`;
+  await writeFile(join(temporary, "performance-workflow.json"), JSON.stringify(performanceWorkflow));
   await chmod(temporary, 0o755);
-  await Promise.all(["credentials.json", "workflow.json"].map((file) => chmod(join(temporary, file), 0o644)));
+  await Promise.all(["credentials.json", "workflow.json", "performance-workflow.json"].map((file) => chmod(join(temporary, file), 0o644)));
 
   await run("docker", ["volume", "create", volume]);
   const dockerBase = [
@@ -142,9 +176,12 @@ try {
   ];
   await run("docker", [...dockerBase, "import:credentials", "--input=/fixtures/credentials.json"]);
   await run("docker", [...dockerBase, "import:workflow", "--input=/fixtures/workflow.json"]);
+  await run("docker", [...dockerBase, "import:workflow", "--input=/fixtures/performance-workflow.json"]);
   const execution = await run("docker", [...dockerBase, "execute", "--id=phase4PostizDraftV1", "--rawOutput"]);
+  const performanceExecution = await run("docker", [...dockerBase, "execute", "--id=phase4PostizPerformanceV1", "--rawOutput"]);
 
   assert.equal(requestCount, 1, execution.slice(-4000));
+  assert.equal(analyticsRequestCount, 1, performanceExecution.slice(-4000));
   assert.equal((await pool.query("SELECT status FROM tanaghom.agent_jobs WHERE id=$1", [jobId])).rows[0].status, "succeeded");
   assert.deepEqual((await pool.query(`SELECT provider_post_id,status FROM tanaghom.posts
     WHERE content_item_id='53000000-0000-4000-8000-000000000001'`)).rows[0], {
@@ -154,6 +191,13 @@ try {
   assert.equal((await pool.query(`SELECT count(*)::int count FROM tanaghom.external_operations
     WHERE idempotency_key='postiz-draft:53000000-0000-4000-8000-000000000001'
       AND status='succeeded'`)).rows[0].count, 1);
+  assert.equal((await pool.query("SELECT status FROM tanaghom.agent_jobs WHERE id=$1", [performanceJobId])).rows[0].status, "succeeded");
+  assert.deepEqual((await pool.query(`SELECT metric_key, metric_value::text
+    FROM tanaghom.post_metric_observations WHERE post_id=$1 ORDER BY metric_key`, [performancePost.rows[0].id])).rows, [
+    { metric_key: "comments", metric_value: "18.0000" },
+    { metric_key: "impressions", metric_value: "1500.0000" },
+    { metric_key: "likes", metric_value: "120.0000" },
+  ]);
 
   const replay = await pool.query(`SELECT * FROM tanaghom.queue_postiz_draft(
     '53000000-0000-4000-8000-000000000001','00000000-0000-4000-8000-000000000001')`);
@@ -172,28 +216,37 @@ try {
     /approved content with active human approval required/,
   );
   assert.equal(requestCount, 1, "forged unapproved job reached simulated Postiz");
-  console.log("PASS: inactive Postiz workflow created one draft and blocked replay plus forged jobs before worker or provider access.");
+  assert.equal(analyticsRequestCount, 1, "performance workflow replayed the provider read");
+  console.log("PASS: inactive Postiz workflows created one draft, normalized performance history, and blocked replay plus forged jobs.");
 } finally {
   server.close();
   await pool.query(`
+    DELETE FROM tanaghom.post_metric_observations WHERE sync_job_id IN
+      (SELECT id FROM tanaghom.agent_jobs WHERE job_type='postiz.performance.sync');
+    DELETE FROM tanaghom.post_performance_sync_state WHERE post_id IN
+      (SELECT id FROM tanaghom.posts WHERE provider_post_id='postiz-live-performance-1');
     DELETE FROM tanaghom.posts WHERE content_item_id IN
-      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
+      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002','53000000-0000-4000-8000-000000000003');
     DELETE FROM tanaghom.external_operations WHERE idempotency_key IN
       ('postiz-draft:53000000-0000-4000-8000-000000000001','postiz-draft:53000000-0000-4000-8000-000000000002');
     DELETE FROM tanaghom.outbox_events WHERE aggregate_id IN
-      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
+      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002','53000000-0000-4000-8000-000000000003')
+      OR event_type LIKE 'postiz.performance_%';
     ALTER TABLE tanaghom.agent_actions_log DISABLE TRIGGER audit_no_update;
     ALTER TABLE tanaghom.agent_actions_log DISABLE TRIGGER audit_no_delete;
     DELETE FROM tanaghom.agent_actions_log WHERE entity_id IN
       ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002')
       OR job_id IN (SELECT id FROM tanaghom.agent_jobs WHERE job_type='content.postiz.draft'
-        AND input->>'content_item_id' IN ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002'));
+        AND input->>'content_item_id' IN ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002'))
+      OR job_id IN (SELECT id FROM tanaghom.agent_jobs WHERE job_type='postiz.performance.sync');
+    DELETE FROM tanaghom.external_operations WHERE operation_type='read_analytics';
+    DELETE FROM tanaghom.agent_jobs WHERE job_type='postiz.performance.sync';
     DELETE FROM tanaghom.agent_jobs WHERE job_type='content.postiz.draft'
       AND input->>'content_item_id' IN ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
     ALTER TABLE tanaghom.agent_actions_log ENABLE TRIGGER audit_no_update;
     ALTER TABLE tanaghom.agent_actions_log ENABLE TRIGGER audit_no_delete;
     DELETE FROM tanaghom.content_items WHERE id IN
-      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
+      ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002','53000000-0000-4000-8000-000000000003');
     DELETE FROM tanaghom.campaign_strategies
       WHERE campaign_id='20000000-0000-4000-8000-000000000001' AND version=401;
     DELETE FROM tanaghom.integration_connections WHERE provider='postiz';

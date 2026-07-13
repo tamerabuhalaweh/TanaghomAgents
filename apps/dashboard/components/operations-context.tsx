@@ -54,6 +54,44 @@ export interface OperationsNotification {
   created_at: string;
 }
 
+export interface CampaignPerformance {
+  campaign_id: string;
+  campaign_name: string;
+  posts: number;
+  impressions: string;
+  clicks: string;
+  likes: string;
+  comments: string;
+  shares: string;
+  last_synced_at: string | null;
+  stale_posts: number;
+}
+
+export interface PostPerformance {
+  id: string;
+  provider_post_id: string;
+  channel: string;
+  status: string;
+  campaign_id: string;
+  campaign_name: string;
+  content_item_id: string;
+  content_excerpt: string;
+  metrics: Record<string, string>;
+  sync_status: string | null;
+  last_success_at: string | null;
+  last_error_code: string | null;
+  is_stale: boolean;
+}
+
+export interface AttributionQuarantineRecord {
+  id: string;
+  provider: string;
+  provider_event_id: string;
+  quarantine_reason: string;
+  received_at: string;
+  evidence: Record<string, unknown>;
+}
+
 export interface OperationsSnapshot {
   summary: {
     campaigns_total: number;
@@ -70,10 +108,20 @@ export interface OperationsSnapshot {
   performance: {
     impressions: string;
     clicks: string;
+    likes: string;
+    comments: string;
+    shares: string;
+    views: string;
     spend: string;
     live_posts: number;
     failed_posts: number;
+    stale_posts: number;
+    last_synced_at: string | null;
+    quarantined_leads: number;
   };
+  campaign_performance: CampaignPerformance[];
+  post_performance: PostPerformance[];
+  attribution_quarantine: AttributionQuarantineRecord[];
   notifications: OperationsNotification[];
 }
 

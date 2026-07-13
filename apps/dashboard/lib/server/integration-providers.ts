@@ -170,3 +170,20 @@ export async function createPostizDraft(baseUrl: string, secret: string, request
   });
   return { statusCode: response.status, body: await jsonBody(response) };
 }
+
+export async function getPostizPostAnalytics(
+  baseUrl: string,
+  secret: string,
+  providerPostId: string,
+  lookbackDays: number,
+) {
+  if (!providerPostId || providerPostId.length > 300 || !Number.isInteger(lookbackDays) || lookbackDays < 1 || lookbackDays > 90) {
+    throw new IntegrationProviderError("postiz_analytics_request_invalid");
+  }
+  const url = new URL(`${baseUrl}/analytics/post/${encodeURIComponent(providerPostId)}`);
+  url.searchParams.set("date", String(lookbackDays));
+  const response = await providerFetch(url.toString(), {
+    headers: { Authorization: secret, Accept: "application/json" },
+  });
+  return { statusCode: response.status, body: await jsonBody(response) };
+}

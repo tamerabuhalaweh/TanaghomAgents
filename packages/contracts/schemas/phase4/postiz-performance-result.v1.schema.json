@@ -1,0 +1,28 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase4/postiz-performance-result.v1.schema.json",
+  "title": "Normalized Postiz performance result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "metrics"],
+  "properties": {
+    "contract_version": { "const": "phase4.postiz-performance-result.v1" },
+    "metrics": {
+      "type": "array",
+      "maxItems": 5000,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["metric_key", "metric_label", "observed_on", "value", "percentage_change", "provider_metadata"],
+        "properties": {
+          "metric_key": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,79}$" },
+          "metric_label": { "type": "string", "minLength": 1, "maxLength": 160 },
+          "observed_on": { "type": "string", "format": "date" },
+          "value": { "type": "string", "pattern": "^\\d+(?:\\.\\d{1,4})?$" },
+          "percentage_change": { "type": ["number", "null"] },
+          "provider_metadata": { "type": "object" }
+        }
+      }
+    }
+  }
+}

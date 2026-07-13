@@ -19,3 +19,10 @@ database-queued, human-requested jobs, rechecks approval evidence immediately
 before the API call, and sends `type: draft`. Its polling trigger is committed
 disabled and the workflow itself is inactive. The export contains credential
 stubs only; disposable validation uses a simulated Postiz endpoint.
+
+The Phase 4 performance monitor follows the same boundary: it claims a
+database-authorized job, asks the private dashboard gateway for dated Postiz
+analytics, normalizes the response to the versioned performance contract, and
+completes the job through controlled database functions. It cannot read the
+customer API key, write performance tables directly, or activate its own
+schedule. Both the workflow and its polling trigger are committed inactive.
