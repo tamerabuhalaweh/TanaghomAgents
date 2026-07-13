@@ -61,7 +61,10 @@ install -o root -g root -m 0644 "$PACKAGE/nginx/tanaghom.conf" "$NGINX_TARGET"
 nginx -t
 systemctl reload nginx
 
-curl -fsS --resolve "$HOST:443:127.0.0.1" "https://$HOST/login" >/dev/null
+i=0
+until curl -fsS --resolve "$HOST:443:127.0.0.1" "https://$HOST/login" >/dev/null; do
+  i=$((i + 1)); test "$i" -lt 15 || exit 76; sleep 1
+done
 test "$(curl -sS -o /dev/null -w '%{http_code}' --resolve "$HOST:443:127.0.0.1" "https://$HOST/")" = 307
 test "$(curl -sS -o /dev/null -w '%{http_code}' --resolve "$HOST:443:127.0.0.1" "https://$HOST/api/operations")" = 401
 
