@@ -1,0 +1,5 @@
+services:
+  dashboard:
+    environment:
+      APP_ENV: production
+      APP_BASE_URL: https://tanaghom.38-247-187-232.sslip.io
