@@ -28,6 +28,8 @@
     "test:database": "node scripts/database-test.mjs",
     "test:dashboard-api": "node scripts/dashboard-api-integration.mjs",
     "generate:phase3-workflows": "node scripts/generate-phase3-workflows.mjs",
-    "test:phase3-workflows": "node scripts/n8n-workflow-integration.mjs"
+    "test:phase3-workflows": "node scripts/n8n-workflow-integration.mjs",
+    "generate:phase4-workflows": "node scripts/generate-phase4-workflows.mjs",
+    "test:phase4-workflows": "node scripts/n8n-postiz-workflow-integration.mjs"
   }
 }

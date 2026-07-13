@@ -13,3 +13,9 @@ contain no webhook trigger, and reference credential stubs by stable UUID. Run
 `npm run generate:phase3-workflows` after changing a prompt or generator; CI
 rejects prompt/export drift and executes both workflows using the pinned n8n
 image, disposable PostgreSQL, and a simulated Gemma endpoint.
+
+Phase 4 exports are generated under `phase4/`. The Postiz publisher accepts only
+database-queued, human-requested jobs, rechecks approval evidence immediately
+before the API call, and sends `type: draft`. Its polling trigger is committed
+disabled and the workflow itself is inactive. The export contains credential
+stubs only; disposable validation uses a simulated Postiz endpoint.

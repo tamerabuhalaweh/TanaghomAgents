@@ -445,6 +445,12 @@ td a, td > strong { font-weight: 670; }
 .content-record > footer { display: flex; align-items: center; justify-content: space-between; gap: 0.75rem; margin-block-start: auto; padding-block-start: 1rem; }
 .content-record > footer > div { display: flex; gap: 0.5rem; }
 .handoff-note { margin-block-start: 0.75rem; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm); background: var(--warning-soft); color: oklch(0.44 0.1 75); font-size: 0.68rem; }
+.handoff-state { display: inline-flex; min-height: 2.25rem; align-items: center; gap: 0.4rem; padding: 0.45rem 0.7rem; border-radius: var(--radius-sm); background: var(--surface); color: var(--muted); font-size: 0.7rem; font-weight: 650; }
+.handoff-state-succeeded { background: var(--success-soft); color: var(--success); }
+.handoff-state-failed { background: var(--danger-soft); color: var(--danger); }
+.handoff-feedback { margin-block-start: 0.75rem; padding: 0.65rem 0.75rem; border-radius: var(--radius-sm); font-size: 0.7rem; }
+.handoff-feedback-success { background: var(--success-soft); color: oklch(0.39 0.11 150); }
+.handoff-feedback-error, .handoff-detail-error { background: var(--danger-soft); color: var(--danger) !important; }
 
 @media (max-width: 1180px) {
   .approval-row { grid-template-columns: auto minmax(10rem, 1fr) minmax(8rem, 0.9fr) auto auto; }

@@ -134,6 +134,7 @@ try {
       SUPABASE_URL: authOrigin,
       SUPABASE_PUBLISHABLE_KEY: "integration-publishable-key",
       SUPABASE_SECRET_KEY: "integration-secret-key",
+      POSTIZ_HANDOFF_ENABLED: "true",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -216,11 +217,53 @@ try {
   );
   assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 1, audit: 1, idempotency: 1 });
 
+  await pool.query(`INSERT INTO tanaghom.publishing_channels
+    (provider, channel, provider_integration_id, provider_settings)
+    VALUES ('postiz','test','integration-test-channel','{"__type":"test"}')`);
+
   const library = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(library.status, 200);
   const libraryBody = await library.json();
   assert.ok(libraryBody.items.some((item) => item.id === contentId && item.status === "approved"));
-  assert.equal(libraryBody.integration.postiz_ready, false);
+  assert.equal(libraryBody.integration.postiz_ready, true);
+  assert.equal(libraryBody.integration.can_request_draft, true);
+
+  const handoffHeaders = {
+    Cookie: jar.join("; "), Origin: dashboardOrigin, "Idempotency-Key": "integration-postiz-1",
+  };
+  const handoff = await fetch(`${dashboardOrigin}/api/content/${contentId}/postiz-draft`, {
+    method: "POST", headers: handoffHeaders,
+  });
+  assert.equal(handoff.status, 202);
+  const handoffBody = await handoff.json();
+  assert.equal(handoffBody.status, "queued");
+  assert.equal(handoffBody.delivery, "queued_for_inactive_workflow");
+  const handoffReplay = await fetch(`${dashboardOrigin}/api/content/${contentId}/postiz-draft`, {
+    method: "POST", headers: handoffHeaders,
+  });
+  assert.equal(handoffReplay.status, 202);
+  assert.equal(handoffReplay.headers.get("Idempotency-Replayed"), "true");
+  const handoffState = await pool.query(
+    `SELECT
+       (SELECT count(*)::int FROM tanaghom.agent_jobs
+         WHERE job_type='content.postiz.draft' AND input->>'content_item_id'=($1::uuid)::text) jobs,
+       (SELECT count(*)::int FROM tanaghom.external_operations
+         WHERE idempotency_key='postiz-draft:' || ($1::uuid)::text) operations,
+       (SELECT count(*)::int FROM tanaghom.posts WHERE content_item_id=$1::uuid) posts`,
+    [contentId],
+  );
+  assert.deepEqual(handoffState.rows[0], { jobs: 1, operations: 0, posts: 0 });
+  const queuedLibrary = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
+  const queuedLibraryBody = await queuedLibrary.json();
+  assert.ok(queuedLibraryBody.items.some((item) => item.id === contentId && item.handoff_status === "queued"));
+
+  const unapprovedContentId = await createContent(2);
+  const blockedHandoff = await fetch(`${dashboardOrigin}/api/content/${unapprovedContentId}/postiz-draft`, {
+    method: "POST",
+    headers: { ...handoffHeaders, "Idempotency-Key": "integration-postiz-unapproved" },
+  });
+  assert.equal(blockedHandoff.status, 409);
+  assert.equal((await blockedHandoff.json()).error, "content_not_approved");
 
   const team = await fetch(`${dashboardOrigin}/api/admin/users`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(team.status, 200);
@@ -255,7 +298,7 @@ try {
   );
   assert.deepEqual(invitedRecord.rows[0], { role: "reviewer", is_active: true, accepted: true, audits: 2 });
 
-  const atomicContentId = await createContent(2);
+  const atomicContentId = await createContent(3);
   await pool.query(`CREATE FUNCTION tanaghom.integration_reject_outbox() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'integration outbox failure'; END $$`);
   await pool.query(`CREATE TRIGGER integration_reject_outbox BEFORE INSERT ON tanaghom.outbox_events FOR EACH ROW EXECUTE FUNCTION tanaghom.integration_reject_outbox()`);
   const failed = await fetch(`${dashboardOrigin}/api/approvals/${atomicContentId}/decision`, {
@@ -278,7 +321,7 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: session, approval, Content Library, and owner-managed invitation contracts verified.");
+  console.log("PASS: session, approval, guarded Postiz queue, Content Library, and owner-managed invitation contracts verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();
