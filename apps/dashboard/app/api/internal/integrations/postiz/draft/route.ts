@@ -44,6 +44,12 @@ export async function POST(request: NextRequest) {
            ON connection.organization_id = campaign.organization_id
           AND connection.provider = 'postiz'
           AND connection.status = 'connected'
+         JOIN tanaghom.organization_automation_policies policy
+           ON policy.organization_id = campaign.organization_id
+          AND policy.postiz_draft_mode IN ('manual', 'automatic')
+         JOIN tanaghom.automation_platform_controls control
+           ON control.provider = 'postiz'
+          AND NOT control.emergency_stop
          JOIN tanaghom.external_operations operation
            ON operation.correlation_id = job.correlation_id
           AND operation.provider = 'postiz'
@@ -54,6 +60,17 @@ export async function POST(request: NextRequest) {
         WHERE job.id = $1
           AND job.job_type = 'content.postiz.draft'
           AND job.status = 'running'
+          AND NOT EXISTS (
+            SELECT 1
+            FROM tanaghom.external_operations uncertain_operation
+            JOIN tanaghom.agent_jobs uncertain_job
+              ON uncertain_job.correlation_id = uncertain_operation.correlation_id
+            JOIN tanaghom.campaigns uncertain_campaign
+              ON uncertain_campaign.id = uncertain_job.campaign_id
+            WHERE uncertain_campaign.organization_id = campaign.organization_id
+              AND uncertain_operation.provider = 'postiz'
+              AND uncertain_operation.status = 'indeterminate'
+          )
         FOR UPDATE OF operation`,
       [body.job_id, JSON.stringify(body.request_body)],
     );

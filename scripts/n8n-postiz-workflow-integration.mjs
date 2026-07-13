@@ -57,6 +57,21 @@ try {
   server.listen(postizPort, "127.0.0.1");
   await once(server, "listening");
   await pool.query("ALTER ROLE tanaghom_n8n_worker LOGIN PASSWORD 'integration-only'");
+  await pool.query(`UPDATE tanaghom.automation_platform_controls
+    SET emergency_stop=false, reason='Disposable n8n workflow test'
+    WHERE provider='postiz'`);
+  await pool.query(`INSERT INTO tanaghom.integration_connections
+    (organization_id,provider,status,base_url,credential_kind,credential_ciphertext,
+     credential_nonce,credential_auth_tag,credential_key_version,secret_last_four,
+     configuration,configured_by)
+    VALUES ('10000000-0000-4000-8000-000000000001','postiz','connected',
+      'https://api.postiz.com/public/v1','api_key',decode('01','hex'),
+      decode(repeat('02',12),'hex'),decode(repeat('03',16),'hex'),1,'test','{}',
+      '00000000-0000-4000-8000-000000000001')
+    ON CONFLICT (organization_id,provider) DO UPDATE SET
+      status='connected',credential_ciphertext=excluded.credential_ciphertext,
+      credential_nonce=excluded.credential_nonce,credential_auth_tag=excluded.credential_auth_tag,
+      credential_key_version=1,secret_last_four='test',disconnected_at=NULL`);
   await pool.query(`INSERT INTO tanaghom.publishing_channels
     (organization_id, provider, channel, provider_integration_id, provider_settings)
     VALUES ('10000000-0000-4000-8000-000000000001','postiz','instagram','integration-channel-1','{"__type":"instagram","post_type":"post"}')
@@ -148,17 +163,16 @@ try {
     WHERE job_type='content.postiz.draft'
       AND input->>'content_item_id'='53000000-0000-4000-8000-000000000001'`)).rows[0].count, 1);
 
-  await pool.query(`INSERT INTO tanaghom.agent_jobs
-    (correlation_id,agent_id,campaign_id,job_type,input)
-    VALUES ('54000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000003',
-      '20000000-0000-4000-8000-000000000001','content.postiz.draft',
-      '{"contract_version":"phase4.postiz-draft-job.v1","content_item_id":"53000000-0000-4000-8000-000000000002","organization_id":"10000000-0000-4000-8000-000000000001"}')`);
   await assert.rejects(
-    run("docker", [...dockerBase, "execute", "--id=phase4PostizDraftV1", "--rawOutput"]),
-    /content is no longer approved/,
+    pool.query(`INSERT INTO tanaghom.agent_jobs
+      (correlation_id,agent_id,campaign_id,job_type,input)
+      VALUES ('54000000-0000-4000-8000-000000000002','10000000-0000-4000-8000-000000000003',
+        '20000000-0000-4000-8000-000000000001','content.postiz.draft',
+        '{"contract_version":"phase4.postiz-draft-job.v1","content_item_id":"53000000-0000-4000-8000-000000000002","organization_id":"10000000-0000-4000-8000-000000000001"}')`),
+    /approved content with active human approval required/,
   );
   assert.equal(requestCount, 1, "forged unapproved job reached simulated Postiz");
-  console.log("PASS: inactive Postiz workflow created one draft and blocked replay plus forged unapproved content.");
+  console.log("PASS: inactive Postiz workflow created one draft and blocked replay plus forged jobs before worker or provider access.");
 } finally {
   server.close();
   await pool.query(`
@@ -182,6 +196,10 @@ try {
       ('53000000-0000-4000-8000-000000000001','53000000-0000-4000-8000-000000000002');
     DELETE FROM tanaghom.campaign_strategies
       WHERE campaign_id='20000000-0000-4000-8000-000000000001' AND version=401;
+    DELETE FROM tanaghom.integration_connections WHERE provider='postiz';
+    UPDATE tanaghom.automation_platform_controls
+      SET emergency_stop=true, reason='Disposable n8n workflow test complete'
+      WHERE provider='postiz';
     UPDATE tanaghom.agents SET status='idle' WHERE code='publisher_monitor' AND status <> 'disabled';
   `).catch(() => {});
   await pool.end();

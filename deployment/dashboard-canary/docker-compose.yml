@@ -13,6 +13,8 @@ services:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       INTEGRATION_CREDENTIAL_KEY_VERSION: "1"
+      POSTIZ_AUTOMATION_RUNTIME_READY: "false"
+      TANAGHOM_INTEGRATION_GATEWAY_URL: ""
       NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
     secrets:
       - database_url

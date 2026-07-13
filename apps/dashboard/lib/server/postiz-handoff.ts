@@ -45,6 +45,10 @@ function mapDatabaseGuard(error: unknown) {
   if (message.includes("Postiz channel mapping required")) {
     return new PostizHandoffError("postiz_channel_not_configured", 409);
   }
+  if (message.includes("connected Postiz integration")) return new PostizHandoffError("postiz_connection_not_ready", 409);
+  if (message.includes("emergency stop")) return new PostizHandoffError("postiz_automation_emergency_stopped", 409);
+  if (message.includes("automation is paused")) return new PostizHandoffError("postiz_automation_paused", 409);
+  if (message.includes("indeterminate Postiz operation")) return new PostizHandoffError("postiz_operation_requires_review", 409);
   if (message.includes("publishing operator required")) return new PostizHandoffError("forbidden", 403);
   if (message.includes("publisher agent is unavailable")) return new PostizHandoffError("publisher_unavailable", 503);
   return error;

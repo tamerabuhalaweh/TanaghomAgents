@@ -65,6 +65,11 @@ workflow gateway. Generate both on the server, keep them out of shell history,
 and back them up in the encrypted off-server recovery package. Losing the
 encryption key makes saved customer credentials unrecoverable; rotation must
 use the versioned application procedure before replacing the file.
+`POSTIZ_AUTOMATION_RUNTIME_READY` remains `false` and the database platform
+emergency stop remains enabled in this package. Do not change either gate until
+the restricted n8n-to-dashboard network path, platform gateway credential,
+inactive workflow import, and rollback have passed controlled validation. The
+customer Admin mode cannot override the platform emergency stop.
 Copy values from the existing ignored developer `.env` through an encrypted
 channel without printing them. Do not use shell history, Compose environment
 values, or Git for secret transfer. The transactional installer changes only

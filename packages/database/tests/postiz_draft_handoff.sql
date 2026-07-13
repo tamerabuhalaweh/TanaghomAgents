@@ -1,5 +1,20 @@
 \set ON_ERROR_STOP on
 
+UPDATE tanaghom.automation_platform_controls
+SET emergency_stop = false, reason = 'Disposable Postiz handoff test'
+WHERE provider = 'postiz';
+
+INSERT INTO tanaghom.integration_connections (
+  organization_id, provider, status, base_url, credential_kind,
+  credential_ciphertext, credential_nonce, credential_auth_tag,
+  credential_key_version, secret_last_four, configuration, configured_by
+) VALUES (
+  '10000000-0000-4000-8000-000000000001', 'postiz', 'connected',
+  'https://api.postiz.com/public/v1', 'api_key', decode('01', 'hex'),
+  decode(repeat('02', 12), 'hex'), decode(repeat('03', 16), 'hex'),
+  1, 'test', '{}'::jsonb, '00000000-0000-4000-8000-000000000001'
+);
+
 INSERT INTO tanaghom.publishing_channels (
   provider, channel, provider_integration_id, provider_settings
 ) VALUES (
@@ -91,7 +106,7 @@ DECLARE
   v_post_id uuid;
 BEGIN
   SELECT * INTO v_claimed
-  FROM tanaghom.claim_agent_job('publisher_monitor', ARRAY['content.postiz.draft']);
+  FROM tanaghom.claim_postiz_draft_job();
   IF v_claimed.job_id IS NULL THEN RAISE EXCEPTION 'publisher job was not claimed'; END IF;
 
   SELECT * INTO v_prepared FROM tanaghom.prepare_postiz_draft(v_claimed.job_id);
@@ -153,5 +168,9 @@ WHERE content_item_id IN (
 );
 DELETE FROM tanaghom.external_operations
 WHERE idempotency_key = 'postiz-draft:52000000-0000-4000-8000-000000000001';
+DELETE FROM tanaghom.integration_connections WHERE provider = 'postiz';
+UPDATE tanaghom.automation_platform_controls
+SET emergency_stop = true, reason = 'Disposable handoff test complete'
+WHERE provider = 'postiz';
 
 SELECT 'PASS: guarded Postiz draft handoff is idempotent and approval-bound.' AS result;

@@ -4,6 +4,7 @@ import { createHash, randomUUID } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
+import { postizAutomationRuntimeReady } from "@/lib/server/automation-management";
 import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { noStore } from "@/lib/server/responses";
@@ -187,6 +188,13 @@ export async function decideContent(request: NextRequest, contentItemId: string)
         ],
       );
 
+      const automaticDraft = input.decision === "approved"
+        ? (await client.query<{ queued: boolean; reason: string; job_id: string | null }>(
+            "SELECT * FROM tanaghom.maybe_queue_automatic_postiz_draft($1::uuid, $2::uuid, $3::boolean)",
+            [contentItemId, user.id, postizAutomationRuntimeReady()],
+          )).rows[0]
+        : { queued: false, reason: "not_approved", job_id: null };
+
       const responseBody = {
         ok: true,
         content_item_id: contentItemId,
@@ -195,6 +203,7 @@ export async function decideContent(request: NextRequest, contentItemId: string)
         correlation_id: correlationId,
         decided_at: approval.rows[0].decided_at,
         delivery: "queued",
+        postiz_draft: automaticDraft,
       };
       await client.query(
         `UPDATE tanaghom.api_idempotency_keys
