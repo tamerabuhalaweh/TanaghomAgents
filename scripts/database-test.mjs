@@ -46,6 +46,7 @@ const integrationAssertions = join(root, 'packages', 'database', 'tests', 'custo
 const automationAssertions = join(root, 'packages', 'database', 'tests', 'postiz_automation_controls.sql');
 const performanceAssertions = join(root, 'packages', 'database', 'tests', 'postiz_performance_monitoring.sql');
 const ghlAssertions = join(root, 'packages', 'database', 'tests', 'ghl_contact_sync.sql');
+const ghlInboundAssertions = join(root, 'packages', 'database', 'tests', 'ghl_inbound_event_inbox.sql');
 
 database('migrate');
 database('migrate');
@@ -58,6 +59,9 @@ psql('-f', integrationAssertions);
 psql('-f', automationAssertions);
 psql('-f', performanceAssertions);
 psql('-f', ghlAssertions);
+psql('-f', ghlInboundAssertions);
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.ghl_inbound_events') IS NOT NULL OR to_regprocedure('tanaghom.claim_ghl_inbound_event_job()') IS NOT NULL OR EXISTS (SELECT 1 FROM pg_roles WHERE rolname='tanaghom_conversation_worker') THEN RAISE EXCEPTION '0012 rollback left inbound event objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.ghl_contact_sync_state') IS NOT NULL OR to_regprocedure('tanaghom.claim_ghl_contact_job()') IS NOT NULL THEN RAISE EXCEPTION '0011 rollback left GHL contact objects behind'; END IF; END $$;");
 database('rollback');
@@ -76,6 +80,6 @@ while (query("SELECT count(*) FROM public.schema_migrations;") !== '0') {
   database('rollback');
 }
 psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_namespace WHERE nspname = 'tanaghom') THEN RAISE EXCEPTION 'rollback left tanaghom schema behind'; END IF; END $$;");
-psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname IN ('tanaghom_api', 'tanaghom_n8n_worker', 'tanaghom_readonly')) THEN RAISE EXCEPTION 'rollback left package roles behind'; END IF; END $$;");
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM pg_roles WHERE rolname IN ('tanaghom_api', 'tanaghom_n8n_worker', 'tanaghom_readonly', 'tanaghom_conversation_worker')) THEN RAISE EXCEPTION 'rollback left package roles behind'; END IF; END $$;");
 database('migrate');
 psql('-c', "SELECT 'PASS: migration rollback and clean reapply succeeded.' AS result;");

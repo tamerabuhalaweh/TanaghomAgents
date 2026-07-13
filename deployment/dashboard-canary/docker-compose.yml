@@ -14,6 +14,7 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
       INTEGRATION_CREDENTIAL_KEY_VERSION: "1"
       POSTIZ_AUTOMATION_RUNTIME_READY: "false"
+      GHL_WEBHOOK_INGRESS_ENABLED: "false"
       POSTIZ_ALLOWED_BASE_URLS: https://postiz.163-123-180-104.sslip.io/api/public/v1
       TANAGHOM_INTEGRATION_GATEWAY_URL: ""
       NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem

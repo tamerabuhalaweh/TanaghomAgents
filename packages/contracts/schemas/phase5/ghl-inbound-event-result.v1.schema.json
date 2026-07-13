@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-inbound-event-result.v1.schema.json",
+  "title": "Tanaghom GoHighLevel inbound event processing result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "event_id", "outcome", "external_action_count"],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-inbound-event-result.v1" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "outcome": { "enum": ["accepted_for_conversation_intelligence", "ignored_without_action"] },
+    "external_action_count": { "const": 0 },
+    "notes": { "type": "string", "maxLength": 500 }
+  }
+}

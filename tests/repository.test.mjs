@@ -243,3 +243,57 @@ test('Phase 5A GHL synchronization is contact-only, inactive, and least privileg
   const postgres = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.postgres');
   assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_ghl_contact_job|prepare_ghl_contact_upsert|complete_ghl_contact_upsert|record_ghl_contact_failure)/.test(node.parameters.query)));
 });
+
+test('Phase 5B GHL ingress verifies raw Ed25519 bodies and durably queues zero-action work', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0012_ghl_inbound_event_inbox.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0012_ghl_inbound_event_inbox.down.sql', import.meta.url), 'utf8');
+  const route = await readFile(new URL('../apps/dashboard/app/api/webhooks/ghl/route.ts', import.meta.url), 'utf8');
+  const verifier = await readFile(new URL('../apps/dashboard/lib/server/ghl-inbound-webhook.ts', import.meta.url), 'utf8');
+  const runbook = await readFile(new URL('../deployment/phase5b-ghl-inbound/RUNBOOK.md', import.meta.url), 'utf8');
+  const nginx = await readFile(new URL('../deployment/phase5b-ghl-inbound/nginx/ghl-webhook.conf', import.meta.url), 'utf8');
+
+  for (const name of [
+    'record_ghl_webhook_rejection', 'accept_ghl_inbound_event',
+    'claim_ghl_inbound_event_job', 'complete_ghl_inbound_event',
+    'record_ghl_inbound_event_failure', 'recover_stale_ghl_inbound_event_jobs',
+    'replay_ghl_inbound_event',
+  ]) {
+    assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
+    assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
+  }
+  assert.match(migration, /CREATE ROLE tanaghom_conversation_worker/);
+  assert.match(migration, /conversation_processing_mode IN \('paused', 'shadow'\)/);
+  assert.match(migration, /UNIQUE \(integration_connection_id, provider_event_id\)/);
+  assert.match(migration, /WHERE job_type = 'conversation\.ghl\.inbound_event'/);
+  assert.match(migration, /external_action_count', 0/);
+  assert.doesNotMatch(migration, /GRANT (SELECT|INSERT|UPDATE|DELETE).+tanaghom_conversation_worker/);
+  assert.doesNotMatch(migration, /GRANT .+tanaghom_n8n_worker/);
+
+  assert.match(route, /GHL_WEBHOOK_INGRESS_ENABLED/);
+  assert.match(route, /request\.arrayBuffer\(\)/);
+  assert.match(route, /x-ghl-signature/);
+  assert.match(route, /maximumBodyBytes = 256 \* 1024/);
+  assert.doesNotMatch(route, /request\.json\(\)/);
+  assert.match(verifier, /verify\(null, rawBody, webhookPublicKey\(\), decoded\)/);
+  assert.match(verifier, /MCowBQYDK2VwAyEAi2HR1srL4o18O8BRa7gVJY7G7bupbN3H9AwJrHCDiOg=/);
+  assert.doesNotMatch(`${route}\n${verifier}`, /services\.leadconnectorhq\.com|\/conversations\/messages|GEMMA|N8N_/i);
+
+  for (const name of [
+    'ghl-inbound-event.v1.schema.json',
+    'ghl-inbound-event-job.v1.schema.json',
+    'ghl-inbound-event-result.v1.schema.json',
+  ]) {
+    const schema = JSON.parse(await readFile(new URL(`../packages/contracts/schemas/phase5/${name}`, import.meta.url), 'utf8'));
+    assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+    assert.equal(schema.additionalProperties, false);
+  }
+  const resultSchema = JSON.parse(await readFile(new URL('../packages/contracts/schemas/phase5/ghl-inbound-event-result.v1.schema.json', import.meta.url), 'utf8'));
+  assert.equal(resultSchema.properties.external_action_count.const, 0);
+
+  assert.match(runbook, /Production[\s\S]*unauthorized/i);
+  assert.match(runbook, /GHL_WEBHOOK_INGRESS_ENABLED=false/);
+  assert.match(runbook, /npm run db:rollback/);
+  assert.match(runbook, /pg_restore --exit-on-error/);
+  assert.match(nginx, /limit_req zone=tanaghom_ghl_webhook/);
+  assert.match(nginx, /client_max_body_size 256k/);
+});
