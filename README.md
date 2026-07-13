@@ -45,6 +45,11 @@ npm run build:dashboard
 
 The n8n editor is an engineering console and is not the customer-facing product.
 
+The authenticated dashboard canary is available at
+[tanaghom.38-247-187-232.sslip.io](https://tanaghom.38-247-187-232.sslip.io/).
+The public virtual host proxies only the dashboard; n8n and webhook ingress
+remain private.
+
 ## Reconciliation status
 
 The original local Groky implementation was audited before Phase 2 integration.
