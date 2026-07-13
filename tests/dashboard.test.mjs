@@ -167,6 +167,7 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   assert.match(dockerfile, /node:24\.18\.0-alpine3\.24@sha256:/);
   assert.match(entrypoint, /\/run\/secrets\/\$2/);
   assert.match(entrypoint, /SUPABASE_SECRET_KEY supabase_secret_key/);
+  assert.match(entrypoint, /read_optional_secret SUPABASE_SECRET_KEY/);
   assert.match(installer, /protected unit changed state/);
   assert.match(installer, /candidate\.overlaps/);
   assert.match(installer, /cleanup/);

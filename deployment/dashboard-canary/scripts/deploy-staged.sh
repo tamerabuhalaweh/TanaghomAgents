@@ -37,10 +37,11 @@ for network in networks:
 PY
 rm -f /tmp/tanaghom-dashboard-networks.json
 
-for secret in database_url supabase_url supabase_publishable_key supabase_jwks_url supabase_secret_key
+for secret in database_url supabase_url supabase_publishable_key supabase_jwks_url
 do
   test -s "$source_dir/deployment/dashboard-canary/secrets/$secret" || { echo "required staged secret is missing: $secret" >&2; exit 1; }
 done
+test -e "$source_dir/deployment/dashboard-canary/secrets/supabase_secret_key" || { echo "staged optional invitation secret file is missing" >&2; exit 1; }
 
 cleanup() {
   if [ "$committed" != true ] && [ -d "$package_dir" ]; then

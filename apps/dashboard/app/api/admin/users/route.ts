@@ -19,7 +19,11 @@ export async function GET(request: NextRequest) {
         WHERE member.kind = 'human'
         ORDER BY (member.role = 'owner') DESC, member.created_at ASC`,
     );
-    return noStore({ users: result.rows, current_user_id: owner.id });
+    return noStore({
+      users: result.rows,
+      current_user_id: owner.id,
+      invitations_configured: Boolean(process.env.SUPABASE_SECRET_KEY),
+    });
   } catch (error) { return apiFailure(error); }
 }
 
