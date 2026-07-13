@@ -74,9 +74,12 @@ export async function GET(request: NextRequest) {
         `SELECT lead.id, lead.campaign_id, campaign.name AS campaign_name,
                 lead.name, lead.contact_email, lead.contact_phone, lead.status,
                 lead.temperature, lead.available_for_requeue, lead.created_at,
-                lead.last_touch_at
+                lead.last_touch_at, lead.ghl_contact_id,
+                sync.status AS ghl_sync_status, sync.last_success_at AS ghl_last_synced_at,
+                sync.last_error_code AS ghl_last_error_code
            FROM tanaghom.leads AS lead
            JOIN tanaghom.campaigns AS campaign ON campaign.id = lead.campaign_id
+           LEFT JOIN tanaghom.ghl_contact_sync_state sync ON sync.lead_id = lead.id
           WHERE campaign.organization_id = $1
           ORDER BY lead.created_at DESC
           LIMIT 100`,

@@ -214,3 +214,32 @@ test('Phase 4F gateway activation package is private, transactional, and reversi
   assert.match(runbook, /dashboard never joins an n8n network/i);
   assert.doesNotMatch(`${n8n}\n${squid}\n${validate}\n${credential}`, /Bearer\s+[A-Za-z0-9_-]{20,}/);
 });
+
+test('Phase 5A GHL synchronization is contact-only, inactive, and least privileged', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0011_ghl_contact_sync.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0011_ghl_contact_sync.down.sql', import.meta.url), 'utf8');
+  const gateway = await readFile(new URL('../apps/dashboard/app/api/internal/integrations/ghl/contact/route.ts', import.meta.url), 'utf8');
+  const provider = await readFile(new URL('../apps/dashboard/lib/server/integration-providers.ts', import.meta.url), 'utf8');
+  const workflow = JSON.parse(await readFile(new URL('../n8n/workflows/phase5/ghl-contact-sync.v1.json', import.meta.url), 'utf8'));
+  for (const name of ['queue_ghl_contact_upsert', 'claim_ghl_contact_job', 'prepare_ghl_contact_upsert', 'complete_ghl_contact_upsert', 'record_ghl_contact_failure']) {
+    assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
+    assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
+  }
+  assert.match(migration, /createNewIfDuplicateAllowed', false/);
+  assert.match(migration, /contact_sync_mode IN \('manual', 'paused'\)/);
+  assert.match(migration, /control\.provider = 'ghl' AND NOT control\.emergency_stop/);
+  assert.doesNotMatch(migration, /GRANT (INSERT|UPDATE|DELETE).+tanaghom_n8n_worker/);
+  assert.match(gateway, /GHL_CONTACT_SYNC_ENABLED/);
+  assert.match(gateway, /operation\.operation_type = 'upsert_contact'/);
+  assert.match(provider, /contacts\/upsert/);
+  assert.match(provider, /Version: "v3"/);
+  assert.equal(workflow.id, 'phase5GhlContactUpsertV1');
+  assert.equal(workflow.active, false);
+  assert.equal(workflow.settings.saveDataErrorExecution, 'none');
+  assert.equal(workflow.settings.saveDataSuccessExecution, 'none');
+  assert.equal(workflow.nodes.find((node) => node.type === 'n8n-nodes-base.scheduleTrigger').disabled, true);
+  assert.ok(workflow.nodes.every((node) => !['n8n-nodes-base.webhook', 'n8n-nodes-base.executeCommand', 'n8n-nodes-base.readWriteFile', 'n8n-nodes-base.ssh'].includes(node.type)));
+  assert.doesNotMatch(JSON.stringify(workflow), /services\.leadconnectorhq\.com|Authorization:|Bearer |\/messages|\/sms|\/emails\/send/i);
+  const postgres = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.postgres');
+  assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_ghl_contact_job|prepare_ghl_contact_upsert|complete_ghl_contact_upsert|record_ghl_contact_failure)/.test(node.parameters.query)));
+});

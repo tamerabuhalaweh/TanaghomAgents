@@ -54,6 +54,19 @@ test("self-hosted Postiz uses an exact deployment allowlist and a base URL field
   assert.match(compose, /POSTIZ_ALLOWED_BASE_URLS: https:\/\/postiz\.163-123-180-104\.sslip\.io\/api\/public\/v1/);
 });
 
+test("GHL settings are customer managed and lead handoff stays explicit", async () => {
+  const settings = await readFile(new URL("components/integrations-settings.tsx", dashboard), "utf8");
+  const service = await readFile(new URL("lib/server/ghl-contact-sync.ts", dashboard), "utf8");
+  const leads = await readFile(new URL("components/leads-view.tsx", dashboard), "utf8");
+  assert.match(settings, /GoHighLevel/);
+  assert.match(settings, /private integration token/i);
+  assert.match(service, /authorize\(request, \["owner", "operator"\]\)/);
+  assert.match(service, /queue_ghl_contact_upsert/);
+  assert.doesNotMatch(service, /fetch\(|services\.leadconnectorhq\.com/);
+  assert.match(leads, /Sync to GHL/);
+  assert.match(leads, /Idempotency-Key/);
+});
+
 test("dashboard includes reduced-motion and responsive navigation behavior", async () => {
   const css = await readFile(new URL("app/globals.css", dashboard), "utf8");
   assert.match(css, /prefers-reduced-motion: reduce/);

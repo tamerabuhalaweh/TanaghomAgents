@@ -44,6 +44,10 @@ export interface OperationsLead {
   available_for_requeue: boolean;
   created_at: string;
   last_touch_at: string | null;
+  ghl_contact_id: string | null;
+  ghl_sync_status: string | null;
+  ghl_last_synced_at: string | null;
+  ghl_last_error_code: string | null;
 }
 
 export interface OperationsNotification {

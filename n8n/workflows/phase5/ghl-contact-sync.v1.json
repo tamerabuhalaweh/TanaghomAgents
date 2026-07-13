@@ -1,0 +1,315 @@
+{
+  "id": "phase5GhlContactUpsertV1",
+  "name": "Tanaghom — GHL Contact Sync v1",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ghl-manual",
+      "name": "Manual Controlled Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 5
+            }
+          ]
+        }
+      },
+      "id": "ghl-schedule",
+      "name": "Polling Disabled Pending Approval",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        360
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tanaghom.claim_ghl_contact_job();",
+        "options": {}
+      },
+      "id": "ghl-claim",
+      "name": "Claim GHL Contact Job",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        270
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tanaghom.prepare_ghl_contact_upsert($1::uuid);",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id] }}"
+        }
+      },
+      "id": "ghl-prepare",
+      "name": "Prepare GHL Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        480,
+        270
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TANAGHOM_INTEGRATION_GATEWAY_URL }}/api/internal/integrations/ghl/contact",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.idempotency_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $json.job_id, request_body: $json.request_body }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ghl-request",
+      "name": "Upsert GHL Contact",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        270
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "62000000-0000-4000-8000-000000000004",
+          "name": "Tanaghom Integration Gateway"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prepared = $('Prepare GHL Contact').first().json;\nconst response = $json;\nif (response?.error) return [{ json: { ...prepared, ok: false, error_code: 'ghl_network_error', error_message: String(response.error.message ?? response.error).slice(0, 1000), http_status: 0, retry_after_seconds: 300 } }];\nconst statusCode = Number(response.statusCode ?? response.status ?? 200);\nconst body = response.body ?? response;\nif (statusCode < 200 || statusCode >= 300) return [{ json: { ...prepared, ok: false, error_code: statusCode === 429 ? 'ghl_rate_limited' : 'ghl_http_error', error_message: String(body?.message ?? body?.error ?? statusCode).slice(0, 1000), http_status: statusCode, retry_after_seconds: statusCode === 429 ? 3600 : 300 } }];\nconst contact = body?.contact;\nif (!contact || typeof contact.id !== 'string' || !contact.id.trim() || typeof contact.locationId !== 'string' || !contact.locationId.trim()) return [{ json: { ...prepared, ok: false, error_code: 'ghl_invalid_response', error_message: 'HighLevel returned success without a contact ID and location ID', http_status: statusCode, retry_after_seconds: 300 } }];\nreturn [{ json: { ...prepared, ok: true, result: { contract_version: 'phase5.ghl-contact-upsert-result.v1', provider_contact_id: contact.id.trim(), location_id: contact.locationId.trim(), created: body?.new === true } } }];"
+      },
+      "id": "ghl-normalize",
+      "name": "Normalize GHL Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "ghl-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ghl-valid",
+      "name": "GHL Contact Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT tanaghom.complete_ghl_contact_upsert($1::uuid, $2::jsonb) AS contact_id;",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id, JSON.stringify($json.result)] }}"
+        }
+      },
+      "id": "ghl-complete",
+      "name": "Record GHL Contact",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        180
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT tanaghom.record_ghl_contact_failure($1::uuid, $2::text, $3::text, $4::integer, $5::integer) AS next_status;",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id, $json.error_code, $json.error_message, $json.http_status, $json.retry_after_seconds] }}"
+        }
+      },
+      "id": "ghl-failure",
+      "name": "Record GHL Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        360
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Controlled Trigger": {
+      "main": [
+        [
+          {
+            "node": "Claim GHL Contact Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Polling Disabled Pending Approval": {
+      "main": [
+        [
+          {
+            "node": "Claim GHL Contact Job",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim GHL Contact Job": {
+      "main": [
+        [
+          {
+            "node": "Prepare GHL Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare GHL Contact": {
+      "main": [
+        [
+          {
+            "node": "Upsert GHL Contact",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upsert GHL Contact": {
+      "main": [
+        [
+          {
+            "node": "Normalize GHL Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize GHL Response": {
+      "main": [
+        [
+          {
+            "node": "GHL Contact Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GHL Contact Valid?": {
+      "main": [
+        [
+          {
+            "node": "Record GHL Contact",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record GHL Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 120
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [],
+  "pinData": {},
+  "versionId": "61000000-0000-4000-8000-000000000006"
+}

@@ -45,6 +45,7 @@ const postizAssertions = join(root, 'packages', 'database', 'tests', 'postiz_dra
 const integrationAssertions = join(root, 'packages', 'database', 'tests', 'customer_integrations.sql');
 const automationAssertions = join(root, 'packages', 'database', 'tests', 'postiz_automation_controls.sql');
 const performanceAssertions = join(root, 'packages', 'database', 'tests', 'postiz_performance_monitoring.sql');
+const ghlAssertions = join(root, 'packages', 'database', 'tests', 'ghl_contact_sync.sql');
 
 database('migrate');
 database('migrate');
@@ -56,6 +57,9 @@ psql('-f', postizAssertions);
 psql('-f', integrationAssertions);
 psql('-f', automationAssertions);
 psql('-f', performanceAssertions);
+psql('-f', ghlAssertions);
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.ghl_contact_sync_state') IS NOT NULL OR to_regprocedure('tanaghom.claim_ghl_contact_job()') IS NOT NULL THEN RAISE EXCEPTION '0011 rollback left GHL contact objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.post_metric_observations') IS NOT NULL OR to_regprocedure('tanaghom.claim_postiz_performance_job()') IS NOT NULL THEN RAISE EXCEPTION '0010 rollback left performance objects behind'; END IF; END $$;");
 database('rollback');

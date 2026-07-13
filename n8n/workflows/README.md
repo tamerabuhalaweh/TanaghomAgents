@@ -26,3 +26,11 @@ analytics, normalizes the response to the versioned performance contract, and
 completes the job through controlled database functions. It cannot read the
 customer API key, write performance tables directly, or activate its own
 schedule. Both the workflow and its polling trigger are committed inactive.
+
+Phase 5 exports are generated under `phase5/`. The GHL contact workflow handles
+only an explicitly queued contact upsert: it claims a database-authorized job,
+loads customer credentials only inside the private dashboard gateway, and
+records the returned contact ID through controlled database functions. The
+workflow cannot message contacts, read customer tokens, write application
+tables directly, activate its disabled polling trigger, or retain contact data
+in n8n execution history.

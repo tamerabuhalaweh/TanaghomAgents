@@ -187,3 +187,17 @@ export async function getPostizPostAnalytics(
   });
   return { statusCode: response.status, body: await jsonBody(response) };
 }
+
+export async function upsertGhlContact(baseUrl: string, secret: string, requestBody: unknown) {
+  const response = await providerFetch(`${baseUrl}/contacts/upsert`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${secret}`,
+      Accept: "application/json",
+      "Content-Type": "application/json",
+      Version: "v3",
+    },
+    body: JSON.stringify(requestBody),
+  });
+  return { statusCode: response.status, body: await jsonBody(response) };
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-contact-upsert-result.v1.schema.json",
+  "title": "GHL contact upsert result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "provider_contact_id", "location_id", "created"],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-contact-upsert-result.v1" },
+    "provider_contact_id": { "type": "string", "minLength": 3, "maxLength": 300 },
+    "location_id": { "type": "string", "minLength": 3, "maxLength": 100 },
+    "created": { "type": "boolean" }
+  }
+}
