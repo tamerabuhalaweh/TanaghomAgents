@@ -32,11 +32,15 @@ test("Phase 4 team management is owner-only and preserves the final admin", asyn
 test("Content Library is live, keeps approval evidence, and guards Postiz handoff", async () => {
   const route = await readFile(new URL("app/api/content/route.ts", dashboard), "utf8");
   const component = await readFile(new URL("components/content-library.tsx", dashboard), "utf8");
+  const handoff = await readFile(new URL("lib/server/postiz-handoff.ts", dashboard), "utf8");
   assert.match(route, /content_approvals/);
   assert.match(route, /tanaghom\.posts/);
-  assert.match(route, /postiz_ready: false/);
+  assert.match(route, /postiz_ready: postizHandoffEnabled\(\)/);
+  assert.match(route, /postiz_channel_ready/);
   assert.match(component, /Send to Postiz as draft/);
-  assert.match(component, /disabled=\{!integration\?\.postiz_ready\}/);
+  assert.match(component, /disabled=\{!isReady \|\| submitting === item\.id\}/);
+  assert.match(handoff, /queue_postiz_draft/);
+  assert.doesNotMatch(handoff, /fetch\(|https?:\/\//);
   assert.doesNotMatch(component, /@\/data\/fixtures|https?:\/\//);
 });
 

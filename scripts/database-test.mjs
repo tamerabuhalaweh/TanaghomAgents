@@ -41,6 +41,7 @@ const seed = join(root, 'packages', 'database', 'seeds', 'staging.sql');
 const assertions = join(root, 'packages', 'database', 'tests', 'foundation.sql');
 const roleAssertions = join(root, 'packages', 'database', 'tests', 'least_privilege_roles.sql');
 const workerAssertions = join(root, 'packages', 'database', 'tests', 'controlled_worker_functions.sql');
+const postizAssertions = join(root, 'packages', 'database', 'tests', 'postiz_draft_handoff.sql');
 
 database('migrate');
 database('migrate');
@@ -48,6 +49,9 @@ psql('-f', seed);
 psql('-f', assertions);
 psql('-f', roleAssertions);
 psql('-f', workerAssertions);
+psql('-f', postizAssertions);
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regprocedure('tanaghom.queue_postiz_draft(uuid,uuid)') IS NOT NULL THEN RAISE EXCEPTION '0007 rollback left Postiz functions behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'tanaghom' AND table_name = 'app_users' AND column_name = 'accepted_at') THEN RAISE EXCEPTION '0006 rollback left invitation columns behind'; END IF; END $$;");
 database('rollback');
