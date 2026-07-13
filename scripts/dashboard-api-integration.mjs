@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { once } from "node:events";
@@ -245,6 +246,23 @@ try {
   assert.match(cookieValue(jar, "tanaghom_refresh_token"), /refresh-1/);
   session = await fetch(`${dashboardOrigin}/api/auth/session`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(session.status, 200);
+
+  const supervisorInbox = await fetch(`${dashboardOrigin}/api/conversations`, { headers: { Cookie: jar.join("; ") } });
+  assert.equal(supervisorInbox.status, 200);
+  const supervisorInboxBody = await supervisorInbox.json();
+  assert.equal(supervisorInboxBody.current_user.role, "owner");
+  assert.equal(supervisorInboxBody.policy.conversation_emergency_stop, true);
+  assert.deepEqual(supervisorInboxBody.conversations, []);
+  const clearConversationStop = await fetch(`${dashboardOrigin}/api/conversations/emergency`, {
+    method: "POST", headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ active: false, reason: "Dashboard integration controlled resume test", command_id: randomUUID() }),
+  });
+  assert.equal(clearConversationStop.status, 200);
+  const restoreConversationStop = await fetch(`${dashboardOrigin}/api/conversations/emergency`, {
+    method: "POST", headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ active: true, reason: "Dashboard integration test complete", command_id: randomUUID() }),
+  });
+  assert.equal(restoreConversationStop.status, 200);
 
   const initialIntegrations = await fetch(`${dashboardOrigin}/api/admin/integrations`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(initialIntegrations.status, 200);
