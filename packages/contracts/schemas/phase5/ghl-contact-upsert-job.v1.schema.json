@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-contact-upsert-job.v1.schema.json",
+  "title": "GHL contact upsert job v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "organization_id", "lead_id", "sync_version", "requested_by"],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-contact-upsert-job.v1" },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "lead_id": { "type": "string", "format": "uuid" },
+    "sync_version": { "type": "integer", "minimum": 1 },
+    "requested_by": { "type": "string", "format": "uuid" }
+  }
+}

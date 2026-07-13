@@ -13,3 +13,9 @@ Postiz's platform-dependent labels into durable metric keys and dated values.
 Lead ingestion must resolve to an organization, campaign, and source post or be
 recorded as quarantined; ambiguous provider events may not silently create
 unattributed leads.
+
+Phase 5 contracts begin with a customer-owned GoHighLevel contact-upsert
+boundary. The job identifies an organization-scoped lead and monotonic sync
+version; the result records only the authorized location, provider contact
+reference, and whether HighLevel created or updated the contact. No message,
+sequence, or free-form outreach content is part of this contract.

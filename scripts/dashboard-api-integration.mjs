@@ -23,6 +23,7 @@ const publicJwk = { ...await exportJWK(publicKey), kid: "integration-key", alg: 
 let refreshGeneration = 0;
 let providerDraftRequests = 0;
 let providerAnalyticsRequests = 0;
+let providerGhlRequests = 0;
 
 async function accessToken(seconds, tokenSubject = subject, email = "owner@example.test") {
   return new SignJWT({ role: "authenticated", email })
@@ -103,9 +104,30 @@ const authServer = createServer(async (request, response) => {
 
 const providerServer = createServer(async (request, response) => {
   const url = new URL(request.url, providerOrigin);
-  if (request.headers.authorization !== "integration-customer-postiz-key") {
+  const ghlRequest = url.pathname.includes("/locations/") || url.pathname.endsWith("/contacts/upsert");
+  const expectedAuthorization = ghlRequest
+    ? "Bearer integration-customer-ghl-token"
+    : "integration-customer-postiz-key";
+  if (request.headers.authorization !== expectedAuthorization) {
     response.writeHead(401, { "Content-Type": "application/json" });
     response.end(JSON.stringify({ error: "unauthorized" }));
+    return;
+  }
+  if (ghlRequest) assert.equal(request.headers.version, "v3");
+  if (request.method === "GET" && url.pathname === "/public/v1/locations/location-test-1") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ location: { id: "location-test-1", name: "Integration GHL Location" } }));
+    return;
+  }
+  if (request.method === "POST" && url.pathname === "/public/v1/contacts/upsert") {
+    providerGhlRequests += 1;
+    const body = await jsonBody(request);
+    assert.equal(body.locationId, "location-test-1");
+    assert.equal(body.source, "Tanaghom");
+    assert.equal(body.createNewIfDuplicateAllowed, false);
+    assert.equal(body.email, "ghl-api-lead@example.test");
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ new: true, contact: { id: "ghl-api-contact-1", locationId: "location-test-1" } }));
     return;
   }
   if (request.method === "GET" && url.pathname === "/public/v1/is-connected") {
@@ -182,6 +204,8 @@ try {
       POSTIZ_HANDOFF_ENABLED: "true",
       POSTIZ_AUTOMATION_RUNTIME_READY: "true",
       POSTIZ_PERFORMANCE_SYNC_ENABLED: "true",
+      GHL_CONTACT_HANDOFF_ENABLED: "true",
+      GHL_CONTACT_SYNC_ENABLED: "true",
       TANAGHOM_INTEGRATION_GATEWAY_URL: dashboardOrigin,
       INTEGRATION_CREDENTIAL_KEY: Buffer.alloc(32, 7).toString("base64"),
       INTEGRATION_CREDENTIAL_KEY_VERSION: "1",
@@ -194,7 +218,7 @@ try {
 
   await pool.query(`UPDATE tanaghom.automation_platform_controls
     SET emergency_stop=false, reason='Disposable dashboard integration test'
-    WHERE provider='postiz'`);
+    WHERE provider IN ('postiz','ghl')`);
 
   const login = await fetch(`${dashboardOrigin}/api/auth/login`, {
     method: "POST",
@@ -248,6 +272,64 @@ try {
   });
   assert.equal(testedPostiz.status, 200);
   assert.equal((await testedPostiz.json()).connection.status, "connected");
+  const savedGhl = await fetch(`${dashboardOrigin}/api/admin/integrations/ghl`, {
+    method: "PUT",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      secret: "integration-customer-ghl-token",
+      base_url: `${providerOrigin}/public/v1`,
+      configuration: { location_id: "location-test-1" },
+    }),
+  });
+  assert.equal(savedGhl.status, 200);
+  assert.doesNotMatch(JSON.stringify(await savedGhl.json()), /integration-customer-ghl-token/);
+  const testedGhl = await fetch(`${dashboardOrigin}/api/admin/integrations/ghl/test`, {
+    method: "POST", headers: { Cookie: jar.join("; "), Origin: dashboardOrigin },
+  });
+  assert.equal(testedGhl.status, 200);
+  assert.equal((await testedGhl.json()).connection.status, "connected");
+
+  const ghlLeadId = "65000000-0000-4000-8000-000000000030";
+  await pool.query(`INSERT INTO tanaghom.leads (id,campaign_id,name,contact_email,status)
+    VALUES ($1,$2,'GHL API Lead','ghl-api-lead@example.test','qualified')`, [ghlLeadId, campaignId]);
+  const ghlHandoffHeaders = {
+    Cookie: jar.join("; "), Origin: dashboardOrigin,
+    "Idempotency-Key": "integration-ghl-contact-1",
+  };
+  const ghlHandoff = await fetch(`${dashboardOrigin}/api/leads/${ghlLeadId}/ghl-contact`, {
+    method: "POST", headers: ghlHandoffHeaders,
+  });
+  assert.equal(ghlHandoff.status, 202);
+  const ghlHandoffBody = await ghlHandoff.json();
+  const ghlHandoffReplay = await fetch(`${dashboardOrigin}/api/leads/${ghlLeadId}/ghl-contact`, {
+    method: "POST", headers: ghlHandoffHeaders,
+  });
+  assert.equal(ghlHandoffReplay.status, 202);
+  assert.equal(ghlHandoffReplay.headers.get("Idempotency-Replayed"), "true");
+  const claimedGhl = await pool.query("SELECT * FROM tanaghom.claim_ghl_contact_job()");
+  assert.equal(claimedGhl.rows[0].job_id, ghlHandoffBody.job_id);
+  const preparedGhl = await pool.query("SELECT * FROM tanaghom.prepare_ghl_contact_upsert($1::uuid)", [ghlHandoffBody.job_id]);
+  const ghlGateway = await fetch(`${dashboardOrigin}/api/internal/integrations/ghl/contact`, {
+    method: "POST",
+    headers: { Authorization: "Bearer integration-worker-token-at-least-32-characters", "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id: ghlHandoffBody.job_id, request_body: preparedGhl.rows[0].request_body }),
+  });
+  assert.equal(ghlGateway.status, 200);
+  const ghlGatewayBody = await ghlGateway.json();
+  assert.equal(ghlGatewayBody.contact.id, "ghl-api-contact-1");
+  assert.equal(providerGhlRequests, 1);
+  const ghlGatewayReplay = await fetch(`${dashboardOrigin}/api/internal/integrations/ghl/contact`, {
+    method: "POST",
+    headers: { Authorization: "Bearer integration-worker-token-at-least-32-characters", "Content-Type": "application/json" },
+    body: JSON.stringify({ job_id: ghlHandoffBody.job_id, request_body: preparedGhl.rows[0].request_body }),
+  });
+  assert.equal(ghlGatewayReplay.status, 409);
+  assert.equal(providerGhlRequests, 1);
+  await pool.query("SELECT tanaghom.complete_ghl_contact_upsert($1::uuid,$2::jsonb)", [
+    ghlHandoffBody.job_id,
+    JSON.stringify({ contract_version: "phase5.ghl-contact-upsert-result.v1", provider_contact_id: "ghl-api-contact-1", location_id: "location-test-1", created: true }),
+  ]);
+  assert.equal((await pool.query("SELECT ghl_contact_id FROM tanaghom.leads WHERE id=$1", [ghlLeadId])).rows[0].ghl_contact_id, "ghl-api-contact-1");
   const mappedPostiz = await fetch(`${dashboardOrigin}/api/admin/integrations/postiz/channels`, {
     method: "PUT",
     headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
@@ -313,7 +395,7 @@ try {
        (SELECT count(*)::int FROM tanaghom.api_idempotency_keys WHERE actor_user_id = $2 AND idempotency_key LIKE 'integration-%') idempotency`,
     [contentId, ownerId],
   );
-  assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 2, audit: 2, idempotency: 1 });
+  assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 2, audit: 2, idempotency: 2 });
 
   const library = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(library.status, 200);
@@ -510,7 +592,7 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: session, approvals, customer automation policy, encrypted integrations, gateway isolation, Postiz performance reporting, Content Library, and owner-managed invitations verified.");
+  console.log("PASS: sessions, approvals, encrypted integrations, Postiz performance, contact-only GHL sync, gateway isolation, Content Library, and invitations verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();
