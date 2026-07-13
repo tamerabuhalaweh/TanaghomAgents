@@ -1,0 +1,78 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase5/conversation-intelligence-request.v1.schema.json",
+  "title": "Conversation intelligence request v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "prompt_version", "summary_prompt_version", "system_policy", "provider_message", "retrieved_knowledge", "conversation_context", "tool_results", "output_contract"],
+  "properties": {
+    "contract_version": { "const": "phase5.conversation-intelligence-request.v1" },
+    "prompt_version": { "const": "phase5.conversation-intelligence.prompt.v1" },
+    "summary_prompt_version": { "const": "phase5.conversation-summary.prompt.v1" },
+    "output_contract": { "const": "phase5.conversation-intelligence-output.v1" },
+    "system_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["policy_version_id", "confidence_threshold", "supported_languages", "mandatory_escalations", "forbidden_topics", "forbidden_claims", "sensitive_data_rules", "dialect_guidance", "disclaimers", "external_actions_allowed"],
+      "properties": {
+        "policy_version_id": { "type": "string", "format": "uuid" },
+        "confidence_threshold": { "type": "number", "minimum": 0.5, "maximum": 0.95 },
+        "supported_languages": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["en", "ar"] } },
+        "mandatory_escalations": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "forbidden_topics": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "forbidden_claims": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "sensitive_data_rules": { "type": "array", "uniqueItems": true, "items": { "type": "string" } },
+        "dialect_guidance": { "type": "object" },
+        "disclaimers": { "type": "object" },
+        "external_actions_allowed": { "const": false }
+      }
+    },
+    "provider_message": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["trust", "event_id", "conversation_id", "channel", "language_hint", "body"],
+      "properties": {
+        "trust": { "const": "untrusted_customer_input" },
+        "event_id": { "type": "string", "format": "uuid" },
+        "conversation_id": { "type": ["string", "null"], "maxLength": 300 },
+        "channel": { "type": "string" },
+        "language_hint": { "enum": ["en", "ar"] },
+        "body": { "type": "string", "maxLength": 32000 }
+      }
+    },
+    "retrieved_knowledge": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["source_id", "source_version_id", "source_key", "title", "category", "version", "language", "content", "structured_facts", "content_fingerprint", "provenance_type", "provenance_ref"],
+        "properties": {
+          "source_id": { "type": "string", "format": "uuid" },
+          "source_version_id": { "type": "string", "format": "uuid" },
+          "source_key": { "type": "string" },
+          "title": { "type": "string" },
+          "category": { "type": "string" },
+          "version": { "type": "integer", "minimum": 1 },
+          "language": { "enum": ["en", "ar", "und"] },
+          "content": { "type": "string", "maxLength": 30000 },
+          "structured_facts": { "type": "array", "maxItems": 100 },
+          "content_fingerprint": { "type": "string", "pattern": "^md5:[0-9a-f]{32}$" },
+          "provenance_type": { "type": "string" },
+          "provenance_ref": { "type": ["string", "null"] }
+        }
+      }
+    },
+    "conversation_context": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["latest_summary", "recent_turns", "maximum_recent_turns"],
+      "properties": {
+        "latest_summary": { "type": ["object", "null"] },
+        "recent_turns": { "type": "array", "maxItems": 12 },
+        "maximum_recent_turns": { "const": 12 }
+      }
+    },
+    "tool_results": { "type": "array", "maxItems": 0 }
+  }
+}

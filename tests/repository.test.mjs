@@ -297,3 +297,39 @@ test('Phase 5B GHL ingress verifies raw Ed25519 bodies and durably queues zero-a
   assert.match(nginx, /limit_req zone=tanaghom_ghl_webhook/);
   assert.match(nginx, /client_max_body_size 256k/);
 });
+
+test('Phase 5C knowledge is versioned, tenant-bound, grounded, and proposal-only', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0013_sales_knowledge_intelligence.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0013_sales_knowledge_intelligence.down.sql', import.meta.url), 'utf8');
+  const prompt = await readFile(new URL('../prompts/conversation-intelligence/v1.md', import.meta.url), 'utf8');
+  const service = await readFile(new URL('../apps/dashboard/lib/server/knowledge-management.ts', import.meta.url), 'utf8');
+  const component = await readFile(new URL('../apps/dashboard/components/knowledge-management.tsx', import.meta.url), 'utf8');
+  const runbook = await readFile(new URL('../deployment/phase5c-conversation-intelligence/RUNBOOK.md', import.meta.url), 'utf8');
+  for (const name of ['create_sales_knowledge_draft', 'transition_sales_knowledge_version', 'prepare_conversation_intelligence', 'persist_conversation_intelligence_proposal']) {
+    assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
+    assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
+  }
+  assert.match(migration, /WHERE status = 'active'/);
+  assert.match(migration, /external_action_count integer NOT NULL DEFAULT 0 CHECK \(external_action_count = 0\)/);
+  assert.match(migration, /cardinality\(input_event_ids\) BETWEEN 1 AND 12/);
+  assert.match(migration, /citation is not an active organization knowledge version/);
+  assert.match(migration, /forbidden_claims text\[\]/);
+  assert.doesNotMatch(migration, /GRANT (SELECT|INSERT|UPDATE|DELETE).+tanaghom_conversation_worker/);
+  assert.doesNotMatch(migration, /GRANT .+tanaghom_n8n_worker/);
+  assert.match(prompt, /untrusted customer data/i);
+  assert.match(prompt, /Never use a[\s\S]*revoked, superseded/i);
+  assert.match(prompt, /forbidden_claims/i);
+  assert.match(service, /authorize\(request, \["owner"\]\)/);
+  assert.match(service, /create_sales_knowledge_draft/);
+  assert.match(component, /Only active versions can be retrieved/);
+  assert.match(component, /No auto-reply/);
+  assert.doesNotMatch(`${service}\n${component}`, /GEMMA|services\.leadconnectorhq\.com|\/conversations\/messages/i);
+  for (const name of ['conversation-intelligence-request.v1.schema.json', 'conversation-intelligence-output.v1.schema.json', 'conversation-summary.v1.schema.json']) {
+    const schema = JSON.parse(await readFile(new URL(`../packages/contracts/schemas/phase5/${name}`, import.meta.url), 'utf8'));
+    assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+    assert.equal(schema.additionalProperties, false);
+  }
+  assert.match(runbook, /Production[\s\S]*unauthorized/i);
+  assert.match(runbook, /npm run db:rollback/);
+  assert.match(runbook, /pg_restore --exit-on-error/);
+});

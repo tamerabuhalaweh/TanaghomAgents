@@ -14,6 +14,7 @@ import {
   Menu,
   Settings,
   LibraryBig,
+  BookOpenCheck,
   UsersRound,
   X,
 } from "lucide-react";
@@ -26,6 +27,7 @@ const primaryNavigation = [
   { href: "/campaigns", label: "Campaigns", icon: BriefcaseBusiness },
   { href: "/approvals", label: "Approvals", icon: CheckCheck },
   { href: "/content", label: "Content", icon: LibraryBig },
+  { href: "/knowledge", label: "Knowledge", icon: BookOpenCheck },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/leads", label: "Leads", icon: ContactRound },
   { href: "/reports", label: "Reports", icon: ChartNoAxesCombined },

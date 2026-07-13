@@ -1,0 +1,14 @@
+{
+  "catalog_version": "phase5.conversation-evaluation-catalog.v1",
+  "notice": "Synthetic customer-approved examples only. No credentials or personal data.",
+  "sources": [
+    { "source_key": "standard_pricing", "source_id": "78000000-0000-4000-8000-000000000001", "source_version_id": "78000000-0000-4000-8000-000000000011", "version": 1, "status": "active", "language": "en", "content_fingerprint": "md5:11111111111111111111111111111111", "content": "The Standard plan is USD 99 per month." },
+    { "source_key": "standard_pricing", "source_id": "78000000-0000-4000-8000-000000000001", "source_version_id": "78000000-0000-4000-8000-000000000012", "version": 2, "status": "superseded", "language": "en", "content_fingerprint": "md5:12121212121212121212121212121212", "content": "An old draft listed USD 120 per month." },
+    { "source_key": "standard_pricing", "source_id": "78000000-0000-4000-8000-000000000001", "source_version_id": "78000000-0000-4000-8000-000000000013", "version": 1, "status": "active", "language": "ar", "content_fingerprint": "md5:13131313131313131313131313131313", "content": "سعر الخطة القياسية 99 دولاراً أمريكياً شهرياً." },
+    { "source_key": "service_scope", "source_id": "78000000-0000-4000-8000-000000000002", "source_version_id": "78000000-0000-4000-8000-000000000021", "version": 1, "status": "active", "language": "en", "content_fingerprint": "md5:21212121212121212121212121212121", "content": "The Standard plan includes campaign setup and monthly reporting." },
+    { "source_key": "opening_hours", "source_id": "78000000-0000-4000-8000-000000000003", "source_version_id": "78000000-0000-4000-8000-000000000031", "version": 1, "status": "active", "language": "ar", "content_fingerprint": "md5:31313131313131313131313131313131", "content": "ساعات العمل من الأحد إلى الخميس، من التاسعة صباحاً حتى الخامسة مساءً." },
+    { "source_key": "service_faq_ar", "source_id": "78000000-0000-4000-8000-000000000004", "source_version_id": "78000000-0000-4000-8000-000000000041", "version": 1, "status": "active", "language": "ar", "content_fingerprint": "md5:41414141414141414141414141414141", "content": "تشمل الخدمة إعداد الحملة وتقرير الأداء الشهري." },
+    { "source_key": "human_escalation", "source_id": "78000000-0000-4000-8000-000000000005", "source_version_id": "78000000-0000-4000-8000-000000000051", "version": 1, "status": "active", "language": "und", "content_fingerprint": "md5:51515151515151515151515151515151", "content": "Complaints, refunds, payments, legal requests, abuse, exceptions, and sensitive data require a human supervisor." },
+    { "source_key": "refund_window", "source_id": "78000000-0000-4000-8000-000000000006", "source_version_id": "78000000-0000-4000-8000-000000000061", "version": 1, "status": "revoked", "language": "und", "content_fingerprint": "md5:61616161616161616161616161616161", "content": "A withdrawn fixture claimed a fixed refund window." }
+  ]
+}
