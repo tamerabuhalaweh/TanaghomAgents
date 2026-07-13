@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-inbound-event.v1.schema.json",
+  "title": "Tanaghom normalized GoHighLevel inbound event v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "provider_event_id", "provider_event_type", "location_id", "channel", "direction", "occurred_at", "details"],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-inbound-event.v1" },
+    "provider_event_id": { "type": "string", "minLength": 3, "maxLength": 300 },
+    "provider_event_type": { "enum": ["InboundMessage", "OutboundMessage", "ContactCreate", "ContactUpdate", "ContactDndUpdate", "ConversationUnreadWebhook"] },
+    "location_id": { "type": "string", "pattern": "^[A-Za-z0-9_-]{3,100}$" },
+    "contact_id": { "type": ["string", "null"], "maxLength": 300 },
+    "conversation_id": { "type": ["string", "null"], "maxLength": 300 },
+    "message_id": { "type": ["string", "null"], "maxLength": 300 },
+    "channel": { "enum": ["whatsapp", "instagram", "facebook", "sms", "email", "live_chat", "gmb", "call", "voicemail", "system", "unknown"] },
+    "direction": { "enum": ["inbound", "outbound", "system"] },
+    "occurred_at": { "type": "string", "format": "date-time" },
+    "details": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "body": { "type": "string", "maxLength": 32768 },
+        "subject": { "type": "string", "maxLength": 1000 },
+        "content_type": { "type": "string", "maxLength": 160 },
+        "status": { "type": "string", "maxLength": 160 },
+        "source": { "type": "string", "maxLength": 160 },
+        "from": { "type": "string", "maxLength": 500 },
+        "to": { "type": "string", "maxLength": 500 },
+        "first_name": { "type": "string", "maxLength": 300 },
+        "last_name": { "type": "string", "maxLength": 300 },
+        "email": { "type": "string", "maxLength": 500 },
+        "phone": { "type": "string", "maxLength": 160 },
+        "unread_count": { "type": "integer", "minimum": 0, "maximum": 1000000 },
+        "dnd": { "type": ["boolean", "object"] },
+        "attachments": { "type": "array", "maxItems": 20, "items": { "type": "string", "maxLength": 2048 } },
+        "tags": { "type": "array", "maxItems": 100, "items": { "type": "string", "maxLength": 160 } }
+      }
+    }
+  }
+}

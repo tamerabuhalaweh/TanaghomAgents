@@ -19,3 +19,8 @@ boundary. The job identifies an organization-scoped lead and monotonic sync
 version; the result records only the authorized location, provider contact
 reference, and whether HighLevel created or updated the contact. No message,
 sequence, or free-form outreach content is part of this contract.
+
+Phase 5B adds a normalized GHL webhook event, a metadata-only durable job, and
+a no-external-action processing result. Provider bodies are treated as
+untrusted input, reduced to bounded supported fields, and never authorize a
+message, appointment, opportunity update, or other provider action.

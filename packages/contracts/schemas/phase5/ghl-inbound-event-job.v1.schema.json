@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-inbound-event-job.v1.schema.json",
+  "title": "Tanaghom GoHighLevel inbound event job v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "event_id", "organization_id", "provider_event_type"],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-inbound-event-job.v1" },
+    "event_id": { "type": "string", "format": "uuid" },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "provider_event_type": { "enum": ["InboundMessage", "OutboundMessage", "ContactCreate", "ContactUpdate", "ContactDndUpdate", "ConversationUnreadWebhook"] }
+  }
+}

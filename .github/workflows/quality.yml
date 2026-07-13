@@ -189,6 +189,46 @@ jobs:
       - run: git diff --exit-code -- n8n/workflows/phase5
       - run: npm run test:phase5-workflows
 
+  phase5-inbound-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_phase5_inbound_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_phase5_inbound_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5_inbound_test
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5_inbound_test
+      APP_ENV: integration
+      GHL_INBOUND_LOAD_EVENTS: 10000
+      GHL_INBOUND_EVIDENCE_PATH: tmp/ghl-inbound-load-evidence.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f packages/database/seeds/staging.sql
+      - run: npm run build:dashboard
+      - run: npm run test:phase5-inbound
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase5-ghl-inbound-load-evidence
+          path: tmp/ghl-inbound-load-evidence.json
+          if-no-files-found: warn
+
   dashboard-image-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 15
