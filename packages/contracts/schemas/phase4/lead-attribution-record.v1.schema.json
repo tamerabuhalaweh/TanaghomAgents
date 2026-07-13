@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase4/lead-attribution-record.v1.schema.json",
+  "title": "Lead attribution decision v1",
+  "oneOf": [
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "organization_id", "provider", "provider_event_id", "payload_fingerprint", "status", "lead_id", "campaign_id", "source_post_id", "evidence"],
+      "properties": {
+        "contract_version": { "const": "phase4.lead-attribution-record.v1" },
+        "organization_id": { "type": "string", "format": "uuid" },
+        "provider": { "enum": ["postiz", "manual", "webhook"] },
+        "provider_event_id": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "payload_fingerprint": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "status": { "const": "attributed" },
+        "lead_id": { "type": "string", "format": "uuid" },
+        "campaign_id": { "type": "string", "format": "uuid" },
+        "source_post_id": { "type": "string", "format": "uuid" },
+        "evidence": { "type": "object" }
+      }
+    },
+    {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["contract_version", "organization_id", "provider", "provider_event_id", "payload_fingerprint", "status", "quarantine_reason", "evidence"],
+      "properties": {
+        "contract_version": { "const": "phase4.lead-attribution-record.v1" },
+        "organization_id": { "type": "string", "format": "uuid" },
+        "provider": { "enum": ["postiz", "manual", "webhook"] },
+        "provider_event_id": { "type": "string", "minLength": 1, "maxLength": 240 },
+        "payload_fingerprint": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" },
+        "status": { "const": "quarantined" },
+        "quarantine_reason": { "type": "string", "minLength": 3, "maxLength": 500 },
+        "evidence": { "type": "object" }
+      }
+    }
+  ]
+}

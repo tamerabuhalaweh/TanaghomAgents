@@ -22,6 +22,7 @@ const { privateKey, publicKey } = await generateKeyPair("RS256");
 const publicJwk = { ...await exportJWK(publicKey), kid: "integration-key", alg: "RS256", use: "sig" };
 let refreshGeneration = 0;
 let providerDraftRequests = 0;
+let providerAnalyticsRequests = 0;
 
 async function accessToken(seconds, tokenSubject = subject, email = "owner@example.test") {
   return new SignJWT({ role: "authenticated", email })
@@ -126,6 +127,16 @@ const providerServer = createServer(async (request, response) => {
     response.end(JSON.stringify([{ postId: "gateway-draft-1", integration: "integration-test-channel" }]));
     return;
   }
+  if (request.method === "GET" && url.pathname === "/public/v1/analytics/post/gateway-draft-1") {
+    providerAnalyticsRequests += 1;
+    assert.equal(url.searchParams.get("date"), "30");
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify([
+      { label: "Impressions", data: [{ total: "1500", date: "2026-07-12" }], percentageChange: 12.5 },
+      { label: "Likes", data: [{ total: "120", date: "2026-07-12" }], percentageChange: 8.1 },
+    ]));
+    return;
+  }
   response.writeHead(404).end();
 });
 
@@ -170,6 +181,7 @@ try {
       SUPABASE_SECRET_KEY: "integration-secret-key",
       POSTIZ_HANDOFF_ENABLED: "true",
       POSTIZ_AUTOMATION_RUNTIME_READY: "true",
+      POSTIZ_PERFORMANCE_SYNC_ENABLED: "true",
       TANAGHOM_INTEGRATION_GATEWAY_URL: dashboardOrigin,
       INTEGRATION_CREDENTIAL_KEY: Buffer.alloc(32, 7).toString("base64"),
       INTEGRATION_CREDENTIAL_KEY_VERSION: "1",
@@ -361,6 +373,49 @@ try {
   const queuedLibraryBody = await queuedLibrary.json();
   assert.ok(queuedLibraryBody.items.some((item) => item.id === contentId && item.handoff_status === "succeeded" && item.post_status === "draft"));
 
+  const livePost = await pool.query(`UPDATE tanaghom.posts
+    SET status='live'
+    WHERE content_item_id=$1::uuid RETURNING id`, [contentId]);
+  const performanceJob = await pool.query(
+    `SELECT * FROM tanaghom.queue_postiz_performance_sync($1::uuid, $2::uuid, 30)`,
+    [livePost.rows[0].id, ownerId],
+  );
+  const claimedPerformance = await pool.query(`SELECT * FROM tanaghom.claim_postiz_performance_job()`);
+  assert.equal(claimedPerformance.rows[0].job_id, performanceJob.rows[0].job_id);
+  const preparedPerformance = await pool.query(
+    `SELECT * FROM tanaghom.prepare_postiz_performance_sync($1::uuid)`,
+    [performanceJob.rows[0].job_id],
+  );
+  const analyticsGateway = await fetch(`${dashboardOrigin}/api/internal/integrations/postiz/analytics`, {
+    method: "POST",
+    headers: { Authorization: "Bearer integration-worker-token-at-least-32-characters", "Content-Type": "application/json" },
+    body: JSON.stringify({
+      job_id: performanceJob.rows[0].job_id,
+      request_body: preparedPerformance.rows[0].request_body,
+    }),
+  });
+  assert.equal(analyticsGateway.status, 200);
+  assert.equal(providerAnalyticsRequests, 1);
+  assert.equal((await analyticsGateway.json())[0].label, "Impressions");
+  await pool.query(`SELECT tanaghom.complete_postiz_performance_sync($1::uuid, $2::jsonb)`, [
+    performanceJob.rows[0].job_id,
+    JSON.stringify({
+      contract_version: "phase4.postiz-performance-result.v1",
+      metrics: [
+        { metric_key: "impressions", metric_label: "Impressions", observed_on: "2026-07-12", value: "1500" },
+        { metric_key: "likes", metric_label: "Likes", observed_on: "2026-07-12", value: "120" },
+      ],
+    }),
+  ]);
+  const operations = await fetch(`${dashboardOrigin}/api/operations`, { headers: { Cookie: jar.join("; ") } });
+  assert.equal(operations.status, 200);
+  const operationsBody = await operations.json();
+  assert.equal(Number(operationsBody.performance.impressions), 1500);
+  assert.ok(operationsBody.post_performance.some((post) =>
+    post.id === livePost.rows[0].id && Number(post.metrics.impressions) === 1500));
+  assert.ok(operationsBody.campaign_performance.some((campaign) =>
+    campaign.campaign_id === campaignId && Number(campaign.impressions) === 1500));
+
   const pauseMode = await fetch(`${dashboardOrigin}/api/admin/automation/postiz`, {
     method: "PUT",
     headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
@@ -455,7 +510,7 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: session, approvals, customer automation policy, encrypted integrations, gateway isolation, Content Library, and owner-managed invitations verified.");
+  console.log("PASS: session, approvals, customer automation policy, encrypted integrations, gateway isolation, Postiz performance reporting, Content Library, and owner-managed invitations verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();

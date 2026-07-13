@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase4/postiz-performance-job.v1.schema.json",
+  "title": "Postiz performance synchronization job v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "organization_id", "post_id", "lookback_days", "requested_by"],
+  "properties": {
+    "contract_version": { "const": "phase4.postiz-performance-job.v1" },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "post_id": { "type": "string", "format": "uuid" },
+    "lookback_days": { "type": "integer", "minimum": 1, "maximum": 90 },
+    "requested_by": { "type": "string", "format": "uuid" }
+  }
+}

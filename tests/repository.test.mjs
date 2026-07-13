@@ -149,6 +149,49 @@ test('Phase 4 Postiz handoff is draft-only, inactive, and approval guarded', asy
   assert.ok(postgres.every((node) => node.credentials.postgres.id === '62000000-0000-4000-8000-000000000001'));
 });
 
+test('Phase 4H performance monitoring is historical, inactive, and attribution-safe', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0010_postiz_performance_monitoring.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0010_postiz_performance_monitoring.down.sql', import.meta.url), 'utf8');
+  const gateway = await readFile(new URL('../apps/dashboard/app/api/internal/integrations/postiz/analytics/route.ts', import.meta.url), 'utf8');
+  const provider = await readFile(new URL('../apps/dashboard/lib/server/integration-providers.ts', import.meta.url), 'utf8');
+  const reports = await readFile(new URL('../apps/dashboard/components/reports-view.tsx', import.meta.url), 'utf8');
+  const schemaRoot = new URL('../packages/contracts/schemas/phase4/', import.meta.url);
+  for (const name of ['postiz-performance-job.v1.schema.json', 'postiz-performance-result.v1.schema.json', 'lead-attribution-record.v1.schema.json']) {
+    const schema = JSON.parse(await readFile(new URL(name, schemaRoot), 'utf8'));
+    assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+    assert.match(schema.$id, /phase4\/.+\.v1\.schema\.json$/);
+  }
+  for (const name of ['queue_postiz_performance_sync', 'claim_postiz_performance_job', 'prepare_postiz_performance_sync', 'complete_postiz_performance_sync', 'record_postiz_performance_failure']) {
+    assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
+    assert.match(migration, new RegExp(`GRANT EXECUTE ON FUNCTION tanaghom\\.${name}`));
+    assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
+  }
+  assert.match(migration, /UNIQUE \(organization_id, post_id, provider, metric_key, observed_on\)/);
+  assert.match(migration, /status IN \('attributed', 'quarantined'\)/);
+  assert.match(migration, /attribution evidence crosses an organization or campaign boundary/);
+  assert.doesNotMatch(migration, /GRANT (INSERT|UPDATE|DELETE).+tanaghom_n8n_worker/);
+  assert.match(gateway, /POSTIZ_PERFORMANCE_SYNC_ENABLED/);
+  assert.match(gateway, /operation\.operation_type = 'read_analytics'/);
+  assert.match(provider, /analytics\/post\/\$\{encodeURIComponent\(providerPostId\)\}/);
+  assert.match(reports, /Attribution review/);
+  assert.match(reports, /No leads awaiting attribution/);
+
+  const workflow = JSON.parse(await readFile(new URL('../n8n/workflows/phase4/postiz-performance-monitor.v1.json', import.meta.url), 'utf8'));
+  assert.equal(workflow.id, 'phase4PostizPerformanceV1');
+  assert.equal(workflow.active, false);
+  assert.equal(workflow.nodes.find((node) => node.name === 'Performance Polling Disabled').disabled, true);
+  assert.ok(workflow.nodes.every((node) => !['n8n-nodes-base.webhook', 'n8n-nodes-base.executeCommand', 'n8n-nodes-base.readWriteFile', 'n8n-nodes-base.ssh'].includes(node.type)));
+  const http = workflow.nodes.find((node) => node.name === 'Fetch Postiz Analytics');
+  assert.match(http.parameters.url, /TANAGHOM_INTEGRATION_GATEWAY_URL/);
+  assert.doesNotMatch(JSON.stringify(workflow), /api\.postiz\.com|Authorization:|Bearer /);
+  const normalizer = workflow.nodes.find((node) => node.name === 'Normalize Analytics Response');
+  assert.match(normalizer.parameters.jsCode, /\\d\{4\}-\\d\{2\}-\\d\{2\}/,
+    'generated n8n code must retain date-regex backslashes');
+  const postgres = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.postgres');
+  assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_postiz_performance_job|prepare_postiz_performance_sync|complete_postiz_performance_sync|record_postiz_performance_failure)/.test(node.parameters.query)));
+  assert.ok(postgres.every((node) => node.credentials.postgres.id === '62000000-0000-4000-8000-000000000001'));
+});
+
 test('Phase 4F gateway activation package is private, transactional, and reversible', async () => {
   const root = new URL('../deployment/phase4-postiz-activation/', import.meta.url);
   const n8n = await readFile(new URL('docker-compose.n8n-gateway.yml', root), 'utf8');
