@@ -218,11 +218,12 @@ try {
   const savedPostiz = await fetch(`${dashboardOrigin}/api/admin/integrations/postiz`, {
     method: "PUT",
     headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
-    body: JSON.stringify({ secret: "integration-customer-postiz-key", base_url: `${providerOrigin}/public/v1`, configuration: {} }),
+    body: JSON.stringify({ secret: "integration-customer-postiz-key", base_url: `${providerOrigin}/public/v1/is-connected`, configuration: {} }),
   });
   assert.equal(savedPostiz.status, 200);
   const savedPostizBody = await savedPostiz.json();
   assert.equal(savedPostizBody.connection.credential_mask, "••••••••-key");
+  assert.equal(savedPostizBody.connection.base_url, `${providerOrigin}/public/v1`);
   assert.doesNotMatch(JSON.stringify(savedPostizBody), /integration-customer-postiz-key/);
   const encryptedCredential = await pool.query(`SELECT encode(credential_ciphertext, 'hex') ciphertext,
     credential_nonce, credential_auth_tag FROM tanaghom.integration_connections WHERE provider='postiz'`);

@@ -45,24 +45,45 @@ export function parseProvider(value: string): IntegrationProvider {
   return value;
 }
 
-function testBaseUrls() {
-  if (!new Set(["test", "integration"]).has(process.env.APP_ENV || "")) return new Set<string>();
-  return new Set((process.env.INTEGRATION_TEST_BASE_URLS || "").split(",").map((value) => value.trim()).filter(Boolean));
-}
-
-export function validateProviderBaseUrl(provider: IntegrationProvider, rawUrl?: string) {
-  const expected = definitions[provider].defaultBaseUrl;
-  const candidate = (rawUrl || expected).replace(/\/$/, "");
+function normalizeProviderBaseUrl(provider: IntegrationProvider, rawUrl: string) {
   let parsed: URL;
-  try { parsed = new URL(candidate); }
+  try { parsed = new URL(rawUrl.trim()); }
   catch { throw new IntegrationProviderError("integration_base_url_invalid"); }
   if (parsed.username || parsed.password || parsed.search || parsed.hash) {
     throw new IntegrationProviderError("integration_base_url_invalid");
   }
-  if (candidate !== expected && !testBaseUrls().has(candidate)) {
+  let pathname = parsed.pathname.replace(/\/+$/, "");
+  if (provider === "postiz" && pathname.endsWith("/is-connected")) {
+    pathname = pathname.slice(0, -"/is-connected".length).replace(/\/+$/, "");
+  }
+  return `${parsed.origin}${pathname}`;
+}
+
+function configuredBaseUrls(provider: IntegrationProvider) {
+  const variable = provider === "postiz" ? "POSTIZ_ALLOWED_BASE_URLS" : "GHL_ALLOWED_BASE_URLS";
+  return (process.env[variable] || "").split(",").map((value) => value.trim()).filter(Boolean);
+}
+
+function testBaseUrls(provider: IntegrationProvider) {
+  if (!new Set(["test", "integration"]).has(process.env.APP_ENV || "")) return new Set<string>();
+  return new Set((process.env.INTEGRATION_TEST_BASE_URLS || "").split(",")
+    .map((value) => value.trim()).filter(Boolean)
+    .map((value) => normalizeProviderBaseUrl(provider, value)));
+}
+
+export function validateProviderBaseUrl(provider: IntegrationProvider, rawUrl?: string) {
+  const expected = definitions[provider].defaultBaseUrl;
+  const candidate = normalizeProviderBaseUrl(provider, rawUrl || expected);
+  const testUrls = testBaseUrls(provider);
+  const allowed = new Set([
+    expected,
+    ...configuredBaseUrls(provider).map((value) => normalizeProviderBaseUrl(provider, value)),
+    ...testUrls,
+  ]);
+  if (!allowed.has(candidate)) {
     throw new IntegrationProviderError("integration_base_url_not_allowed", 403);
   }
-  if (candidate === expected && parsed.protocol !== "https:") {
+  if (!candidate.startsWith("https://") && !testUrls.has(candidate)) {
     throw new IntegrationProviderError("integration_base_url_https_required");
   }
   return candidate;
