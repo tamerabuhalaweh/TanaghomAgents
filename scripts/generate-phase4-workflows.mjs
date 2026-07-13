@@ -147,15 +147,15 @@ for (const series of body) {
   }
   const label = series.label.trim().slice(0, 160);
   const normalized = label.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
-  const metricKey = aliases[normalized] ?? normalized.replace(/\s+/g, '_').slice(0, 80);
+  const metricKey = aliases[normalized] ?? normalized.replace(/\\s+/g, '_').slice(0, 80);
   if (!/^[a-z][a-z0-9_]{0,79}$/.test(metricKey)) continue;
   for (const point of series.data) {
     const observedOn = typeof point?.date === 'string' ? point.date.slice(0, 10) : '';
     const numeric = Number(String(point?.total ?? '').replaceAll(',', ''));
-    if (!/^\d{4}-\d{2}-\d{2}$/.test(observedOn) || !Number.isFinite(numeric) || numeric < 0) {
+    if (!/^\\d{4}-\\d{2}-\\d{2}$/.test(observedOn) || !Number.isFinite(numeric) || numeric < 0) {
       return [{ json: { ...prepared, ok: false, error_code: 'postiz_analytics_invalid_point', error_message: 'Postiz returned an invalid dated metric value', http_status: statusCode, retry_after_seconds: 300 } }];
     }
-    const value = Number.isInteger(numeric) ? String(numeric) : numeric.toFixed(4).replace(/0+$/, '').replace(/\.$/, '');
+    const value = Number.isInteger(numeric) ? String(numeric) : numeric.toFixed(4).replace(/0+$/, '').replace(/\\.$/, '');
     metrics.push({ metric_key: metricKey, metric_label: label, observed_on: observedOn, value, percentage_change: Number.isFinite(Number(series.percentageChange)) ? Number(series.percentageChange) : null, provider_metadata: {} });
   }
 }

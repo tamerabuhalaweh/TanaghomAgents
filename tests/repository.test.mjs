@@ -184,6 +184,9 @@ test('Phase 4H performance monitoring is historical, inactive, and attribution-s
   const http = workflow.nodes.find((node) => node.name === 'Fetch Postiz Analytics');
   assert.match(http.parameters.url, /TANAGHOM_INTEGRATION_GATEWAY_URL/);
   assert.doesNotMatch(JSON.stringify(workflow), /api\.postiz\.com|Authorization:|Bearer /);
+  const normalizer = workflow.nodes.find((node) => node.name === 'Normalize Analytics Response');
+  assert.match(normalizer.parameters.jsCode, /\\d\{4\}-\\d\{2\}-\\d\{2\}/,
+    'generated n8n code must retain date-regex backslashes');
   const postgres = workflow.nodes.filter((node) => node.type === 'n8n-nodes-base.postgres');
   assert.ok(postgres.every((node) => /^SELECT (?:\* FROM )?tanaghom\.(claim_postiz_performance_job|prepare_postiz_performance_sync|complete_postiz_performance_sync|record_postiz_performance_failure)/.test(node.parameters.query)));
   assert.ok(postgres.every((node) => node.credentials.postgres.id === '62000000-0000-4000-8000-000000000001'));
