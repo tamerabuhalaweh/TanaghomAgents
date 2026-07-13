@@ -29,6 +29,7 @@ const roleHelp: Record<Role, string> = {
 export function TeamManagement() {
   const [users, setUsers] = useState<TeamUser[]>([]);
   const [currentUserId, setCurrentUserId] = useState("");
+  const [invitationsConfigured, setInvitationsConfigured] = useState(false);
   const [state, setState] = useState<"loading" | "ready" | "error" | "forbidden">("loading");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -40,8 +41,8 @@ export function TeamManagement() {
       const response = await authenticatedFetch("/api/admin/users", { cache: "no-store" });
       if (response.status === 403) return setState("forbidden");
       if (!response.ok) throw new Error();
-      const payload = await response.json() as { users: TeamUser[]; current_user_id: string };
-      setUsers(payload.users); setCurrentUserId(payload.current_user_id); setState("ready");
+      const payload = await response.json() as { users: TeamUser[]; current_user_id: string; invitations_configured: boolean };
+      setUsers(payload.users); setCurrentUserId(payload.current_user_id); setInvitationsConfigured(payload.invitations_configured); setState("ready");
     } catch { setState("error"); }
   }, []);
   useEffect(() => { void load(); }, [load]);
@@ -67,12 +68,13 @@ export function TeamManagement() {
 
   return (
     <div className="page-stack">
-      <PageHeading title="Team & access" description="Invite teammates and assign the least access each person needs." actions={state === "ready" ? <button className="primary-button" type="button" onClick={() => setInviteOpen((value) => !value)}><MailPlus size={17} /> Invite teammate</button> : undefined} />
+      <PageHeading title="Team & access" description="Invite teammates and assign the least access each person needs." actions={state === "ready" ? <button className="primary-button" type="button" disabled={!invitationsConfigured} title={!invitationsConfigured ? "A Supabase server key is required to send invitations." : undefined} onClick={() => setInviteOpen((value) => !value)}><MailPlus size={17} /> Invite teammate</button> : undefined} />
       <p className="sr-only" role="status" aria-live="polite">{feedback}</p>
       {state === "loading" ? <TeamLoading /> : null}
       {state === "error" ? <TeamState icon={<TriangleAlert />} title="Team access is unavailable" copy="No membership changes can be made until the database connection is restored." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
       {state === "forbidden" ? <TeamState icon={<ShieldCheck />} title="Admin access required" copy="Only a Tanaghom Admin can invite teammates or change roles." /> : null}
       {state === "ready" && inviteOpen ? <InvitePanel onCreated={async () => { setInviteOpen(false); setFeedback("Invitation sent. Access remains pending until the teammate accepts it."); await load(); }} onCancel={() => setInviteOpen(false)} /> : null}
+      {state === "ready" && !invitationsConfigured ? <section className="system-alert"><TriangleAlert size={20} /><div><strong>Invitations need a server credential</strong><p>Existing team access can be managed now. Add the project’s Supabase secret key to enable invitation emails.</p></div><span className="system-alert-label">Setup required</span></section> : null}
       {state === "ready" ? (
         <section className="team-section" aria-labelledby="team-members-title">
           <div className="section-heading"><div><h2 id="team-members-title">People</h2><p>{users.filter((user) => user.is_active).length} active · {users.filter((user) => user.invited_at && !user.accepted_at).length} pending</p></div></div>

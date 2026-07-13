@@ -9,10 +9,19 @@ read_secret() {
   export "$name=$value"
 }
 
+read_optional_secret() {
+  name="$1"
+  path="/run/secrets/$2"
+  if test -s "$path"; then
+    value="$(cat "$path")"
+    export "$name=$value"
+  fi
+}
+
 read_secret DATABASE_URL database_url
 read_secret SUPABASE_URL supabase_url
 read_secret SUPABASE_PUBLISHABLE_KEY supabase_publishable_key
 read_secret SUPABASE_JWKS_URL supabase_jwks_url
-read_secret SUPABASE_SECRET_KEY supabase_secret_key
+read_optional_secret SUPABASE_SECRET_KEY supabase_secret_key
 
 exec node apps/dashboard/server.js
