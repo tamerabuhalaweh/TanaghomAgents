@@ -44,6 +44,16 @@ test("Content Library is live, keeps approval evidence, and guards Postiz handof
   assert.doesNotMatch(component, /@\/data\/fixtures|https?:\/\//);
 });
 
+test("self-hosted Postiz uses an exact deployment allowlist and a base URL field", async () => {
+  const provider = await readFile(new URL("lib/server/integration-providers.ts", dashboard), "utf8");
+  const settings = await readFile(new URL("components/integrations-settings.tsx", dashboard), "utf8");
+  const compose = await readFile(new URL("../../deployment/dashboard-canary/docker-compose.yml", dashboard), "utf8");
+  assert.match(provider, /POSTIZ_ALLOWED_BASE_URLS/);
+  assert.match(provider, /pathname\.endsWith\("\/is-connected"\)/);
+  assert.match(settings, /Approved API base URL/);
+  assert.match(compose, /POSTIZ_ALLOWED_BASE_URLS: https:\/\/postiz\.163-123-180-104\.sslip\.io\/api\/public\/v1/);
+});
+
 test("dashboard includes reduced-motion and responsive navigation behavior", async () => {
   const css = await readFile(new URL("app/globals.css", dashboard), "utf8");
   assert.match(css, /prefers-reduced-motion: reduce/);

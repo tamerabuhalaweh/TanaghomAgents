@@ -70,6 +70,15 @@ emergency stop remains enabled in this package. Do not change either gate until
 the restricted n8n-to-dashboard network path, platform gateway credential,
 inactive workflow import, and rollback have passed controlled validation. The
 customer Admin mode cannot override the platform emergency stop.
+
+The customer integration form accepts a Postiz Public API **base URL**. For the
+approved self-hosted staging instance, use
+`https://postiz.163-123-180-104.sslip.io/api/public/v1`. Do not append
+`/is-connected`, `/integrations`, or `/posts`; Tanaghom adds the reviewed route
+for each operation. The exact base must also be present in the non-secret
+`POSTIZ_ALLOWED_BASE_URLS` deployment allowlist. Postiz MCP uses a different
+endpoint and authentication convention and is not used by the customer
+integration gateway.
 Copy values from the existing ignored developer `.env` through an encrypted
 channel without printing them. Do not use shell history, Compose environment
 values, or Git for secret transfer. The transactional installer changes only

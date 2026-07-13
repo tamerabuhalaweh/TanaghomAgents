@@ -84,8 +84,12 @@ const errorCopy: Record<string, string> = {
   credential_encryption_not_configured: "Secure credential storage is not configured on the server.",
   credential_value_invalid: "Enter a valid credential with at least eight characters.",
   integration_credential_rejected: "The provider rejected this credential. Rotate it and try again.",
+  integration_base_url_invalid: "Enter the provider API base URL without credentials, query parameters, or fragments.",
+  integration_base_url_not_allowed: "This API base URL is not on the server-approved provider allowlist.",
+  integration_base_url_https_required: "Provider API connections require HTTPS.",
   integration_provider_unreachable: "Tanaghom could not reach the provider safely. Try again shortly.",
   integration_test_failed: "The provider connection test did not pass.",
+  integration_channel_discovery_failed: "Tanaghom connected, but Postiz channel discovery did not pass.",
   ghl_location_id_required: "A valid GoHighLevel Location ID is required.",
   postiz_mapping_duplicate_channel: "Choose only one Postiz account for each Tanaghom channel.",
   automation_runtime_not_ready: "The protected background worker is not ready for automatic drafts.",
@@ -315,7 +319,7 @@ function ProviderPanel({ record, storageReady, mappings, onChanged }: {
 
     {editing ? <form className="integration-form" onSubmit={(event) => { event.preventDefault(); void request("save"); }}>
       <div className="form-field"><label htmlFor={`${record.provider}-secret`}>{record.provider === "postiz" ? "Postiz API key or OAuth token" : "GoHighLevel private integration token"}</label><input id={`${record.provider}-secret`} type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} minLength={8} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">Write-only: Tanaghom will never display this value again.</span></div>
-      <div className="form-field"><label htmlFor={`${record.provider}-base-url`}>Approved API endpoint</label><input id={`${record.provider}-base-url`} type="url" value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">Only explicitly approved HTTPS provider hosts are accepted.</span></div>
+      <div className="form-field"><label htmlFor={`${record.provider}-base-url`}>Approved API base URL</label><input id={`${record.provider}-base-url`} type="url" value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">{record.provider === "postiz" ? "Use the Public API base ending in /public/v1. Tanaghom adds /is-connected and /integrations safely." : "Only explicitly approved HTTPS provider base URLs are accepted."}</span></div>
       {record.provider === "ghl" ? <>
         <div className="form-field"><label htmlFor="ghl-location">Location ID</label><input id="ghl-location" value={locationId} onChange={(event) => setLocationId(event.target.value)} required disabled={!storageReady || Boolean(busy)} /></div>
         <div className="form-field"><label htmlFor="ghl-pipeline">Pipeline ID <span>Optional</span></label><input id="ghl-pipeline" value={pipelineId} onChange={(event) => setPipelineId(event.target.value)} disabled={!storageReady || Boolean(busy)} /></div>
