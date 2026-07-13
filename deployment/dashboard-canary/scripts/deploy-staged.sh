@@ -37,7 +37,7 @@ for network in networks:
 PY
 rm -f /tmp/tanaghom-dashboard-networks.json
 
-for secret in database_url supabase_url supabase_publishable_key supabase_jwks_url
+for secret in database_url supabase_url supabase_publishable_key supabase_jwks_url supabase_secret_key
 do
   test -s "$source_dir/deployment/dashboard-canary/secrets/$secret" || { echo "required staged secret is missing: $secret" >&2; exit 1; }
 done
@@ -57,10 +57,11 @@ cp -a "$source_dir/." "$target_dir/"
 chown -R root:root "$target_dir"
 chown root:1000 "$package_dir/secrets" "$package_dir"/secrets/database_url \
   "$package_dir"/secrets/supabase_url "$package_dir"/secrets/supabase_publishable_key \
-  "$package_dir"/secrets/supabase_jwks_url
+  "$package_dir"/secrets/supabase_jwks_url "$package_dir"/secrets/supabase_secret_key
 chmod 0710 "$package_dir/secrets"
 chmod 0640 "$package_dir"/secrets/database_url "$package_dir"/secrets/supabase_url \
   "$package_dir"/secrets/supabase_publishable_key "$package_dir"/secrets/supabase_jwks_url
+chmod 0640 "$package_dir"/secrets/supabase_secret_key
 
 cd "$package_dir"
 docker compose -p "$project" -f docker-compose.yml config --quiet

@@ -29,7 +29,8 @@ export async function authorize(
        FROM tanaghom.app_users
       WHERE auth_subject = $1::uuid
         AND kind = 'human'
-        AND is_active = true`,
+        AND is_active = true
+        AND accepted_at IS NOT NULL`,
     [identity.sub],
   );
 

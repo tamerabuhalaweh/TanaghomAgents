@@ -116,7 +116,7 @@ export function ApprovalWorkspace() {
       setRejecting(false);
       setReason("");
       setFeedback(decision === "approved"
-        ? "Approval saved. Publishing work has been queued."
+        ? "Approval saved. The item is now available in the Content Library."
         : "Changes requested. Regeneration work has been queued.");
     } catch {
       setFeedback("The decision was not saved. The item remains blocked; please try again.");
@@ -225,6 +225,7 @@ function ApprovalEmptyState({ feedback }: { feedback: string }) {
     <section className="approval-state approval-state-empty" aria-labelledby="approval-empty-title">
       <span className="approval-state-icon"><CheckCircle2 size={28} aria-hidden="true" /></span>
       <div><h2 id="approval-empty-title">Approval queue is clear</h2><p>{feedback || "There is no content waiting for a human decision. New drafts will appear here when the Content Producer submits them."}</p></div>
+      <a className="secondary-button" href="/content">Open Content Library</a>
       <span className="approval-state-meta">Publishing remains protected by the database approval policy.</span>
     </section>
   );

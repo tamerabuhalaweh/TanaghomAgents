@@ -13,18 +13,19 @@ const dashboardPort = 43192;
 const authOrigin = `http://127.0.0.1:${authPort}`;
 const dashboardOrigin = `http://127.0.0.1:${dashboardPort}`;
 const subject = "90000000-0000-4000-8000-000000000001";
+const invitedSubject = "90000000-0000-4000-8000-000000000002";
 const ownerId = "00000000-0000-4000-8000-000000000001";
 const campaignId = "20000000-0000-4000-8000-000000000001";
 const { privateKey, publicKey } = await generateKeyPair("RS256");
 const publicJwk = { ...await exportJWK(publicKey), kid: "integration-key", alg: "RS256", use: "sig" };
 let refreshGeneration = 0;
 
-async function accessToken(seconds) {
-  return new SignJWT({ role: "authenticated", email: "owner@example.test" })
+async function accessToken(seconds, tokenSubject = subject, email = "owner@example.test") {
+  return new SignJWT({ role: "authenticated", email })
     .setProtectedHeader({ alg: "RS256", kid: "integration-key" })
     .setIssuer(`${authOrigin}/auth/v1`)
     .setAudience("authenticated")
-    .setSubject(subject)
+    .setSubject(tokenSubject)
     .setIssuedAt()
     .setExpirationTime(`${seconds}s`)
     .sign(privateKey);
@@ -43,6 +44,24 @@ const authServer = createServer(async (request, response) => {
     return;
   }
   const url = new URL(request.url, authOrigin);
+  if (request.method === "POST" && url.pathname === "/auth/v1/invite") {
+    const body = await jsonBody(request);
+    if (request.headers.authorization !== "Bearer integration-secret-key" || body.email !== "reviewer@example.test") {
+      response.writeHead(403).end(); return;
+    }
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ id: invitedSubject, email: body.email }));
+    return;
+  }
+  if (request.method === "PUT" && url.pathname === "/auth/v1/user") {
+    const body = await jsonBody(request);
+    if (typeof body.password !== "string" || body.password.length < 12) {
+      response.writeHead(400).end(); return;
+    }
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ id: invitedSubject, email: "reviewer@example.test" }));
+    return;
+  }
   if (request.method !== "POST" || url.pathname !== "/auth/v1/token") {
     response.writeHead(404).end();
     return;
@@ -114,6 +133,7 @@ try {
       DATABASE_URL: databaseUrl,
       SUPABASE_URL: authOrigin,
       SUPABASE_PUBLISHABLE_KEY: "integration-publishable-key",
+      SUPABASE_SECRET_KEY: "integration-secret-key",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -196,6 +216,45 @@ try {
   );
   assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 1, audit: 1, idempotency: 1 });
 
+  const library = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
+  assert.equal(library.status, 200);
+  const libraryBody = await library.json();
+  assert.ok(libraryBody.items.some((item) => item.id === contentId && item.status === "approved"));
+  assert.equal(libraryBody.integration.postiz_ready, false);
+
+  const team = await fetch(`${dashboardOrigin}/api/admin/users`, { headers: { Cookie: jar.join("; ") } });
+  assert.equal(team.status, 200);
+  assert.equal((await team.json()).current_user_id, ownerId);
+  const invite = await fetch(`${dashboardOrigin}/api/admin/users`, {
+    method: "POST",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ email: "reviewer@example.test", display_name: "Integration Reviewer", role: "reviewer" }),
+  });
+  assert.equal(invite.status, 201);
+  const invitedUserId = (await invite.json()).user_id;
+  const ownDemotion = await fetch(`${dashboardOrigin}/api/admin/users/${ownerId}`, {
+    method: "PATCH",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ role: "viewer", is_active: true }),
+  });
+  assert.equal(ownDemotion.status, 409);
+  assert.equal((await ownDemotion.json()).error, "cannot_change_own_owner_access");
+
+  const inviteToken = await accessToken(3600, invitedSubject, "reviewer@example.test");
+  const accepted = await fetch(`${dashboardOrigin}/api/auth/accept-invite`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${inviteToken}`, Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ password: "integration-reviewer-pass", refresh_token: "integration-invite-refresh" }),
+  });
+  assert.equal(accepted.status, 200);
+  assert.ok(cookieValue(cookies(accepted), "tanaghom_access_token"));
+  const invitedRecord = await pool.query(
+    `SELECT role, is_active, accepted_at IS NOT NULL AS accepted,
+            (SELECT count(*)::int FROM tanaghom.agent_actions_log WHERE entity_id = $1) AS audits
+       FROM tanaghom.app_users WHERE id = $1`, [invitedUserId],
+  );
+  assert.deepEqual(invitedRecord.rows[0], { role: "reviewer", is_active: true, accepted: true, audits: 2 });
+
   const atomicContentId = await createContent(2);
   await pool.query(`CREATE FUNCTION tanaghom.integration_reject_outbox() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'integration outbox failure'; END $$`);
   await pool.query(`CREATE TRIGGER integration_reject_outbox BEFORE INSERT ON tanaghom.outbox_events FOR EACH ROW EXECUTE FUNCTION tanaghom.integration_reject_outbox()`);
@@ -219,7 +278,7 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: session rotation and approval API transaction contracts verified.");
+  console.log("PASS: session, approval, Content Library, and owner-managed invitation contracts verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();

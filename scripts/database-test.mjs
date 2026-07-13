@@ -49,6 +49,8 @@ psql('-f', assertions);
 psql('-f', roleAssertions);
 psql('-f', workerAssertions);
 database('rollback');
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema = 'tanaghom' AND table_name = 'app_users' AND column_name = 'accepted_at') THEN RAISE EXCEPTION '0006 rollback left invitation columns behind'; END IF; END $$;");
+database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regprocedure('tanaghom.claim_agent_job(text,text[])') IS NOT NULL THEN RAISE EXCEPTION '0005 rollback left worker functions behind'; END IF; END $$;");
 while (query("SELECT count(*) FROM public.schema_migrations;") !== '0') {
   database('rollback');

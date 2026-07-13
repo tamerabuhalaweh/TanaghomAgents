@@ -52,7 +52,10 @@ git checkout <APPROVED_MAIN_COMMIT>
 install -d -m 0700 deployment/dashboard-canary/secrets
 ```
 
-Create the four files documented in `secrets/README.md` with `umask 077`.
+Create five files with `umask 077`: `database_url`, `supabase_url`,
+`supabase_publishable_key`, `supabase_jwks_url`, and `supabase_secret_key`.
+The secret key is server-only and exists solely for owner-triggered Supabase
+Auth invitations; it is never sent to the dashboard browser.
 Copy values from the existing ignored developer `.env` through an encrypted
 channel without printing them. Do not use shell history, Compose environment
 values, or Git for secret transfer. The transactional installer changes only

@@ -18,6 +18,7 @@ services:
       - supabase_url
       - supabase_publishable_key
       - supabase_jwks_url
+      - supabase_secret_key
     ports:
       - "127.0.0.1:3200:3000"
     volumes:
@@ -65,3 +66,5 @@ secrets:
     file: ./secrets/supabase_publishable_key
   supabase_jwks_url:
     file: ./secrets/supabase_jwks_url
+  supabase_secret_key:
+    file: ./secrets/supabase_secret_key

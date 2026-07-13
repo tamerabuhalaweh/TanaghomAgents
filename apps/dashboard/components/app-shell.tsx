@@ -13,6 +13,7 @@ import {
   LayoutDashboard,
   Menu,
   Settings,
+  LibraryBig,
   UsersRound,
   X,
 } from "lucide-react";
@@ -24,6 +25,7 @@ const primaryNavigation = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
   { href: "/campaigns", label: "Campaigns", icon: BriefcaseBusiness },
   { href: "/approvals", label: "Approvals", icon: CheckCheck },
+  { href: "/content", label: "Content", icon: LibraryBig },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/leads", label: "Leads", icon: ContactRound },
   { href: "/reports", label: "Reports", icon: ChartNoAxesCombined },
@@ -65,6 +67,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="sidebar-footer">
+          <Link href="/team" className={`nav-link ${pathname.startsWith("/team") ? "nav-link-active" : ""}`}>
+            <UsersRound size={18} />
+            <span>Team & access</span>
+          </Link>
           <Link href="/system" className="nav-link">
             <Bell size={18} />
             <span>Alerts</span>
