@@ -152,3 +152,21 @@ test("private dashboard canary is localhost-only, bounded, and secret-free by sh
   assert.match(dockerignore, /deployment\/\*\*\/secrets\/\*/);
   assert.equal(new X509Certificate(databaseCa).fingerprint256, "80:70:25:AD:50:D4:ED:21:9D:2C:9C:7D:29:9C:00:4F:82:4E:B0:0C:F7:F6:5A:FE:F6:07:D0:7B:72:E6:CA:FA");
 });
+
+test("public dashboard ingress enables secure cookies without exposing n8n", async () => {
+  const deployment = new URL("../../deployment/dashboard-public/", dashboard);
+  const compose = await readFile(new URL("docker-compose.yml", deployment), "utf8");
+  const nginx = await readFile(new URL("nginx/tanaghom.conf", deployment), "utf8");
+  const deploy = await readFile(new URL("scripts/deploy.sh", deployment), "utf8");
+  const rollback = await readFile(new URL("scripts/rollback.sh", deployment), "utf8");
+  assert.match(compose, /APP_ENV: production/);
+  assert.match(compose, /APP_BASE_URL: https:\/\/tanaghom\.38-247-187-232\.sslip\.io/);
+  assert.match(nginx, /proxy_pass http:\/\/127\.0\.0\.1:3200/);
+  assert.match(nginx, /limit_req zone=tanaghom_login/);
+  assert.match(nginx, /Strict-Transport-Security/);
+  assert.match(nginx, /X-Frame-Options "DENY"/);
+  assert.match(deploy, /certbot certonly --webroot/);
+  assert.match(deploy, /TANAGHOM_PUBLIC_DEPLOY_AUTHORIZED/);
+  assert.match(rollback, /rm -f "\$NGINX_TARGET"/);
+  assert.doesNotMatch(compose + nginx + deploy + rollback, /5678|webhook|n8n/);
+});
