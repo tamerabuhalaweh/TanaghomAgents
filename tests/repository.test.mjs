@@ -363,3 +363,63 @@ test('Phase 5D supervisor ownership is atomic, tenant-bound, and dispatch-safe',
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
 });
+
+test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {
+  const root = new URL('../deployment/phase5d-production-update/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const backup = await readFile(new URL('scripts/prepare-offserver-backup.ps1', root), 'utf8');
+  const disposableBackup = await readFile(new URL('scripts/test-disposable-backup.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
+  const refusalPaths = await readFile(new URL('scripts/test-refusal-paths.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+
+  assert.match(common, /YES-I-AM-THE-AUTHORIZED-OWNER/);
+  assert.match(common, /EXPECTED_START_MIGRATION=0009_postiz_automation_controls/);
+  assert.match(common, /TARGET_MIGRATION=0014_supervised_conversation_ownership/);
+  for (const version of ['0010_postiz_performance_monitoring', '0011_ghl_contact_sync', '0012_ghl_inbound_event_inbox', '0013_sales_knowledge_intelligence', '0014_supervised_conversation_ownership']) {
+    assert.match(common, new RegExp(version));
+  }
+  assert.match(preflight, /less than 20 GiB/);
+  assert.match(preflight, /assert_firewall_boundary/);
+  assert.match(preflight, /assert_database_locked/);
+  assert.match(preflight, /assert_public_boundary/);
+  assert.match(preflight, /release-source checkout is dirty/);
+  assert.match(deploy, /rollback_applied_migrations/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(deploy, /n8n-container-ids\.before/);
+  assert.match(deploy, /compose up -d --no-deps dashboard/);
+  assert.doesNotMatch(deploy, /npm run db:(migrate|rollback)/);
+  assert.match(validate, /external_operations/);
+  assert.match(validate, /has_table_privilege\('tanaghom_n8n_worker','tanaghom\.conversations'/);
+  assert.match(validate, /assert_protected_container_ids_unchanged/);
+  assert.match(validate, /package-owned firewall state changed/);
+  assert.match(validate, /Tanaghom Nginx configuration changed/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE/);
+  assert.match(rollback, /applied-migrations/);
+  assert.match(rollback, /awk '\{ lines\[NR\]=\$0 \} END/);
+  assert.doesNotMatch(rollback, /for .+ in 1 2 3 4 5|seq 5|npm run db:rollback/);
+  assert.match(backup, /ConvertFrom-SecureString/);
+  assert.match(backup, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
+  assert.match(backup, /pg_restore/);
+  assert.match(backup, /RESTORE_VERIFIED=YES/);
+  assert.match(disposableBackup, /openssl enc -aes-256-cbc -pbkdf2/);
+  assert.match(disposableBackup, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
+  assert.match(disposableBackup, /pg_restore/);
+  assert.match(disposableBackup, /SELECT version FROM public\.schema_migrations/);
+  assert.match(packageValidation, /sh -n/);
+  assert.match(refusalPaths, /expected refusal unexpectedly succeeded/);
+  assert.match(refusalPaths, /RESTORE_VERIFIED=NO/);
+  assert.match(runbook, /not GitHub Actions CD/i);
+  assert.match(runbook, /Production execution remains unauthorized/i);
+  assert.match(runbook, /never blindly runs a fixed\s+number of rollbacks/i);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|n8n)/i);
+  assert.doesNotMatch(protectedScope, /\/data\//);
+  assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});

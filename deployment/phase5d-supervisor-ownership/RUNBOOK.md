@@ -7,6 +7,10 @@ claims, GHL provider operations, and message delivery remain unauthorized. This
 package adds the supervised state machine, APIs, dashboard, recovery commands,
 and evidence only. It does not activate an AI or human send path.
 
+The reviewed existing-dashboard release procedure is maintained separately in
+`deployment/phase5d-production-update/RUNBOOK.md`. Merging either package does
+not authorize production execution.
+
 ## Validation gate
 
 ```sh
