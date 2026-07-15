@@ -81,3 +81,17 @@ provider or shared-GPU capacity.
 - Redis/n8n restart, dead-letter replay, backup/restore under backlog, and
   production monitoring delivery;
 - reviewed retention/pruning thresholds based on measured customer traffic.
+
+## Disposable resilience evidence
+
+The second harness, `scripts/conversation-resilience-integration.mjs`, covers
+deterministic interactive-over-background priority, a campaign burst, a timed
+synthetic-model-latency soak, bounded dependency cooldown and automatic
+recovery, abandoned worker leases, a terminated PostgreSQL client connection,
+encrypted backup/restore under backlog, and same-job dead-letter replay. Its
+schema-validated artifact is `phase5.conversation-resilience-evidence.v1`.
+
+This proves PostgreSQL durability and application pool reconnection in a
+disposable cluster. It does not yet prove Redis/n8n container restart, real
+provider quota behavior, a PostgreSQL host restart, production alert delivery,
+or shared-GPU capacity while SmartLabs is active.

@@ -42,3 +42,7 @@ synthetic workload, tested claim guard, acceptance/drain throughput, latency
 percentiles, outcomes, recovery behavior, tenant mismatches, and measured
 database growth. Evidence explicitly records zero customer credentials,
 provider/model calls, SmartLabs changes, and fixed 75,000-lead SLA claims.
+
+The companion `phase5.conversation-resilience-evidence.v1` contract records
+the secret-free burst/soak, dependency, worker, reconnect, encrypted-backlog
+restoration, and dead-letter replay gate.

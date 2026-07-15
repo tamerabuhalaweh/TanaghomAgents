@@ -298,6 +298,49 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  phase5-resilience-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_phase5_resilience_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_phase5_resilience_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5_resilience_test
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5_resilience_test
+      GHL_RESILIENCE_BURST_EVENTS: 1000
+      GHL_RESILIENCE_SOAK_SECONDS: 10
+      GHL_RESILIENCE_SOAK_WAVE_EVENTS: 25
+      GHL_RESILIENCE_WORKERS: 8
+      GHL_RESILIENCE_MODEL_LATENCY_MS: 10
+      GHL_RESILIENCE_EVIDENCE_PATH: tmp/conversation-resilience-evidence.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f packages/database/seeds/staging.sql
+      - run: npm run test:phase5-resilience
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase5-conversation-resilience-evidence
+          path: tmp/conversation-resilience-evidence.json
+          if-no-files-found: error
+          retention-days: 30
+
   dashboard-image-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 15

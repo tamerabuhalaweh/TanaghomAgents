@@ -110,6 +110,13 @@ Gemma/GHL cooldown recovery, capacity status/alert contracts, and a disposable
 disk-growth evidence. This measured test envelope is not a production SLA;
 shared-GPU/SmartLabs and customer-provider benchmarks remain separately gated.
 
+The follow-on resilience gate adds a disposable campaign burst, timed soak with
+synthetic model latency, hot-inbound priority, dependency cooldown recovery,
+worker lease recovery, PostgreSQL pool reconnect, encrypted backup/restore
+under backlog, and same-job dead-letter replay. Real Redis/n8n restarts,
+provider quota headers, production alert delivery, and any SmartLabs-adjacent
+benchmark remain controlled future gates.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

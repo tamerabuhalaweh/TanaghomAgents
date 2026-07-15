@@ -36,6 +36,44 @@ Acceptance requires:
 The resulting throughput and latency describe that disposable runner only.
 Do not copy them into a customer SLA or extrapolate them to 75,000 leads.
 
+## Disposable resilience gate
+
+Run this only against a fresh PostgreSQL database with the same seed. The
+runner creates and removes one uniquely named restore database in that same
+disposable PostgreSQL cluster:
+
+```sh
+GHL_RESILIENCE_BURST_EVENTS=1000 \
+GHL_RESILIENCE_SOAK_SECONDS=10 \
+GHL_RESILIENCE_SOAK_WAVE_EVENTS=25 \
+GHL_RESILIENCE_WORKERS=8 \
+GHL_RESILIENCE_MODEL_LATENCY_MS=10 \
+GHL_RESILIENCE_EVIDENCE_PATH=tmp/conversation-resilience-evidence.json \
+  npm run test:phase5-resilience
+```
+
+Acceptance requires:
+
+- interactive inbound events are claimed before an older background backlog;
+- the burst and timed soak drain with zero loss, duplicates, dead letters,
+  tenant mismatches, provider calls, or model calls;
+- a simulated Gemma cooldown preserves accepted work, blocks claims, and
+  expires automatically;
+- an intentionally terminated PostgreSQL client is discarded and the pool
+  reconnects without operator database edits;
+- abandoned worker claims return to the same durable job IDs;
+- an AES-256-GCM encrypted archive taken with queued/running work decrypts,
+  restores into a unique disposable database, matches the source fingerprint,
+  preserves package worker ACLs, recovers stale claims, and drains completely;
+  the target cluster must already contain the version-controlled package roles;
+  and
+- a deliberately exhausted event can be human-replayed using its original job
+  identity and then succeeds.
+
+The database-connection test terminates one disposable client backend. It is
+not evidence of a real PostgreSQL host restart or Redis/n8n recovery. Those
+runtime tests remain a later controlled staging gate.
+
 ## Capacity states
 
 ```sql
@@ -76,9 +114,11 @@ traffic, audit obligations, backup restoration, and disk headroom are reviewed.
 4. Verify policy/status grants, both worker roles' function-only access, default
    limits, priority annotations, and alert queries.
 5. Run the 10,000-event disposable test and archive the evidence.
-6. Run a separately approved staging test with test contacts and customer quota
+6. Run the disposable burst/soak and backlog-recovery test and archive its
+   schema-validated evidence.
+7. Run a separately approved staging test with test contacts and customer quota
    headers; do not enable unrelated contacts or proactive messaging.
-7. Any SmartLabs-adjacent Gemma benchmark requires a separate written plan,
+8. Any SmartLabs-adjacent Gemma benchmark requires a separate written plan,
    read-only SmartLabs baseline, stop conditions, and Tamer approval.
 
 ## Exact rollback

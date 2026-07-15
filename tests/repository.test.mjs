@@ -452,11 +452,13 @@ test('Phase 5F capacity is measured, bounded, recoverable, and SmartLabs-isolate
   const migration = await readFile(new URL('../packages/database/migrations/0018_conversation_capacity_backpressure.up.sql', import.meta.url), 'utf8');
   const rollback = await readFile(new URL('../packages/database/migrations/0018_conversation_capacity_backpressure.down.sql', import.meta.url), 'utf8');
   const integration = await readFile(new URL('../scripts/conversation-capacity-integration.mjs', import.meta.url), 'utf8');
+  const resilience = await readFile(new URL('../scripts/conversation-resilience-integration.mjs', import.meta.url), 'utf8');
   const runbook = await readFile(new URL('../deployment/phase5f-capacity/RUNBOOK.md', import.meta.url), 'utf8');
   const architecture = await readFile(new URL('../docs/architecture/0010-conversation-capacity-and-backpressure.md', import.meta.url), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
   const alerts = JSON.parse(await readFile(new URL('../deployment/phase5f-capacity/alerts/conversation-capacity-alerts.v1.json', import.meta.url), 'utf8'));
   const evidenceSchema = JSON.parse(await readFile(new URL('../packages/contracts/schemas/phase5/conversation-capacity-evidence.v1.schema.json', import.meta.url), 'utf8'));
+  const resilienceSchema = JSON.parse(await readFile(new URL('../packages/contracts/schemas/phase5/conversation-resilience-evidence.v1.schema.json', import.meta.url), 'utf8'));
 
   assert.match(migration, /CREATE TABLE tanaghom\.conversation_capacity_policies/);
   assert.match(migration, /CREATE TABLE tanaghom\.conversation_dependency_cooldowns/);
@@ -476,6 +478,9 @@ test('Phase 5F capacity is measured, bounded, recoverable, and SmartLabs-isolate
   assert.equal(evidenceSchema.$schema, 'https://json-schema.org/draft/2020-12/schema');
   assert.equal(evidenceSchema.additionalProperties, false);
   assert.equal(evidenceSchema.properties.boundaries.properties.smartlabs_touched.const, false);
+  assert.equal(resilienceSchema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+  assert.equal(resilienceSchema.additionalProperties, false);
+  assert.equal(resilienceSchema.properties.boundaries.properties.smartlabs_touched.const, false);
   assert.equal(alerts.contract_version, 'phase5.conversation-capacity-alerts.v1');
   assert.equal(alerts.rules.length, 6);
   assert.match(integration, /GHL_CAPACITY_LOAD_EVENTS/);
@@ -483,8 +488,18 @@ test('Phase 5F capacity is measured, bounded, recoverable, and SmartLabs-isolate
   assert.match(integration, /provider_calls: 0/);
   assert.match(integration, /smartlabs_touched: false/);
   assert.match(integration, /fixed_75000_lead_sla_claimed: false/);
+  assert.match(resilience, /phase5\.conversation-resilience-evidence\.v1/);
+  assert.match(resilience, /pg_terminate_backend/);
+  assert.match(resilience, /createCipheriv\("aes-256-gcm"/);
+  assert.match(resilience, /pg_dump/);
+  assert.match(resilience, /pg_restore/);
+  assert.doesNotMatch(resilience, /--no-acl/);
+  assert.match(resilience, /replay_ghl_inbound_event/);
+  assert.match(resilience, /smartlabs_touched: false/);
   assert.match(quality, /GHL_CAPACITY_LOAD_EVENTS: 10000/);
   assert.match(quality, /name: phase5-conversation-capacity-evidence/);
+  assert.match(quality, /GHL_RESILIENCE_SOAK_SECONDS: 10/);
+  assert.match(quality, /name: phase5-conversation-resilience-evidence/);
   assert.match(runbook, /Production execution is unauthorized/);
   assert.match(runbook, /SmartLabs file, container, firewall rule, volume, or voice path/);
   assert.match(runbook, /npm run db:rollback/);
