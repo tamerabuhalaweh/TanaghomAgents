@@ -47,7 +47,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/phase5d-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL" 0018_conversation_capacity_backpressure
+      - run: deployment/phase5d-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL" 0019_notification_monitoring_destinations
 
   dashboard-contract:
     runs-on: ubuntu-latest
