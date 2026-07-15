@@ -145,9 +145,11 @@ async function monitor(alert = false) {
 try {
   await mkdir(secretDirectory, { recursive: true, mode: 0o700 });
   await Promise.all([
-    writeFile(join(secretDirectory, "postgres_password"), postgresPassword, { mode: 0o600 }),
-    writeFile(join(secretDirectory, "redis_password"), redisPassword, { mode: 0o600 }),
-    writeFile(join(secretDirectory, "n8n_encryption_key"), encryptionKey, { mode: 0o600 }),
+    // Compose bind-mounts local secret files without remapping their host owner.
+    // The directory stays private; 0644 lets the non-root n8n UID read the mounted files.
+    writeFile(join(secretDirectory, "postgres_password"), postgresPassword, { mode: 0o644 }),
+    writeFile(join(secretDirectory, "redis_password"), redisPassword, { mode: 0o644 }),
+    writeFile(join(secretDirectory, "n8n_encryption_key"), encryptionKey, { mode: 0o644 }),
   ]);
 
   alertServer = createServer(async (request, response) => {

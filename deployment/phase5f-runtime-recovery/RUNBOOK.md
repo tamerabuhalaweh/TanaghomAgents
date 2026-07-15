@@ -37,7 +37,8 @@ N8N_RUNTIME_RECOVERY_EVIDENCE_PATH=tmp/n8n-runtime-recovery-evidence.json \
 
 The harness:
 
-1. generates three non-production secret files in a temporary directory;
+1. generates three non-production secret files in a private temporary directory
+   (the bind-mounted files are container-readable because n8n runs as non-root);
 2. expands and pulls the pinned Compose stack;
 3. starts disposable PostgreSQL and Redis with AOF/no-eviction;
 4. imports and activates only the disposable webhook probe before starting n8n;

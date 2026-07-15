@@ -547,6 +547,8 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   assert.match(integration, /compose\("kill", "-s", "KILL", "n8n-worker"\)/);
   assert.match(integration, /"publish:workflow"/);
   assert.doesNotMatch(integration, /update:workflow/);
+  assert.match(integration, /mode: 0o700/);
+  assert.equal((integration.match(/mode: 0o644/g) || []).length, 3);
   assert.match(integration, /compose\("stop", "-t", "5", "redis"\)/);
   assert.match(integration, /queueKeysAfterRestart/);
   assert.match(integration, /same_execution_ids_preserved: true/);
