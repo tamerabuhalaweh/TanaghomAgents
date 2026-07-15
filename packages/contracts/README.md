@@ -46,3 +46,9 @@ provider/model calls, SmartLabs changes, and fixed 75,000-lead SLA claims.
 The companion `phase5.conversation-resilience-evidence.v1` contract records
 the secret-free burst/soak, dependency, worker, reconnect, encrypted-backlog
 restoration, and dead-letter replay gate.
+
+`phase5.n8n-runtime-recovery-evidence.v1` records the pinned disposable queue
+runtime, the terminal execution/new-ID logical replay boundary after an abrupt
+worker loss, graceful Redis-AOF queued-work recovery, readiness, metrics, and
+local alert delivery. It explicitly cannot claim a live provider, production
+destination, GPU, or SmartLabs test.

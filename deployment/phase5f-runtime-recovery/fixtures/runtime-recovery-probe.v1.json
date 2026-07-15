@@ -1,0 +1,48 @@
+{
+  "id": "phase5RuntimeRecoveryProbeV1",
+  "name": "Tanaghom — Disposable Runtime Recovery Probe v1",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "tanaghom-runtime-recovery",
+        "responseMode": "onReceived",
+        "options": {}
+      },
+      "id": "runtime-recovery-webhook",
+      "name": "Disposable Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [0, 0],
+      "webhookId": "phase5-runtime-recovery-webhook-v1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const body = $input.first().json.body ?? {};\nconst delayMs = Math.max(100, Math.min(15000, Number(body.delay_ms ?? 4000)));\nawait new Promise((resolve) => setTimeout(resolve, delayMs));\nreturn [{ json: { correlation_id: String(body.correlation_id ?? 'missing'), completed: true, external_action_count: 0 } }];"
+      },
+      "id": "runtime-recovery-delay",
+      "name": "Simulate Bounded Work",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [260, 0]
+    }
+  ],
+  "connections": {
+    "Disposable Webhook": {
+      "main": [[{
+        "node": "Simulate Bounded Work",
+        "type": "main",
+        "index": 0
+      }]]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "pinData": {},
+  "meta": {
+    "templateCredsSetupCompleted": true
+  }
+}

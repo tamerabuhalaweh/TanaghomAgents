@@ -341,6 +341,27 @@ jobs:
           if-no-files-found: error
           retention-days: 30
 
+  phase5-runtime-recovery-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      N8N_RUNTIME_RECOVERY_EVIDENCE_PATH: tmp/n8n-runtime-recovery-evidence.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:phase5-runtime-recovery
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase5-n8n-runtime-recovery-evidence
+          path: tmp/n8n-runtime-recovery-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
+
   dashboard-image-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 15

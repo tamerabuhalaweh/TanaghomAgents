@@ -117,6 +117,13 @@ under backlog, and same-job dead-letter replay. Real Redis/n8n restarts,
 provider quota headers, production alert delivery, and any SmartLabs-adjacent
 benchmark remain controlled future gates.
 
+Pinned disposable n8n queue-mode recovery now covers an abrupt worker kill,
+the resulting terminal n8n execution plus successful logical-correlation replay,
+a graceful Redis AOF restart with queued work, readiness/metrics checks, and
+local degraded/recovered alert delivery.
+The installed canary, production notification destination, real provider
+headers, sudden Redis host loss, and SmartLabs/GPU remain separately gated.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 
