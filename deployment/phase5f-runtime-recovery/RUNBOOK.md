@@ -16,9 +16,10 @@ has no credential and no external-action node.
 
 n8n queue mode persists execution information in PostgreSQL, passes execution
 IDs through Redis, and lets workers read and update those executions. Worker
-readiness checks both PostgreSQL and Redis. The accelerated lock/stalled-job
-values in this test use n8n's documented queue controls, but they are only for
-CI duration and are not proposed production values:
+readiness checks both PostgreSQL and Redis. The shortened lock/stalled-job
+values use n8n's documented queue controls. The 30-second CI lease is twice the
+probe's absolute 15-second work limit; these are test values, not proposed
+production values:
 
 - <https://docs.n8n.io/hosting/scaling/queue-mode/>
 - <https://docs.n8n.io/hosting/configuration/environment-variables/queue-mode/>

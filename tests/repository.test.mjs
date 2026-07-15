@@ -522,7 +522,10 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   assert.match(compose, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
   assert.match(compose, /redis:7\.2\.14-alpine3\.21@sha256:[0-9a-f]{64}/);
   assert.match(compose, /EXECUTIONS_MODE: queue/);
-  assert.match(compose, /QUEUE_WORKER_STALLED_INTERVAL/);
+  assert.match(compose, /QUEUE_WORKER_LOCK_DURATION: "30000"/);
+  assert.match(compose, /QUEUE_WORKER_LOCK_RENEW_TIME: "5000"/);
+  assert.match(compose, /QUEUE_WORKER_STALLED_INTERVAL: "10000"/);
+  assert.match(compose, /QUEUE_WORKER_MAX_STALLED_COUNT: "1"/);
   assert.match(compose, /QUEUE_HEALTH_CHECK_ACTIVE/);
   assert.match(compose, /N8N_METRICS: "true"/);
   assert.match(compose, /--appendonly yes/);
