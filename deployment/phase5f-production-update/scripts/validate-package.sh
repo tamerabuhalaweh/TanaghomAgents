@@ -3,6 +3,7 @@ set -eu
 
 root=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 package="$root/deployment/phase5f-production-update"
+shared_backup="$root/deployment/production-database-backup/prepare-offserver-backup.ps1"
 
 sh -n "$package"/scripts/*.sh
 "$package/scripts/test-refusal-paths.sh"
@@ -26,8 +27,9 @@ grep -q 'assert_release_tables_empty' "$package/scripts/deploy-update.sh"
 grep -q 'assert_release_tables_empty' "$package/scripts/rollback-update.sh"
 grep -q 'n8n-container-ids.before' "$package/scripts/validate-release.sh"
 grep -q 'runtime_ready IS NOT FALSE' "$package/scripts/validate-release.sh"
-grep -q 'postgres:16.14-alpine3.24@sha256:' "$package/scripts/prepare-offserver-backup.ps1"
-grep -q -- '--network none' "$package/scripts/prepare-offserver-backup.ps1"
+grep -q 'production-database-backup\\prepare-offserver-backup.ps1' "$package/scripts/prepare-offserver-backup.ps1"
+grep -q 'postgres:17.6-alpine3.22@sha256:' "$shared_backup"
+grep -q -- '--network none' "$shared_backup"
 grep -q 'unexpectedly accepted customer notification data' "$package/scripts/test-disposable-lifecycle.sh"
 grep -q 'No deployment is authorized by this document' "$package/RUNBOOK.md"
 

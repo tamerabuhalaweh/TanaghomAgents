@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory = $true)]
-  [ValidatePattern('^phase5d-\d{8}T\d{6}Z$')]
+  [ValidatePattern('^phase5f-\d{8}T\d{6}Z$')]
   [string]$ReleaseId,
 
   [Parameter(Mandatory = $true)]
@@ -10,4 +10,4 @@ param(
   [string]$ExpectedMigration = '0009_postiz_automation_controls'
 )
 
-throw 'The Phase 5D dashboard-changing release path is superseded by deployment/phase5f-database-bridge. Use the reviewed bridge package.'
+& "$PSScriptRoot\..\..\production-database-backup\prepare-offserver-backup.ps1" @PSBoundParameters

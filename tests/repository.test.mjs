@@ -699,6 +699,7 @@ test('Phase 5D production update is manual, transactional, scoped, and recoverab
   const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
   const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
   const backup = await readFile(new URL('scripts/prepare-offserver-backup.ps1', root), 'utf8');
+  const sharedBackup = await readFile(new URL('../deployment/production-database-backup/prepare-offserver-backup.ps1', import.meta.url), 'utf8');
   const disposableBackup = await readFile(new URL('scripts/test-disposable-backup.sh', root), 'utf8');
   const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
   const refusalPaths = await readFile(new URL('scripts/test-refusal-paths.sh', root), 'utf8');
@@ -729,10 +730,12 @@ test('Phase 5D production update is manual, transactional, scoped, and recoverab
   assert.match(rollback, /applied-migrations/);
   assert.match(rollback, /awk '\{ lines\[NR\]=\$0 \} END/);
   assert.doesNotMatch(rollback, /for .+ in 1 2 3 4 5|seq 5|npm run db:rollback/);
-  assert.match(backup, /ConvertFrom-SecureString/);
-  assert.match(backup, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
-  assert.match(backup, /pg_restore/);
-  assert.match(backup, /RESTORE_VERIFIED=YES/);
+  assert.match(preflight, /superseded: use deployment\/phase5f-database-bridge/);
+  assert.match(backup, /superseded by deployment\/phase5f-database-bridge/);
+  assert.match(sharedBackup, /ConvertFrom-SecureString/);
+  assert.match(sharedBackup, /postgres:17\.6-alpine3\.22@sha256:[0-9a-f]{64}/);
+  assert.match(sharedBackup, /pg_restore/);
+  assert.match(sharedBackup, /RESTORE_VERIFIED=YES/);
   assert.match(disposableBackup, /openssl enc -aes-256-cbc -pbkdf2/);
   assert.match(disposableBackup, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
   assert.match(disposableBackup, /pg_restore/);
@@ -741,6 +744,7 @@ test('Phase 5D production update is manual, transactional, scoped, and recoverab
   assert.match(refusalPaths, /expected refusal unexpectedly succeeded/);
   assert.match(refusalPaths, /RESTORE_VERIFIED=NO/);
   assert.match(runbook, /not GitHub Actions CD/i);
+  assert.match(runbook, /superseded/i);
   assert.match(runbook, /Production execution remains unauthorized/i);
   assert.match(runbook, /never blindly runs a fixed\s+number of rollbacks/i);
 
@@ -759,6 +763,7 @@ test('Phase 5F production update is manual, exact, data-preserving, and SmartLab
   const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
   const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
   const backup = await readFile(new URL('scripts/prepare-offserver-backup.ps1', root), 'utf8');
+  const sharedBackup = await readFile(new URL('../deployment/production-database-backup/prepare-offserver-backup.ps1', import.meta.url), 'utf8');
   const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
   const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
@@ -787,11 +792,12 @@ test('Phase 5F production update is manual, exact, data-preserving, and SmartLab
   assert.match(rollback, /assert_release_tables_empty/);
   assert.match(rollback, /awk '\{ lines\[NR\]=\$0 \} END/);
   assert.doesNotMatch(rollback, /for .+ in 1 2 3 4 5|seq 5|npm run db:rollback/);
-  assert.match(backup, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
-  assert.match(backup, /docker run --rm --name \$sourceContainer/);
-  assert.match(backup, /--network none/);
-  assert.match(backup, /ConvertFrom-SecureString/);
-  assert.match(backup, /RESTORE_VERIFIED=YES/);
+  assert.match(backup, /production-database-backup\\prepare-offserver-backup\.ps1/);
+  assert.match(sharedBackup, /postgres:17\.6-alpine3\.22@sha256:[0-9a-f]{64}/);
+  assert.match(sharedBackup, /docker run --rm --name \$sourceContainer/);
+  assert.match(sharedBackup, /--network none/);
+  assert.match(sharedBackup, /ConvertFrom-SecureString/);
+  assert.match(sharedBackup, /RESTORE_VERIFIED=YES/);
   assert.match(lifecycle, /rollback unexpectedly accepted customer notification data/);
   assert.match(lifecycle, /0019_notification_monitoring_destinations\.down\.sql/);
   assert.match(packageValidation, /sh -n/);
@@ -804,4 +810,50 @@ test('Phase 5F production update is manual, exact, data-preserving, and SmartLab
   assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|n8n)/i);
   assert.doesNotMatch(protectedScope, /\/data\//);
   assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});
+
+test('Phase 5F database bridge is database-only, PostgreSQL 17.6-pinned, and reversibly tested', async () => {
+  const root = new URL('../deployment/phase5f-database-bridge/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-bridge.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-bridge.sh', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const sharedBackup = await readFile(new URL('../deployment/production-database-backup/prepare-offserver-backup.ps1', import.meta.url), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_START_MIGRATION=0009_postiz_automation_controls/);
+  assert.match(common, /TARGET_MIGRATION=0014_supervised_conversation_ownership/);
+  for (const version of ['0010_postiz_performance_monitoring', '0011_ghl_contact_sync', '0012_ghl_inbound_event_inbox', '0013_sales_knowledge_intelligence', '0014_supervised_conversation_ownership']) {
+    assert.match(common, new RegExp(version));
+  }
+  assert.match(common, /assert_bridge_default_state/);
+  assert.match(common, /assert_dashboard_identity_unchanged/);
+  assert.match(preflight, /assert_database_at_start/);
+  assert.match(preflight, /validate_backup_proof/);
+  assert.match(deploy, /rollback_applied_migrations/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.doesNotMatch(deploy, /docker compose.+(build|up|restart|stop|rm)|git (checkout|reset|pull)/);
+  assert.match(validate, /assert_dashboard_identity_unchanged/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-BRIDGE/);
+  assert.match(rollback, /assert_bridge_default_state/);
+  assert.match(lifecycle, /0014_supervised_conversation_ownership 0013_sales_knowledge_intelligence/);
+  assert.match(lifecycle, /\$version\.down\.sql/);
+  assert.match(lifecycle, /bridge default guard accepted customer policy changes/);
+  assert.match(sharedBackup, /postgres:17\.6-alpine3\.22@sha256:[0-9a-f]{64}/);
+  assert.match(sharedBackup, /RESTORE_VERIFIED=YES/);
+  assert.match(sharedBackup, /--network none/);
+  assert.match(packageValidation, /cannot operate on dashboard or protected services/);
+  assert.match(runbook, /No dashboard image is built/);
+  assert.match(runbook, /fresh 0014 backup/i);
+  assert.match(quality, /phase5f-database-bridge-contract/);
+  assert.match(quality, /postgres:17\.6-alpine3\.22@sha256:[0-9a-f]{64}/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload)|iptables (-A|-I|-D|-N|-F|-X)|nft /i);
+  assert.doesNotMatch(protectedScope, /docker (build|pull|stop|restart|rm)|docker compose.+(up|down|stop|restart|rm)/i);
+  assert.doesNotMatch(protectedScope, /\/data\/|\/opt\/(smartlabs|n8n-smartlabs)/i);
 });

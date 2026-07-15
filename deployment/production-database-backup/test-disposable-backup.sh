@@ -1,0 +1,42 @@
+#!/bin/sh
+set -eu
+
+POSTGRES_IMAGE='postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94'
+source_url=${1:-${DATABASE_TEST_URL:-}}
+expected_migration=${2:-0014_supervised_conversation_ownership}
+test -n "$source_url" || { echo 'DATABASE_TEST_URL is required' >&2; exit 2; }
+export DATABASE_TEST_URL=$source_url
+
+container="tanaghom-pg17-restore-$$"
+workdir=$(mktemp -d)
+raw="$workdir/tanaghom.dump"
+encrypted="$workdir/tanaghom.dump.enc"
+decrypted="$workdir/tanaghom-restored.dump"
+key="$workdir/archive.key"
+
+cleanup() { docker rm -f "$container" >/dev/null 2>&1 || true; rm -rf -- "$workdir"; }
+trap cleanup EXIT HUP INT TERM
+
+test "$(docker run --rm --network host -e DATABASE_TEST_URL "$POSTGRES_IMAGE" sh -ec 'psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 -At -c "SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;"')" = "$expected_migration"
+docker run --rm --network host -e DATABASE_TEST_URL \
+  --mount "type=bind,source=$workdir,target=/backup" "$POSTGRES_IMAGE" sh -ec \
+  'pg_dump "$DATABASE_TEST_URL" --format=custom --no-owner --no-acl --schema=public --schema=tanaghom --file=/backup/tanaghom.dump'
+test -s "$raw"
+
+openssl rand -hex 32 > "$key"
+chmod 0600 "$key"
+openssl enc -aes-256-cbc -pbkdf2 -salt -in "$raw" -out "$encrypted" -pass "file:$key"
+sha256sum "$encrypted" > "$workdir/tanaghom.dump.enc.sha256"
+(cd "$workdir" && sha256sum -c tanaghom.dump.enc.sha256)
+openssl enc -d -aes-256-cbc -pbkdf2 -in "$encrypted" -out "$decrypted" -pass "file:$key"
+cmp -s "$raw" "$decrypted"
+
+docker run -d --network none --name "$container" -e POSTGRES_PASSWORD=restore-only -e POSTGRES_DB=restore_test "$POSTGRES_IMAGE" >/dev/null
+i=0
+until docker exec "$container" pg_isready -U postgres -d restore_test >/dev/null 2>&1; do i=$((i+1)); test "$i" -lt 30; sleep 2; done
+docker cp "$decrypted" "$container:/tmp/tanaghom.dump" >/dev/null
+docker exec "$container" pg_restore -U postgres -d restore_test --no-owner --no-acl --clean --if-exists --exit-on-error /tmp/tanaghom.dump
+test "$(docker exec "$container" psql -U postgres -d restore_test -X -v ON_ERROR_STOP=1 -At -c 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = "$expected_migration"
+docker exec "$container" psql -U postgres -d restore_test -X -v ON_ERROR_STOP=1 -At -c 'SELECT count(*) FROM tanaghom.organizations;' >/dev/null
+
+echo 'PASS: PostgreSQL 17.6 encrypted archive was decrypted, actually restored, and content-verified.'

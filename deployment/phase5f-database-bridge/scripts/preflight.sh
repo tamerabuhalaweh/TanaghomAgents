@@ -4,8 +4,6 @@ set -eu
 SCRIPT_DIR=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
 . "$SCRIPT_DIR/common.sh"
 
-die 'superseded: use deployment/phase5f-database-bridge; this older path would rebuild an incompatible dashboard'
-
 require_root
 require_release_environment
 validate_backup_proof
@@ -30,7 +28,7 @@ assert_protected_units_active
 assert_protected_containers_healthy
 test "$(container_health tanaghom-dashboard-canary-dashboard-1)" = healthy || die 'dashboard container is not healthy'
 assert_firewall_boundary
-assert_database_locked "$EXPECTED_START_MIGRATION"
-assert_public_boundary
+assert_database_at_start
+assert_public_bridge_boundary
 
-echo "PASS: Phase 5D production update preflight passed for $TANAGHOM_RELEASE_ID."
+echo "PASS: database-only 0010-0014 bridge preflight passed for $TANAGHOM_RELEASE_ID."
