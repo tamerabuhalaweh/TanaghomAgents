@@ -103,6 +103,13 @@ worker and simulated provider, emitting timestamped evidence from inbound
 question through grounded reply, hot qualification, appointment, and
 opportunity update.
 
+Phase 5F capacity foundation adds deterministic urgent/interactive/background
+priority, organization concurrency and per-minute claim limits, automatic
+Gemma/GHL cooldown recovery, capacity status/alert contracts, and a disposable
+10,000-event drain with throughput, latency, outcome, isolation, recovery, and
+disk-growth evidence. This measured test envelope is not a production SLA;
+shared-GPU/SmartLabs and customer-provider benchmarks remain separately gated.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

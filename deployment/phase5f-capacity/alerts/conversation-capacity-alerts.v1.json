@@ -1,0 +1,43 @@
+{
+  "contract_version": "phase5.conversation-capacity-alerts.v1",
+  "source": "tanaghom.conversation_capacity_status",
+  "contains_customer_content": false,
+  "rules": [
+    {
+      "code": "conversation_queue_age_warning",
+      "severity": "warning",
+      "condition": "oldest_queue_age_seconds >= queue_age_warning_seconds",
+      "operator_action": "Inspect worker health, dependency cooldowns, and interactive backlog."
+    },
+    {
+      "code": "conversation_interactive_backlog",
+      "severity": "warning",
+      "condition": "urgent_depth + interactive_depth >= interactive_backlog_threshold",
+      "operator_action": "Defer background work and verify customer-response SLO risk."
+    },
+    {
+      "code": "conversation_worker_saturated",
+      "severity": "warning",
+      "condition": "processing_count >= max_conversation_concurrency",
+      "operator_action": "Measure sustained queue age before changing the reviewed concurrency limit."
+    },
+    {
+      "code": "conversation_dependency_cooldown",
+      "severity": "warning",
+      "condition": "gemma_blocked_until IS NOT NULL OR ghl_blocked_until IS NOT NULL",
+      "operator_action": "Honor the cooldown; do not bypass provider/model retry guidance."
+    },
+    {
+      "code": "conversation_dead_letter",
+      "severity": "critical",
+      "condition": "dead_letter_count > 0",
+      "operator_action": "Keep automation bounded, investigate, then use controlled replay only after correction."
+    },
+    {
+      "code": "ghl_indeterminate_action",
+      "severity": "critical",
+      "condition": "indeterminate_actions > 0",
+      "operator_action": "Block new provider actions and require human reconciliation; never blind retry."
+    }
+  ]
+}
