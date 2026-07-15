@@ -36,5 +36,5 @@ then reapplies to prove recovery.
   claims until reconciled; action outcomes are append-only.
 - Human reconciliation is tenant-bound, append-only, reasoned, and idempotent
   by command ID; it updates the job and matching provider operation together.
-- Service-agent GHL queue audit rows retain their organization service actor;
-  anonymous action audit records remain invalid.
+- Service-agent GHL queue and completion audit rows retain their organization
+  service actor; anonymous action audit records remain invalid.

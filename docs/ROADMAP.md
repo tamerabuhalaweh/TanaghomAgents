@@ -98,6 +98,11 @@ frequency, ownership, emergency, idempotency, and indeterminate-operation
 guards; and an inactive private-gateway n8n worker. Production activation and
 live customer-provider acceptance remain gated.
 
+CI also runs a secret-free disposable lifecycle through the inactive n8n action
+worker and simulated provider, emitting timestamped evidence from inbound
+question through grounded reply, hot qualification, appointment, and
+opportunity update.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

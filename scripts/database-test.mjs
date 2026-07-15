@@ -77,6 +77,8 @@ psql('-f', ghlActionReviewAssertions);
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 database('rollback');
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0017_ghl_service_action_audit_attribution') THEN RAISE EXCEPTION '0017 rollback left migration state behind'; END IF; END $$;");
+database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.ghl_action_reconciliations') IS NOT NULL OR to_regprocedure('tanaghom.reconcile_ghl_action(uuid,uuid,text,text,text,uuid)') IS NOT NULL THEN RAISE EXCEPTION '0016 rollback left GHL review objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.ghl_action_jobs') IS NOT NULL OR to_regprocedure('tanaghom.claim_ghl_action_job()') IS NOT NULL THEN RAISE EXCEPTION '0015 rollback left governed GHL action objects behind'; END IF; END $$;");
