@@ -6,7 +6,7 @@ import test from "node:test";
 const dashboard = new URL("../apps/dashboard/", import.meta.url);
 
 test("dashboard exposes the Phase 2 operational routes", async () => {
-  const routes = ["app/page.tsx", "app/approvals/page.tsx", "app/campaigns/page.tsx", "app/agents/page.tsx", "app/leads/page.tsx", "app/reports/page.tsx", "app/system/page.tsx", "app/knowledge/page.tsx", "app/inbox/page.tsx"];
+  const routes = ["app/page.tsx", "app/approvals/page.tsx", "app/actions/page.tsx", "app/campaigns/page.tsx", "app/agents/page.tsx", "app/leads/page.tsx", "app/reports/page.tsx", "app/system/page.tsx", "app/knowledge/page.tsx", "app/inbox/page.tsx"];
   await Promise.all(routes.map((route) => readFile(new URL(route, dashboard), "utf8")));
 });
 
@@ -179,6 +179,23 @@ test("GHL agent action policy is owner-only and provider dispatch stays behind t
   assert.match(gateway, /decryptCredential/);
   assert.match(gateway, /NOT control\.emergency_stop/);
   assert.doesNotMatch(`${route}\n${settings}`, /services\.leadconnectorhq\.com|\/conversations\/messages|axios/i);
+});
+
+test("GHL action review is tenant-bound, role-aware, and never retries indeterminate operations", async () => {
+  const service = await readFile(new URL("lib/server/ghl-action-review.ts", dashboard), "utf8");
+  const component = await readFile(new URL("components/ghl-action-review.tsx", dashboard), "utf8");
+  assert.match(service, /authorize\(request, \["owner", "reviewer", "operator", "viewer"\]\)/);
+  assert.match(service, /job\.organization_id=\$1/);
+  assert.match(service, /decide_ghl_action/);
+  assert.match(service, /reconcile_ghl_action/);
+  assert.doesNotMatch(`${service}\n${component}`, /services\.leadconnectorhq\.com|\/conversations\/messages|axios/i);
+  assert.match(component, /Do not retry/);
+  assert.match(component, /confirmed_not_applied/);
+  assert.match(component, /confirmed_succeeded/);
+  assert.match(component, /containsArabic/);
+  for (const state of ["loading", "forbidden", "error", "stale", "queue is clear"]) {
+    assert.match(component.toLowerCase(), new RegExp(state));
+  }
 });
 
 test("remaining operational screens use the live snapshot without business fixtures", async () => {

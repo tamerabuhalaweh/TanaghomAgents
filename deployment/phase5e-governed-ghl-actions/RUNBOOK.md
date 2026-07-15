@@ -2,11 +2,11 @@
 
 ## Status
 
-Production is unauthorized. This package does not apply migration `0015`,
-enable `GHL_ACTION_RUNTIME_ENABLED`, import or activate an n8n workflow, use a
-customer credential, call GoHighLevel, or deliver a message. The committed
-workflow and its polling trigger are inactive. SmartLabs and the server's
-500GB drive are outside this package.
+Production is unauthorized. This revision does not apply migration `0016`,
+enable `GHL_ACTION_RUNTIME_ENABLED`, activate an n8n workflow, use a customer
+credential, call GoHighLevel, or deliver a message. The committed workflow and
+its polling trigger remain inactive. SmartLabs and the server's 500GB drive are
+outside this package.
 
 ## Validation gate
 
@@ -25,6 +25,8 @@ The database suite must prove consent and DND enforcement, approved-template
 enforcement, quiet hours and frequency caps, idempotent replay, ownership
 rechecks, emergency stops, append-only outcomes, indeterminate-operation
 blocking, least-privilege grants, rollback, and clean reapply.
+It must also prove that service-agent queue events retain an attributable audit
+actor and that human reconciliation is append-only and command-idempotent.
 
 The n8n integration acceptance must use disposable PostgreSQL and a simulated
 provider gateway. It must never load a real GHL credential or external base URL.
@@ -62,14 +64,17 @@ apply its retention policy, and record the restore evidence before deployment.
 1. Confirm platform and organization GHL emergency stops are active and the
    existing Phase 5D ownership package is healthy.
 2. Complete and review backup, off-server copy, checksum, and restoration test.
-3. Apply migration `0015_governed_ghl_actions` and verify worker grants are
-   function-only.
+3. Apply `0015_governed_ghl_actions` if it is not already present, then apply
+   `0016_ghl_action_review_reconciliation`. Verify worker grants remain
+   function-only and only the dashboard API role can execute reconciliation.
 4. Deploy the reviewed dashboard with both runtime flags false. Verify health,
    Supabase Auth, Postiz, GHL ingress, and the Supervisor inbox.
 5. Import the matching workflow inactive; confirm its schedule remains disabled
    and it has zero executions.
 6. With a simulated provider, run manual, shadow, approval, DND, takeover,
-   duplicate, timeout, and emergency-stop cases using `.test` records.
+   duplicate, timeout, reconciliation, and emergency-stop cases using `.test`
+   records. Verify the Agent Actions page exposes no retry control for an
+   indeterminate operation.
 7. Review evidence. A separate written authorization is required to set runtime
    readiness, enable the gateway, or activate polling. Real messaging remains
    disabled until customer templates, channel consent policy, and staging
@@ -81,13 +86,30 @@ apply its retention policy, and record the restore evidence before deployment.
    workflow and `GHL_ACTION_RUNTIME_ENABLED` before changing the schema.
 2. Export action jobs, approvals, outcomes, external operations, and audit rows
    needed for investigation. Reconcile every indeterminate operation first.
-3. While `0015` is the newest applied migration, run:
+3. While `0016` is the newest applied migration, run:
 
 ```sh
 npm run db:rollback
 ```
 
-4. Verify package objects are gone:
+4. Verify the review/reconciliation objects are gone while the original GHL
+   action foundation remains present:
+
+```sql
+DO $$
+BEGIN
+  IF to_regclass('tanaghom.ghl_action_reconciliations') IS NOT NULL
+     OR to_regprocedure('tanaghom.reconcile_ghl_action(uuid,uuid,text,text,text,uuid)') IS NOT NULL
+     OR to_regprocedure('tanaghom.attach_ghl_service_actor_to_audit()') IS NOT NULL
+     OR to_regclass('tanaghom.ghl_action_jobs') IS NULL THEN
+    RAISE EXCEPTION 'Phase 5E action-review rollback is incomplete';
+  END IF;
+END;
+$$;
+```
+
+5. To remove the entire governed-action foundation, confirm `0015` is now the
+   newest applied migration and run `npm run db:rollback` once more. Verify:
 
 ```sql
 DO $$
@@ -102,7 +124,7 @@ END;
 $$;
 ```
 
-5. Restore the previously reviewed dashboard and workflow exports. Verify Phase
+6. Restore the previously reviewed dashboard and workflow exports. Verify Phase
    5B ingress and Phase 5D supervision remain healthy and inactive for outbound
    messaging. Use `pg_restore --exit-on-error` only if rollback validation or
    data reconciliation requires restoring the reviewed backup.

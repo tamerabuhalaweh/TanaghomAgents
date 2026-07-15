@@ -34,3 +34,7 @@ then reapplies to prove recovery.
   approval, outcome, conversation, lead, or credential tables.
 - Unknown post-dispatch outcomes become indeterminate and block further action
   claims until reconciled; action outcomes are append-only.
+- Human reconciliation is tenant-bound, append-only, reasoned, and idempotent
+  by command ID; it updates the job and matching provider operation together.
+- Service-agent GHL queue audit rows retain their organization service actor;
+  anonymous action audit records remain invalid.

@@ -405,7 +405,26 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0015_governed_ghl_actions/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0016_ghl_action_review_reconciliation/);
+});
+
+test('Phase 5E action review records immutable human reconciliation without worker table access', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0016_ghl_action_review_reconciliation.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0016_ghl_action_review_reconciliation.down.sql', import.meta.url), 'utf8');
+  assert.match(migration, /CREATE TABLE tanaghom\.ghl_action_reconciliations/);
+  assert.match(migration, /CREATE FUNCTION tanaghom\.reconcile_ghl_action/);
+  assert.match(migration, /CREATE TRIGGER ghl_action_reconciliation_no_update/);
+  assert.match(migration, /CREATE TRIGGER ghl_action_reconciliation_no_delete/);
+  assert.match(migration, /CREATE TRIGGER agent_actions_log_ghl_service_actor/);
+  assert.match(migration, /job\.requested_by_agent_id INTO NEW\.actor_user_id/);
+  assert.match(migration, /pg_advisory_xact_lock/);
+  assert.match(migration, /confirmed_succeeded/);
+  assert.match(migration, /confirmed_not_applied/);
+  assert.match(migration, /status<>'indeterminate'/);
+  assert.match(migration, /GHL reconciliation command conflict/);
+  assert.doesNotMatch(migration, /GRANT (SELECT|INSERT|UPDATE|DELETE).+tanaghom_(n8n|conversation)_worker/);
+  assert.match(rollback, /DROP FUNCTION tanaghom\.reconcile_ghl_action/);
+  assert.match(rollback, /DROP TABLE tanaghom\.ghl_action_reconciliations/);
 });
 
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {
