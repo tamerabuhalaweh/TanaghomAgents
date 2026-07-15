@@ -750,3 +750,58 @@ test('Phase 5D production update is manual, transactional, scoped, and recoverab
   assert.doesNotMatch(protectedScope, /\/data\//);
   assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
 });
+
+test('Phase 5F production update is manual, exact, data-preserving, and SmartLabs-isolated', async () => {
+  const root = new URL('../deployment/phase5f-production-update/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const backup = await readFile(new URL('scripts/prepare-offserver-backup.ps1', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+
+  assert.match(common, /YES-I-AM-THE-AUTHORIZED-OWNER/);
+  assert.match(common, /EXPECTED_START_MIGRATION=0014_supervised_conversation_ownership/);
+  assert.match(common, /TARGET_MIGRATION=0019_notification_monitoring_destinations/);
+  for (const version of ['0015_governed_ghl_actions', '0016_ghl_action_review_reconciliation', '0017_ghl_service_action_audit_attribution', '0018_conversation_capacity_backpressure', '0019_notification_monitoring_destinations']) {
+    assert.match(common, new RegExp(version));
+  }
+  assert.match(common, /ghl_action_approvals/);
+  assert.match(common, /a GHL action policy differs from its release default/);
+  assert.match(common, /a capacity policy differs from its release default/);
+  assert.match(preflight, /less than 20 GiB/);
+  assert.match(preflight, /assert_database_at_start/);
+  assert.match(preflight, /release-source checkout is dirty/);
+  assert.match(deploy, /rollback_applied_migrations/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(deploy, /assert_release_tables_empty/);
+  assert.match(deploy, /compose up -d --no-deps dashboard/);
+  assert.doesNotMatch(deploy, /npm run db:(migrate|rollback)/);
+  assert.match(validate, /runtime_ready IS NOT FALSE OR emergency_stop IS NOT TRUE/);
+  assert.match(validate, /has_table_privilege\('tanaghom_n8n_worker','tanaghom\.notification_destinations'/);
+  assert.match(validate, /assert_protected_container_ids_unchanged/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE/);
+  assert.match(rollback, /assert_release_tables_empty/);
+  assert.match(rollback, /awk '\{ lines\[NR\]=\$0 \} END/);
+  assert.doesNotMatch(rollback, /for .+ in 1 2 3 4 5|seq 5|npm run db:rollback/);
+  assert.match(backup, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
+  assert.match(backup, /docker run --rm --name \$sourceContainer/);
+  assert.match(backup, /--network none/);
+  assert.match(backup, /ConvertFrom-SecureString/);
+  assert.match(backup, /RESTORE_VERIFIED=YES/);
+  assert.match(lifecycle, /rollback unexpectedly accepted customer notification data/);
+  assert.match(lifecycle, /0019_notification_monitoring_destinations\.down\.sql/);
+  assert.match(packageValidation, /sh -n/);
+  assert.match(runbook, /No deployment is authorized by this document/);
+  assert.match(runbook, /Do not delete records to force the downgrade/);
+  assert.match(runbook, /only the Tanaghom dashboard/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|n8n)/i);
+  assert.doesNotMatch(protectedScope, /\/data\//);
+  assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});
