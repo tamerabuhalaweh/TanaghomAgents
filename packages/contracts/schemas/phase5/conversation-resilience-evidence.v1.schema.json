@@ -1,0 +1,108 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/conversation-resilience-evidence.v1.schema.json",
+  "title": "Tanaghom conversation resilience evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "generated_at", "boundaries", "priority", "burst", "soak", "dependency", "recovery", "outcomes"],
+  "properties": {
+    "contract_version": { "const": "phase5.conversation-resilience-evidence.v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposable_database", "synthetic_events", "customer_credentials_used", "provider_calls", "gemma_calls", "smartlabs_touched", "production_touched"],
+      "properties": {
+        "disposable_database": { "const": true },
+        "synthetic_events": { "const": true },
+        "customer_credentials_used": { "const": false },
+        "provider_calls": { "const": 0 },
+        "gemma_calls": { "const": 0 },
+        "smartlabs_touched": { "const": false },
+        "production_touched": { "const": false }
+      }
+    },
+    "priority": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["background_queued_first", "interactive_queued_second", "first_claims", "first_claims_all_interactive"],
+      "properties": {
+        "background_queued_first": { "type": "integer", "minimum": 1 },
+        "interactive_queued_second": { "type": "integer", "minimum": 1 },
+        "first_claims": { "type": "integer", "minimum": 1 },
+        "first_claims_all_interactive": { "const": true }
+      }
+    },
+    "burst": { "$ref": "#/$defs/profile" },
+    "soak": {
+      "allOf": [
+        { "$ref": "#/$defs/profile" },
+        {
+          "type": "object",
+          "required": ["duration_ms", "waves", "simulated_model_latency_ms"],
+          "properties": {
+            "duration_ms": { "type": "number", "minimum": 1000 },
+            "waves": { "type": "integer", "minimum": 2 },
+            "simulated_model_latency_ms": { "type": "integer", "minimum": 1 }
+          }
+        }
+      ]
+    },
+    "dependency": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["cooldown_blocked_claims", "accepted_work_preserved_during_cooldown", "automatic_recovery"],
+      "properties": {
+        "cooldown_blocked_claims": { "const": true },
+        "accepted_work_preserved_during_cooldown": { "const": true },
+        "automatic_recovery": { "const": true }
+      }
+    },
+    "recovery": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["worker_claims_abandoned", "worker_claims_recovered", "same_job_ids_recovered", "database_connection_terminated", "database_pool_reconnected", "encrypted_backlog_archive", "restored_backlog_matches_source", "restored_backlog_drained", "dead_letter_replayed_with_same_job_id"],
+      "properties": {
+        "worker_claims_abandoned": { "type": "integer", "minimum": 1 },
+        "worker_claims_recovered": { "type": "integer", "minimum": 1 },
+        "same_job_ids_recovered": { "const": true },
+        "database_connection_terminated": { "const": true },
+        "database_pool_reconnected": { "const": true },
+        "encrypted_backlog_archive": { "const": true },
+        "restored_backlog_matches_source": { "const": true },
+        "restored_backlog_drained": { "const": true },
+        "dead_letter_replayed_with_same_job_id": { "const": true }
+      }
+    },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted", "succeeded", "dead_letters", "duplicates", "organization_mismatches", "remaining"],
+      "properties": {
+        "accepted": { "type": "integer", "minimum": 1 },
+        "succeeded": { "type": "integer", "minimum": 1 },
+        "dead_letters": { "const": 0 },
+        "duplicates": { "const": 0 },
+        "organization_mismatches": { "const": 0 },
+        "remaining": { "const": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "profile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted", "succeeded", "max_queue_depth", "elapsed_ms", "remaining"],
+      "properties": {
+        "accepted": { "type": "integer", "minimum": 1 },
+        "succeeded": { "type": "integer", "minimum": 1 },
+        "max_queue_depth": { "type": "integer", "minimum": 1 },
+        "elapsed_ms": { "type": "number", "minimum": 0 },
+        "remaining": { "const": 0 },
+        "duration_ms": { "type": "number", "minimum": 1000 },
+        "waves": { "type": "integer", "minimum": 2 },
+        "simulated_model_latency_ms": { "type": "integer", "minimum": 1 }
+      }
+    }
+  }
+}
