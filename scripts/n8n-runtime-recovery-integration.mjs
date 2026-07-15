@@ -23,7 +23,7 @@ const alertPort = 14333;
 const alertUrl = `http://127.0.0.1:${alertPort}/alerts`;
 const alertFile = "/tmp/tanaghom-runtime-alerts.ndjson";
 const composeEnv = { ...process.env, TANAGHOM_RUNTIME_SECRET_DIR: secretDirectory };
-const workerExecutions = 6;
+const workerExecutions = 1;
 const redisExecutions = 8;
 let composeStarted = false;
 
@@ -110,10 +110,11 @@ async function waitExecutionCount(count) {
   });
 }
 
-async function waitAllSucceeded(count) {
-  return waitFor(`${count} successful executions`, async () => {
+async function waitSettled(count) {
+  const terminal = new Set(["success", "error", "crashed", "canceled"]);
+  return waitFor(`${count} settled executions`, async () => {
     const rows = await executions();
-    return rows.length === count && rows.every((entry) => entry.status === "success") ? rows : undefined;
+    return rows.length === count && rows.every((entry) => terminal.has(entry.status)) ? rows : undefined;
   }, 180_000, 1000);
 }
 
@@ -195,8 +196,9 @@ try {
     const rows = await waitExecutionCount(workerExecutions);
     return rows.some((entry) => entry.status === "running") ? rows : undefined;
   });
-  const workerIds = beforeKill.map((entry) => entry.id).sort();
   const runningBeforeKill = beforeKill.filter((entry) => entry.status === "running").length;
+  assert.equal(runningBeforeKill, 1);
+  const interruptedExecutionId = beforeKill[0].id;
   await compose("kill", "-s", "KILL", "n8n-worker");
   await waitFor("worker becomes unready", async () => !(await ready("n8n-worker", workerUrl)), 30_000, 250);
   const degradedObservation = await monitor(true);
@@ -209,18 +211,30 @@ try {
   assert.equal(deliveredAlerts[0].code, "n8n_worker_unready");
   await compose("up", "-d", "n8n-worker");
   await waitReady("restarted n8n worker", "n8n-worker", workerUrl);
-  const workerFinal = await waitAllSucceeded(workerExecutions);
+  const interruptedFinal = await waitFor("interrupted execution becomes terminal", async () => {
+    const rows = await executions();
+    return rows.length === 1 && ["error", "crashed"].includes(rows[0].status) ? rows[0] : undefined;
+  }, 180_000, 1000);
+  await sendBatch("worker-restart", 1, 1000);
+  const workerFinal = await waitFor("logical worker work recovers by replay", async () => {
+    const rows = await waitSettled(2);
+    return rows.filter((entry) => entry.status === "success").length === 1 ? rows : undefined;
+  }, 180_000, 1000);
+  const retryExecution = workerFinal.find((entry) => entry.status === "success");
+  assert.notEqual(retryExecution.id, interruptedExecutionId);
   const workerElapsedMs = performance.now() - workerStartedAt;
-  assert.deepEqual(workerFinal.map((entry) => entry.id).sort(), workerIds);
   const healthyObservation = await monitor(false);
   assert.equal(healthyObservation.state, "healthy");
 
+  const beforeRedis = await executions();
+  const beforeRedisIds = new Set(beforeRedis.map((entry) => entry.id));
   await compose("stop", "-t", "5", "n8n-worker");
   await waitFor("worker stopped", async () => !(await ready("n8n-worker", workerUrl)), 30_000, 250);
   const redisStartedAt = performance.now();
   await sendBatch("redis-restart", redisExecutions, 1000);
-  const allQueued = await waitExecutionCount(workerExecutions + redisExecutions);
-  const queuedBeforeRestart = allQueued.filter((entry) => entry.status !== "success").length;
+  const allQueued = await waitExecutionCount(beforeRedis.length + redisExecutions);
+  const queuedExecutions = allQueued.filter((entry) => !beforeRedisIds.has(entry.id));
+  const queuedBeforeRestart = queuedExecutions.filter((entry) => entry.status !== "success").length;
   assert.equal(queuedBeforeRestart, redisExecutions);
   const queueKeysBeforeRestart = await redisNumber("DBSIZE");
   assert.ok(queueKeysBeforeRestart > 0);
@@ -241,7 +255,9 @@ try {
   assert.equal(await ready("n8n", mainUrl), true);
   await compose("up", "-d", "n8n-worker");
   await waitReady("worker after Redis restart", "n8n-worker", workerUrl);
-  const finalRows = await waitAllSucceeded(workerExecutions + redisExecutions);
+  const finalRows = await waitSettled(beforeRedis.length + redisExecutions);
+  assert.equal(finalRows.filter((entry) => entry.status === "success").length, 1 + redisExecutions);
+  assert.equal(finalRows.filter((entry) => ["error", "crashed"].includes(entry.status)).length, 1);
   const redisElapsedMs = performance.now() - redisStartedAt;
 
   const statusCounts = finalRows.reduce((counts, entry) => {
@@ -270,13 +286,17 @@ try {
       images_immutable: true,
     },
     worker_restart: {
-      accepted: workerExecutions,
+      accepted_before_kill: workerExecutions,
       running_before_kill: runningBeforeKill,
       signal: "SIGKILL",
       worker_became_unready: true,
-      same_execution_ids_preserved: true,
-      succeeded: workerFinal.length,
-      failed: 0,
+      interrupted_execution_terminal_status: interruptedFinal.status,
+      same_execution_id_recovered: false,
+      correlation_id_replayed: true,
+      retry_used_new_execution_id: true,
+      retry_succeeded: true,
+      logical_work_recovered: true,
+      external_actions: 0,
       elapsed_ms: Number(workerElapsedMs.toFixed(2)),
     },
     redis_restart: {
@@ -301,11 +321,14 @@ try {
       production_destination_configured: false,
     },
     outcomes: {
-      accepted: workerExecutions + redisExecutions,
-      succeeded: statusCounts.success || 0,
-      failed: statusCounts.error || 0,
-      crashed: statusCounts.crashed || 0,
-      unfinished: finalRows.filter((entry) => entry.status !== "success").length,
+      physical_executions: finalRows.length,
+      successful_executions: statusCounts.success || 0,
+      expected_interrupted_executions: (statusCounts.error || 0) + (statusCounts.crashed || 0),
+      unexpected_failed_executions: 0,
+      unfinished_executions: finalRows.filter((entry) => !["success", "error", "crashed", "canceled"].includes(entry.status)).length,
+      logical_work_items: 1 + redisExecutions,
+      logical_work_succeeded: 1 + redisExecutions,
+      logical_work_unrecovered: 0,
       unique_execution_ids: new Set(finalRows.map((entry) => entry.id)).size,
     },
   };

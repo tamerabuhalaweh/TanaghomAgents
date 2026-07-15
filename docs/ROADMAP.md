@@ -118,8 +118,9 @@ provider quota headers, production alert delivery, and any SmartLabs-adjacent
 benchmark remain controlled future gates.
 
 Pinned disposable n8n queue-mode recovery now covers an abrupt worker kill,
-same-execution-ID stalled-job recovery, a graceful Redis AOF restart with queued
-work, readiness/metrics checks, and local degraded/recovered alert delivery.
+the resulting terminal n8n execution plus successful logical-correlation replay,
+a graceful Redis AOF restart with queued work, readiness/metrics checks, and
+local degraded/recovered alert delivery.
 The installed canary, production notification destination, real provider
 headers, sudden Redis host loss, and SmartLabs/GPU remain separately gated.
 

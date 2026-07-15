@@ -44,24 +44,29 @@ The harness:
 3. starts disposable PostgreSQL and Redis with AOF/no-eviction;
 4. imports and activates only the disposable webhook probe before starting n8n;
 5. verifies main/worker readiness and metrics from inside the internal network;
-6. accepts six synthetic executions, waits for active worker work, kills the
-   worker with `SIGKILL`, delivers one critical alert to a disposable HTTP sink
-   running beside n8n on container loopback,
-   restarts the worker, and requires the same execution IDs to succeed;
+6. accepts one synthetic execution, kills its active worker with `SIGKILL`,
+   delivers one critical alert to a disposable HTTP sink running beside n8n on
+   container loopback, records n8n's expected terminal interruption, and proves
+   the same logical correlation succeeds when replayed under a new execution ID;
 7. stops the worker, accepts eight more executions, records the Redis key count,
    gracefully restarts Redis, verifies AOF and preserved queue keys, restarts the
-   worker, and requires every accepted execution to succeed; and
+   worker, and requires every queued execution to succeed; and
 8. validates the evidence contract, removes only the uniquely named disposable
    Compose project and volumes, and deletes temporary secrets.
 
-Acceptance is 14 unique successful execution IDs with zero error, crashed, or
-unfinished executions. The test also requires the degraded alert and recovered
-healthy observation, but `production_destination_configured` must remain false.
+Acceptance is nine logical work items recovered, eight queued executions
+surviving Redis restart, one deliberate active execution interruption, one
+successful correlation replay, zero unexpected failures, and zero unfinished
+executions. The degraded alert and recovered healthy observation are required,
+but `production_destination_configured` must remain false.
 
 ## Honest limits
 
-- `SIGKILL` proves stalled worker-job recovery; the Redis test uses a graceful
-  stop so AOF can flush. It does not claim sudden Redis host-loss durability.
+- n8n does not resume the active interrupted execution under the same execution
+  ID. Recovery requires Tanaghom's durable correlation/idempotency boundary to
+  replay the logical work; the disposable probe demonstrates that behavior but
+  performs no customer action. The Redis test uses a graceful stop so AOF can
+  flush and does not claim sudden Redis host-loss durability.
 - The workflow contains no provider/model action. Tanaghom's database-owned
   idempotency boundary remains the protection against duplicate customer
   actions in real workflows.

@@ -555,7 +555,9 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   assert.equal((integration.match(/mode: 0o644/g) || []).length, 3);
   assert.match(integration, /compose\("stop", "-t", "5", "redis"\)/);
   assert.match(integration, /queueKeysAfterRestart/);
-  assert.match(integration, /same_execution_ids_preserved: true/);
+  assert.match(integration, /same_execution_id_recovered: false/);
+  assert.match(integration, /correlation_id_replayed: true/);
+  assert.match(integration, /logical_work_unrecovered: 0/);
   assert.match(integration, /provider_calls: 0/);
   assert.match(integration, /smartlabs_touched: false/);
   assert.match(integration, /disposable compose status/);

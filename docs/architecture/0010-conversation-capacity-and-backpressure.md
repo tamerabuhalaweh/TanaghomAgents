@@ -97,9 +97,11 @@ provider quota behavior, a PostgreSQL host restart, production alert delivery,
 or shared-GPU capacity while SmartLabs is active.
 
 The third disposable gate runs the pinned n8n 2.26.8 main/worker pair in queue
-mode with PostgreSQL 16.14 and Redis 7.2.14. It proves same-execution-ID recovery
-after an abrupt worker kill, queue persistence across a graceful Redis AOF
-restart, main/worker readiness and metrics, and degraded/recovered alert payload
-delivery to a local sink. It remains separate from the installed canary and
-does not establish sudden Redis host-loss, production notification delivery,
-provider quota, or shared-GPU behavior.
+mode with PostgreSQL 16.14 and Redis 7.2.14. It records that an execution active
+during an abrupt worker kill terminates and must be replayed through Tanaghom's
+logical correlation/idempotency boundary under a new n8n execution ID. It also
+proves queued-work persistence across a graceful Redis AOF restart, main/worker
+readiness and metrics, and degraded/recovered alert delivery to a local sink. It
+remains separate from the installed canary and does not establish sudden Redis
+host-loss, production notification delivery, provider quota, or shared-GPU
+behavior.

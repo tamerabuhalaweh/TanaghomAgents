@@ -48,6 +48,7 @@ the secret-free burst/soak, dependency, worker, reconnect, encrypted-backlog
 restoration, and dead-letter replay gate.
 
 `phase5.n8n-runtime-recovery-evidence.v1` records the pinned disposable queue
-runtime, abrupt worker recovery, graceful Redis-AOF restart recovery, readiness,
-metrics, and local alert delivery boundary. It explicitly cannot claim a live
-provider, production destination, GPU, or SmartLabs test.
+runtime, the terminal execution/new-ID logical replay boundary after an abrupt
+worker loss, graceful Redis-AOF queued-work recovery, readiness, metrics, and
+local alert delivery. It explicitly cannot claim a live provider, production
+destination, GPU, or SmartLabs test.
