@@ -333,3 +333,33 @@ test('Phase 5C knowledge is versioned, tenant-bound, grounded, and proposal-only
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
 });
+
+test('Phase 5D supervisor ownership is atomic, tenant-bound, and dispatch-safe', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0014_supervised_conversation_ownership.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0014_supervised_conversation_ownership.down.sql', import.meta.url), 'utf8');
+  const service = await readFile(new URL('../apps/dashboard/lib/server/conversation-supervision.ts', import.meta.url), 'utf8');
+  const component = await readFile(new URL('../apps/dashboard/components/supervisor-inbox.tsx', import.meta.url), 'utf8');
+  const runbook = await readFile(new URL('../deployment/phase5d-supervisor-ownership/RUNBOOK.md', import.meta.url), 'utf8');
+  for (const name of ['transition_supervised_conversation', 'claim_conversation_ai_lease', 'assert_conversation_ai_reply_authority', 'create_conversation_human_reply_draft', 'set_organization_conversation_emergency_stop', 'sweep_conversation_supervisor_alerts']) {
+    assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
+    assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
+  }
+  assert.match(migration, /FOR UPDATE/);
+  assert.match(migration, /stale conversation version/);
+  assert.match(migration, /AI reply authority lost before dispatch/);
+  assert.match(migration, /UNIQUE \(organization_id, command_id\)/);
+  assert.match(migration, /conversation_version=conversation\.conversation_version\+1/);
+  assert.match(migration, /conversation_emergency_stop boolean NOT NULL DEFAULT true/);
+  assert.doesNotMatch(migration, /GRANT (SELECT|INSERT|UPDATE|DELETE).+tanaghom_conversation_worker/);
+  assert.doesNotMatch(migration, /GRANT .+tanaghom_n8n_worker/);
+  assert.match(service, /authorize\(request, \["owner", "reviewer", "operator", "viewer"\]\)/);
+  assert.match(service, /organization_id=\$1/);
+  assert.doesNotMatch(`${service}\n${component}`, /services\.leadconnectorhq\.com|\/conversations\/messages|axios/i);
+  for (const state of ['loading', 'forbidden', 'error', 'offline', 'stale']) assert.match(component.toLowerCase(), new RegExp(state));
+  assert.match(component, /Nothing was sent to GHL/);
+  assert.match(component, /dir=\{conversation\.language === "ar" \? "rtl" : "ltr"\}/);
+  assert.match(runbook, /Production[\s\S]*unauthorized/i);
+  assert.match(runbook, /assert_conversation_ai_reply_authority/);
+  assert.match(runbook, /npm run db:rollback/);
+  assert.match(runbook, /pg_restore --exit-on-error/);
+});

@@ -48,6 +48,8 @@ const performanceAssertions = join(root, 'packages', 'database', 'tests', 'posti
 const ghlAssertions = join(root, 'packages', 'database', 'tests', 'ghl_contact_sync.sql');
 const ghlInboundAssertions = join(root, 'packages', 'database', 'tests', 'ghl_inbound_event_inbox.sql');
 const knowledgeAssertions = join(root, 'packages', 'database', 'tests', 'sales_knowledge_intelligence.sql');
+const ownershipAssertions = join(root, 'packages', 'database', 'tests', 'supervised_conversation_ownership.sql');
+const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
 database('migrate');
@@ -62,6 +64,16 @@ psql('-f', performanceAssertions);
 psql('-f', ghlAssertions);
 psql('-f', ghlInboundAssertions);
 psql('-f', knowledgeAssertions);
+psql('-f', ownershipAssertions);
+{
+  const result = spawnSync(process.execPath, [ownershipConcurrency], {
+    env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
+  });
+  if (result.error) throw result.error;
+  if (result.status !== 0) process.exit(result.status ?? 1);
+}
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.conversations') IS NOT NULL OR to_regprocedure('tanaghom.transition_supervised_conversation(uuid,text,uuid,uuid,text,bigint,uuid)') IS NOT NULL THEN RAISE EXCEPTION '0014 rollback left supervised conversation objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.sales_knowledge_versions') IS NOT NULL OR to_regprocedure('tanaghom.prepare_conversation_intelligence(uuid)') IS NOT NULL THEN RAISE EXCEPTION '0013 rollback left conversation intelligence objects behind'; END IF; END $$;");
 database('rollback');

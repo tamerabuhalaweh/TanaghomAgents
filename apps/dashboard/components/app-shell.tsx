@@ -11,6 +11,7 @@ import {
   CircleHelp,
   ContactRound,
   LayoutDashboard,
+  MessagesSquare,
   Menu,
   Settings,
   LibraryBig,
@@ -24,6 +25,7 @@ import { SessionProfile } from "./session-profile";
 
 const primaryNavigation = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/inbox", label: "Supervisor inbox", icon: MessagesSquare },
   { href: "/campaigns", label: "Campaigns", icon: BriefcaseBusiness },
   { href: "/approvals", label: "Approvals", icon: CheckCheck },
   { href: "/content", label: "Content", icon: LibraryBig },
