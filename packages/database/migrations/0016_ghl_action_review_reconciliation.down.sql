@@ -1,0 +1,11 @@
+BEGIN;
+REVOKE EXECUTE ON FUNCTION tanaghom.reconcile_ghl_action(uuid,uuid,text,text,text,uuid) FROM tanaghom_api;
+DROP FUNCTION tanaghom.reconcile_ghl_action(uuid,uuid,text,text,text,uuid);
+DROP TRIGGER ghl_action_reconciliation_no_delete ON tanaghom.ghl_action_reconciliations;
+DROP TRIGGER ghl_action_reconciliation_no_update ON tanaghom.ghl_action_reconciliations;
+DROP FUNCTION tanaghom.prevent_ghl_action_reconciliation_mutation();
+DROP TABLE tanaghom.ghl_action_reconciliations;
+DROP TRIGGER agent_actions_log_ghl_service_actor ON tanaghom.agent_actions_log;
+DROP FUNCTION tanaghom.attach_ghl_service_actor_to_audit();
+DELETE FROM public.schema_migrations WHERE version='0016_ghl_action_review_reconciliation';
+COMMIT;

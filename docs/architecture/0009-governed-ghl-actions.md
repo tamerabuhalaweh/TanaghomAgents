@@ -39,6 +39,18 @@ immutable human approval; shadow work records a zero-external-action outcome.
 Idempotency keys and request fingerprints make retries replay-safe. A timeout,
 connection loss, HTTP 408, or provider 5xx after dispatch is indeterminate and
 blocks further organization action claims until a human reconciles it. Tanaghom
-does not blindly retry an operation whose external result is unknown. Outcome
-rows are append-only so approvals, dispatch, failure, delivery, and future
-reconciliation remain auditable.
+does not blindly retry an operation whose external result is unknown.
+
+Owners and reviewers use the tenant-bound Agent Actions dashboard to inspect
+the payload, policy snapshot, ownership epoch, request fingerprint, operation
+evidence, and provider timestamps before approving or rejecting pending work.
+An indeterminate operation is never presented as retryable. A reviewer must
+instead confirm either that the provider succeeded or that the provider did
+not apply the operation, with a required reason and an optional provider
+reference. The database changes the job and its matching external operation in
+one transaction and records an immutable, command-idempotent reconciliation.
+
+Outcome and reconciliation rows are append-only so approvals, dispatch,
+failure, delivery, and human resolution remain auditable. Service-agent queue
+events are attributed to the organization service account at insert time; an
+unattributed audit event continues to fail the database constraint.
