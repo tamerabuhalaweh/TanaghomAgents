@@ -1,0 +1,125 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/n8n-dependency-loss-evidence.v1.schema.json",
+  "title": "Tanaghom n8n sudden dependency loss evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "generated_at", "boundaries", "runtime", "redis_loss", "postgres_loss", "monitoring", "outcomes"],
+  "properties": {
+    "contract_version": { "const": "phase5.n8n-dependency-loss-evidence.v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposable_compose", "synthetic_executions", "customer_credentials_used", "provider_calls", "gemma_calls", "external_actions", "production_touched", "gpu_server_contacted", "smartlabs_touched"],
+      "properties": {
+        "disposable_compose": { "const": true },
+        "synthetic_executions": { "const": true },
+        "customer_credentials_used": { "const": false },
+        "provider_calls": { "const": 0 },
+        "gemma_calls": { "const": 0 },
+        "external_actions": { "const": 0 },
+        "production_touched": { "const": false },
+        "gpu_server_contacted": { "const": false },
+        "smartlabs_touched": { "const": false }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n8n_version", "postgres_version", "redis_version", "queue_mode", "network_internal", "images_immutable", "host_ports_published", "worker_stopped_during_acceptance_and_loss"],
+      "properties": {
+        "n8n_version": { "const": "2.26.8" },
+        "postgres_version": { "const": "16.14" },
+        "redis_version": { "const": "7.2.14" },
+        "queue_mode": { "const": true },
+        "network_internal": { "const": true },
+        "images_immutable": { "const": true },
+        "host_ports_published": { "const": false },
+        "worker_stopped_during_acceptance_and_loss": { "const": true }
+      }
+    },
+    "redis_loss": { "$ref": "#/$defs/lossResultRedis" },
+    "postgres_loss": { "$ref": "#/$defs/lossResultPostgres" },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["observer_independent", "independent_observer_required", "redis_alert_delivered", "postgres_alert_delivered", "alert_count", "final_state", "production_destination_configured"],
+      "properties": {
+        "observer_independent": { "const": true },
+        "independent_observer_required": { "const": true },
+        "redis_alert_delivered": { "const": true },
+        "postgres_alert_delivered": { "const": true },
+        "alert_count": { "const": 2 },
+        "final_state": { "const": "healthy" },
+        "production_destination_configured": { "const": false }
+      }
+    },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted_executions", "successful_executions", "unexpected_failed_executions", "unfinished_executions", "logical_correlations", "logical_correlations_succeeded_once", "logical_correlations_lost", "duplicate_external_actions"],
+      "properties": {
+        "accepted_executions": { "type": "integer", "minimum": 10 },
+        "successful_executions": { "type": "integer", "minimum": 10 },
+        "unexpected_failed_executions": { "const": 0 },
+        "unfinished_executions": { "const": 0 },
+        "logical_correlations": { "type": "integer", "minimum": 10 },
+        "logical_correlations_succeeded_once": { "type": "integer", "minimum": 10 },
+        "logical_correlations_lost": { "const": 0 },
+        "duplicate_external_actions": { "const": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "commonLossProperties": {
+      "type": "object",
+      "additionalProperties": false
+    },
+    "lossResultRedis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted_before_loss", "signal", "container_exit_code", "appendonly", "appendfsync", "noeviction", "keys_before_loss", "keys_after_restart", "aof_replay_completed", "degraded_code", "native_main_readiness_detected_loss", "recovered_healthy", "succeeded_exactly_once", "failed", "lost", "duplicate_correlations", "elapsed_ms"],
+      "properties": {
+        "accepted_before_loss": { "type": "integer", "minimum": 5 },
+        "signal": { "const": "SIGKILL" },
+        "container_exit_code": { "const": 137 },
+        "appendonly": { "const": true },
+        "appendfsync": { "const": "always" },
+        "noeviction": { "const": true },
+        "keys_before_loss": { "type": "integer", "minimum": 1 },
+        "keys_after_restart": { "type": "integer", "minimum": 1 },
+        "aof_replay_completed": { "const": true },
+        "degraded_code": { "const": "redis_unavailable" },
+        "native_main_readiness_detected_loss": { "type": "boolean" },
+        "recovered_healthy": { "const": true },
+        "succeeded_exactly_once": { "type": "integer", "minimum": 5 },
+        "failed": { "const": 0 },
+        "lost": { "const": 0 },
+        "duplicate_correlations": { "const": 0 },
+        "elapsed_ms": { "type": "number", "minimum": 0 }
+      }
+    },
+    "lossResultPostgres": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted_before_loss", "signal", "container_exit_code", "accepted_digest_preserved", "crash_recovery_observed", "redis_keys_preserved", "degraded_code", "native_main_readiness_detected_loss", "recovered_healthy", "succeeded_exactly_once", "failed", "lost", "duplicate_correlations", "elapsed_ms"],
+      "properties": {
+        "accepted_before_loss": { "type": "integer", "minimum": 5 },
+        "signal": { "const": "SIGKILL" },
+        "container_exit_code": { "const": 137 },
+        "accepted_digest_preserved": { "const": true },
+        "crash_recovery_observed": { "const": true },
+        "redis_keys_preserved": { "const": true },
+        "degraded_code": { "const": "postgres_unavailable" },
+        "native_main_readiness_detected_loss": { "type": "boolean" },
+        "recovered_healthy": { "const": true },
+        "succeeded_exactly_once": { "type": "integer", "minimum": 5 },
+        "failed": { "const": 0 },
+        "lost": { "const": 0 },
+        "duplicate_correlations": { "const": 0 },
+        "elapsed_ms": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}

@@ -1,0 +1,35 @@
+services:
+  dependency-observer:
+    image: docker.n8n.io/n8nio/n8n:2.26.8@sha256:0afb71a39e51637b4d5b4010d90e68bc502d3ca1d2a4d953eb5fcd7d86330ccd
+    entrypoint: ["node"]
+    command: ["/dependency-scripts/dependency-observer.mjs"]
+    environment:
+      TANAGHOM_DEPENDENCY_OBSERVER_PORT: "14334"
+      TANAGHOM_DEPENDENCY_ALERT_FILE: /tmp/tanaghom-dependency-alerts.ndjson
+      TANAGHOM_N8N_MAIN_URL: http://n8n:5678
+      TANAGHOM_POSTGRES_HOST: postgres
+      TANAGHOM_POSTGRES_PORT: "5432"
+      TANAGHOM_REDIS_HOST: redis
+      TANAGHOM_REDIS_PORT: "6379"
+      TANAGHOM_REDIS_PASSWORD_FILE: /run/secrets/redis_password
+    secrets:
+      - redis_password
+    volumes:
+      - ../phase5f-dependency-loss/scripts:/dependency-scripts:ro
+    networks:
+      - runtime
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    cap_drop:
+      - ALL
+    pids_limit: 100
+    tmpfs:
+      - /tmp:size=32m,mode=1777
+    healthcheck:
+      test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:14334/healthz').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 2s
+      timeout: 3s
+      retries: 30
+    cpus: 0.25
+    mem_limit: 256m

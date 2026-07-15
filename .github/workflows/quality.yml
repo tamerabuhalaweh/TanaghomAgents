@@ -387,6 +387,29 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  phase5-dependency-loss-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      N8N_DEPENDENCY_LOSS_EVIDENCE_PATH: tmp/n8n-dependency-loss-evidence.json
+      N8N_DEPENDENCY_REDIS_EXECUTIONS: 20
+      N8N_DEPENDENCY_POSTGRES_EXECUTIONS: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:phase5-dependency-loss
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase5-n8n-dependency-loss-evidence
+          path: tmp/n8n-dependency-loss-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
+
   dashboard-image-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 15

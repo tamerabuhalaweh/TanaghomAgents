@@ -130,6 +130,13 @@ and encrypted pre-prune restoration. The proposed seven-day/10,000-execution
 policy remains unapplied; representative production payload measurement and a
 separately approved server transaction are still required.
 
+Sudden dependency-loss evidence now accepts two durable synthetic batches with
+the n8n worker stopped, kills Redis and PostgreSQL independently with
+`SIGKILL`, and proves all 40 logical correlations recover exactly once after
+AOF/WAL recovery. An independent dependency observer is required because n8n
+main readiness did not report the tested Redis outage. The gate is disposable
+and makes zero provider, GPU-server, production, or SmartLabs contact.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

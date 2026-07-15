@@ -58,3 +58,9 @@ execution/PostgreSQL and Redis queue/AOF growth, n8n's built-in count pruning,
 ordinary vacuum, safe AOF compaction, storage projections, and encrypted
 pre-prune restoration into a unique disposable database. It explicitly makes
 no physical PostgreSQL shrink, production SLA, GPU-server, or SmartLabs claim.
+
+`phase5.n8n-dependency-loss-evidence.v1` records independently observed abrupt
+Redis and PostgreSQL loss, exit 137, AOF/WAL recovery, accepted-state
+preservation, native n8n readiness behavior, and exactly-once synthetic logical
+correlations. It requires zero provider/model/external actions and explicitly
+prohibits production, GPU-server, or SmartLabs contact.
