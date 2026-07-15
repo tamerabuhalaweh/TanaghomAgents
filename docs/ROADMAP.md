@@ -124,6 +124,12 @@ local degraded/recovered alert delivery.
 The installed canary, production notification destination, real provider
 headers, sudden Redis host loss, and SmartLabs/GPU remain separately gated.
 
+Disposable retention evidence now measures n8n execution/PostgreSQL and Redis
+queue/AOF growth, built-in count pruning, ordinary vacuum, safe AOF compaction,
+and encrypted pre-prune restoration. The proposed seven-day/10,000-execution
+policy remains unapplied; representative production payload measurement and a
+separately approved server transaction are still required.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

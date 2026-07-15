@@ -1,0 +1,157 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/n8n-retention-pruning-evidence.v1.schema.json",
+  "title": "Tanaghom n8n retention and pruning evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "generated_at", "boundaries", "runtime", "workload", "postgres", "redis", "backup_restore", "proposed_policy", "projections"],
+  "properties": {
+    "contract_version": { "const": "phase5.n8n-retention-pruning-evidence.v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposable_compose", "synthetic_executions", "customer_credentials_used", "provider_calls", "gemma_calls", "production_touched", "gpu_server_contacted", "smartlabs_touched"],
+      "properties": {
+        "disposable_compose": { "const": true },
+        "synthetic_executions": { "const": true },
+        "customer_credentials_used": { "const": false },
+        "provider_calls": { "const": 0 },
+        "gemma_calls": { "const": 0 },
+        "production_touched": { "const": false },
+        "gpu_server_contacted": { "const": false },
+        "smartlabs_touched": { "const": false }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n8n_version", "postgres_version", "redis_version", "queue_mode", "network_internal", "images_immutable", "host_ports_published"],
+      "properties": {
+        "n8n_version": { "const": "2.26.8" },
+        "postgres_version": { "const": "16.14" },
+        "redis_version": { "const": "7.2.14" },
+        "queue_mode": { "const": true },
+        "network_internal": { "const": true },
+        "images_immutable": { "const": true },
+        "host_ports_published": { "const": false }
+      }
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["completed_before_backup", "queued_for_redis_measurement", "total_executions", "payload_bytes_per_execution", "external_actions"],
+      "properties": {
+        "completed_before_backup": { "type": "integer", "minimum": 21 },
+        "queued_for_redis_measurement": { "type": "integer", "minimum": 10 },
+        "total_executions": { "type": "integer", "minimum": 31 },
+        "payload_bytes_per_execution": { "type": "integer", "minimum": 1024 },
+        "external_actions": { "const": 0 }
+      }
+    },
+    "postgres": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["baseline_database_bytes", "before_prune_database_bytes", "before_prune_execution_relations_bytes", "measured_logical_execution_bytes", "measured_logical_bytes_per_execution", "retained_maximum", "retained_after_prune", "rows_removed", "ordinary_vacuum_completed", "physical_file_shrink_claimed", "post_vacuum_database_bytes"],
+      "properties": {
+        "baseline_database_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "before_prune_database_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "before_prune_execution_relations_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "measured_logical_execution_bytes": { "type": "integer", "minimum": 1 },
+        "measured_logical_bytes_per_execution": { "type": "number", "exclusiveMinimum": 0 },
+        "retained_maximum": { "type": "integer", "minimum": 1 },
+        "retained_after_prune": { "type": "integer", "minimum": 1 },
+        "rows_removed": { "type": "integer", "minimum": 1 },
+        "ordinary_vacuum_completed": { "const": true },
+        "physical_file_shrink_claimed": { "const": false },
+        "post_vacuum_database_bytes": { "$ref": "#/$defs/nonNegativeInteger" }
+      }
+    },
+    "redis": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["aof_enabled", "noeviction", "baseline_keys", "queued_keys", "keys_after_drain_before_rewrite", "keys_after_rewrite", "baseline_aof_bytes", "queued_aof_bytes", "before_rewrite_aof_bytes", "after_rewrite_aof_bytes", "measured_aof_bytes_per_queued_execution", "measured_memory_bytes_per_queued_execution", "bgrewriteaof_completed", "queue_keys_preserved", "manual_queue_key_deletion_performed"],
+      "properties": {
+        "aof_enabled": { "const": true },
+        "noeviction": { "const": true },
+        "baseline_keys": { "$ref": "#/$defs/nonNegativeInteger" },
+        "queued_keys": { "$ref": "#/$defs/nonNegativeInteger" },
+        "keys_after_drain_before_rewrite": { "$ref": "#/$defs/nonNegativeInteger" },
+        "keys_after_rewrite": { "$ref": "#/$defs/nonNegativeInteger" },
+        "baseline_aof_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "queued_aof_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "before_rewrite_aof_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "after_rewrite_aof_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "measured_aof_bytes_per_queued_execution": { "type": "number", "minimum": 0 },
+        "measured_memory_bytes_per_queued_execution": { "type": "number", "minimum": 0 },
+        "bgrewriteaof_completed": { "const": true },
+        "queue_keys_preserved": { "const": true },
+        "manual_queue_key_deletion_performed": { "const": false }
+      }
+    },
+    "backup_restore": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pre_prune_execution_count", "backup_format", "encrypted_backup_sha256", "restored_to_unique_disposable_database", "restored_execution_count", "restored_execution_digest_matches", "restore_database_removed", "in_place_undelete_claimed"],
+      "properties": {
+        "pre_prune_execution_count": { "type": "integer", "minimum": 1 },
+        "backup_format": { "const": "pg_dump_custom_aes_256_gcm" },
+        "encrypted_backup_sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "restored_to_unique_disposable_database": { "const": true },
+        "restored_execution_count": { "type": "integer", "minimum": 1 },
+        "restored_execution_digest_matches": { "const": true },
+        "restore_database_removed": { "const": true },
+        "in_place_undelete_claimed": { "const": false }
+      }
+    },
+    "proposed_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["save_on_error", "save_on_success", "save_on_progress", "save_manual_executions", "prune_enabled", "maximum_age_hours", "maximum_count", "hard_delete_buffer_hours", "production_applied"],
+      "properties": {
+        "save_on_error": { "const": "all" },
+        "save_on_success": { "const": "all" },
+        "save_on_progress": { "const": false },
+        "save_manual_executions": { "const": true },
+        "prune_enabled": { "const": true },
+        "maximum_age_hours": { "const": 168 },
+        "maximum_count": { "const": 10000 },
+        "hard_delete_buffer_hours": { "const": 1 },
+        "production_applied": { "const": false }
+      }
+    },
+    "projections": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["fixed_75000_lead_sla_claimed", "based_on_synthetic_payload_shape", "profiles"],
+      "properties": {
+        "fixed_75000_lead_sla_claimed": { "const": false },
+        "based_on_synthetic_payload_shape": { "const": true },
+        "profiles": {
+          "type": "array",
+          "minItems": 3,
+          "maxItems": 3,
+          "items": { "$ref": "#/$defs/projectionProfile" }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "nonNegativeInteger": { "type": "integer", "minimum": 0 },
+    "projectionProfile": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["name", "executions_per_day", "retention_days", "retained_execution_cap", "projected_n8n_logical_bytes", "projected_redis_aof_bytes_at_full_backlog", "projected_redis_memory_bytes_at_full_backlog", "production_sla_claim"],
+      "properties": {
+        "name": { "enum": ["normal_1000_per_day", "representative_peak_10000_per_day", "illustrative_75000_single_burst"] },
+        "executions_per_day": { "type": "integer", "minimum": 1 },
+        "retention_days": { "type": "integer", "minimum": 1 },
+        "retained_execution_cap": { "type": "integer", "minimum": 1, "maximum": 10000 },
+        "projected_n8n_logical_bytes": { "$ref": "#/$defs/nonNegativeInteger" },
+        "projected_redis_aof_bytes_at_full_backlog": { "$ref": "#/$defs/nonNegativeInteger" },
+        "projected_redis_memory_bytes_at_full_backlog": { "$ref": "#/$defs/nonNegativeInteger" },
+        "production_sla_claim": { "const": false }
+      }
+    }
+  }
+}

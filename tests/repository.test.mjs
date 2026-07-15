@@ -571,6 +571,58 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   assert.match(runbook, /Never run this package's\s+`docker compose down --volumes` command against `smartlabs-n8n`/);
 });
 
+test('Phase 5F retention is measured, built-in, restorable, and SmartLabs-isolated', async () => {
+  const root = new URL('../deployment/phase5f-retention/', import.meta.url);
+  const compose = await readFile(new URL('docker-compose.yml', root), 'utf8');
+  const policy = await readFile(new URL('retention-policy.env', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const integration = await readFile(new URL('../scripts/n8n-retention-pruning-integration.mjs', import.meta.url), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+  const schema = JSON.parse(await readFile(new URL('../packages/contracts/schemas/phase5/n8n-retention-pruning-evidence.v1.schema.json', import.meta.url), 'utf8'));
+
+  assert.match(compose, /EXECUTIONS_DATA_PRUNE:/);
+  assert.match(compose, /EXECUTIONS_DATA_PRUNE_MAX_COUNT:/);
+  assert.match(compose, /EXECUTIONS_DATA_HARD_DELETE_BUFFER: "0"/);
+  assert.match(compose, /EXECUTIONS_DATA_PRUNE_HARD_DELETE_INTERVAL: "1"/);
+  assert.match(compose, /EXECUTIONS_DATA_PRUNE_SOFT_DELETE_INTERVAL: "1"/);
+  assert.doesNotMatch(compose, /ports:/);
+  assert.match(policy, /EXECUTIONS_DATA_MAX_AGE=168/);
+  assert.match(policy, /EXECUTIONS_DATA_PRUNE_MAX_COUNT=10000/);
+  assert.match(policy, /EXECUTIONS_DATA_SAVE_ON_PROGRESS=false/);
+
+  assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+  assert.equal(schema.additionalProperties, false);
+  assert.equal(schema.properties.boundaries.properties.gpu_server_contacted.const, false);
+  assert.equal(schema.properties.boundaries.properties.smartlabs_touched.const, false);
+  assert.equal(schema.properties.postgres.properties.physical_file_shrink_claimed.const, false);
+  assert.equal(schema.properties.redis.properties.manual_queue_key_deletion_performed.const, false);
+  assert.equal(schema.properties.backup_restore.properties.in_place_undelete_claimed.const, false);
+  assert.equal(schema.properties.proposed_policy.properties.production_applied.const, false);
+  assert.equal(schema.properties.projections.properties.fixed_75000_lead_sla_claimed.const, false);
+
+  assert.match(integration, /phase5\.n8n-retention-pruning-evidence\.v1/);
+  assert.match(integration, /createCipheriv\("aes-256-gcm"/);
+  assert.match(integration, /pg_dump/);
+  assert.match(integration, /pg_restore/);
+  assert.match(integration, /BGREWRITEAOF/);
+  assert.match(integration, /VACUUM \(ANALYZE\) execution_entity/);
+  assert.doesNotMatch(integration, /VACUUM FULL/);
+  assert.doesNotMatch(integration, /FLUSHDB|FLUSHALL/);
+  assert.doesNotMatch(integration, /redis-cli\s+DEL/);
+  assert.match(integration, /gpu_server_contacted: false/);
+  assert.match(integration, /smartlabs_touched: false/);
+  assert.match(integration, /physical_file_shrink_claimed: false/);
+  assert.match(integration, /in_place_undelete_claimed: false/);
+
+  assert.match(runbook, /does \*\*not\*\*\s+authorize a GPU-server connection/);
+  assert.match(runbook, /inspection or modification of a SmartLabs file/);
+  assert.match(runbook, /cannot be undeleted in place/);
+  assert.match(runbook, /ordinary `VACUUM`/);
+  assert.match(runbook, /separately approved by Tamer/);
+  assert.match(quality, /name: phase5-n8n-retention-pruning-evidence/);
+  assert.match(quality, /N8N_RETENTION_PAYLOAD_BYTES: 16384/);
+});
+
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {
   const root = new URL('../deployment/phase5d-production-update/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');

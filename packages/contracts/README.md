@@ -52,3 +52,9 @@ runtime, the terminal execution/new-ID logical replay boundary after an abrupt
 worker loss, graceful Redis-AOF queued-work recovery, readiness, metrics, and
 local alert delivery. It explicitly cannot claim a live provider, production
 destination, GPU, or SmartLabs test.
+
+`phase5.n8n-retention-pruning-evidence.v1` records measured synthetic n8n
+execution/PostgreSQL and Redis queue/AOF growth, n8n's built-in count pruning,
+ordinary vacuum, safe AOF compaction, storage projections, and encrypted
+pre-prune restoration into a unique disposable database. It explicitly makes
+no physical PostgreSQL shrink, production SLA, GPU-server, or SmartLabs claim.
