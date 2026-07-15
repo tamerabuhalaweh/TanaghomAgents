@@ -8,7 +8,7 @@ call, Gemma call, or any SmartLabs file, container, network, firewall, volume,
 service, model, or voice-path change.
 
 The Compose project uses uniquely scoped volumes, an internal Docker network,
-loopback-only test ports, generated disposable secrets, and the same immutable
+no published host ports, generated disposable secrets, and the same immutable
 n8n, PostgreSQL, and Redis image digests as the installed canary. Its workflow
 has no credential and no external-action node.
 
@@ -42,9 +42,10 @@ The harness:
 2. expands and pulls the pinned Compose stack;
 3. starts disposable PostgreSQL and Redis with AOF/no-eviction;
 4. imports and activates only the disposable webhook probe before starting n8n;
-5. verifies main/worker readiness and metrics;
+5. verifies main/worker readiness and metrics from inside the internal network;
 6. accepts six synthetic executions, waits for active worker work, kills the
-   worker with `SIGKILL`, delivers one critical alert to a local HTTP sink,
+   worker with `SIGKILL`, delivers one critical alert to a disposable HTTP sink
+   running beside n8n on container loopback,
    restarts the worker, and requires the same execution IDs to succeed;
 7. stops the worker, accepts eight more executions, records the Redis key count,
    gracefully restarts Redis, verifies AOF and preserved queue keys, restarts the

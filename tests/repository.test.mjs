@@ -512,6 +512,7 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   const compose = await readFile(new URL('docker-compose.yml', root), 'utf8');
   const workflow = JSON.parse(await readFile(new URL('fixtures/runtime-recovery-probe.v1.json', root), 'utf8'));
   const monitor = await readFile(new URL('scripts/runtime-monitor.mjs', root), 'utf8');
+  const alertSink = await readFile(new URL('scripts/alert-sink.mjs', root), 'utf8');
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const integration = await readFile(new URL('../scripts/n8n-runtime-recovery-integration.mjs', import.meta.url), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
@@ -527,8 +528,8 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   assert.match(compose, /--appendonly yes/);
   assert.match(compose, /--maxmemory-policy noeviction/);
   assert.match(compose, /internal: true/);
-  assert.match(compose, /127\.0\.0\.1:15678:5678/);
-  assert.match(compose, /127\.0\.0\.1:15680:5680/);
+  assert.doesNotMatch(compose, /ports:/);
+  assert.match(compose, /\.\/scripts:\/runtime-scripts:ro/);
   assert.match(compose, /N8N_SSRF_PROTECTION_ENABLED: "true"/);
   assert.match(compose, /n8n-nodes-base\.executeCommand/);
   assert.match(compose, /n8n-nodes-base\.readWriteFile/);
@@ -558,6 +559,8 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   assert.match(integration, /disposable service logs/);
   assert.match(monitor, /phase5\.runtime-alert\.v1/);
   assert.match(monitor, /n8n_worker_unready/);
+  assert.match(alertSink, /TANAGHOM_ALERT_SINK_FILE/);
+  assert.match(alertSink, /appendFile/);
   assert.match(quality, /name: phase5-n8n-runtime-recovery-evidence/);
   assert.match(runbook, /does not authorize a GPU-server test/);
   assert.match(runbook, /Never run this package's\s+`docker compose down --volumes` command against `smartlabs-n8n`/);

@@ -1,18 +1,14 @@
 import assert from "node:assert/strict";
 import { randomBytes } from "node:crypto";
 import { spawn } from "node:child_process";
-import { once } from "node:events";
 import { mkdir, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { createServer } from "node:http";
 import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import Ajv2020 from "ajv/dist/2020.js";
 import addFormats from "ajv-formats";
-import pg from "pg";
 
 const root = process.cwd();
 const composeFile = join(root, "deployment", "phase5f-runtime-recovery", "docker-compose.yml");
-const monitorScript = join(root, "deployment", "phase5f-runtime-recovery", "scripts", "runtime-monitor.mjs");
 const evidencePath = process.env.N8N_RUNTIME_RECOVERY_EVIDENCE_PATH || "tmp/n8n-runtime-recovery-evidence.json";
 const project = `tanaghom-p5f-runtime-${process.pid}`;
 const temporary = await mkdtemp(join(tmpdir(), "tanaghom-n8n-runtime-"));
@@ -21,17 +17,15 @@ const postgresPassword = randomBytes(24).toString("hex");
 const redisPassword = randomBytes(24).toString("hex");
 const encryptionKey = randomBytes(36).toString("hex");
 const workflowId = "phase5RuntimeRecoveryProbeV1";
-const mainUrl = "http://127.0.0.1:15678";
-const workerUrl = "http://127.0.0.1:15680";
+const mainUrl = "http://127.0.0.1:5678";
+const workerUrl = "http://127.0.0.1:5680";
 const alertPort = 14333;
 const alertUrl = `http://127.0.0.1:${alertPort}/alerts`;
+const alertFile = "/tmp/tanaghom-runtime-alerts.ndjson";
 const composeEnv = { ...process.env, TANAGHOM_RUNTIME_SECRET_DIR: secretDirectory };
 const workerExecutions = 6;
 const redisExecutions = 8;
-let pool;
 let composeStarted = false;
-let alertServer;
-const deliveredAlerts = [];
 
 function run(command, args, options = {}) {
   const allowed = options.allowedExitCodes || [0];
@@ -53,8 +47,15 @@ function run(command, args, options = {}) {
   });
 }
 
+function composeAllowed(allowedExitCodes, ...args) {
+  return run("docker", ["compose", "-p", project, "-f", composeFile, ...args], {
+    env: composeEnv,
+    allowedExitCodes,
+  });
+}
+
 function compose(...args) {
-  return run("docker", ["compose", "-p", project, "-f", composeFile, ...args], { env: composeEnv });
+  return composeAllowed([0], ...args);
 }
 
 async function waitFor(label, predicate, timeoutMs = 120_000, intervalMs = 500) {
@@ -72,25 +73,34 @@ async function waitFor(label, predicate, timeoutMs = 120_000, intervalMs = 500) 
   throw new Error(`${label} timed out${lastError ? `: ${lastError.message}` : ""}`);
 }
 
-async function ready(baseUrl) {
+async function httpOk(service, url) {
   try {
-    const response = await fetch(`${baseUrl}/healthz/readiness`, { signal: AbortSignal.timeout(2000) });
-    return response.ok;
+    const result = await compose("exec", "-T", service, "node", "-e",
+      `fetch('${url}',{signal:AbortSignal.timeout(2000)}).then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))`);
+    return result.code === 0;
   } catch {
     return false;
   }
 }
 
-async function waitReady(name, baseUrl) {
-  await waitFor(`${name} readiness`, () => ready(baseUrl), 120_000, 1000);
+function ready(service, baseUrl) {
+  return httpOk(service, `${baseUrl}/healthz/readiness`);
+}
+
+async function waitReady(name, service, baseUrl) {
+  await waitFor(`${name} readiness`, () => ready(service, baseUrl), 120_000, 1000);
 }
 
 async function executions() {
-  const result = await pool.query(
-    `SELECT id::text AS id,status FROM execution_entity
-      WHERE "workflowId"=$1 ORDER BY id::bigint`, [workflowId],
-  );
-  return result.rows;
+  const result = await compose("exec", "-T", "postgres", "psql", "-U", "n8n", "-d", "n8n",
+    "-At", "-F", "\t", "-c",
+    `SELECT id::text,status FROM execution_entity WHERE "workflowId"='${workflowId}' ORDER BY id::bigint`);
+  return result.stdout.trim()
+    ? result.stdout.trim().split(/\r?\n/).map((line) => {
+      const [id, status] = line.split("\t");
+      return { id, status };
+    })
+    : [];
 }
 
 async function waitExecutionCount(count) {
@@ -109,14 +119,11 @@ async function waitAllSucceeded(count) {
 
 async function sendBatch(prefix, count, delayMs) {
   const responses = await Promise.all(Array.from({ length: count }, async (_, index) => {
-    const response = await fetch(`${mainUrl}/webhook/tanaghom-runtime-recovery`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ correlation_id: `${prefix}-${index}`, delay_ms: delayMs }),
-      signal: AbortSignal.timeout(10_000),
-    });
-    assert.equal(response.ok, true, `webhook ${prefix}-${index} returned ${response.status}`);
-    return response.status;
+    const body = JSON.stringify({ correlation_id: `${prefix}-${index}`, delay_ms: delayMs });
+    const result = await compose("exec", "-T", "n8n", "node", "-e",
+      `fetch('${mainUrl}/webhook/tanaghom-runtime-recovery',{method:'POST',headers:{'content-type':'application/json'},body:${JSON.stringify(body)},signal:AbortSignal.timeout(10000)}).then(r=>{if(!r.ok)throw new Error(String(r.status));process.stdout.write(String(r.status))})`);
+    assert.equal(result.stdout.trim(), "200", `webhook ${prefix}-${index} was not accepted`);
+    return Number(result.stdout.trim());
   }));
   assert.equal(responses.length, count);
 }
@@ -130,15 +137,11 @@ async function redisNumber(command) {
 }
 
 async function monitor(alert = false) {
-  const result = await run(process.execPath, [monitorScript], {
-    allowedExitCodes: alert ? [2] : [0],
-    env: {
-      ...process.env,
-      TANAGHOM_N8N_MAIN_URL: mainUrl,
-      TANAGHOM_N8N_WORKER_URL: workerUrl,
-      ...(alert ? { TANAGHOM_RUNTIME_ALERT_URL: alertUrl } : {}),
-    },
-  });
+  const result = await composeAllowed(alert ? [2] : [0], "exec", "-T", "n8n", "env",
+    `TANAGHOM_N8N_MAIN_URL=${mainUrl}`,
+    "TANAGHOM_N8N_WORKER_URL=http://n8n-worker:5680",
+    ...(alert ? [`TANAGHOM_RUNTIME_ALERT_URL=${alertUrl}`] : []),
+    "node", "/runtime-scripts/runtime-monitor.mjs");
   return JSON.parse(result.stdout.trim().split(/\r?\n/).at(-1));
 }
 
@@ -151,18 +154,6 @@ try {
     writeFile(join(secretDirectory, "redis_password"), redisPassword, { mode: 0o644 }),
     writeFile(join(secretDirectory, "n8n_encryption_key"), encryptionKey, { mode: 0o644 }),
   ]);
-
-  alertServer = createServer(async (request, response) => {
-    if (request.method !== "POST" || request.url !== "/alerts") {
-      response.writeHead(404).end(); return;
-    }
-    const chunks = [];
-    for await (const chunk of request) chunks.push(chunk);
-    deliveredAlerts.push(JSON.parse(Buffer.concat(chunks).toString("utf8")));
-    response.writeHead(204).end();
-  });
-  alertServer.listen(alertPort, "127.0.0.1");
-  await once(alertServer, "listening");
 
   await compose("config", "--quiet");
   await compose("pull", "postgres", "redis", "n8n", "n8n-worker");
@@ -180,12 +171,21 @@ try {
   await compose("run", "--rm", "--no-deps", "n8n", "import:workflow", "--input=/fixtures/runtime-recovery-probe.v1.json");
   await compose("run", "--rm", "--no-deps", "n8n", "publish:workflow", `--id=${workflowId}`);
   await compose("up", "-d", "n8n", "n8n-worker");
-  await Promise.all([waitReady("n8n main", mainUrl), waitReady("n8n worker", workerUrl)]);
+  await Promise.all([
+    waitReady("n8n main", "n8n", mainUrl),
+    waitReady("n8n worker", "n8n-worker", workerUrl),
+  ]);
+  await compose("exec", "-d", "n8n", "env",
+    `TANAGHOM_ALERT_SINK_PORT=${alertPort}`,
+    `TANAGHOM_ALERT_SINK_FILE=${alertFile}`,
+    "node", "/runtime-scripts/alert-sink.mjs");
+  await waitFor("local alert sink", () => httpOk("n8n", `http://127.0.0.1:${alertPort}/healthz`), 30_000, 500);
 
-  pool = new pg.Pool({ connectionString: `postgresql://n8n:${postgresPassword}@127.0.0.1:15432/n8n`, max: 3 });
   assert.equal((await executions()).length, 0);
-  const mainMetrics = await (await fetch(`${mainUrl}/metrics`)).text();
-  const workerMetrics = await (await fetch(`${workerUrl}/metrics`)).text();
+  const mainMetrics = (await compose("exec", "-T", "n8n", "node", "-e",
+    `fetch('${mainUrl}/metrics').then(r=>r.text()).then(t=>process.stdout.write(t))`)).stdout;
+  const workerMetrics = (await compose("exec", "-T", "n8n-worker", "node", "-e",
+    `fetch('${workerUrl}/metrics').then(r=>r.text()).then(t=>process.stdout.write(t))`)).stdout;
   assert.match(mainMetrics, /# (HELP|TYPE)/);
   assert.match(workerMetrics, /# (HELP|TYPE)/);
 
@@ -198,14 +198,17 @@ try {
   const workerIds = beforeKill.map((entry) => entry.id).sort();
   const runningBeforeKill = beforeKill.filter((entry) => entry.status === "running").length;
   await compose("kill", "-s", "KILL", "n8n-worker");
-  await waitFor("worker becomes unready", async () => !(await ready(workerUrl)), 30_000, 250);
+  await waitFor("worker becomes unready", async () => !(await ready("n8n-worker", workerUrl)), 30_000, 250);
   const degradedObservation = await monitor(true);
   assert.equal(degradedObservation.state, "degraded");
   assert.equal(degradedObservation.alert_delivery.code, "n8n_worker_unready");
+  const alertOutput = await compose("exec", "-T", "n8n", "node", "-e",
+    `process.stdout.write(require('node:fs').readFileSync('${alertFile}','utf8'))`);
+  const deliveredAlerts = alertOutput.stdout.trim().split(/\r?\n/).map((line) => JSON.parse(line));
   assert.equal(deliveredAlerts.length, 1);
   assert.equal(deliveredAlerts[0].code, "n8n_worker_unready");
   await compose("up", "-d", "n8n-worker");
-  await waitReady("restarted n8n worker", workerUrl);
+  await waitReady("restarted n8n worker", "n8n-worker", workerUrl);
   const workerFinal = await waitAllSucceeded(workerExecutions);
   const workerElapsedMs = performance.now() - workerStartedAt;
   assert.deepEqual(workerFinal.map((entry) => entry.id).sort(), workerIds);
@@ -213,7 +216,7 @@ try {
   assert.equal(healthyObservation.state, "healthy");
 
   await compose("stop", "-t", "5", "n8n-worker");
-  await waitFor("worker stopped", async () => !(await ready(workerUrl)), 30_000, 250);
+  await waitFor("worker stopped", async () => !(await ready("n8n-worker", workerUrl)), 30_000, 250);
   const redisStartedAt = performance.now();
   await sendBatch("redis-restart", redisExecutions, 1000);
   const allQueued = await waitExecutionCount(workerExecutions + redisExecutions);
@@ -235,9 +238,9 @@ try {
   }, 60_000, 1000);
   const queueKeysAfterRestart = await redisNumber("DBSIZE");
   assert.ok(queueKeysAfterRestart > 0);
-  assert.equal(await ready(mainUrl), true);
+  assert.equal(await ready("n8n", mainUrl), true);
   await compose("up", "-d", "n8n-worker");
-  await waitReady("worker after Redis restart", workerUrl);
+  await waitReady("worker after Redis restart", "n8n-worker", workerUrl);
   const finalRows = await waitAllSucceeded(workerExecutions + redisExecutions);
   const redisElapsedMs = performance.now() - redisStartedAt;
 
@@ -328,8 +331,6 @@ try {
   }
   throw error;
 } finally {
-  await pool?.end().catch(() => undefined);
-  await new Promise((resolve) => alertServer?.close(resolve) ?? resolve());
   if (composeStarted) {
     await compose("down", "--volumes", "--remove-orphans", "--timeout", "5").catch(async (error) => {
       console.error(error.message);
