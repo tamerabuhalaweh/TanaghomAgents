@@ -507,6 +507,58 @@ test('Phase 5F capacity is measured, bounded, recoverable, and SmartLabs-isolate
   assert.match(architecture, /cannot establish production/);
 });
 
+test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert-observable', async () => {
+  const root = new URL('../deployment/phase5f-runtime-recovery/', import.meta.url);
+  const compose = await readFile(new URL('docker-compose.yml', root), 'utf8');
+  const workflow = JSON.parse(await readFile(new URL('fixtures/runtime-recovery-probe.v1.json', root), 'utf8'));
+  const monitor = await readFile(new URL('scripts/runtime-monitor.mjs', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const integration = await readFile(new URL('../scripts/n8n-runtime-recovery-integration.mjs', import.meta.url), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+  const schema = JSON.parse(await readFile(new URL('../packages/contracts/schemas/phase5/n8n-runtime-recovery-evidence.v1.schema.json', import.meta.url), 'utf8'));
+
+  assert.match(compose, /n8n:2\.26\.8@sha256:[0-9a-f]{64}/);
+  assert.match(compose, /postgres:16\.14-alpine3\.24@sha256:[0-9a-f]{64}/);
+  assert.match(compose, /redis:7\.2\.14-alpine3\.21@sha256:[0-9a-f]{64}/);
+  assert.match(compose, /EXECUTIONS_MODE: queue/);
+  assert.match(compose, /QUEUE_WORKER_STALLED_INTERVAL/);
+  assert.match(compose, /QUEUE_HEALTH_CHECK_ACTIVE/);
+  assert.match(compose, /N8N_METRICS: "true"/);
+  assert.match(compose, /--appendonly yes/);
+  assert.match(compose, /--maxmemory-policy noeviction/);
+  assert.match(compose, /internal: true/);
+  assert.match(compose, /127\.0\.0\.1:15678:5678/);
+  assert.match(compose, /127\.0\.0\.1:15680:5680/);
+  assert.match(compose, /N8N_SSRF_PROTECTION_ENABLED: "true"/);
+  assert.match(compose, /n8n-nodes-base\.executeCommand/);
+  assert.match(compose, /n8n-nodes-base\.readWriteFile/);
+  assert.match(compose, /n8n-nodes-base\.ssh/);
+
+  assert.equal(workflow.active, false);
+  assert.equal(workflow.id, 'phase5RuntimeRecoveryProbeV1');
+  assert.deepEqual(workflow.nodes.map((node) => node.type).sort(), ['n8n-nodes-base.code', 'n8n-nodes-base.webhook']);
+  assert.equal(workflow.nodes.some((node) => node.credentials), false);
+  assert.match(JSON.stringify(workflow), /external_action_count/);
+
+  assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+  assert.equal(schema.additionalProperties, false);
+  assert.equal(schema.properties.boundaries.properties.smartlabs_touched.const, false);
+  assert.equal(schema.properties.monitoring.properties.production_destination_configured.const, false);
+  assert.match(integration, /compose\("kill", "-s", "KILL", "n8n-worker"\)/);
+  assert.match(integration, /"publish:workflow"/);
+  assert.doesNotMatch(integration, /update:workflow/);
+  assert.match(integration, /compose\("stop", "-t", "5", "redis"\)/);
+  assert.match(integration, /queueKeysAfterRestart/);
+  assert.match(integration, /same_execution_ids_preserved: true/);
+  assert.match(integration, /provider_calls: 0/);
+  assert.match(integration, /smartlabs_touched: false/);
+  assert.match(monitor, /phase5\.runtime-alert\.v1/);
+  assert.match(monitor, /n8n_worker_unready/);
+  assert.match(quality, /name: phase5-n8n-runtime-recovery-evidence/);
+  assert.match(runbook, /does not authorize a GPU-server test/);
+  assert.match(runbook, /Never run this package's\s+`docker compose down --volumes` command against `smartlabs-n8n`/);
+});
+
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {
   const root = new URL('../deployment/phase5d-production-update/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');

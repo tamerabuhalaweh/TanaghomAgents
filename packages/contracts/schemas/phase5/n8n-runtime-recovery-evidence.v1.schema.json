@@ -1,0 +1,99 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/n8n-runtime-recovery-evidence.v1.schema.json",
+  "title": "Tanaghom n8n runtime recovery evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "generated_at", "boundaries", "runtime", "worker_restart", "redis_restart", "monitoring", "outcomes"],
+  "properties": {
+    "contract_version": { "const": "phase5.n8n-runtime-recovery-evidence.v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposable_compose", "synthetic_executions", "customer_credentials_used", "provider_calls", "gemma_calls", "production_touched", "smartlabs_touched"],
+      "properties": {
+        "disposable_compose": { "const": true },
+        "synthetic_executions": { "const": true },
+        "customer_credentials_used": { "const": false },
+        "provider_calls": { "const": 0 },
+        "gemma_calls": { "const": 0 },
+        "production_touched": { "const": false },
+        "smartlabs_touched": { "const": false }
+      }
+    },
+    "runtime": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["n8n_version", "postgres_version", "redis_version", "queue_mode", "worker_concurrency", "network_internal", "images_immutable"],
+      "properties": {
+        "n8n_version": { "const": "2.26.8" },
+        "postgres_version": { "const": "16.14" },
+        "redis_version": { "const": "7.2.14" },
+        "queue_mode": { "const": true },
+        "worker_concurrency": { "const": 2 },
+        "network_internal": { "const": true },
+        "images_immutable": { "const": true }
+      }
+    },
+    "worker_restart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted", "running_before_kill", "signal", "worker_became_unready", "same_execution_ids_preserved", "succeeded", "failed", "elapsed_ms"],
+      "properties": {
+        "accepted": { "type": "integer", "minimum": 2 },
+        "running_before_kill": { "type": "integer", "minimum": 1 },
+        "signal": { "const": "SIGKILL" },
+        "worker_became_unready": { "const": true },
+        "same_execution_ids_preserved": { "const": true },
+        "succeeded": { "type": "integer", "minimum": 2 },
+        "failed": { "const": 0 },
+        "elapsed_ms": { "type": "number", "minimum": 0 }
+      }
+    },
+    "redis_restart": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted_while_worker_stopped", "queued_before_restart", "aof_enabled", "queue_keys_before_restart", "queue_keys_after_restart", "main_remained_available", "succeeded", "failed", "elapsed_ms"],
+      "properties": {
+        "accepted_while_worker_stopped": { "type": "integer", "minimum": 2 },
+        "queued_before_restart": { "type": "integer", "minimum": 2 },
+        "aof_enabled": { "const": true },
+        "queue_keys_before_restart": { "type": "integer", "minimum": 1 },
+        "queue_keys_after_restart": { "type": "integer", "minimum": 1 },
+        "main_remained_available": { "const": true },
+        "succeeded": { "type": "integer", "minimum": 2 },
+        "failed": { "const": 0 },
+        "elapsed_ms": { "type": "number", "minimum": 0 }
+      }
+    },
+    "monitoring": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["main_readiness", "worker_readiness", "main_metrics", "worker_metrics", "degraded_alert_code", "degraded_alert_delivered", "healthy_after_recovery", "production_destination_configured"],
+      "properties": {
+        "main_readiness": { "const": true },
+        "worker_readiness": { "const": true },
+        "main_metrics": { "const": true },
+        "worker_metrics": { "const": true },
+        "degraded_alert_code": { "const": "n8n_worker_unready" },
+        "degraded_alert_delivered": { "const": true },
+        "healthy_after_recovery": { "const": true },
+        "production_destination_configured": { "const": false }
+      }
+    },
+    "outcomes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted", "succeeded", "failed", "crashed", "unfinished", "unique_execution_ids"],
+      "properties": {
+        "accepted": { "type": "integer", "minimum": 4 },
+        "succeeded": { "type": "integer", "minimum": 4 },
+        "failed": { "const": 0 },
+        "crashed": { "const": 0 },
+        "unfinished": { "const": 0 },
+        "unique_execution_ids": { "type": "integer", "minimum": 4 }
+      }
+    }
+  }
+}
