@@ -38,3 +38,9 @@ then reapplies to prove recovery.
   by command ID; it updates the job and matching provider operation together.
 - Service-agent GHL queue and completion audit rows retain their organization
   service actor; anonymous action audit records remain invalid.
+- Conversation and GHL action claims are organization-rate-limited and bounded
+  by transactionally enforced concurrency. Interactive work has deterministic
+  priority over background work without weakening durability or tenant checks.
+- Recognized Gemma/GHL pressure creates an expiring organization cooldown;
+  workers cannot bypass it through direct table access and claims recover
+  automatically after the reviewed delay.

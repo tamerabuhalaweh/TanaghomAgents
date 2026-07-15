@@ -36,3 +36,9 @@ actions. These contracts carry bounded action intent and provider-independent
 payloads; authorization remains database state, not a claim made by the
 payload. The private gateway maps allowlisted actions to provider requests only
 after replay, ownership, consent, emergency, and policy checks succeed.
+
+Phase 5F adds a secret-free capacity evidence contract. It records the exact
+synthetic workload, tested claim guard, acceptance/drain throughput, latency
+percentiles, outcomes, recovery behavior, tenant mismatches, and measured
+database growth. Evidence explicitly records zero customer credentials,
+provider/model calls, SmartLabs changes, and fixed 75,000-lead SLA claims.

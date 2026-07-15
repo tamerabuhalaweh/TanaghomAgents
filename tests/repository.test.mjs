@@ -406,7 +406,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0017_ghl_service_action_audit_attribution/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0018_conversation_capacity_backpressure/);
   assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
   assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
   assert.match(integration, /accept_ghl_inbound_event/);
@@ -446,6 +446,50 @@ test('Phase 5E action review records immutable human reconciliation without work
   assert.doesNotMatch(migration, /GRANT (SELECT|INSERT|UPDATE|DELETE).+tanaghom_(n8n|conversation)_worker/);
   assert.match(rollback, /DROP FUNCTION tanaghom\.reconcile_ghl_action/);
   assert.match(rollback, /DROP TABLE tanaghom\.ghl_action_reconciliations/);
+});
+
+test('Phase 5F capacity is measured, bounded, recoverable, and SmartLabs-isolated', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0018_conversation_capacity_backpressure.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0018_conversation_capacity_backpressure.down.sql', import.meta.url), 'utf8');
+  const integration = await readFile(new URL('../scripts/conversation-capacity-integration.mjs', import.meta.url), 'utf8');
+  const runbook = await readFile(new URL('../deployment/phase5f-capacity/RUNBOOK.md', import.meta.url), 'utf8');
+  const architecture = await readFile(new URL('../docs/architecture/0010-conversation-capacity-and-backpressure.md', import.meta.url), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+  const alerts = JSON.parse(await readFile(new URL('../deployment/phase5f-capacity/alerts/conversation-capacity-alerts.v1.json', import.meta.url), 'utf8'));
+  const evidenceSchema = JSON.parse(await readFile(new URL('../packages/contracts/schemas/phase5/conversation-capacity-evidence.v1.schema.json', import.meta.url), 'utf8'));
+
+  assert.match(migration, /CREATE TABLE tanaghom\.conversation_capacity_policies/);
+  assert.match(migration, /CREATE TABLE tanaghom\.conversation_dependency_cooldowns/);
+  assert.match(migration, /CREATE VIEW tanaghom\.conversation_capacity_status/);
+  assert.match(migration, /CREATE OR REPLACE FUNCTION tanaghom\.claim_ghl_inbound_event_job/);
+  assert.match(migration, /CREATE OR REPLACE FUNCTION tanaghom\.claim_ghl_action_job/);
+  assert.match(migration, /pg_advisory_xact_lock/);
+  assert.match(migration, /priority_score/);
+  assert.match(migration, /gemma_rate_limited/);
+  assert.match(migration, /p_http_status=429/);
+  assert.doesNotMatch(migration, /GRANT (SELECT|INSERT|UPDATE|DELETE).+tanaghom_(n8n|conversation)_worker/);
+  assert.match(rollback, /DROP TABLE tanaghom\.conversation_capacity_policies/);
+  assert.match(rollback, /input-['"]workload_class['"]/);
+  assert.match(rollback, /CREATE OR REPLACE FUNCTION tanaghom\.claim_ghl_inbound_event_job/);
+  assert.match(rollback, /CREATE OR REPLACE FUNCTION tanaghom\.claim_ghl_action_job/);
+
+  assert.equal(evidenceSchema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+  assert.equal(evidenceSchema.additionalProperties, false);
+  assert.equal(evidenceSchema.properties.boundaries.properties.smartlabs_touched.const, false);
+  assert.equal(alerts.contract_version, 'phase5.conversation-capacity-alerts.v1');
+  assert.equal(alerts.rules.length, 6);
+  assert.match(integration, /GHL_CAPACITY_LOAD_EVENTS/);
+  assert.match(integration, /phase5\.conversation-capacity-evidence\.v1/);
+  assert.match(integration, /provider_calls: 0/);
+  assert.match(integration, /smartlabs_touched: false/);
+  assert.match(integration, /fixed_75000_lead_sla_claimed: false/);
+  assert.match(quality, /GHL_CAPACITY_LOAD_EVENTS: 10000/);
+  assert.match(quality, /name: phase5-conversation-capacity-evidence/);
+  assert.match(runbook, /Production execution is unauthorized/);
+  assert.match(runbook, /SmartLabs file, container, firewall rule, volume, or voice path/);
+  assert.match(runbook, /npm run db:rollback/);
+  assert.match(architecture, /measured operating envelope/);
+  assert.match(architecture, /cannot establish production/);
 });
 
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {

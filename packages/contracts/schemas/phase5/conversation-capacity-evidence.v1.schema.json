@@ -1,0 +1,94 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/conversation-capacity-evidence.v1.schema.json",
+  "title": "Tanaghom conversation capacity evidence v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "generated_at", "boundaries", "workload", "acceptance", "drain", "resilience", "storage"],
+  "properties": {
+    "contract_version": { "const": "phase5.conversation-capacity-evidence.v1" },
+    "generated_at": { "type": "string", "format": "date-time" },
+    "boundaries": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["disposable_database", "synthetic_events", "customer_credentials_used", "provider_calls", "gemma_calls", "smartlabs_touched", "fixed_75000_lead_sla_claimed"],
+      "properties": {
+        "disposable_database": { "const": true },
+        "synthetic_events": { "const": true },
+        "customer_credentials_used": { "const": false },
+        "provider_calls": { "const": 0 },
+        "gemma_calls": { "const": 0 },
+        "smartlabs_touched": { "const": false },
+        "fixed_75000_lead_sla_claimed": { "const": false }
+      }
+    },
+    "workload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["accepted_events", "shape", "drain_workers", "tested_concurrency_guard"],
+      "properties": {
+        "accepted_events": { "type": "integer", "minimum": 100 },
+        "shape": { "type": "string", "minLength": 1 },
+        "drain_workers": { "type": "integer", "minimum": 1 },
+        "tested_concurrency_guard": { "type": "integer", "minimum": 1 }
+      }
+    },
+    "acceptance": { "$ref": "#/$defs/throughput" },
+    "drain": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["elapsed_ms", "throughput_events_per_second", "latency_ms", "succeeded", "dead_letters", "duplicates", "organization_mismatches"],
+      "properties": {
+        "elapsed_ms": { "type": "number", "minimum": 0 },
+        "throughput_events_per_second": { "type": "number", "minimum": 0 },
+        "latency_ms": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["p50", "p95", "p99"],
+          "properties": {
+            "p50": { "type": "number", "minimum": 0 },
+            "p95": { "type": "number", "minimum": 0 },
+            "p99": { "type": "number", "minimum": 0 }
+          }
+        },
+        "succeeded": { "type": "integer", "minimum": 0 },
+        "dead_letters": { "const": 0 },
+        "duplicates": { "const": 0 },
+        "organization_mismatches": { "const": 0 }
+      }
+    },
+    "resilience": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["concurrent_claim_limit_enforced", "dependency_cooldown_blocked_and_recovered", "stale_claim_recovered_with_same_job_id", "accepted_work_remaining"],
+      "properties": {
+        "concurrent_claim_limit_enforced": { "const": true },
+        "dependency_cooldown_blocked_and_recovered": { "const": true },
+        "stale_claim_recovered_with_same_job_id": { "const": true },
+        "accepted_work_remaining": { "const": 0 }
+      }
+    },
+    "storage": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["database_bytes_before", "database_bytes_after", "measured_growth_bytes", "measured_bytes_per_event"],
+      "properties": {
+        "database_bytes_before": { "type": "integer", "minimum": 0 },
+        "database_bytes_after": { "type": "integer", "minimum": 0 },
+        "measured_growth_bytes": { "type": "integer", "minimum": 0 },
+        "measured_bytes_per_event": { "type": "number", "minimum": 0 }
+      }
+    }
+  },
+  "$defs": {
+    "throughput": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["elapsed_ms", "throughput_events_per_second"],
+      "properties": {
+        "elapsed_ms": { "type": "number", "minimum": 0 },
+        "throughput_events_per_second": { "type": "number", "minimum": 0 }
+      }
+    }
+  }
+}
