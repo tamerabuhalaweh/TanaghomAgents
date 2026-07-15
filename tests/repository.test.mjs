@@ -673,6 +673,24 @@ test('Phase 5F abrupt dependency loss is durable, exact-once, observed, and Smar
   assert.match(quality, /N8N_DEPENDENCY_POSTGRES_EXECUTIONS: 20/);
 });
 
+test('Phase 5F monitoring destinations default locked and preserve least privilege', async () => {
+  const up = await readFile(new URL('../packages/database/migrations/0019_notification_monitoring_destinations.up.sql', import.meta.url), 'utf8');
+  const down = await readFile(new URL('../packages/database/migrations/0019_notification_monitoring_destinations.down.sql', import.meta.url), 'utf8');
+  const assertion = await readFile(new URL('../packages/database/tests/notification_monitoring_destinations.sql', import.meta.url), 'utf8');
+  const databaseTest = await readFile(new URL('../scripts/database-test.mjs', import.meta.url), 'utf8');
+  assert.match(up, /runtime_ready boolean NOT NULL DEFAULT false/);
+  assert.match(up, /emergency_stop boolean NOT NULL DEFAULT true/);
+  assert.match(up, /channel IN \('email','slack','whatsapp'\)/);
+  assert.match(up, /target_ciphertext bytea NOT NULL/);
+  assert.match(up, /REVOKE ALL ON tanaghom\.notification_delivery_controls,tanaghom\.notification_destinations/);
+  assert.match(up, /GRANT SELECT,INSERT,UPDATE,DELETE ON tanaghom\.notification_destinations\s+TO tanaghom_api/);
+  assert.doesNotMatch(up, /GRANT .*notification_destinations.*tanaghom_n8n_worker/);
+  assert.match(down, /delete customer notification destinations before rolling back 0019/);
+  assert.match(assertion, /notification delivery did not start locked/);
+  assert.match(assertion, /has_table_privilege\('tanaghom_api','tanaghom\.notification_delivery_controls','UPDATE'\)/);
+  assert.match(databaseTest, /notification_monitoring_destinations\.sql/);
+});
+
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {
   const root = new URL('../deployment/phase5d-production-update/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');

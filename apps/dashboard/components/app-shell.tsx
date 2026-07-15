@@ -77,7 +77,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <UsersRound size={18} />
             <span>Team & access</span>
           </Link>
-          <Link href="/system" className="nav-link">
+          <Link href="/system" className={`nav-link ${pathname.startsWith("/system") ? "nav-link-active" : ""}`} onClick={() => setMenuOpen(false)}>
             <Bell size={18} />
             <span>Alerts</span>
           </Link>
@@ -95,10 +95,10 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <header className="topbar">
           <span className="environment-badge">Staging</span>
           <div className="topbar-actions">
-            <button className="icon-button notification-button" type="button" aria-label="Open notifications">
+            <Link className="icon-button notification-button" href="/system" aria-label="Open system alerts">
               <Bell size={19} />
               <span aria-hidden="true" />
-            </button>
+            </Link>
             <button className="icon-button" type="button" aria-label="Open help">
               <CircleHelp size={19} />
             </button>

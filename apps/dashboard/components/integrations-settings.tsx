@@ -18,6 +18,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { PageHeading } from "./page-heading";
+import { SettingsNavigation } from "./settings-navigation";
 import { StatusPill } from "./status-pill";
 
 type Provider = "postiz" | "ghl";
@@ -166,6 +167,7 @@ export function IntegrationsSettings() {
       title="Integrations"
       description="Connect customer-owned services without sharing credentials with developers or exposing them to agent workflows."
     />
+    <SettingsNavigation />
     {state === "loading" ? <IntegrationsLoading /> : null}
     {state === "forbidden" ? <SettingsState icon={<ShieldCheck />} title="Admin access required" copy="Only a Tanaghom Admin can add, rotate, test, or disconnect customer integrations." /> : null}
     {state === "error" ? <SettingsState icon={<CircleAlert />} title="Integration settings unavailable" copy="Tanaghom could not load the protected settings record." action={<button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
