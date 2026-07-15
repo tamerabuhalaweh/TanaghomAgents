@@ -536,6 +536,13 @@ td a, td > strong { font-weight: 670; }
 .readiness-blocker { background: var(--warning-soft); color: oklch(0.4 0.09 75); }
 .readiness-ready { background: var(--success-soft); color: oklch(0.36 0.1 150); }
 .automation-history { margin-block-start: 0.8rem; color: var(--muted); font-size: 0.65rem; }
+.automation-emergency-control { display: grid; grid-template-columns: minmax(14rem, 1fr) minmax(16rem, 1.2fr) auto; align-items: end; gap: 0.9rem; padding: 1rem 1.25rem; border-block-start: 1px solid var(--border); background: color-mix(in oklch, var(--warning-soft) 35%, var(--bg)); }
+.automation-emergency-control strong, .automation-emergency-control small { display: block; }
+.automation-emergency-control strong { font-size: 0.76rem; }
+.automation-emergency-control small { margin-block-start: 0.15rem; color: var(--muted); font-size: 0.68rem; }
+.automation-emergency-control label { display: flex; flex-direction: column; gap: 0.3rem; color: var(--muted); font-size: 0.66rem; }
+.automation-emergency-control input { width: 100%; min-height: 2.45rem; padding-inline: 0.7rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink); }
+.automation-emergency-control input:focus { border-color: var(--primary); outline: 0; box-shadow: 0 0 0 3px var(--primary-soft); }
 .automation-control-footer { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 1rem 1.25rem; border-block-start: 1px solid var(--border); }
 .automation-control-footer > div { display: flex; align-items: center; gap: 0.65rem; }
 .automation-control-footer svg { flex: 0 0 auto; color: var(--primary); }
@@ -722,6 +729,8 @@ td a, td > strong { font-weight: 670; }
   .integration-actions > button { width: 100%; }
   .automation-control-header, .automation-control-footer { align-items: stretch; flex-direction: column; }
   .automation-control-footer button { width: 100%; }
+  .automation-emergency-control { grid-template-columns: 1fr; align-items: stretch; }
+  .automation-emergency-control button { width: 100%; }
   .knowledge-safety, .knowledge-composer > header, .knowledge-catalog-header, .knowledge-composer > footer { align-items: stretch; flex-direction: column; }
   .knowledge-overview > dl { grid-template-columns: repeat(2, 1fr); }
   .knowledge-overview > dl > div:nth-child(3) { border-block-start: 1px solid var(--border); border-inline-start: 0; }

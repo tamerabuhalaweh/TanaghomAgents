@@ -1,0 +1,315 @@
+{
+  "id": "phase5GovernedGhlActionsV1",
+  "name": "Tanaghom — Governed GHL Actions v1",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "ghl-action-manual",
+      "name": "Manual Controlled Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        180
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "ghl-action-schedule",
+      "name": "Polling Disabled Pending Approval",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        360
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tanaghom.claim_ghl_action_job();",
+        "options": {}
+      },
+      "id": "ghl-action-claim",
+      "name": "Claim GHL Action",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        240,
+        270
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tanaghom.prepare_ghl_action_dispatch($1::uuid);",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id] }}"
+        }
+      },
+      "id": "ghl-action-prepare",
+      "name": "Prepare GHL Action",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        480,
+        270
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TANAGHOM_INTEGRATION_GATEWAY_URL }}/api/internal/integrations/ghl/action",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Idempotency-Key",
+              "value": "={{ $json.idempotency_key }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ job_id: $json.job_id, operation_id: $json.operation_id, request_body: $json.request_body }) }}",
+        "options": {
+          "timeout": 60000,
+          "response": {
+            "response": {
+              "fullResponse": true,
+              "neverError": true
+            }
+          }
+        }
+      },
+      "id": "ghl-action-request",
+      "name": "Execute Governed GHL Action",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        720,
+        270
+      ],
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "62000000-0000-4000-8000-000000000004",
+          "name": "Tanaghom Integration Gateway"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "const prepared = $('Prepare GHL Action').first().json;\nconst response = $json;\nif (response?.error) return [{ json: { ...prepared, ok: false, error_code: 'ghl_network_error', error_message: String(response.error.message ?? response.error).slice(0, 1000), http_status: 0, retry_after_seconds: 300 } }];\nconst statusCode = Number(response.statusCode ?? response.status ?? 200);\nconst body = response.body ?? response;\nif (statusCode < 200 || statusCode >= 300) return [{ json: { ...prepared, ok: false, error_code: statusCode === 429 ? 'ghl_rate_limited' : 'ghl_http_error', error_message: String(body?.message ?? body?.error ?? statusCode).slice(0, 1000), http_status: statusCode, retry_after_seconds: statusCode === 429 ? 3600 : 300 } }];\nconst reference = body?.messageId ?? body?.appointment?.id ?? body?.opportunity?.id ?? body?.contact?.id ?? body?.reference ?? null;\nreturn [{ json: { ...prepared, ok: true, result: { contract_version: 'phase5.ghl-action-result.v1', outcome: 'succeeded', provider_reference: typeof reference === 'string' ? reference.slice(0, 300) : null, provider_payload: body && typeof body === 'object' && !Array.isArray(body) ? body : {} } } }];"
+      },
+      "id": "ghl-action-normalize",
+      "name": "Normalize GHL Action Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "ghl-action-ok",
+              "leftValue": "={{ $json.ok }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ghl-action-valid",
+      "name": "GHL Action Valid?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1200,
+        270
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT tanaghom.complete_ghl_action($1::uuid,$2::jsonb) AS provider_reference;",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id, JSON.stringify($json.result)] }}"
+        }
+      },
+      "id": "ghl-action-complete",
+      "name": "Record GHL Action",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        180
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT tanaghom.record_ghl_action_failure($1::uuid,$2::text,$3::text,$4::integer,$5::integer) AS next_status;",
+        "options": {
+          "queryReplacement": "={{ [$json.job_id, $json.error_code, $json.error_message, $json.http_status, $json.retry_after_seconds] }}"
+        }
+      },
+      "id": "ghl-action-failure",
+      "name": "Record GHL Action Failure",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        1440,
+        360
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "62000000-0000-4000-8000-000000000001",
+          "name": "Tanaghom Worker PostgreSQL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Controlled Trigger": {
+      "main": [
+        [
+          {
+            "node": "Claim GHL Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Polling Disabled Pending Approval": {
+      "main": [
+        [
+          {
+            "node": "Claim GHL Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim GHL Action": {
+      "main": [
+        [
+          {
+            "node": "Prepare GHL Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare GHL Action": {
+      "main": [
+        [
+          {
+            "node": "Execute Governed GHL Action",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Execute Governed GHL Action": {
+      "main": [
+        [
+          {
+            "node": "Normalize GHL Action Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Normalize GHL Action Response": {
+      "main": [
+        [
+          {
+            "node": "GHL Action Valid?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GHL Action Valid?": {
+      "main": [
+        [
+          {
+            "node": "Record GHL Action",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Record GHL Action Failure",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "executionTimeout": 120
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [],
+  "pinData": {},
+  "versionId": "61000000-0000-4000-8000-000000000015"
+}

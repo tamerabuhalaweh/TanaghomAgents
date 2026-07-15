@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-action-result.v1.schema.json",
+  "title": "Governed GHL action result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "outcome", "provider_reference", "provider_payload"],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-action-result.v1" },
+    "outcome": { "enum": ["succeeded", "shadowed"] },
+    "provider_reference": { "type": ["string", "null"], "maxLength": 300 },
+    "provider_payload": { "type": "object" }
+  }
+}

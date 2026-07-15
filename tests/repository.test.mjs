@@ -364,6 +364,48 @@ test('Phase 5D supervisor ownership is atomic, tenant-bound, and dispatch-safe',
   assert.match(runbook, /pg_restore --exit-on-error/);
 });
 
+test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privileged', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0015_governed_ghl_actions.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0015_governed_ghl_actions.down.sql', import.meta.url), 'utf8');
+  const workflow = JSON.parse(await readFile(new URL('../n8n/workflows/phase5/governed-ghl-actions.v1.json', import.meta.url), 'utf8'));
+  const gateway = await readFile(new URL('../apps/dashboard/app/api/internal/integrations/ghl/action/route.ts', import.meta.url), 'utf8');
+  const provider = await readFile(new URL('../apps/dashboard/lib/server/integration-providers.ts', import.meta.url), 'utf8');
+  const runbook = await readFile(new URL('../deployment/phase5e-governed-ghl-actions/RUNBOOK.md', import.meta.url), 'utf8');
+  for (const name of ['set_ghl_action_automation_mode', 'set_ghl_action_emergency_stop', 'queue_ghl_action', 'decide_ghl_action', 'claim_ghl_action_job', 'prepare_ghl_action_dispatch', 'complete_ghl_action', 'record_ghl_action_failure']) {
+    assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
+    assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
+  }
+  assert.match(migration, /action_mode text NOT NULL DEFAULT 'manual'/);
+  assert.match(migration, /action_emergency_stop boolean NOT NULL DEFAULT true/);
+  assert.match(migration, /consent_status IN \('unknown','opted_in','opted_out','dnd'\)/);
+  assert.match(migration, /organization quiet hours block proactive messaging/);
+  assert.match(migration, /contact frequency cap reached/);
+  assert.match(migration, /indeterminate GHL action exists/);
+  assert.doesNotMatch(migration, /GRANT (SELECT|INSERT|UPDATE|DELETE).+tanaghom_(n8n|conversation)_worker/);
+  assert.equal(workflow.active, false);
+  assert.equal(workflow.nodes.find((node) => node.type === 'n8n-nodes-base.scheduleTrigger')?.disabled, true);
+  assert.match(JSON.stringify(workflow), /claim_ghl_action_job/);
+  assert.match(JSON.stringify(workflow), /prepare_ghl_action_dispatch/);
+  assert.match(JSON.stringify(workflow), /TANAGHOM_INTEGRATION_GATEWAY_URL/);
+  assert.doesNotMatch(JSON.stringify(workflow), /services\.leadconnectorhq\.com|Bearer [A-Za-z0-9]/);
+  assert.match(gateway, /GHL_ACTION_RUNTIME_ENABLED !== "true"/);
+  assert.match(gateway, /operation\.request_fingerprint='md5:'\|\|md5/);
+  assert.match(gateway, /operation\.response_summary IS NULL/);
+  assert.match(gateway, /conversation\.ownership_epoch=job\.ownership_epoch/);
+  for (const path of ['/conversations/messages', '/calendars/events/appointments', '/contacts/', '/opportunities/']) {
+    assert.match(provider, new RegExp(path.replaceAll('/', '\\/')));
+  }
+  for (const name of ['ghl-action-job.v1.schema.json', 'ghl-action-dispatch.v1.schema.json', 'ghl-action-result.v1.schema.json']) {
+    const schema = JSON.parse(await readFile(new URL(`../packages/contracts/schemas/phase5/${name}`, import.meta.url), 'utf8'));
+    assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+    assert.equal(schema.additionalProperties, false);
+  }
+  assert.match(runbook, /Production[\s\S]*unauthorized/i);
+  assert.match(runbook, /simulated provider/i);
+  assert.match(runbook, /npm run db:rollback/);
+  assert.match(runbook, /pg_restore --exit-on-error/);
+});
+
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {
   const root = new URL('../deployment/phase5d-production-update/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');

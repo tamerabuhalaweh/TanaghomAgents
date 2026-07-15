@@ -30,3 +30,9 @@ proposal output with active source/version citations, and a reproducible
 bounded summary contract. Customer messages and context remain untrusted;
 invalid output, missing approved knowledge, low confidence, and sensitive
 categories fail closed to human escalation with zero external actions.
+
+Phase 5E adds strict job, dispatch, and result contracts for governed GHL
+actions. These contracts carry bounded action intent and provider-independent
+payloads; authorization remains database state, not a claim made by the
+payload. The private gateway maps allowlisted actions to provider requests only
+after replay, ownership, consent, emergency, and policy checks succeed.

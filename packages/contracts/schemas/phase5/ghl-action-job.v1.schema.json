@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-action-job.v1.schema.json",
+  "title": "Governed GHL action job v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version", "organization_id", "conversation_id", "contact_id",
+    "action_type", "direction", "payload", "idempotency_key", "ownership_epoch"
+  ],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-action-job.v1" },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "conversation_id": { "type": "string", "format": "uuid" },
+    "contact_id": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "action_type": {
+      "enum": ["message", "qualification", "tag", "assignment", "appointment", "opportunity", "nurture", "won", "lost"]
+    },
+    "direction": { "enum": ["inbound", "proactive", "internal"] },
+    "channel": {
+      "type": ["string", "null"],
+      "enum": ["whatsapp", "sms", "email", "instagram", "facebook", "live_chat", "system", null]
+    },
+    "payload": { "type": "object" },
+    "template_version_id": { "type": ["string", "null"], "format": "uuid" },
+    "initiating_event_id": { "type": ["string", "null"], "format": "uuid" },
+    "requested_by_user_id": { "type": ["string", "null"], "format": "uuid" },
+    "requested_by_agent_id": { "type": ["string", "null"], "format": "uuid" },
+    "idempotency_key": { "type": "string", "minLength": 8, "maxLength": 300 },
+    "ownership_epoch": { "type": "integer", "minimum": 0 },
+    "lease_token": { "type": ["string", "null"], "format": "uuid" }
+  }
+}

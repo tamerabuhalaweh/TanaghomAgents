@@ -5,6 +5,7 @@ import {
   CircleAlert,
   CirclePause,
   Clock3,
+  Eye,
   KeyRound,
   Link2,
   PlugZap,
@@ -56,6 +57,7 @@ interface ProviderRecord {
 interface Mapping { channel: string; provider_integration_id: string; is_active: boolean }
 
 type AutomationMode = "manual" | "automatic" | "paused";
+type GhlActionMode = "manual" | "shadow" | "assisted" | "bounded_autonomous";
 
 interface AutomationStatus {
   mode: AutomationMode;
@@ -73,11 +75,37 @@ interface AutomationStatus {
   };
 }
 
+interface GhlActionAutomationStatus {
+  mode: GhlActionMode;
+  proactive_message_mode: "disabled" | "approved_templates";
+  emergency_stop: boolean;
+  emergency_stop_reason: string;
+  policy: {
+    allowed_channels: string[];
+    quiet_hours_start: string;
+    quiet_hours_end: string;
+    timezone: string;
+    contact_frequency_cap_24h: number;
+  };
+  changed_at: string | null;
+  changed_by: { id: string; display_name: string } | null;
+  readiness: {
+    runtime_ready: boolean;
+    connection_ready: boolean;
+    operations_clear: boolean;
+    platform_clear: boolean;
+    organization_clear: boolean;
+    ready_for_automation: boolean;
+    blockers: string[];
+  };
+}
+
 interface IntegrationsPayload {
   secure_storage_configured: boolean;
   providers: ProviderRecord[];
   postiz_mappings: Mapping[];
   postiz_automation: AutomationStatus;
+  ghl_action_automation: GhlActionAutomationStatus;
 }
 
 const errorCopy: Record<string, string> = {
@@ -97,6 +125,12 @@ const errorCopy: Record<string, string> = {
   postiz_connection_not_ready: "Connect and test Postiz before enabling automatic drafts.",
   postiz_channel_mapping_not_ready: "Map at least one supported Postiz channel first.",
   indeterminate_postiz_operation: "Resolve the uncertain Postiz operation before enabling automation.",
+  ghl_action_runtime_not_ready: "The governed GHL action runtime is not ready.",
+  ghl_action_emergency_stopped: "The GHL action emergency stop is active.",
+  ghl_connection_not_ready: "Connect and test GoHighLevel before enabling agent actions.",
+  indeterminate_ghl_action: "Reconcile the uncertain GHL action before enabling more automation.",
+  ghl_action_mode_invalid: "Choose a supported GHL action mode.",
+  ghl_action_emergency_reason_invalid: "Enter a specific emergency-control reason (3–500 characters).",
 };
 
 function date(value: string | null) {
@@ -151,12 +185,159 @@ export function IntegrationsSettings() {
         />)}
       </div>
       <PostizAutomationControl automation={payload.postiz_automation} onChanged={load} />
+      <GhlActionAutomationControl automation={payload.ghl_action_automation} onChanged={load} />
       <section className="integration-boundary">
         <KeyRound size={19} />
         <div><strong>Customer credentials stay outside n8n</strong><p>Agent workflows use a restricted Tanaghom gateway. Provider tokens are decrypted only for the authorized request and are excluded from execution history.</p></div>
       </section>
     </> : null}
   </div>;
+}
+
+const ghlModeContent: Record<GhlActionMode, { title: string; copy: string; icon: React.ReactNode }> = {
+  manual: {
+    title: "Manual actions",
+    copy: "Only an authorized person may queue a governed CRM action.",
+    icon: <Send size={18} />,
+  },
+  shadow: {
+    title: "Shadow mode",
+    copy: "Agents record proposed decisions and outcomes without contacting HighLevel.",
+    icon: <Eye size={18} />,
+  },
+  assisted: {
+    title: "Human-assisted",
+    copy: "Agents prepare eligible actions; a human approves sensitive or proactive work.",
+    icon: <ShieldCheck size={18} />,
+  },
+  bounded_autonomous: {
+    title: "Bounded autonomous",
+    copy: "Only policy-eligible inbound and reversible actions may run automatically.",
+    icon: <PlugZap size={18} />,
+  },
+};
+
+const ghlBlockerCopy: Record<string, string> = {
+  runtime_not_enabled: "The reviewed background runtime has not been enabled.",
+  credential_vault_not_ready: "Credential vault is not ready.",
+  worker_authentication_not_ready: "Worker authentication is not ready.",
+  gateway_not_ready: "Restricted provider gateway is not ready.",
+  platform_emergency_stop: "Platform GHL emergency stop is active.",
+  organization_emergency_stop: "Organization GHL action emergency stop is active.",
+  ghl_connection_not_ready: "GoHighLevel connection has not passed verification.",
+  indeterminate_ghl_action: "An uncertain provider action requires human reconciliation.",
+};
+
+function GhlActionAutomationControl({ automation, onChanged }: {
+  automation: GhlActionAutomationStatus;
+  onChanged: () => Promise<void>;
+}) {
+  const [selected, setSelected] = useState<GhlActionMode>(automation.mode);
+  const [busy, setBusy] = useState(false);
+  const [feedback, setFeedback] = useState("");
+  const [emergencyReason, setEmergencyReason] = useState("");
+
+  useEffect(() => { setSelected(automation.mode); }, [automation.mode]);
+
+  async function save() {
+    setBusy(true); setFeedback("");
+    try {
+      const response = await authenticatedFetch("/api/admin/automation/ghl", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ mode: selected }),
+      });
+      const body = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(body.error || "ghl_action_update_failed");
+      setFeedback(selected === "manual"
+        ? "Manual-only CRM actions preserved. No message or provider action was sent."
+        : `${ghlModeContent[selected].title} saved within the governed action boundary.`);
+      await onChanged();
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "ghl_action_update_failed";
+      setFeedback(errorCopy[code] || "Tanaghom could not update the GHL action policy.");
+    } finally { setBusy(false); }
+  }
+
+  async function setEmergencyStop(active: boolean) {
+    setBusy(true); setFeedback("");
+    try {
+      const response = await authenticatedFetch("/api/admin/automation/ghl", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ emergency_stop: active, reason: emergencyReason.trim() }),
+      });
+      const body = await response.json() as { error?: string };
+      if (!response.ok) throw new Error(body.error || "ghl_action_update_failed");
+      setFeedback(active
+        ? "Organization GHL actions stopped; queued work was canceled with audit evidence."
+        : "Organization emergency stop cleared. Existing paused conversations still require explicit review.");
+      setEmergencyReason("");
+      await onChanged();
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "ghl_action_update_failed";
+      setFeedback(errorCopy[code] || "Tanaghom could not update the GHL emergency control.");
+    } finally { setBusy(false); }
+  }
+
+  const changed = selected !== automation.mode;
+  const unavailable = selected !== "manual" && !automation.readiness.ready_for_automation;
+  return <section className="automation-control" aria-labelledby="ghl-action-automation-title">
+    <header className="automation-control-header">
+      <div><h2 id="ghl-action-automation-title">GHL agent action policy</h2><p>Control how agents may reply, qualify, book, and update the CRM. Runtime activation remains a protected platform operation.</p></div>
+      <StatusPill tone={automation.emergency_stop ? "attention" : automation.mode === "manual" ? "neutral" : "success"}>
+        {automation.emergency_stop ? "Emergency stopped" : ghlModeContent[automation.mode].title}
+      </StatusPill>
+    </header>
+    <div className="automation-control-body">
+      <div className="automation-modes" role="radiogroup" aria-label="GHL agent action mode">
+        {(Object.keys(ghlModeContent) as GhlActionMode[]).map((mode) => {
+          const content = ghlModeContent[mode];
+          const disabled = mode !== "manual" && !automation.readiness.ready_for_automation && automation.mode !== mode;
+          return <button key={mode} className={`automation-mode ${selected === mode ? "automation-mode-selected" : ""}`}
+            type="button" role="radio" aria-checked={selected === mode} disabled={busy || disabled}
+            onClick={() => { setSelected(mode); setFeedback(""); }}>
+            <span className="automation-mode-icon">{content.icon}</span>
+            <span><strong>{content.title}</strong><small>{content.copy}</small></span>
+            <span className="automation-radio" aria-hidden="true" />
+          </button>;
+        })}
+      </div>
+      <aside className="automation-readiness" aria-label="GHL action readiness">
+        <h3>Dispatch readiness</h3>
+        <ul>
+          <ReadinessItem ready={automation.readiness.runtime_ready}>Protected worker and gateway</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.connection_ready}>Verified GHL connection</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.platform_clear}>Platform emergency control</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.organization_clear}>Organization emergency control</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.operations_clear}>No uncertain provider action</ReadinessItem>
+        </ul>
+        {automation.readiness.blockers.length
+          ? <p className="readiness-blocker">{automation.emergency_stop ? automation.emergency_stop_reason : ghlBlockerCopy[automation.readiness.blockers[0]] || "GHL actions are not ready."}</p>
+          : <p className="readiness-ready">All governed action gates are ready.</p>}
+        <p className="automation-history">Proactive messaging: {automation.proactive_message_mode === "disabled" ? "disabled" : "approved templates only"}. Cap: {automation.policy.contact_frequency_cap_24h} per contact per 24 hours.</p>
+        <p className="automation-history">{automation.changed_at ? `Last changed ${date(automation.changed_at)} by ${automation.changed_by?.display_name || "a Tanaghom Admin"}.` : "Using Tanaghom's safe manual default."}</p>
+      </aside>
+    </div>
+    <div className="automation-emergency-control">
+      <div><strong>Organization emergency control</strong><small>{automation.emergency_stop ? "Actions are stopped. Runtime readiness is required before an owner can resume." : "Stop new claims and cancel safely queued actions immediately."}</small></div>
+      <label htmlFor="ghl-emergency-reason"><span>Required reason</span><input id="ghl-emergency-reason" value={emergencyReason}
+        onChange={(event) => setEmergencyReason(event.target.value)} minLength={3} maxLength={500}
+        placeholder={automation.emergency_stop ? "Reason for reviewed resume" : "Reason for emergency stop"} disabled={busy} /></label>
+      <button className={automation.emergency_stop ? "secondary-button" : "text-danger-button"} type="button"
+        disabled={busy || emergencyReason.trim().length < 3 || (automation.emergency_stop && !automation.readiness.runtime_ready)}
+        onClick={() => void setEmergencyStop(!automation.emergency_stop)}>
+        {automation.emergency_stop ? "Resume governed actions" : "Activate emergency stop"}
+      </button>
+    </div>
+    <footer className="automation-control-footer">
+      <div><ShieldCheck size={17} /><span><strong>Fail-closed provider boundary</strong><small>Opt-out, DND, ownership loss, quiet hours, frequency limits, or uncertain operations stop dispatch.</small></span></div>
+      <button className="primary-button" type="button" disabled={!changed || busy || unavailable} onClick={() => void save()}>
+        {busy ? "Saving policy…" : selected === "manual" ? "Use manual actions" : `Select ${ghlModeContent[selected].title}`}
+      </button>
+    </footer>
+    {feedback ? <p className="integration-feedback" role="status" aria-live="polite">{feedback}</p> : null}
+  </section>;
 }
 
 const modeContent: Record<AutomationMode, { title: string; copy: string; icon: React.ReactNode }> = {
