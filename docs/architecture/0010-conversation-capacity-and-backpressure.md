@@ -115,3 +115,14 @@ seven-day/10,000-execution policy is inert pending a reviewed production diff.
 PostgreSQL file shrink is not claimed: ordinary vacuum makes pages reusable,
 while any locking rewrite requires a separate maintenance window. Projections
 describe only the measured payload shape and never establish a 75,000-lead SLA.
+
+The fifth disposable gate accepts work while the n8n worker is stopped, then
+abruptly kills Redis and PostgreSQL independently with `SIGKILL`. It requires
+exit code 137, Redis AOF replay and key preservation, PostgreSQL WAL crash
+recovery and accepted-state digest preservation, independent degraded alerts,
+and exactly one successful result for every one of 40 synthetic correlations.
+The measured run found that n8n main readiness stayed green during Redis
+reconnection but became unready during PostgreSQL loss, so an independent
+dependency observer is part of the required design. This remains local/CI-only:
+no provider, Gemma, GPU server, production system, or SmartLabs resource is
+contacted.

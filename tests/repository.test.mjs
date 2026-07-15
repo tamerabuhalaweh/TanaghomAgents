@@ -623,6 +623,56 @@ test('Phase 5F retention is measured, built-in, restorable, and SmartLabs-isolat
   assert.match(quality, /N8N_RETENTION_PAYLOAD_BYTES: 16384/);
 });
 
+test('Phase 5F abrupt dependency loss is durable, exact-once, observed, and SmartLabs-isolated', async () => {
+  const root = new URL('../deployment/phase5f-dependency-loss/', import.meta.url);
+  const compose = await readFile(new URL('docker-compose.yml', root), 'utf8');
+  const observer = await readFile(new URL('scripts/dependency-observer.mjs', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const integration = await readFile(new URL('../scripts/n8n-dependency-loss-integration.mjs', import.meta.url), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+  const schema = JSON.parse(await readFile(new URL('../packages/contracts/schemas/phase5/n8n-dependency-loss-evidence.v1.schema.json', import.meta.url), 'utf8'));
+
+  assert.match(compose, /n8n:2\.26\.8@sha256:[0-9a-f]{64}/);
+  assert.match(compose, /entrypoint: \["node"\]/);
+  assert.match(compose, /cap_drop:\s+\- ALL/);
+  assert.match(compose, /no-new-privileges:true/);
+  assert.match(compose, /read_only: true/);
+  assert.doesNotMatch(compose, /ports:/);
+  assert.match(observer, /redis_unavailable/);
+  assert.match(observer, /postgres_unavailable/);
+  assert.match(observer, /deliveredDependencyAlerts/);
+  assert.match(observer, /\["redis_unavailable", "postgres_unavailable"\]/);
+
+  assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+  assert.equal(schema.additionalProperties, false);
+  assert.equal(schema.properties.boundaries.properties.provider_calls.const, 0);
+  assert.equal(schema.properties.boundaries.properties.external_actions.const, 0);
+  assert.equal(schema.properties.boundaries.properties.gpu_server_contacted.const, false);
+  assert.equal(schema.properties.boundaries.properties.smartlabs_touched.const, false);
+  assert.equal(schema.properties.monitoring.properties.independent_observer_required.const, true);
+  assert.equal(schema.$defs.lossResultRedis.properties.container_exit_code.const, 137);
+  assert.equal(schema.$defs.lossResultPostgres.properties.container_exit_code.const, 137);
+
+  assert.match(integration, /compose\("kill", "-s", "KILL", "redis"\)/);
+  assert.match(integration, /compose\("kill", "-s", "KILL", "postgres"\)/);
+  assert.equal((integration.match(/=== 137/g) || []).length, 2);
+  assert.match(integration, /DB loaded from append only file/);
+  assert.match(integration, /database system was interrupted\|automatic recovery in progress\|redo starts at/);
+  assert.match(integration, /assertCorrelations\("redis-loss"/);
+  assert.match(integration, /assertCorrelations\("postgres-loss"/);
+  assert.match(integration, /provider_calls: 0/);
+  assert.match(integration, /external_actions: 0/);
+  assert.match(integration, /gpu_server_contacted: false/);
+  assert.match(integration, /smartlabs_touched: false/);
+  assert.doesNotMatch(integration, /ssh|38\.247\.187\.232|thesmartlabs/i);
+  assert.match(runbook, /does \*\*not\*\* authorize a\s+GPU-server connection/);
+  assert.match(runbook, /native main readiness detected PostgreSQL loss but remained ready/);
+  assert.match(runbook, /Never point this harness at another Compose project/);
+  assert.match(quality, /name: phase5-n8n-dependency-loss-evidence/);
+  assert.match(quality, /N8N_DEPENDENCY_REDIS_EXECUTIONS: 20/);
+  assert.match(quality, /N8N_DEPENDENCY_POSTGRES_EXECUTIONS: 20/);
+});
+
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {
   const root = new URL('../deployment/phase5d-production-update/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');

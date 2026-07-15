@@ -38,7 +38,8 @@
     "test:phase5-capacity": "node scripts/conversation-capacity-integration.mjs",
     "test:phase5-resilience": "node scripts/conversation-resilience-integration.mjs",
     "test:phase5-runtime-recovery": "node scripts/n8n-runtime-recovery-integration.mjs",
-    "test:phase5-retention": "node scripts/n8n-retention-pruning-integration.mjs"
+    "test:phase5-retention": "node scripts/n8n-retention-pruning-integration.mjs",
+    "test:phase5-dependency-loss": "node scripts/n8n-dependency-loss-integration.mjs"
   },
   "devDependencies": {
     "ajv": "^8.18.0",
