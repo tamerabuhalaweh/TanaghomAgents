@@ -359,7 +359,7 @@ jobs:
         with:
           name: phase5-n8n-runtime-recovery-evidence
           path: tmp/n8n-runtime-recovery-evidence.json
-          if-no-files-found: error
+          if-no-files-found: warn
           retention-days: 30
 
   dashboard-image-contract:

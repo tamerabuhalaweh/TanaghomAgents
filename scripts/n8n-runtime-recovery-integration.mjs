@@ -317,6 +317,16 @@ try {
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
   console.log(JSON.stringify(evidence, null, 2));
   console.log("PASS: pinned n8n queue worker, Redis AOF restart, readiness, metrics, and local alert delivery recovery verified.");
+} catch (error) {
+  console.error(error.stack || error.message);
+  if (composeStarted) {
+    const status = await compose("ps", "-a").catch((diagnosticError) => ({ stdout: "", stderr: diagnosticError.message }));
+    const logs = await compose("logs", "--no-color", "--tail", "200", "postgres", "redis", "n8n", "n8n-worker")
+      .catch((diagnosticError) => ({ stdout: "", stderr: diagnosticError.message }));
+    console.error("--- disposable compose status ---\n", status.stdout, status.stderr);
+    console.error("--- disposable service logs ---\n", logs.stdout, logs.stderr);
+  }
+  throw error;
 } finally {
   await pool?.end().catch(() => undefined);
   await new Promise((resolve) => alertServer?.close(resolve) ?? resolve());

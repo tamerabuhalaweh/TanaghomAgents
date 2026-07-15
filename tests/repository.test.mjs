@@ -554,6 +554,8 @@ test('Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert
   assert.match(integration, /same_execution_ids_preserved: true/);
   assert.match(integration, /provider_calls: 0/);
   assert.match(integration, /smartlabs_touched: false/);
+  assert.match(integration, /disposable compose status/);
+  assert.match(integration, /disposable service logs/);
   assert.match(monitor, /phase5\.runtime-alert\.v1/);
   assert.match(monitor, /n8n_worker_unready/);
   assert.match(quality, /name: phase5-n8n-runtime-recovery-evidence/);
