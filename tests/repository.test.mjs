@@ -371,6 +371,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   const gateway = await readFile(new URL('../apps/dashboard/app/api/internal/integrations/ghl/action/route.ts', import.meta.url), 'utf8');
   const provider = await readFile(new URL('../apps/dashboard/lib/server/integration-providers.ts', import.meta.url), 'utf8');
   const runbook = await readFile(new URL('../deployment/phase5e-governed-ghl-actions/RUNBOOK.md', import.meta.url), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
   for (const name of ['set_ghl_action_automation_mode', 'set_ghl_action_emergency_stop', 'queue_ghl_action', 'decide_ghl_action', 'claim_ghl_action_job', 'prepare_ghl_action_dispatch', 'complete_ghl_action', 'record_ghl_action_failure']) {
     assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
     assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
@@ -404,6 +405,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0015_governed_ghl_actions/);
 });
 
 test('Phase 5D production update is manual, transactional, scoped, and recoverable', async () => {

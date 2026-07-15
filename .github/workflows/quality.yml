@@ -47,7 +47,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/phase5d-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL"
+      - run: deployment/phase5d-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL" 0015_governed_ghl_actions
 
   dashboard-contract:
     runs-on: ubuntu-latest
