@@ -2,7 +2,7 @@
 
 Status: prepared for review only. No deployment is authorized by this document or by merging its pull request.
 
-This package updates only the Tanaghom dashboard and its Supabase schema from `0014_supervised_conversation_ownership` through `0019_notification_monitoring_destinations`. It does not activate an n8n workflow, enable a provider, send a notification, change Nginx or firewall rules, or operate on SmartLabs, voice, Gemma, or the protected n8n stack.
+This package updates only the Tanaghom dashboard and its Supabase schema from `0014_supervised_conversation_ownership` through `0019_notification_monitoring_destinations`. The database-only bridge must reach and back up migration 0014 first. It does not activate an n8n workflow, enable a provider, send a notification, change Nginx or firewall rules, or operate on SmartLabs, voice, Gemma, or the protected n8n stack.
 
 ## Release invariants
 
@@ -20,7 +20,7 @@ This package updates only the Tanaghom dashboard and its Supabase schema from `0
 
 ## 1. Prepare and prove the off-server backup
 
-Run this on the authorized Windows recovery workstation, not on the GPU server. Use a fresh release ID and an output directory outside the Git repository. The script uses the immutable PostgreSQL 16 image for both source dump and isolated restore verification, creates an encrypted archive, and stores its recovery key with Windows DPAPI.
+Run this on the authorized Windows recovery workstation, not on the GPU server. Use a fresh release ID and an output directory outside the Git repository. The script uses immutable PostgreSQL 17.6 for both source dump and isolated restore verification, creates an encrypted archive, and stores its recovery key with Windows DPAPI.
 
 ```powershell
 $env:DATABASE_URL = '<current Supabase owner connection string>'

@@ -22,5 +22,8 @@ grep -q '0014_supervised_conversation_ownership' "$package/scripts/common.sh"
 grep -q 'rollback_applied_migrations' "$package/scripts/deploy-update.sh"
 grep -q 'n8n-container-ids.before' "$package/scripts/validate-release.sh"
 grep -q 'actually restored' "$package/scripts/test-disposable-backup.sh"
+grep -q 'superseded' "$package/scripts/preflight.sh"
+grep -q 'superseded' "$package/scripts/prepare-offserver-backup.ps1"
+grep -qi 'superseded' "$package/RUNBOOK.md"
 
 echo 'PASS: Phase 5D production update package is syntactically valid and protected-service scoped.'

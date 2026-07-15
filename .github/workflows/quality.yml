@@ -20,6 +20,7 @@ jobs:
       - run: npm run check
       - run: npm test
       - run: deployment/phase5d-production-update/scripts/validate-package.sh
+      - run: deployment/phase5f-database-bridge/scripts/validate-package.sh
       - run: deployment/phase5f-production-update/scripts/validate-package.sh
 
   database-contract:
@@ -48,15 +49,37 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/phase5d-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL" 0019_notification_monitoring_destinations
-      - run: deployment/phase5f-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL" 0019_notification_monitoring_destinations
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0019_notification_monitoring_destinations
+
+  phase5f-database-bridge-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_phase5f_bridge_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_phase5f_bridge_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5f_bridge_test
+    steps:
+      - uses: actions/checkout@v4
+      - run: deployment/phase5f-database-bridge/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0014_supervised_conversation_ownership
 
   phase5f-production-update-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 8
     services:
       postgres:
-        image: postgres:16.14-alpine3.24@sha256:57c72fd2a128e416c7fcc499958864df5301e940bca0a56f58fddf30ffc07777
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: tanaghom_agents_phase5f_update_test

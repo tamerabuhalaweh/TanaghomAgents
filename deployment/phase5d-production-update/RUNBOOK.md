@@ -1,5 +1,7 @@
 # Phase 5D transactional production update
 
+> **Superseded and execution-disabled.** The live production database is at migration 0009, but the current dashboard target requires migration 0019. This older package would stop at 0014 and rebuild an incompatible dashboard. Use `deployment/phase5f-database-bridge` instead; its preflight applies 0010-0014 without changing the running dashboard.
+
 ## Status and authorization boundary
 
 This package updates an existing public Tanaghom dashboard from migration
