@@ -44,3 +44,6 @@ then reapplies to prove recovery.
 - Recognized Gemma/GHL pressure creates an expiring organization cooldown;
   workers cannot bypass it through direct table access and claims recover
   automatically after the reviewed delay.
+- Customer notification destinations are encrypted application-only records.
+  Read-only and worker roles can inspect only secret-free delivery readiness;
+  platform delivery defaults disabled and emergency-stopped.

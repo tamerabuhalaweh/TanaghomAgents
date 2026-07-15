@@ -137,6 +137,13 @@ AOF/WAL recovery. An independent dependency observer is required because n8n
 main readiness did not report the tested Redis outage. The gate is disposable
 and makes zero provider, GPU-server, production, or SmartLabs contact.
 
+The credential-independent monitoring slice adds an authenticated organization
+snapshot for queue capacity, dependency evidence, agent heartbeats, unread
+alerts, and delivery readiness. Owners can configure encrypted email, Slack,
+or WhatsApp alert destinations without exposing values after save. Notification
+delivery remains platform-disabled and emergency-stopped; saving a destination
+does not call a provider or authorize production activation.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

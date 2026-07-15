@@ -204,7 +204,6 @@ test("remaining operational screens use the live snapshot without business fixtu
     "campaigns-view.tsx",
     "leads-view.tsx",
     "reports-view.tsx",
-    "system-view.tsx",
   ].map((file) => readFile(new URL(`components/${file}`, dashboard), "utf8")));
   for (const source of components) {
     assert.match(source, /useOperations/);
@@ -213,6 +212,39 @@ test("remaining operational screens use the live snapshot without business fixtu
   const fixtures = await readFile(new URL("data/fixtures.ts", dashboard), "utf8");
   assert.doesNotMatch(fixtures, /export const (approvals|campaigns|recentActivity)/);
   assert.match(fixtures, /Configured role; live workflow begins/);
+});
+
+test("system monitoring uses a tenant-bound read-only snapshot and honest runtime evidence", async () => {
+  const service = await readFile(new URL("lib/server/system-monitoring.ts", dashboard), "utf8");
+  const route = await readFile(new URL("app/api/system/monitoring/route.ts", dashboard), "utf8");
+  const component = await readFile(new URL("components/system-view.tsx", dashboard), "utf8");
+  assert.match(service, /authorize\(request, \["owner", "reviewer", "operator", "viewer"\]\)/);
+  assert.match(service, /BEGIN TRANSACTION READ ONLY/);
+  assert.match(service, /conversation_capacity_status/);
+  assert.match(service, /notification_delivery_status/);
+  assert.match(service, /organization_id=\$1/);
+  assert.doesNotMatch(service, /INSERT|UPDATE|DELETE|fetch\(|axios|https?:\/\//);
+  assert.match(route, /getSystemMonitoring/);
+  assert.match(component, /authenticatedFetch\("\/api\/system\/monitoring"/);
+  assert.match(component, /Not independently verified/);
+  assert.doesNotMatch(component, /@\/data\/fixtures/);
+});
+
+test("notification destinations are owner-managed, encrypted, masked, and activation-independent", async () => {
+  const service = await readFile(new URL("lib/server/notification-management.ts", dashboard), "utf8");
+  const route = await readFile(new URL("app/api/admin/notifications/route.ts", dashboard), "utf8");
+  const component = await readFile(new URL("components/notification-settings.tsx", dashboard), "utf8");
+  assert.match(service, /authorize\(request, \["owner"\]\)/);
+  assert.match(service, /encryptCredential\(target\)/);
+  assert.match(service, /target_mask/);
+  assert.match(service, /enforceSameOriginForCookieMutation/);
+  assert.match(service, /hooks\.slack\.com/);
+  assert.doesNotMatch(service, /decryptCredential|fetch\(|axios/);
+  assert.match(route, /saveNotificationDestination/);
+  assert.match(component, /Destination setup does not activate delivery/);
+  assert.match(component, /No provider call or message is sent/);
+  assert.match(component, /type={definition\.channel === "email" \? "email" : "password"}/);
+  assert.doesNotMatch(component, /body: JSON\.stringify\(\{[^}]*runtime_ready/s);
 });
 
 test("private dashboard canary is localhost-only, bounded, and secret-free by shape", async () => {

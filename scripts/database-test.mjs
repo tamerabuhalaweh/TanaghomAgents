@@ -52,6 +52,7 @@ const ownershipAssertions = join(root, 'packages', 'database', 'tests', 'supervi
 const ghlActionAssertions = join(root, 'packages', 'database', 'tests', 'governed_ghl_actions.sql');
 const ghlActionReviewAssertions = join(root, 'packages', 'database', 'tests', 'ghl_action_review_reconciliation.sql');
 const capacityAssertions = join(root, 'packages', 'database', 'tests', 'conversation_capacity_backpressure.sql');
+const notificationAssertions = join(root, 'packages', 'database', 'tests', 'notification_monitoring_destinations.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -71,6 +72,7 @@ psql('-f', ownershipAssertions);
 psql('-f', ghlActionAssertions);
 psql('-f', ghlActionReviewAssertions);
 psql('-f', capacityAssertions);
+psql('-f', notificationAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -78,6 +80,8 @@ psql('-f', capacityAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.notification_destinations') IS NOT NULL OR to_regclass('tanaghom.notification_delivery_controls') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0019_notification_monitoring_destinations') THEN RAISE EXCEPTION '0019 rollback left notification monitoring objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.conversation_capacity_policies') IS NOT NULL OR to_regclass('tanaghom.conversation_dependency_cooldowns') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0018_conversation_capacity_backpressure') THEN RAISE EXCEPTION '0018 rollback left capacity objects behind'; END IF; END $$;");
 database('rollback');
