@@ -105,3 +105,13 @@ readiness and metrics, and degraded/recovered alert delivery to a local sink. It
 remains separate from the installed canary and does not establish sudden Redis
 host-loss, production notification delivery, provider quota, or shared-GPU
 behavior.
+
+The fourth disposable gate measures n8n execution/PostgreSQL and Redis AOF
+growth using synthetic incompressible payloads, applies n8n's own bounded
+execution pruner, runs ordinary PostgreSQL vacuum, compacts Redis AOF without
+manual key deletion, and restores an encrypted pre-prune dump into a uniquely
+named disposable database with count/digest verification. Its proposed
+seven-day/10,000-execution policy is inert pending a reviewed production diff.
+PostgreSQL file shrink is not claimed: ordinary vacuum makes pages reusable,
+while any locking rewrite requires a separate maintenance window. Projections
+describe only the measured payload shape and never establish a 75,000-lead SLA.

@@ -362,6 +362,31 @@ jobs:
           if-no-files-found: warn
           retention-days: 30
 
+  phase5-retention-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      N8N_RETENTION_EVIDENCE_PATH: tmp/n8n-retention-pruning-evidence.json
+      N8N_RETENTION_COMPLETED_EXECUTIONS: 60
+      N8N_RETENTION_QUEUED_EXECUTIONS: 40
+      N8N_RETENTION_MAX_COUNT: 20
+      N8N_RETENTION_PAYLOAD_BYTES: 16384
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:phase5-retention
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase5-n8n-retention-pruning-evidence
+          path: tmp/n8n-retention-pruning-evidence.json
+          if-no-files-found: warn
+          retention-days: 30
+
   dashboard-image-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 15
