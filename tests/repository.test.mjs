@@ -372,6 +372,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   const provider = await readFile(new URL('../apps/dashboard/lib/server/integration-providers.ts', import.meta.url), 'utf8');
   const runbook = await readFile(new URL('../deployment/phase5e-governed-ghl-actions/RUNBOOK.md', import.meta.url), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+  const integration = await readFile(new URL('../scripts/n8n-ghl-workflow-integration.mjs', import.meta.url), 'utf8');
   for (const name of ['set_ghl_action_automation_mode', 'set_ghl_action_emergency_stop', 'queue_ghl_action', 'decide_ghl_action', 'claim_ghl_action_job', 'prepare_ghl_action_dispatch', 'complete_ghl_action', 'record_ghl_action_failure']) {
     assert.match(migration, new RegExp(`CREATE FUNCTION tanaghom\\.${name}`));
     assert.match(rollback, new RegExp(`DROP FUNCTION tanaghom\\.${name}`));
@@ -405,7 +406,27 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0016_ghl_action_review_reconciliation/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0017_ghl_service_action_audit_attribution/);
+  assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
+  assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
+  assert.match(integration, /accept_ghl_inbound_event/);
+  assert.match(integration, /persist_conversation_intelligence_proposal/);
+  for (const action of ['message', 'qualification', 'appointment', 'opportunity']) {
+    assert.match(integration, new RegExp(`type: "${action}"`));
+  }
+  assert.match(integration, /customer_credentials_used: false/);
+  assert.match(integration, /external_publish_or_message: false/);
+});
+
+test('Phase 5E service-agent completions retain an attributable audit actor', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0017_ghl_service_action_audit_attribution.up.sql', import.meta.url), 'utf8');
+  const rollback = await readFile(new URL('../packages/database/migrations/0017_ghl_service_action_audit_attribution.down.sql', import.meta.url), 'utf8');
+  assert.match(migration, /CREATE OR REPLACE FUNCTION tanaghom\.attach_ghl_service_actor_to_audit/);
+  assert.match(migration, /NEW\.entity_type='ghl_action_job'/);
+  assert.match(migration, /job\.requested_by_agent_id INTO NEW\.actor_user_id/);
+  assert.match(migration, /REVOKE ALL ON FUNCTION tanaghom\.attach_ghl_service_actor_to_audit\(\) FROM PUBLIC/);
+  assert.match(rollback, /NEW\.action_type='ghl\.action_queued'/);
+  assert.doesNotMatch(rollback, /NEW\.entity_type='ghl_action_job'/);
 });
 
 test('Phase 5E action review records immutable human reconciliation without worker table access', async () => {

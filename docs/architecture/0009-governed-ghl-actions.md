@@ -54,3 +54,11 @@ Outcome and reconciliation rows are append-only so approvals, dispatch,
 failure, delivery, and human resolution remain auditable. Service-agent queue
 events are attributed to the organization service account at insert time; an
 unattributed audit event continues to fail the database constraint.
+
+The Phase 5 acceptance test runs one contiguous disposable scenario through the
+same inactive n8n action export: authenticated duplicate-safe inbound event,
+tenant knowledge retrieval, simulated Gemma contract output, human supervisor
+release, grounded WhatsApp reply, hot-lead qualification, appointment, and
+opportunity update. Its timestamped JSON evidence contains only `.test` data,
+simulated provider identifiers, policy/ownership decisions, and database audit
+references; it never contains a customer credential.

@@ -89,6 +89,29 @@ BEGIN
      OR (SELECT status FROM tanaghom.external_operations WHERE id=v_prepare.operation_id)<>'succeeded' THEN
     RAISE EXCEPTION 'successful reconciliation evidence is incomplete';
   END IF;
+
+  SELECT * INTO v_job FROM tanaghom.queue_ghl_action(
+    '6a000000-0000-4000-8000-000000000011','qualification','internal','system',
+    '{"temperature":"hot","reason":"Explicit purchase intent in disposable test","confidence":0.94,"next_action":"Book the approved consultation"}',
+    NULL,NULL,NULL,1,NULL,'ghl-review:qualification:1'
+  );
+  IF v_job.status<>'awaiting_approval' THEN RAISE EXCEPTION 'service qualification bypassed assisted approval'; END IF;
+  PERFORM tanaghom.decide_ghl_action(v_job.job_id,'00000000-0000-4000-8000-000000000001',
+    'approved','Grounded qualification reviewed','6a000000-0000-4000-8000-000000000024');
+  SELECT * INTO v_claim FROM tanaghom.claim_ghl_action_job();
+  SELECT * INTO v_prepare FROM tanaghom.prepare_ghl_action_dispatch(v_claim.job_id);
+  PERFORM tanaghom.complete_ghl_action(v_claim.job_id,jsonb_build_object(
+    'contract_version','phase5.ghl-action-result.v1','outcome','succeeded',
+    'provider_reference','tanaghom:qualification:action-review-contact',
+    'provider_payload',jsonb_build_object('internal',true)
+  ));
+  IF (SELECT status FROM tanaghom.leads WHERE id='6a000000-0000-4000-8000-000000000010')<>'qualified'
+     OR NOT EXISTS (
+       SELECT 1 FROM tanaghom.agent_actions_log audit
+       WHERE audit.entity_type='ghl_action_job' AND audit.entity_id=v_claim.job_id
+         AND audit.action_type='ghl.action_succeeded'
+         AND audit.actor_user_id='6a000000-0000-4000-8000-000000000009'
+     ) THEN RAISE EXCEPTION 'service action completion lost qualification or audit actor'; END IF;
 END;
 $$;
 

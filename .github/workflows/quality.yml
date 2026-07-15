@@ -47,7 +47,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/phase5d-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL" 0016_ghl_action_review_reconciliation
+      - run: deployment/phase5d-production-update/scripts/test-disposable-backup.sh "$DATABASE_TEST_URL" 0017_ghl_service_action_audit_attribution
 
   dashboard-contract:
     runs-on: ubuntu-latest
@@ -180,6 +180,7 @@ jobs:
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5_workflow_test
       DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5_workflow_test
+      PHASE5_LIFECYCLE_EVIDENCE_PATH: tmp/phase5-sales-lifecycle-evidence.json
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -192,6 +193,12 @@ jobs:
       - run: npm run generate:phase5-workflows
       - run: git diff --exit-code -- n8n/workflows/phase5
       - run: npm run test:phase5-workflows
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase5-sales-lifecycle-evidence
+          path: tmp/phase5-sales-lifecycle-evidence.json
+          if-no-files-found: error
 
   phase5-inbound-integration:
     runs-on: ubuntu-latest
