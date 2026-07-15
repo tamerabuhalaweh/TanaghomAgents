@@ -91,6 +91,13 @@ post, and every lead traces to a campaign and source post.
 - Won/lost/nurture handling and requeue eligibility
 - Revenue and weekly pipeline reporting
 
+Phase 5E foundation implements governed message, qualification, tag,
+assignment, appointment, opportunity, nurture, won, and lost action contracts;
+manual/shadow/assisted/bounded-autonomous policy; consent, DND, quiet-hour,
+frequency, ownership, emergency, idempotency, and indeterminate-operation
+guards; and an inactive private-gateway n8n worker. Production activation and
+live customer-provider acceptance remain gated.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

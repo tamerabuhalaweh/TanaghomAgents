@@ -26,3 +26,11 @@ then reapplies to prove recovery.
 - External side effects have unique provider-scoped idempotency keys.
 - Agent jobs and events carry correlation IDs.
 - Leads can be explicitly retained for future campaigns.
+- GHL actions require current conversation ownership, organization policy, and
+  platform readiness at queue, claim, preparation, and dispatch boundaries.
+- Proactive messages require explicit channel consent, an approved versioned
+  template, allowed hours, and remaining frequency capacity.
+- GHL worker roles execute controlled functions only; they cannot write action,
+  approval, outcome, conversation, lead, or credential tables.
+- Unknown post-dispatch outcomes become indeterminate and block further action
+  claims until reconciled; action outcomes are append-only.

@@ -49,6 +49,7 @@ const ghlAssertions = join(root, 'packages', 'database', 'tests', 'ghl_contact_s
 const ghlInboundAssertions = join(root, 'packages', 'database', 'tests', 'ghl_inbound_event_inbox.sql');
 const knowledgeAssertions = join(root, 'packages', 'database', 'tests', 'sales_knowledge_intelligence.sql');
 const ownershipAssertions = join(root, 'packages', 'database', 'tests', 'supervised_conversation_ownership.sql');
+const ghlActionAssertions = join(root, 'packages', 'database', 'tests', 'governed_ghl_actions.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -65,6 +66,7 @@ psql('-f', ghlAssertions);
 psql('-f', ghlInboundAssertions);
 psql('-f', knowledgeAssertions);
 psql('-f', ownershipAssertions);
+psql('-f', ghlActionAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -72,6 +74,8 @@ psql('-f', ownershipAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.ghl_action_jobs') IS NOT NULL OR to_regprocedure('tanaghom.claim_ghl_action_job()') IS NOT NULL THEN RAISE EXCEPTION '0015 rollback left governed GHL action objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.conversations') IS NOT NULL OR to_regprocedure('tanaghom.transition_supervised_conversation(uuid,text,uuid,uuid,text,bigint,uuid)') IS NOT NULL THEN RAISE EXCEPTION '0014 rollback left supervised conversation objects behind'; END IF; END $$;");
 database('rollback');

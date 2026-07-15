@@ -160,6 +160,27 @@ test("operations API reads every remaining dashboard domain in one protected sna
   assert.doesNotMatch(operations, /INSERT|UPDATE|DELETE/);
 });
 
+test("GHL agent action policy is owner-only and provider dispatch stays behind the private gateway", async () => {
+  const policy = await readFile(new URL("lib/server/automation-management.ts", dashboard), "utf8");
+  const route = await readFile(new URL("app/api/admin/automation/ghl/route.ts", dashboard), "utf8");
+  const gateway = await readFile(new URL("app/api/internal/integrations/ghl/action/route.ts", dashboard), "utf8");
+  const settings = await readFile(new URL("components/integrations-settings.tsx", dashboard), "utf8");
+  assert.match(policy, /authorize\(request, \["owner"\]\)/);
+  assert.match(route, /updateGhlActionAutomation\(request\)/);
+  assert.match(policy, /set_ghl_action_automation_mode/);
+  assert.match(policy, /GHL_ACTION_RUNTIME_READY/);
+  assert.match(policy, /runtime_not_ready/);
+  assert.match(policy, /set_ghl_action_emergency_stop/);
+  for (const mode of ["manual", "shadow", "assisted", "bounded_autonomous"]) {
+    assert.match(settings, new RegExp(mode));
+  }
+  assert.match(gateway, /workerAuthorized/);
+  assert.match(gateway, /GHL_ACTION_RUNTIME_ENABLED/);
+  assert.match(gateway, /decryptCredential/);
+  assert.match(gateway, /NOT control\.emergency_stop/);
+  assert.doesNotMatch(`${route}\n${settings}`, /services\.leadconnectorhq\.com|\/conversations\/messages|axios/i);
+});
+
 test("remaining operational screens use the live snapshot without business fixtures", async () => {
   const components = await Promise.all([
     "overview-dashboard.tsx",

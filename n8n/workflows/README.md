@@ -34,3 +34,10 @@ records the returned contact ID through controlled database functions. The
 workflow cannot message contacts, read customer tokens, write application
 tables directly, activate its disabled polling trigger, or retain contact data
 in n8n execution history.
+
+Phase 5E adds the governed GHL action worker. It supports only database-prepared
+message, qualification, tag, assignment, appointment, opportunity, nurture,
+won, and lost actions. It calls the private dashboard gateway and completes or
+fails work through controlled functions; it contains no customer credential or
+direct GHL URL. The workflow is inactive, polling is disabled, and timeouts are
+recorded as indeterminate rather than blindly retried.

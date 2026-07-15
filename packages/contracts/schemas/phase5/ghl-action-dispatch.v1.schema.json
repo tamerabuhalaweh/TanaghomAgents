@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase5/ghl-action-dispatch.v1.schema.json",
+  "title": "Restricted GHL gateway dispatch v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["contract_version", "action_type", "contact_id", "conversation_id", "channel", "payload"],
+  "properties": {
+    "contract_version": { "const": "phase5.ghl-action-dispatch.v1" },
+    "action_type": {
+      "enum": ["message", "qualification", "tag", "assignment", "appointment", "opportunity", "nurture", "won", "lost"]
+    },
+    "contact_id": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "conversation_id": { "type": "string", "minLength": 1, "maxLength": 300 },
+    "channel": {
+      "enum": ["whatsapp", "sms", "email", "instagram", "facebook", "live_chat", "system"]
+    },
+    "payload": { "type": "object" }
+  }
+}
