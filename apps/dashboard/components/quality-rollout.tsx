@@ -2,7 +2,7 @@
 
 import {
   ArrowRight, CheckCircle2, CircleAlert, Clock3, FlaskConical,
-  Gauge, LockKeyhole, RefreshCw, RotateCcw, ShieldCheck, UsersRound,
+  Database, Gauge, LockKeyhole, RefreshCw, RotateCcw, ShieldCheck, Upload, UsersRound,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
@@ -29,6 +29,10 @@ interface QualityData {
   promotion_gate: { next_stage: Stage | null; ready: boolean; evidence_snapshot_id?: string | null; requirements: Array<{ key: string; label: string; passed: boolean }> };
   snapshots: Snapshot[];
   decisions: Array<{ id: string; decision: string; from_stage: Stage; to_stage: Stage; rationale: string; decided_at: string; decided_by_name: string }>;
+  evidence_setup: {
+    metric_programs: Array<{ id: string; version_number: number; status: string; notes: string; approved_at: string | null }>;
+    datasets: Array<{ id: string; name: string; status: string; case_count: number; imported_at: string; job_count: number; succeeded_jobs: number; failed_jobs: number }>;
+  };
 }
 
 const stages: Array<{ id: Stage; label: string; copy: string }> = [
@@ -62,6 +66,7 @@ export function QualityRollout() {
   const [rationale, setRationale] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [evidenceFeedback, setEvidenceFeedback] = useState("");
 
   const load = useCallback(async () => {
     setState("loading");
@@ -95,6 +100,31 @@ export function QualityRollout() {
     } finally { setBusy(false); }
   }
 
+  async function evidenceAction(action: string, extra: Record<string, unknown> = {}) {
+    setBusy(true); setEvidenceFeedback("");
+    try {
+      const response = await authenticatedFetch("/api/quality", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action, ...extra }) });
+      const body = await response.json() as QualityData & { error?: string };
+      if (!response.ok) throw new Error(body.error || "quality_evidence_failed");
+      setData(body); setEvidenceFeedback(action === "approve_default_metrics" ? "Metric formulas and conservative thresholds approved."
+        : action === "import_baseline" ? "De-identified baseline imported. Review it before recording evidence."
+          : action === "record_baseline" ? "Human baseline snapshot recorded."
+            : action === "queue_shadow" ? "Proposal-only shadow jobs queued. The inactive worker must be run under platform control."
+              : "AI shadow snapshot recorded for owner review.");
+    } catch (error) {
+      const code = error instanceof Error ? error.message : "quality_evidence_failed";
+      setEvidenceFeedback(code === "quality_import_contains_pii" ? "Import refused: remove personal identifiers and attest de-identification."
+        : code === "quality_metrics_required" ? "Approve the metric program before importing evidence."
+          : "Tanaghom could not complete this evidence action.");
+    } finally { setBusy(false); }
+  }
+
+  async function importFile(file: File | null) {
+    if (!file) return;
+    try { await evidenceAction("import_baseline", { dataset: JSON.parse(await file.text()) }); }
+    catch { setEvidenceFeedback("The selected file is not valid JSON."); }
+  }
+
   if (state === "loading") return <QualityLoading />;
   if (state === "error" || !data) return <div className="page-stack"><PageHeading title="Quality & rollout" description="Compare human and AI outcomes before increasing autonomy." /><section className="settings-state"><CircleAlert size={24} /><div><h2>Quality evidence is unavailable</h2><p>Tanaghom will not show sample metrics or allow a rollout decision without the source-of-truth snapshot.</p></div><button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} />Try again</button></section></div>;
 
@@ -108,6 +138,22 @@ export function QualityRollout() {
       <div className="quality-safety-icon"><LockKeyhole size={20} /></div>
       <div><h2 id="quality-safety-title">Evidence authorizes a stage—not a provider action</h2><p>Promotion here never activates n8n, clears an emergency stop, or sends a customer message. Runtime and channel controls remain separate and fail closed.</p></div>
       <StatusPill tone={data.policy.current_stage === "baseline" ? "neutral" : "success"}>{stageName[data.policy.current_stage]}</StatusPill>
+    </section>
+
+    <section className="quality-setup" aria-labelledby="quality-setup-title">
+      <header><div><h2 id="quality-setup-title">Baseline → shadow evidence setup</h2><p>Import reviewed, de-identified conversations and compare proposal-only AI answers. Nothing in this workspace sends a message.</p></div><Database size={18} /></header>
+      <div className="quality-setup-grid">
+        <article><span>1</span><div><strong>Approve measurement rules</strong><p>Version the formulas and conservative gates used for every comparison.</p></div><button className="secondary-button" type="button" disabled={!data.viewer.can_promote || busy || data.evidence_setup.metric_programs.some(program => program.status === "approved")} onClick={() => void evidenceAction("approve_default_metrics")}>{data.evidence_setup.metric_programs.some(program => program.status === "approved") ? "Rules approved" : "Review & approve"}</button></article>
+        <article><span>2</span><div><strong>Import human baseline</strong><p>JSON only. Tanaghom rejects common PII patterns and requires an explicit removal attestation.</p></div><label className={`secondary-button ${!data.viewer.can_promote || busy ? "is-disabled" : ""}`}><Upload size={15} />Choose JSON<input type="file" accept="application/json,.json" disabled={!data.viewer.can_promote || busy} onChange={(event) => void importFile(event.target.files?.[0] || null)} /></label></article>
+        <article><span>3</span><div><strong>Run shadow comparison</strong><p>Gemma creates offline proposals. Provider actions remain impossible in this evaluator.</p></div><StatusPill tone="neutral">Platform-controlled</StatusPill></article>
+      </div>
+      {data.evidence_setup.datasets.length ? <div className="quality-datasets">{data.evidence_setup.datasets.map(dataset => <article key={dataset.id}><div><strong>{dataset.name}</strong><p>{dataset.case_count.toLocaleString()} reviewed cases · {dataset.status.replaceAll("_", " ")} · imported {date(dataset.imported_at)}</p></div><div className="quality-dataset-actions">
+        {dataset.status === "ready" ? <button className="secondary-button" disabled={busy || !data.viewer.can_promote} onClick={() => void evidenceAction("record_baseline", { dataset_id: dataset.id })}>Record baseline</button> : null}
+        {dataset.status === "baseline_recorded" && data.policy.current_stage === "shadow" ? <button className="primary-button" disabled={busy || !data.viewer.can_promote} onClick={() => void evidenceAction("queue_shadow", { dataset_id: dataset.id })}>Queue shadow</button> : null}
+        {dataset.status === "shadow_complete" ? <button className="primary-button" disabled={busy || !data.viewer.can_promote} onClick={() => void evidenceAction("record_shadow", { dataset_id: dataset.id })}>Record comparison</button> : null}
+        {dataset.job_count ? <small>{dataset.succeeded_jobs}/{dataset.job_count} evaluated{dataset.failed_jobs ? ` · ${dataset.failed_jobs} failed` : ""}</small> : null}
+      </div></article>)}</div> : <div className="quality-setup-empty">No customer evidence imported yet. Start with the documented de-identified JSON template.</div>}
+      {evidenceFeedback ? <p className="quality-feedback" role="status" aria-live="polite">{evidenceFeedback}</p> : null}
     </section>
 
     <dl className="quality-summary" aria-label="Current quality evidence">

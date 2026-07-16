@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase5g/quality-shadow-job.v1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "trust", "language", "customer_message", "human_reply", "human_outcome", "versions", "external_actions_allowed"],
+  "properties": {
+    "contract_version": { "const": "phase5g.quality-shadow-job.v1" },
+    "trust": { "const": "deidentified_reviewed_customer_input" },
+    "language": { "type": "string", "minLength": 2 }, "customer_message": { "type": "string", "minLength": 1 },
+    "human_reply": { "type": ["string", "null"] },
+    "human_outcome": { "type": "object", "additionalProperties": false, "required": ["qualified", "booked", "won", "handed_off", "opted_out", "complaint"], "properties": { "qualified": { "type": "boolean" }, "booked": { "type": "boolean" }, "won": { "type": "boolean" }, "handed_off": { "type": "boolean" }, "opted_out": { "type": "boolean" }, "complaint": { "type": "boolean" } } },
+    "versions": { "type": "object", "required": ["model", "prompt", "knowledge", "policy", "campaign"] },
+    "external_actions_allowed": { "const": false }
+  }
+}

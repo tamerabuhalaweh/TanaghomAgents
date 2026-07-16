@@ -1,0 +1,16 @@
+{
+  "contract_version": "phase5g.quality-baseline-import.v1",
+  "name": "Reviewed human baseline — replace with period",
+  "source_hash": "sha256:replace-with-64-lowercase-hex-characters",
+  "period_start": "2026-07-01T00:00:00.000Z",
+  "period_end": "2026-07-08T00:00:00.000Z",
+  "versions": { "model": "human", "prompt": "approved-sales-script-version", "knowledge": "approved-knowledge-version", "policy": "approved-policy-version", "campaign": "customer-campaign-version" },
+  "pii_removed_attestation": true,
+  "cases": [{
+    "reference_hash": "sha256:replace-with-a-non-reversible-64-character-case-hash",
+    "language": "en", "customer_message": "De-identified customer message",
+    "human_reply": "De-identified reviewed human reply", "response_seconds": 75,
+    "qualified": false, "booked": false, "won": false, "handed_off": false,
+    "opted_out": false, "complaint": false, "reviewed": true
+  }]
+}

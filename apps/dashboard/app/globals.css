@@ -1173,7 +1173,24 @@ td a, td > strong { font-weight: 670; }
 .quality-summary dt { color: var(--muted); font-size: 0.66rem; }
 .quality-summary dd { margin-block-start: 0.08rem; font-size: 1.18rem; font-weight: 730; font-variant-numeric: tabular-nums; }
 .quality-summary span { display: block; margin-block-start: 0.05rem; color: var(--muted); font-size: 0.62rem; text-transform: capitalize; }
-.quality-rollout, .quality-gate, .quality-evidence, .quality-decisions { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); }
+.quality-rollout, .quality-gate, .quality-evidence, .quality-decisions, .quality-setup { border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--bg); }
+.quality-setup > header { display: flex; justify-content: space-between; gap: 1rem; padding: 1rem 1.15rem; border-block-end: 1px solid var(--border); }
+.quality-setup h2 { font-size: 0.88rem; }
+.quality-setup header p, .quality-setup article p { margin-block-start: 0.12rem; color: var(--muted); font-size: 0.67rem; }
+.quality-setup-grid { display: grid; grid-template-columns: repeat(3, 1fr); }
+.quality-setup-grid > article { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 0.7rem; align-items: start; padding: 1rem 1.15rem; }
+.quality-setup-grid > article + article { border-inline-start: 1px solid var(--border); }
+.quality-setup-grid > article > span { display: grid; width: 1.6rem; height: 1.6rem; place-items: center; border-radius: 50%; background: var(--primary-soft); color: var(--primary); font-size: 0.68rem; font-weight: 750; }
+.quality-setup-grid .secondary-button, .quality-setup-grid .primary-button, .quality-setup-grid .status-pill { grid-column: 2; justify-self: start; margin-block-start: 0.35rem; }
+.quality-setup input[type="file"] { position: absolute; width: 1px; height: 1px; overflow: hidden; opacity: 0; }
+.quality-setup .is-disabled { opacity: 0.55; pointer-events: none; }
+.quality-datasets { border-block-start: 1px solid var(--border); }
+.quality-datasets > article { display: flex; align-items: center; justify-content: space-between; gap: 1rem; padding: 0.8rem 1.15rem; }
+.quality-datasets > article + article { border-block-start: 1px solid var(--border); }
+.quality-dataset-actions { display: flex; align-items: center; gap: 0.55rem; }
+.quality-dataset-actions small { color: var(--muted); font-size: 0.63rem; }
+.quality-setup-empty { padding: 0.85rem 1.15rem; border-block-start: 1px solid var(--border); color: var(--muted); font-size: 0.68rem; }
+.quality-setup > .quality-feedback { padding: 0.7rem 1.15rem; border-block-start: 1px solid var(--border); }
 .quality-rollout > header, .quality-gate > header, .quality-evidence > header, .quality-decisions > header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1rem 1.15rem; border-block-end: 1px solid var(--border); }
 .quality-rollout h2, .quality-gate h2, .quality-evidence h2, .quality-decisions h2 { font-size: 0.88rem; }
 .quality-rollout header p, .quality-gate header p, .quality-evidence header p, .quality-decisions header p { margin-block-start: 0.12rem; color: var(--muted); font-size: 0.67rem; }
@@ -1232,6 +1249,8 @@ td a, td > strong { font-weight: 670; }
 
 @media (max-width: 1180px) {
   .quality-workspace { grid-template-columns: 1fr; }
+  .quality-setup-grid { grid-template-columns: 1fr; }
+  .quality-setup-grid > article + article { border-inline-start: 0; border-block-start: 1px solid var(--border); }
   .quality-evidence-list { display: grid; grid-template-columns: repeat(2, 1fr); }
   .evidence-row { grid-template-columns: 1fr; }
   .evidence-row + .evidence-row { border-block-start: 0; }
@@ -1256,7 +1275,8 @@ td a, td > strong { font-weight: 670; }
 
 @media (max-width: 520px) {
   .quality-summary > div { padding: 0.75rem; }
-  .quality-rollout, .quality-gate, .quality-evidence, .quality-decisions { border-inline: 0; border-radius: 0; }
+  .quality-rollout, .quality-gate, .quality-evidence, .quality-decisions, .quality-setup { border-inline: 0; border-radius: 0; }
+  .quality-datasets > article, .quality-dataset-actions { align-items: flex-start; flex-direction: column; }
   .evidence-row dl { grid-template-columns: repeat(2, 1fr); gap: 0.6rem; }
   .evidence-row dl > div + div { border-inline-start: 0; padding-inline-start: 0; }
   .quality-observed { text-align: start; }

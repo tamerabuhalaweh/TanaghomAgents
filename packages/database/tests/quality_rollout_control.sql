@@ -69,6 +69,6 @@ SELECT tanaghom.set_quality_rollout_stage(
   'a0000000-0000-4000-8000-000000000003'
 );
 
-TRUNCATE tanaghom.quality_rollout_decisions,tanaghom.quality_evaluation_snapshots;
+TRUNCATE tanaghom.quality_rollout_decisions,tanaghom.quality_evaluation_snapshots CASCADE;
 
 SELECT 'PASS: quality rollout requires sequential, owner-approved, append-only evidence.' AS result;

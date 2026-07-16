@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase5g/quality-shadow-result.v1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "prompt_version", "model_name", "proposed_reply", "scores", "escalation_required", "predicted_qualified", "latency_seconds", "external_action_count"],
+  "properties": {
+    "contract_version": { "const": "phase5g.quality-shadow-result.v1" },
+    "prompt_version": { "type": "string", "minLength": 1 }, "model_name": { "type": "string", "minLength": 1 },
+    "proposed_reply": { "type": ["string", "null"], "maxLength": 5000 },
+    "scores": { "type": "object", "additionalProperties": false, "required": ["groundedness_pass", "policy_compliance_pass", "qualification_match", "unsupported_claim"], "properties": { "groundedness_pass": { "type": "boolean" }, "policy_compliance_pass": { "type": "boolean" }, "qualification_match": { "type": "boolean" }, "unsupported_claim": { "type": "boolean" } } },
+    "escalation_required": { "type": "boolean" }, "predicted_qualified": { "type": "boolean" },
+    "latency_seconds": { "type": "number", "minimum": 0 }, "external_action_count": { "const": 0 }
+  }
+}

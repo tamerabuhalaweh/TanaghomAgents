@@ -406,7 +406,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0020_quality_rollout_control/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0021_quality_baseline_shadow_pipeline/);
   assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
   assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
   assert.match(integration, /accept_ghl_inbound_event/);
@@ -929,4 +929,29 @@ test('Phase 5G quality rollout is sequential, evidence-backed, and runtime-indep
   assert.match(component, /Missing data is shown as “—”/);
   assert.match(component, /never activates n8n, clears an emergency stop, or sends a customer message/i);
   assert.match(decision, /performs no\s+provider call, workflow activation, server deployment, customer message, or\s+production migration/i);
+});
+
+test('Phase 5G baseline and shadow evaluation is de-identified, proposal-only, and least privileged', async () => {
+  const migration = await readFile(new URL('../packages/database/migrations/0021_quality_baseline_shadow_pipeline.up.sql', import.meta.url), 'utf8');
+  const workflow = JSON.parse(await readFile(new URL('../n8n/workflows/phase5g/quality-shadow-evaluator.v1.json', import.meta.url), 'utf8'));
+  const prompt = await readFile(new URL('../prompts/quality-shadow-evaluator/v1.md', import.meta.url), 'utf8');
+  const server = await readFile(new URL('../apps/dashboard/lib/server/quality-rollout.ts', import.meta.url), 'utf8');
+  const component = await readFile(new URL('../apps/dashboard/components/quality-rollout.tsx', import.meta.url), 'utf8');
+  for (const name of ['quality-baseline-import.v1.schema.json','quality-shadow-job.v1.schema.json','quality-shadow-result.v1.schema.json']) {
+    const schema = JSON.parse(await readFile(new URL(`../packages/contracts/schemas/phase5g/${name}`, import.meta.url), 'utf8'));
+    assert.equal(schema.$schema, 'https://json-schema.org/draft/2020-12/schema');
+  }
+  assert.match(migration, /possible personal data detected; import refused/);
+  assert.match(migration, /external_action_count integer NOT NULL CHECK \(external_action_count=0\)/);
+  assert.match(migration, /GRANT EXECUTE ON FUNCTION tanaghom\.claim_quality_shadow_job\(\),tanaghom\.persist_quality_shadow_result/);
+  assert.doesNotMatch(migration, /GRANT (INSERT|UPDATE|DELETE).+quality_.+tanaghom_n8n_worker/);
+  assert.equal(workflow.active, false);
+  assert.equal(workflow.nodes.find(node => node.type === 'n8n-nodes-base.scheduleTrigger')?.disabled, true);
+  assert.match(JSON.stringify(workflow), /claim_quality_shadow_job/);
+  assert.match(JSON.stringify(workflow), /external_action_count/);
+  assert.match(prompt, /Never send a message/);
+  assert.match(server, /approve_default_metrics/);
+  assert.match(server, /import_quality_baseline_dataset/);
+  assert.match(component, /Baseline → shadow evidence setup/);
+  assert.match(component, /Nothing in this workspace sends a message/);
 });
