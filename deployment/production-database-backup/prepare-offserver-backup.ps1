@@ -1,7 +1,7 @@
 [CmdletBinding()]
 param(
   [Parameter(Mandatory = $true)]
-  [ValidatePattern('^phase5f-\d{8}T\d{6}Z$')]
+  [ValidatePattern('^phase5[fg]-\d{8}T\d{6}Z$')]
   [string]$ReleaseId,
 
   [Parameter(Mandatory = $true)]
