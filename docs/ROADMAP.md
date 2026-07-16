@@ -144,6 +144,13 @@ or WhatsApp alert destinations without exposing values after save. Notification
 delivery remains platform-disabled and emergency-stopped; saving a destination
 does not call a provider or authorize production activation.
 
+Phase 5G begins with a customer-visible Quality & Rollout control center. It
+keeps the organization at a human-baseline evidence gate, compares the latest
+human, shadow, assisted, and bounded-autonomous cohorts without fixture data,
+and requires sequential owner-approved promotion decisions. Evaluation
+snapshots and decisions are append-only and version-attributed. A quality-stage
+decision cannot activate n8n, clear an emergency stop, or call a provider.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 
