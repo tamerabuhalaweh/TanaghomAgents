@@ -57,7 +57,8 @@ try {
   ];
   await writeFile(join(temporary, "credentials.json"), JSON.stringify(credentials));
   const workflow = JSON.parse(await readFile(join(process.cwd(), "n8n", "workflows", "phase5g", "quality-shadow-evaluator.v1.json"), "utf8"));
-  workflow.nodes.find(node => node.name === "Call Gemma").parameters.url = `http://host.docker.internal:${port}/v1/chat/completions`;
+  const simulatorHost = process.platform === "win32" ? "host.docker.internal" : "127.0.0.1";
+  workflow.nodes.find(node => node.name === "Call Gemma").parameters.url = `http://${simulatorHost}:${port}/v1/chat/completions`;
   await writeFile(join(temporary, "workflow.json"), JSON.stringify(workflow)); await chmod(temporary, 0o755);
   await Promise.all(["credentials.json", "workflow.json"].map(file => chmod(join(temporary, file), 0o644)));
   await run("docker", ["volume", "create", volume]);
