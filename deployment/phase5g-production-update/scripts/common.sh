@@ -66,7 +66,7 @@ compose() {
 
 proof_value() {
   key=$1
-  awk -F= -v wanted="$key" '$1 == wanted { print substr($0, index($0, "=") + 1); found=1 } END { if (!found) exit 1 }' "$TANAGHOM_BACKUP_PROOF"
+  awk -F= -v wanted="$key" '$1 == wanted { value=substr($0, index($0, "=") + 1); sub(/\r$/, "", value); print value; found=1 } END { if (!found) exit 1 }' "$TANAGHOM_BACKUP_PROOF"
 }
 
 evidence_value() {

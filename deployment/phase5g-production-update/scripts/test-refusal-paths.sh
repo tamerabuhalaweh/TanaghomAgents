@@ -58,4 +58,14 @@ expect_refusal env \
   TANAGHOM_BACKUP_PROOF="$proof" \
   sh -c ". '$SCRIPT_DIR/common.sh'; require_release_environment; validate_backup_proof"
 
-echo 'PASS: missing authorization, malformed release identity, short commit, and invalid backup proof are refused.'
+printf 'RELEASE_ID=%s\r\nSOURCE_MIGRATION=0019_notification_monitoring_destinations\r\nARCHIVE_SHA256=0000000000000000000000000000000000000000000000000000000000000000\r\nRESTORE_VERIFIED=YES\r\n' "$RELEASE" > "$proof"
+chmod 0600 "$proof"
+env \
+  TANAGHOM_RELEASE_AUTHORIZATION=YES-I-AM-THE-AUTHORIZED-OWNER \
+  TANAGHOM_RELEASE_ID="$RELEASE" \
+  TANAGHOM_EXPECTED_CURRENT_COMMIT="$CURRENT" \
+  TANAGHOM_TARGET_COMMIT="$TARGET" \
+  TANAGHOM_BACKUP_PROOF="$proof" \
+  sh -c ". '$SCRIPT_DIR/common.sh'; require_release_environment; validate_backup_proof"
+
+echo 'PASS: invalid release inputs are refused and Windows CRLF backup proof is accepted.'

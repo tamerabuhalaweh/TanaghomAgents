@@ -17,6 +17,7 @@ for file in "$package"/scripts/*.sh; do
 done
 
 grep -q 'YES-I-AM-THE-AUTHORIZED-OWNER' "$package/scripts/common.sh"
+grep -q 'sub(/\\r$/' "$package/scripts/common.sh"
 grep -q 'ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE' "$package/scripts/rollback-update.sh"
 grep -q 'EXPECTED_START_MIGRATION=0019_notification_monitoring_destinations' "$package/scripts/common.sh"
 grep -q 'TARGET_MIGRATION=0020_quality_rollout_control' "$package/scripts/common.sh"
@@ -32,6 +33,7 @@ grep -q 'postgres:17.6-alpine3.22@sha256:' "$shared_backup"
 grep -q 'phase5\[fg\]' "$shared_backup"
 grep -q -- '--network none' "$shared_backup"
 grep -q '0020 rollback unexpectedly accepted quality evidence' "$package/scripts/test-disposable-lifecycle.sh"
+grep -q 'Windows CRLF backup proof is accepted' "$package/scripts/test-refusal-paths.sh"
 grep -q 'No deployment is authorized by this document' "$package/RUNBOOK.md"
 
 echo 'PASS: Phase 5G production update package is syntactically valid, evidence-preserving, and protected-service scoped.'
