@@ -830,6 +830,7 @@ test('Phase 5G production update is exact, quality-evidence-preserving, and Tana
   assert.match(common, /TARGET_MIGRATION=0020_quality_rollout_control/);
   assert.match(common, /PENDING_MIGRATIONS='0020_quality_rollout_control'/);
   assert.match(common, /assert_quality_tables_safe_to_drop/);
+  assert.match(common, /sub\(\/\\r\$\//);
   assert.doesNotMatch(common, /PENDING_MIGRATIONS='[^']*001[5-9]_/);
   assert.match(preflight, /assert_database_at_start/);
   assert.match(preflight, /less than 20 GiB/);
