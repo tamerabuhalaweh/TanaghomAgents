@@ -406,7 +406,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0019_notification_monitoring_destinations/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0020_quality_rollout_control/);
   assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
   assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
   assert.match(integration, /accept_ghl_inbound_event/);
@@ -856,4 +856,28 @@ test('Phase 5F database bridge is database-only, PostgreSQL 17.6-pinned, and rev
   assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload)|iptables (-A|-I|-D|-N|-F|-X)|nft /i);
   assert.doesNotMatch(protectedScope, /docker (build|pull|stop|restart|rm)|docker compose.+(up|down|stop|restart|rm)/i);
   assert.doesNotMatch(protectedScope, /\/data\/|\/opt\/(smartlabs|n8n-smartlabs)/i);
+});
+
+test('Phase 5G quality rollout is sequential, evidence-backed, and runtime-independent', async () => {
+  const up = await readFile(new URL('../packages/database/migrations/0020_quality_rollout_control.up.sql', import.meta.url), 'utf8');
+  const down = await readFile(new URL('../packages/database/migrations/0020_quality_rollout_control.down.sql', import.meta.url), 'utf8');
+  const assertion = await readFile(new URL('../packages/database/tests/quality_rollout_control.sql', import.meta.url), 'utf8');
+  const server = await readFile(new URL('../apps/dashboard/lib/server/quality-rollout.ts', import.meta.url), 'utf8');
+  const component = await readFile(new URL('../apps/dashboard/components/quality-rollout.tsx', import.meta.url), 'utf8');
+  const decision = await readFile(new URL('../docs/architecture/0011-quality-evidence-and-rollout.md', import.meta.url), 'utf8');
+
+  assert.match(up, /current_stage text NOT NULL DEFAULT 'baseline'/);
+  assert.match(up, /cohort IN \('human_baseline','ai_shadow','assisted','bounded_autonomous'\)/);
+  assert.match(up, /version_attribution \?& ARRAY\['model','prompt','knowledge','policy','campaign'\]/);
+  assert.match(up, /quality evaluation evidence is append-only/);
+  assert.match(up, /quality rollout stages must be promoted sequentially/);
+  assert.match(up, /REVOKE ALL ON tanaghom\.quality_rollout_policies[\s\S]+tanaghom_n8n_worker,tanaghom_conversation_worker/);
+  assert.doesNotMatch(up, /GRANT (INSERT|UPDATE|DELETE).+tanaghom_(n8n|conversation)_worker/);
+  assert.match(down, /preserve quality evaluation evidence before rolling back 0020/);
+  assert.match(assertion, /promotion succeeded without baseline evidence/);
+  assert.match(assertion, /append-only snapshot accepted mutation/);
+  assert.match(server, /viewer: \{ role: user\.role, can_promote: user\.role === "owner" \}/);
+  assert.match(component, /Missing data is shown as “—”/);
+  assert.match(component, /never activates n8n, clears an emergency stop, or sends a customer message/i);
+  assert.match(decision, /performs no\s+provider call, workflow activation, server deployment, customer message, or\s+production migration/i);
 });

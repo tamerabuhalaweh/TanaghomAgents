@@ -18,6 +18,7 @@ import {
   LibraryBig,
   BookOpenCheck,
   UsersRound,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -35,6 +36,7 @@ const primaryNavigation = [
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/leads", label: "Leads", icon: ContactRound },
   { href: "/reports", label: "Reports", icon: ChartNoAxesCombined },
+  { href: "/quality", label: "Quality & rollout", icon: ShieldCheck },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {

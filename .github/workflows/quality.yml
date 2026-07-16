@@ -49,7 +49,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0019_notification_monitoring_destinations
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0020_quality_rollout_control
 
   phase5f-database-bridge-contract:
     runs-on: ubuntu-latest
