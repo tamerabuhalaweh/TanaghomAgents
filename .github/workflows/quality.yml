@@ -22,6 +22,7 @@ jobs:
       - run: deployment/phase5d-production-update/scripts/validate-package.sh
       - run: deployment/phase5f-database-bridge/scripts/validate-package.sh
       - run: deployment/phase5f-production-update/scripts/validate-package.sh
+      - run: deployment/phase5g-production-update/scripts/validate-package.sh
 
   database-contract:
     runs-on: ubuntu-latest
@@ -95,6 +96,28 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - run: deployment/phase5f-production-update/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
+
+  phase5g-production-update-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    services:
+      postgres:
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_phase5g_update_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_phase5g_update_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5g_update_test
+    steps:
+      - uses: actions/checkout@v4
+      - run: deployment/phase5g-production-update/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
 
   dashboard-contract:
     runs-on: ubuntu-latest
