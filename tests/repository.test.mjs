@@ -823,6 +823,7 @@ test('Phase 5G production update is exact, quality-evidence-preserving, and Tana
   const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
   const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const sharedBackup = await readFile(new URL('../deployment/production-database-backup/prepare-offserver-backup.ps1', import.meta.url), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
   assert.match(common, /EXPECTED_START_MIGRATION=0019_notification_monitoring_destinations/);
@@ -842,6 +843,8 @@ test('Phase 5G production update is exact, quality-evidence-preserving, and Tana
   assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE/);
   assert.match(rollback, /assert_quality_tables_safe_to_drop/);
   assert.match(backup, /ExpectedMigration = '0019_notification_monitoring_destinations'/);
+  assert.match(backup, /-ExpectedMigration \$ExpectedMigration/);
+  assert.match(sharedBackup, /phase5\[fg\]-\\d\{8\}T\\d\{6\}Z/);
   assert.match(lifecycle, /0020 rollback unexpectedly accepted quality evidence/);
   assert.match(lifecycle, /count\(\*\) FROM tanaghom\.notification_destinations/);
   assert.match(packageValidation, /sh -n/);

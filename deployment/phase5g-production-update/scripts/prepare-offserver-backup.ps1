@@ -10,4 +10,7 @@ param(
   [string]$ExpectedMigration = '0019_notification_monitoring_destinations'
 )
 
-& "$PSScriptRoot\..\..\production-database-backup\prepare-offserver-backup.ps1" @PSBoundParameters
+& "$PSScriptRoot\..\..\production-database-backup\prepare-offserver-backup.ps1" `
+  -ReleaseId $ReleaseId `
+  -OutputRoot $OutputRoot `
+  -ExpectedMigration $ExpectedMigration
