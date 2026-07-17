@@ -75,7 +75,8 @@ docker exec -u root "$n8n_container" test -s "$container_import"
 docker exec -u root "$n8n_container" chmod 0444 "$container_import"
 docker exec -u node "$n8n_container" test -r "$container_import"
 docker exec -u node "$n8n_container" n8n import:workflow --input="$container_import" --activeState=false >/dev/null
-docker exec -u root "$n8n_container" rm -f "$container_import"
+docker exec -u node "$n8n_container" rm -f "$container_import"
+docker exec -u node "$n8n_container" test ! -e "$container_import"
 test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM workflow_entity WHERE id='$workflow_id' AND active IS FALSE;")" = 1
 container_export="/home/node/tanaghom-workflows-disposable-$$.json"
 docker exec -u node "$n8n_container" n8n export:workflow --all --pretty --output="$container_export" >/dev/null

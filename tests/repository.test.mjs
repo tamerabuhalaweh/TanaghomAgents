@@ -888,6 +888,10 @@ test('Phase 5G shadow production update is exact, inactive, reversible, and exis
   assert.match(deploy, /workflow_remote="\/home\/node\//);
   assert.match(deploy, /docker exec -u root .* test -s "\$workflow_remote"/);
   assert.match(deploy, /docker exec -u node .* test -r "\$workflow_remote"/);
+  assert.match(deploy, /docker exec -u node .* rm -f "\$workflow_remote"/);
+  assert.doesNotMatch(deploy, /docker exec -u root .* rm -f "\$workflow_remote"/);
+  assert.match(deploy, /ROLLBACK_CLEANUP_FAILED=YES/);
+  assert.match(deploy, /if test "\$rollback_failed" -eq 0; then rollback_applied_migrations/);
   assert.match(deploy, /n8n audit/);
   assert.match(deploy, /trap automatic_rollback EXIT/);
   assert.ok(deploy.indexOf('trap automatic_rollback EXIT') < deploy.indexOf('capture_protected_container_ids'), 'failure trap must precede evidence capture');
@@ -898,6 +902,7 @@ test('Phase 5G shadow production update is exact, inactive, reversible, and exis
   assert.match(databaseLifecycle, /0021 rollback unexpectedly accepted metric evidence/);
   assert.match(workflowLifecycle, /host-copied, container-imported inactive, container-exported, host-verified, audited, and transactionally removed exactly one zero-execution shadow workflow/);
   assert.match(workflowLifecycle, /docker cp .*quality-shadow-evaluator\.v1\.json.*\$n8n_container:\$container_import/);
+  assert.match(workflowLifecycle, /docker exec -u node .* rm -f "\$container_import"/);
   assert.match(workflowLifecycle, /docker cp "\$n8n_container:\$container_export"/);
   assert.match(runbook, /No deployment is authorized by this document/);
   assert.match(runbook, /does not execute the workflow/i);
