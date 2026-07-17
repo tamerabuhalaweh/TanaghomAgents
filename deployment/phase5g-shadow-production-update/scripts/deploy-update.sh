@@ -36,8 +36,9 @@ automatic_rollback() {
   test "$committed" = false || return 0
   set +e
   rollback_failed=0
+  rollback_cleanup_failed=0
   echo 'Release did not commit; restoring the Tanaghom dashboard, new inactive workflow, and package migration.' >&2
-  docker exec -u root "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote" >/dev/null 2>&1 || rollback_failed=1
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote" >/dev/null 2>&1 || rollback_cleanup_failed=1
   if test "$(workflow_count 2>/dev/null)" = 1; then
     delete_quality_workflow || rollback_failed=1
   fi
@@ -53,6 +54,10 @@ automatic_rollback() {
   fi
   if test "$rollback_failed" -eq 0; then rollback_applied_migrations || rollback_failed=1; fi
   echo "ROLLED_BACK_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >> "$evidence_dir/release.env"
+  if test "$rollback_cleanup_failed" -ne 0; then
+    echo 'ROLLBACK_CLEANUP_FAILED=YES' >> "$evidence_dir/release.env"
+    echo 'WARNING: critical rollback completed but package-owned temporary-file cleanup requires review.' >&2
+  fi
   if test "$rollback_failed" -ne 0; then
     echo 'ROLLBACK_FAILED=YES' >> "$evidence_dir/release.env"
     echo 'ERROR: automatic rollback was incomplete; keep every emergency stop active.' >&2
@@ -118,13 +123,13 @@ until test "$(container_health tanaghom-dashboard-canary-dashboard-1)" = healthy
   sleep 5
 done
 
-docker exec -u root "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote" >/dev/null 2>&1 || true
+docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote" >/dev/null 2>&1 || true
 docker cp "$WORKFLOW_SOURCE" "$N8N_MAIN_CONTAINER:$workflow_remote" >/dev/null
 docker exec -u root "$N8N_MAIN_CONTAINER" test -s "$workflow_remote"
 docker exec -u root "$N8N_MAIN_CONTAINER" chmod 0444 "$workflow_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" test -r "$workflow_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" n8n import:workflow --input="$workflow_remote" --activeState=false
-docker exec -u root "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote"
+docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote"
 assert_workflow_inactive
 export_all_workflows "$evidence_dir/n8n-workflows.after.json"
 assert_existing_workflows_unchanged "$evidence_dir/n8n-workflows.before.json" "$evidence_dir/n8n-workflows.after.json"
