@@ -39,7 +39,9 @@
     "test:phase5-resilience": "node scripts/conversation-resilience-integration.mjs",
     "test:phase5-runtime-recovery": "node scripts/n8n-runtime-recovery-integration.mjs",
     "test:phase5-retention": "node scripts/n8n-retention-pruning-integration.mjs",
-    "test:phase5-dependency-loss": "node scripts/n8n-dependency-loss-integration.mjs"
+    "test:phase5-dependency-loss": "node scripts/n8n-dependency-loss-integration.mjs",
+    "generate:phase5g-workflows": "node scripts/generate-phase5g-workflows.mjs",
+    "test:phase5g-quality": "node scripts/quality-shadow-workflow-integration.mjs"
   },
   "devDependencies": {
     "ajv": "^8.18.0",

@@ -50,7 +50,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0020_quality_rollout_control
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0021_quality_baseline_shadow_pipeline
 
   phase5f-database-bridge-contract:
     runs-on: ubuntu-latest
@@ -367,6 +367,38 @@ jobs:
           path: tmp/conversation-capacity-evidence.json
           if-no-files-found: error
           retention-days: 30
+
+  phase5g-quality-shadow-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    services:
+      postgres:
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_phase5g_shadow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_phase5g_shadow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5g_shadow_test
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5g_shadow_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f packages/database/seeds/staging.sql
+      - run: npm run generate:phase5g-workflows
+      - run: git diff --exit-code -- n8n/workflows/phase5g
+      - run: npm run test:phase5g-quality
 
   phase5-resilience-integration:
     runs-on: ubuntu-latest

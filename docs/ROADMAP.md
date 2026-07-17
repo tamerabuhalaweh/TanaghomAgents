@@ -151,6 +151,12 @@ and requires sequential owner-approved promotion decisions. Evaluation
 snapshots and decisions are append-only and version-attributed. A quality-stage
 decision cannot activate n8n, clear an emergency stop, or call a provider.
 
+The credential-independent Phase 5G evaluation slice adds owner-approved metric
+versions, de-identified human-baseline imports, an inactive proposal-only Gemma
+evaluator, and scored human-versus-AI evidence in the Quality workspace. The
+worker has controlled-function access only, every result records zero external
+actions, and production import or execution remains separately authorized.
+
 **Gate:** test leads complete the CRM lifecycle with a timestamped explanation of
 every message and state transition.
 

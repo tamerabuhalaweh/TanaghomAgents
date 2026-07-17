@@ -54,6 +54,7 @@ const ghlActionReviewAssertions = join(root, 'packages', 'database', 'tests', 'g
 const capacityAssertions = join(root, 'packages', 'database', 'tests', 'conversation_capacity_backpressure.sql');
 const notificationAssertions = join(root, 'packages', 'database', 'tests', 'notification_monitoring_destinations.sql');
 const qualityRolloutAssertions = join(root, 'packages', 'database', 'tests', 'quality_rollout_control.sql');
+const qualityBaselineShadowAssertions = join(root, 'packages', 'database', 'tests', 'quality_baseline_shadow_pipeline.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -75,6 +76,7 @@ psql('-f', ghlActionReviewAssertions);
 psql('-f', capacityAssertions);
 psql('-f', notificationAssertions);
 psql('-f', qualityRolloutAssertions);
+psql('-f', qualityBaselineShadowAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -82,6 +84,8 @@ psql('-f', qualityRolloutAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.quality_evaluation_datasets') IS NOT NULL OR to_regprocedure('tanaghom.claim_quality_shadow_job()') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0021_quality_baseline_shadow_pipeline') THEN RAISE EXCEPTION '0021 rollback left quality pipeline objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.quality_rollout_policies') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0020_quality_rollout_control') THEN RAISE EXCEPTION '0020 rollback left quality rollout objects behind'; END IF; END $$;");
 database('rollback');

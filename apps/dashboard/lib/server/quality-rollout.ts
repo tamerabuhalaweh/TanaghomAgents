@@ -83,7 +83,7 @@ function gate(policy: PolicyRow, snapshots: ReturnType<typeof snapshot>[]) {
 
 export async function getQualityRollout(request: NextRequest) {
   const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
-  const [policyResult, snapshotResult, decisionsResult] = await Promise.all([
+  const [policyResult, snapshotResult, decisionsResult, programResult, datasetResult] = await Promise.all([
     database().query<PolicyRow>(
       `SELECT policy.*,actor.display_name AS changed_by_name
          FROM tanaghom.quality_rollout_policies policy
@@ -103,6 +103,20 @@ export async function getQualityRollout(request: NextRequest) {
          FROM tanaghom.quality_rollout_decisions decision
          JOIN tanaghom.app_users actor ON actor.id=decision.decided_by
         WHERE decision.organization_id=$1 ORDER BY decision.decided_at DESC LIMIT 20`, [user.organizationId]),
+    database().query(
+      `SELECT id,version_number,status,formulas,thresholds,notes,created_at,approved_at
+         FROM tanaghom.quality_metric_program_versions
+        WHERE organization_id=$1 ORDER BY version_number DESC LIMIT 5`, [user.organizationId]),
+    database().query(
+      `SELECT dataset.id,dataset.source_label AS name,dataset.status,dataset.case_count,dataset.period_start,dataset.period_end,
+              dataset.source_sha256 AS source_hash,dataset.pii_attested AS pii_removed_attested,dataset.imported_at,
+              count(job.id)::integer AS job_count,
+              count(job.id) FILTER (WHERE job.status='succeeded')::integer AS succeeded_jobs,
+              count(job.id) FILTER (WHERE job.status='failed')::integer AS failed_jobs
+         FROM tanaghom.quality_evaluation_datasets dataset
+         LEFT JOIN tanaghom.quality_shadow_jobs job ON job.dataset_id=dataset.id
+        WHERE dataset.organization_id=$1
+        GROUP BY dataset.id ORDER BY dataset.imported_at DESC LIMIT 20`, [user.organizationId]),
   ]);
   const policy = policyResult.rows[0];
   if (!policy) throw new QualityRolloutError("quality_rollout_not_found", 503);
@@ -122,6 +136,7 @@ export async function getQualityRollout(request: NextRequest) {
       changed_by: policy.changed_by ? { id: policy.changed_by, display_name: policy.changed_by_name || "Tanaghom Admin" } : null,
     },
     promotion_gate: gate(policy, snapshots), snapshots, decisions: decisionsResult.rows,
+    evidence_setup: { metric_programs: programResult.rows, datasets: datasetResult.rows },
   };
 }
 
@@ -132,7 +147,56 @@ function mapDatabaseError(error: unknown) {
   if (/threshold gate/i.test(message)) return new QualityRolloutError("quality_threshold_gate_failed", 409);
   if (/sequentially/i.test(message)) return new QualityRolloutError("quality_stage_sequence_invalid", 409);
   if (/rationale|invalid quality rollout stage/i.test(message)) return new QualityRolloutError("quality_request_invalid", 400);
+  if (/PII|de-identified|attestation|personal data/i.test(message)) return new QualityRolloutError("quality_import_contains_pii", 409);
+  if (/metric program|formulas|thresholds/i.test(message)) return new QualityRolloutError("quality_metrics_required", 409);
+  if (/shadow run is not authorized/i.test(message)) return new QualityRolloutError("quality_shadow_not_authorized", 409);
   return error;
+}
+
+const defaultFormulas = {
+  response_time: "Average seconds from inbound message to first human reply",
+  coverage: "Percent of reviewed cases with a human reply",
+  groundedness: "Percent of AI proposals supported by approved knowledge",
+  policy_compliance: "Percent of AI proposals passing approved policy review",
+  qualification_accuracy: "Percent of AI labels matching the reviewed human qualification label",
+  qualification: "Percent of reviewed cases marked qualified", booking: "Percent with a booked appointment",
+  won: "Percent marked won during the measurement period", unsupported_claim: "Percent with an unsupported factual claim",
+  complaint: "Percent marked as a complaint", opt_out: "Percent marked opted out",
+};
+const defaultThresholds = { minimum_sample_size: 25, minimum_groundedness_percent: 90,
+  minimum_policy_compliance_percent: 95, minimum_qualification_accuracy_percent: 85,
+  maximum_unsupported_claim_percent: 1, maximum_complaint_percent: 1, maximum_opt_out_percent: 5 };
+
+export async function updateQualityEvidence(request: NextRequest) {
+  enforceSameOriginForCookieMutation(request);
+  const owner = await authorize(request, ["owner"]);
+  let body: Record<string, unknown>;
+  try { body = await request.json() as Record<string, unknown>; }
+  catch { throw new QualityRolloutError("invalid_json", 400); }
+  try {
+    if (body.action === "approve_default_metrics") {
+      const created = await database().query<{ id: string }>(
+        "SELECT tanaghom.create_quality_metric_program($1,$2::jsonb,$3::jsonb,$4) AS id",
+        [owner.id, defaultFormulas, defaultThresholds, "Tanaghom Phase 5G reviewed comparison formulas and conservative rollout thresholds."]);
+      await database().query("SELECT tanaghom.approve_quality_metric_program($1,$2)", [owner.id, created.rows[0].id]);
+    } else if (body.action === "import_baseline") {
+      const dataset = body.dataset as Record<string, unknown> | null;
+      if (!dataset || dataset.contract_version !== "phase5g.quality-baseline-import.v1" || !Array.isArray(dataset.cases)) throw new QualityRolloutError("quality_request_invalid", 400);
+      await database().query(
+        "SELECT tanaghom.import_quality_baseline_dataset($1,$2,$3,$4::timestamptz,$5::timestamptz,$6::jsonb,$7::jsonb,$8::boolean)",
+        [owner.id,dataset.name,dataset.source_hash,dataset.period_start,dataset.period_end,dataset.versions,JSON.stringify(dataset.cases),dataset.pii_removed_attestation]);
+    } else if (body.action === "record_baseline") {
+      await database().query("SELECT tanaghom.record_quality_dataset_snapshot($1,$2::uuid,'human_baseline',$3,$4)",
+        [owner.id,body.dataset_id,"Reviewed de-identified human baseline; outcomes are observational, not causal.","Tanaghom Quality dashboard import"]);
+    } else if (body.action === "queue_shadow") {
+      await database().query("SELECT tanaghom.queue_quality_shadow_run($1,$2::uuid,$3::jsonb)", [owner.id,body.dataset_id,
+        { model: "gemma4-26b-a4b-canary", prompt: "quality-shadow-evaluator/v1", knowledge: "approved-current", policy: "manual-v1", campaign: "evaluation-only" }]);
+    } else if (body.action === "record_shadow") {
+      await database().query("SELECT tanaghom.record_quality_dataset_snapshot($1,$2::uuid,'ai_shadow',$3,$4)",
+        [owner.id,body.dataset_id,"Proposal-only AI shadow results; no message was sent and no provider action occurred.","Tanaghom Quality shadow evaluator"]);
+    } else throw new QualityRolloutError("quality_request_invalid", 400);
+  } catch (error) { if (error instanceof QualityRolloutError) throw error; throw mapDatabaseError(error); }
+  return getQualityRollout(request);
 }
 
 export async function updateQualityRollout(request: NextRequest) {
