@@ -14,6 +14,7 @@ applied_file="$evidence_dir/applied-migrations"
 committed=false
 source_changed=false
 image_saved=false
+workflow_remote="/home/node/$WORKFLOW_ID-$TANAGHOM_RELEASE_ID.json"
 
 test ! -e "$evidence_dir" || die 'release evidence directory already exists'
 install -d -o root -g root -m 0700 "$evidence_dir"
@@ -36,6 +37,7 @@ automatic_rollback() {
   set +e
   rollback_failed=0
   echo 'Release did not commit; restoring the Tanaghom dashboard, new inactive workflow, and package migration.' >&2
+  docker exec -u root "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote" >/dev/null 2>&1 || rollback_failed=1
   if test "$(workflow_count 2>/dev/null)" = 1; then
     delete_quality_workflow || rollback_failed=1
   fi
@@ -116,9 +118,11 @@ until test "$(container_health tanaghom-dashboard-canary-dashboard-1)" = healthy
   sleep 5
 done
 
-workflow_remote="/tmp/$WORKFLOW_ID-$TANAGHOM_RELEASE_ID.json"
+docker exec -u root "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote" >/dev/null 2>&1 || true
 docker cp "$WORKFLOW_SOURCE" "$N8N_MAIN_CONTAINER:$workflow_remote" >/dev/null
+docker exec -u root "$N8N_MAIN_CONTAINER" test -s "$workflow_remote"
 docker exec -u root "$N8N_MAIN_CONTAINER" chmod 0444 "$workflow_remote"
+docker exec -u node "$N8N_MAIN_CONTAINER" test -r "$workflow_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" n8n import:workflow --input="$workflow_remote" --activeState=false
 docker exec -u root "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote"
 assert_workflow_inactive

@@ -68,6 +68,15 @@ docker run -d --name "$n8n_container" --network host \
   -e DB_TYPE=postgresdb -e DB_POSTGRESDB_HOST="$host" -e DB_POSTGRESDB_PORT="$port" \
   -e DB_POSTGRESDB_DATABASE=n8n_shadow_test -e DB_POSTGRESDB_USER=postgres -e DB_POSTGRESDB_PASSWORD=postgres \
   -e N8N_DIAGNOSTICS_ENABLED=false --entrypoint sh "$image" -c 'exec sleep 300' >/dev/null
+echo 'TEST: copy the reviewed workflow into the non-root container home and import it inactive'
+container_import="/home/node/quality-shadow-import-disposable-$$.json"
+docker cp "$root/n8n/workflows/phase5g/quality-shadow-evaluator.v1.json" "$n8n_container:$container_import" >/dev/null
+docker exec -u root "$n8n_container" test -s "$container_import"
+docker exec -u root "$n8n_container" chmod 0444 "$container_import"
+docker exec -u node "$n8n_container" test -r "$container_import"
+docker exec -u node "$n8n_container" n8n import:workflow --input="$container_import" --activeState=false >/dev/null
+docker exec -u root "$n8n_container" rm -f "$container_import"
+test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM workflow_entity WHERE id='$workflow_id' AND active IS FALSE;")" = 1
 container_export="/home/node/tanaghom-workflows-disposable-$$.json"
 docker exec -u node "$n8n_container" n8n export:workflow --all --pretty --output="$container_export" >/dev/null
 docker exec -u node "$n8n_container" test -s "$container_export"
@@ -84,4 +93,4 @@ test -s "$temporary/audit.txt"
 docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -v ON_ERROR_STOP=1 -c "DELETE FROM workflow_entity WHERE id='$workflow_id' AND active IS FALSE;" >/dev/null
 test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM workflow_entity WHERE id='$workflow_id';")" = 0
 
-echo 'PASS: pinned n8n imported, container-exported, host-copied, audited, and transactionally removed exactly one inactive zero-execution shadow workflow.'
+echo 'PASS: pinned n8n host-copied, container-imported inactive, container-exported, host-verified, audited, and transactionally removed exactly one zero-execution shadow workflow.'
