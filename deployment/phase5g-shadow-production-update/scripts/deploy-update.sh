@@ -20,34 +20,6 @@ install -d -o root -g root -m 0700 "$evidence_dir"
 : > "$applied_file"
 chmod 0600 "$applied_file"
 
-capture_protected_container_ids "$evidence_dir/n8n-container-ids.before"
-capture_firewall_boundary "$evidence_dir/firewall.before"
-sha256sum /etc/nginx/conf.d/tanaghom-public.conf > "$evidence_dir/nginx.before.sha256"
-export_all_workflows "$evidence_dir/n8n-workflows.before.json"
-before_image=$(docker image inspect tanaghom-dashboard-canary:canary --format '{{.Id}}')
-cat > "$evidence_dir/release.env" <<EOF
-RELEASE_ID=$TANAGHOM_RELEASE_ID
-EXPECTED_CURRENT_COMMIT=$TANAGHOM_EXPECTED_CURRENT_COMMIT
-TARGET_COMMIT=$TANAGHOM_TARGET_COMMIT
-EXPECTED_START_MIGRATION=$EXPECTED_START_MIGRATION
-TARGET_MIGRATION=$TARGET_MIGRATION
-WORKFLOW_ID=$WORKFLOW_ID
-ROLLBACK_IMAGE=$rollback_image
-PREVIOUS_IMAGE_ID=$before_image
-STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-EOF
-chmod 0600 "$evidence_dir"/*
-git -C "$RELEASE_SOURCE_ROOT" show --no-patch --format='%H %cI %s' "$TANAGHOM_TARGET_COMMIT" > "$evidence_dir/target-commit.txt"
-sha256sum "$WORKFLOW_SOURCE" > "$evidence_dir/workflow-source.sha256"
-: > "$evidence_dir/up-migrations.sha256"
-: > "$evidence_dir/down-migrations.sha256"
-for version in $PENDING_MIGRATIONS; do
-  sha256sum "$RELEASE_SOURCE_ROOT/packages/database/migrations/$version.up.sql" >> "$evidence_dir/up-migrations.sha256"
-  sha256sum "$RELEASE_SOURCE_ROOT/packages/database/migrations/$version.down.sql" >> "$evidence_dir/down-migrations.sha256"
-done
-cp "$TANAGHOM_BACKUP_PROOF" "$evidence_dir/offserver-backup-proof.env"
-chmod 0600 "$evidence_dir"/*
-
 rollback_applied_migrations() {
   reversed=$(mktemp)
   awk '{ lines[NR]=$0 } END { for (i=NR; i>=1; i--) print lines[i] }' "$applied_file" > "$reversed"
@@ -86,6 +58,34 @@ automatic_rollback() {
 }
 trap automatic_rollback EXIT
 trap 'exit 70' HUP INT TERM
+
+capture_protected_container_ids "$evidence_dir/n8n-container-ids.before"
+capture_firewall_boundary "$evidence_dir/firewall.before"
+sha256sum /etc/nginx/conf.d/tanaghom-public.conf > "$evidence_dir/nginx.before.sha256"
+export_all_workflows "$evidence_dir/n8n-workflows.before.json"
+before_image=$(docker image inspect tanaghom-dashboard-canary:canary --format '{{.Id}}')
+cat > "$evidence_dir/release.env" <<EOF
+RELEASE_ID=$TANAGHOM_RELEASE_ID
+EXPECTED_CURRENT_COMMIT=$TANAGHOM_EXPECTED_CURRENT_COMMIT
+TARGET_COMMIT=$TANAGHOM_TARGET_COMMIT
+EXPECTED_START_MIGRATION=$EXPECTED_START_MIGRATION
+TARGET_MIGRATION=$TARGET_MIGRATION
+WORKFLOW_ID=$WORKFLOW_ID
+ROLLBACK_IMAGE=$rollback_image
+PREVIOUS_IMAGE_ID=$before_image
+STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+EOF
+chmod 0600 "$evidence_dir"/*
+git -C "$RELEASE_SOURCE_ROOT" show --no-patch --format='%H %cI %s' "$TANAGHOM_TARGET_COMMIT" > "$evidence_dir/target-commit.txt"
+sha256sum "$WORKFLOW_SOURCE" > "$evidence_dir/workflow-source.sha256"
+: > "$evidence_dir/up-migrations.sha256"
+: > "$evidence_dir/down-migrations.sha256"
+for version in $PENDING_MIGRATIONS; do
+  sha256sum "$RELEASE_SOURCE_ROOT/packages/database/migrations/$version.up.sql" >> "$evidence_dir/up-migrations.sha256"
+  sha256sum "$RELEASE_SOURCE_ROOT/packages/database/migrations/$version.down.sql" >> "$evidence_dir/down-migrations.sha256"
+done
+cp "$TANAGHOM_BACKUP_PROOF" "$evidence_dir/offserver-backup-proof.env"
+chmod 0600 "$evidence_dir"/*
 
 docker image tag tanaghom-dashboard-canary:canary "$rollback_image"
 image_saved=true
