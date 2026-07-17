@@ -861,6 +861,46 @@ test('Phase 5G production update is exact, quality-evidence-preserving, and Tana
   assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
 });
 
+test('Phase 5G shadow production update is exact, inactive, reversible, and existing-workflow preserving', async () => {
+  const root = new URL('../deployment/phase5g-shadow-production-update/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const databaseLifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const workflowLifecycle = await readFile(new URL('scripts/test-disposable-workflow-lifecycle.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_START_MIGRATION=0020_quality_rollout_control/);
+  assert.match(common, /TARGET_MIGRATION=0021_quality_baseline_shadow_pipeline/);
+  assert.match(common, /WORKFLOW_ID=phase5gQualityShadowEvaluatorV1/);
+  assert.match(common, /N8N_EXPECTED_VERSION=2\.26\.8/);
+  assert.match(common, /assert_existing_workflows_unchanged/);
+  assert.match(common, /DELETE FROM workflow_entity WHERE id=/);
+  assert.match(preflight, /assert_workflow_absent/);
+  assert.match(preflight, /validate_workflow_source/);
+  assert.match(deploy, /import:workflow --input=.*--activeState=false/);
+  assert.match(deploy, /n8n audit/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(common, /workflow_execution_count/);
+  assert.match(validate, /has_function_privilege\('tanaghom_n8n_worker','tanaghom\.claim_quality_shadow_job\(\)'/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-SHADOW-RELEASE/);
+  assert.match(rollback, /delete_quality_workflow/);
+  assert.match(databaseLifecycle, /0021 rollback unexpectedly accepted metric evidence/);
+  assert.match(workflowLifecycle, /transactionally removed exactly one inactive zero-execution shadow workflow/);
+  assert.match(runbook, /No deployment is authorized by this document/);
+  assert.match(runbook, /does not execute the workflow/i);
+  assert.match(quality, /phase5g-shadow-production-update-contract/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|gemma|voice|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
+  assert.doesNotMatch(protectedScope, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});
+
 test('Phase 5F database bridge is database-only, PostgreSQL 17.6-pinned, and reversibly tested', async () => {
   const root = new URL('../deployment/phase5f-database-bridge/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
