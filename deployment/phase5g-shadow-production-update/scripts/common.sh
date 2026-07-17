@@ -72,11 +72,23 @@ validate_workflow_source() {
 
 export_all_workflows() {
   destination=$1
-  remote="/tmp/tanaghom-workflows-$TANAGHOM_RELEASE_ID-$$.json"
-  docker exec -u node "$N8N_MAIN_CONTAINER" n8n export:workflow --all --pretty --output="$remote" >/dev/null
-  docker cp "$N8N_MAIN_CONTAINER:$remote" "$destination" >/dev/null
-  docker exec -u root "$N8N_MAIN_CONTAINER" rm -f "$remote"
+  remote="/home/node/tanaghom-workflows-$TANAGHOM_RELEASE_ID-$$.json"
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" >/dev/null 2>&1 || true
+  if ! docker exec -u node "$N8N_MAIN_CONTAINER" n8n export:workflow --all --pretty --output="$remote" >/dev/null; then
+    docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" >/dev/null 2>&1 || true
+    return 1
+  fi
+  if ! docker exec -u node "$N8N_MAIN_CONTAINER" test -s "$remote"; then
+    docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" >/dev/null 2>&1 || true
+    return 1
+  fi
+  if ! docker cp "$N8N_MAIN_CONTAINER:$remote" "$destination" >/dev/null; then
+    docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" >/dev/null 2>&1 || true
+    return 1
+  fi
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote"
   chmod 0600 "$destination"
+  test -s "$destination"
 }
 
 assert_existing_workflows_unchanged() {

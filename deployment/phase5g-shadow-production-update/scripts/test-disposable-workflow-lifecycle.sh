@@ -7,6 +7,7 @@ postgres_image='postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fca
 workflow_id=phase5gQualityShadowEvaluatorV1
 port=${N8N_SHADOW_TEST_POSTGRES_PORT:-55444}
 postgres_container="tanaghom-shadow-pg-$$"
+n8n_container="tanaghom-shadow-n8n-$$"
 temporary=$(mktemp -d)
 
 # GitHub's Linux runner creates mktemp directories as 0700. The pinned n8n
@@ -19,6 +20,7 @@ chmod 0666 "$temporary/workflows.json"
 case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) host=host.docker.internal ;; *) host=127.0.0.1 ;; esac
 
 cleanup() {
+  docker rm -f "$n8n_container" >/dev/null 2>&1 || true
   docker rm -f "$postgres_container" >/dev/null 2>&1 || true
   rm -rf -- "$temporary"
 }
@@ -60,6 +62,18 @@ test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X
 echo 'TEST: export and inspect the inactive workflow'
 run_n8n_checked export export:workflow --all --pretty --output=/evidence/workflows.json
 python3 -c 'import json,sys; rows=json.load(open(sys.argv[1],encoding="utf-8")); assert len([row for row in rows if row.get("id")==sys.argv[2] and row.get("active") is False])==1' "$temporary/workflows.json" "$workflow_id"
+echo 'TEST: export through a long-running non-root n8n container and copy the evidence to the host'
+docker run -d --name "$n8n_container" --network host \
+  -e N8N_ENCRYPTION_KEY=integration-only-encryption-key-32 \
+  -e DB_TYPE=postgresdb -e DB_POSTGRESDB_HOST="$host" -e DB_POSTGRESDB_PORT="$port" \
+  -e DB_POSTGRESDB_DATABASE=n8n_shadow_test -e DB_POSTGRESDB_USER=postgres -e DB_POSTGRESDB_PASSWORD=postgres \
+  -e N8N_DIAGNOSTICS_ENABLED=false --entrypoint sh "$image" -c 'exec sleep 300' >/dev/null
+container_export="/home/node/tanaghom-workflows-disposable-$$.json"
+docker exec -u node "$n8n_container" n8n export:workflow --all --pretty --output="$container_export" >/dev/null
+docker exec -u node "$n8n_container" test -s "$container_export"
+docker cp "$n8n_container:$container_export" "$temporary/container-workflows.json" >/dev/null
+docker exec -u node "$n8n_container" rm -f "$container_export"
+python3 -c 'import json,sys; rows=json.load(open(sys.argv[1],encoding="utf-8")); assert len([row for row in rows if row.get("id")==sys.argv[2] and row.get("active") is False])==1' "$temporary/container-workflows.json" "$workflow_id"
 echo 'TEST: run the pinned n8n security audit'
 if ! run_n8n audit >"$temporary/audit.txt" 2>&1; then
   echo "FAIL: pinned n8n command 'audit' failed" >&2
@@ -70,4 +84,4 @@ test -s "$temporary/audit.txt"
 docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -v ON_ERROR_STOP=1 -c "DELETE FROM workflow_entity WHERE id='$workflow_id' AND active IS FALSE;" >/dev/null
 test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM workflow_entity WHERE id='$workflow_id';")" = 0
 
-echo 'PASS: pinned n8n imported, audited, and transactionally removed exactly one inactive zero-execution shadow workflow.'
+echo 'PASS: pinned n8n imported, container-exported, host-copied, audited, and transactionally removed exactly one inactive zero-execution shadow workflow.'

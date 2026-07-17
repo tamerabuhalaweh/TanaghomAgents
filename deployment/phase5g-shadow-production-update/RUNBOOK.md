@@ -69,6 +69,10 @@ Preflight is read-only except for temporary n8n CLI/database reads. Any mismatch
 
 The transaction captures protected identities, firewall/Nginx state, full n8n workflow exports, migration/workflow hashes, the previous dashboard image, and backup proof. It applies only 0021, rebuilds only the dashboard, imports the one workflow explicitly inactive, proves existing workflows unchanged, runs `n8n audit`, and validates zero executions/provider operations. Before commit, any failure attempts to delete only the new inactive workflow, restore the previous dashboard commit/image, and roll back only 0021.
 
+Workflow exports are written first to a uniquely named file under the n8n container user's persistent home, verified non-empty, copied to the root-only release evidence directory, and deleted from the container. The disposable lifecycle test exercises this same non-root container export and `docker cp` boundary.
+
+If any attempt fails, preserve its evidence directory unchanged. Do not delete, rename, or reuse it to force a retry. Prepare a new release ID, a newly restore-verified backup proof with that release ID, and a new detached release checkout at the newly approved target commit.
+
 ## 5. Acceptance window
 
 Keep all emergency stops active. Do not approve metric rules, import customer conversations, promote to shadow, activate/publish the n8n workflow, execute it, or call any provider. Confirm `COMMITTED_AT` exists and `ROLLBACK_FAILED=YES` does not.

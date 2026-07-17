@@ -878,20 +878,26 @@ test('Phase 5G shadow production update is exact, inactive, reversible, and exis
   assert.match(common, /WORKFLOW_ID=phase5gQualityShadowEvaluatorV1/);
   assert.match(common, /N8N_EXPECTED_VERSION=2\.26\.8/);
   assert.match(common, /assert_existing_workflows_unchanged/);
+  assert.match(common, /\/home\/node\/tanaghom-workflows-/);
+  assert.match(common, /docker exec -u node .* test -s "\$remote"/);
+  assert.match(common, /docker cp .*"\$destination"/);
   assert.match(common, /DELETE FROM workflow_entity WHERE id=/);
   assert.match(preflight, /assert_workflow_absent/);
   assert.match(preflight, /validate_workflow_source/);
   assert.match(deploy, /import:workflow --input=.*--activeState=false/);
   assert.match(deploy, /n8n audit/);
   assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.ok(deploy.indexOf('trap automatic_rollback EXIT') < deploy.indexOf('capture_protected_container_ids'), 'failure trap must precede evidence capture');
   assert.match(common, /workflow_execution_count/);
   assert.match(validate, /has_function_privilege\('tanaghom_n8n_worker','tanaghom\.claim_quality_shadow_job\(\)'/);
   assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-SHADOW-RELEASE/);
   assert.match(rollback, /delete_quality_workflow/);
   assert.match(databaseLifecycle, /0021 rollback unexpectedly accepted metric evidence/);
-  assert.match(workflowLifecycle, /transactionally removed exactly one inactive zero-execution shadow workflow/);
+  assert.match(workflowLifecycle, /container-exported, host-copied, audited, and transactionally removed exactly one inactive zero-execution shadow workflow/);
+  assert.match(workflowLifecycle, /docker cp "\$n8n_container:\$container_export"/);
   assert.match(runbook, /No deployment is authorized by this document/);
   assert.match(runbook, /does not execute the workflow/i);
+  assert.match(runbook, /preserve its evidence directory unchanged/i);
   assert.match(quality, /phase5g-shadow-production-update-contract/);
 
   const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
