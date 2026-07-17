@@ -9,6 +9,13 @@ port=${N8N_SHADOW_TEST_POSTGRES_PORT:-55444}
 postgres_container="tanaghom-shadow-pg-$$"
 temporary=$(mktemp -d)
 
+# GitHub's Linux runner creates mktemp directories as 0700. The pinned n8n
+# image runs as a non-root user, so authorize only the disposable export file
+# instead of making the whole evidence directory writable.
+chmod 0755 "$temporary"
+touch "$temporary/workflows.json"
+chmod 0666 "$temporary/workflows.json"
+
 case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) host=host.docker.internal ;; *) host=127.0.0.1 ;; esac
 
 cleanup() {
@@ -32,14 +39,33 @@ run_n8n() {
     -v "$root/n8n/workflows/phase5g:/fixtures:ro" -v "$temporary:/evidence" "$image" "$@"
 }
 
-run_n8n list:workflow --onlyId >/dev/null
+run_n8n_checked() {
+  label=$1
+  shift
+  log="$temporary/$label.log"
+  if ! run_n8n "$@" >"$log" 2>&1; then
+    echo "FAIL: pinned n8n command '$label' failed" >&2
+    cat "$log" >&2
+    exit 1
+  fi
+}
+
+echo 'TEST: initialize the disposable pinned n8n database'
+run_n8n_checked initialize list:workflow --onlyId
 test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM workflow_entity WHERE id='$workflow_id';")" = 0
-run_n8n import:workflow --input=/fixtures/quality-shadow-evaluator.v1.json --activeState=false >/dev/null
+echo 'TEST: import the shadow evaluator inactive'
+run_n8n_checked import import:workflow --input=/fixtures/quality-shadow-evaluator.v1.json --activeState=false
 test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM workflow_entity WHERE id='$workflow_id' AND active IS FALSE;")" = 1
 test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM execution_entity WHERE \"workflowId\"='$workflow_id';")" = 0
-run_n8n export:workflow --all --pretty --output=/evidence/workflows.json >/dev/null
+echo 'TEST: export and inspect the inactive workflow'
+run_n8n_checked export export:workflow --all --pretty --output=/evidence/workflows.json
 python3 -c 'import json,sys; rows=json.load(open(sys.argv[1],encoding="utf-8")); assert len([row for row in rows if row.get("id")==sys.argv[2] and row.get("active") is False])==1' "$temporary/workflows.json" "$workflow_id"
-run_n8n audit > "$temporary/audit.txt"
+echo 'TEST: run the pinned n8n security audit'
+if ! run_n8n audit >"$temporary/audit.txt" 2>&1; then
+  echo "FAIL: pinned n8n command 'audit' failed" >&2
+  cat "$temporary/audit.txt" >&2
+  exit 1
+fi
 test -s "$temporary/audit.txt"
 docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -v ON_ERROR_STOP=1 -c "DELETE FROM workflow_entity WHERE id='$workflow_id' AND active IS FALSE;" >/dev/null
 test "$(docker exec "$postgres_container" psql -U postgres -d n8n_shadow_test -X -At -c "SELECT count(*) FROM workflow_entity WHERE id='$workflow_id';")" = 0
