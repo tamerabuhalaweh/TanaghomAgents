@@ -211,7 +211,14 @@ test("remaining operational screens use the live snapshot without business fixtu
   }
   const fixtures = await readFile(new URL("data/fixtures.ts", dashboard), "utf8");
   assert.doesNotMatch(fixtures, /export const (approvals|campaigns|recentActivity)/);
-  assert.match(fixtures, /Configured role; live workflow begins/);
+  assert.doesNotMatch(fixtures, /export const agents|Configured role; live workflow begins/);
+  const agentsPage = await readFile(new URL("app/agents/page.tsx", dashboard), "utf8");
+  const agentsWorkspace = await readFile(new URL("components/agents-workspace.tsx", dashboard), "utf8");
+  assert.match(agentsPage, /AgentsWorkspace/);
+  assert.match(agentsWorkspace, /useOperations/);
+  assert.match(agentsWorkspace, /Specialized workers/);
+  assert.match(agentsWorkspace, /What blocks this role/);
+  assert.doesNotMatch(`${agentsPage}\n${agentsWorkspace}`, /@\/data\/fixtures.*agents|Not assigned|Jobs today/);
 });
 
 test("system monitoring uses a tenant-bound read-only snapshot and honest runtime evidence", async () => {

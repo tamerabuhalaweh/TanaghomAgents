@@ -55,6 +55,7 @@ const capacityAssertions = join(root, 'packages', 'database', 'tests', 'conversa
 const notificationAssertions = join(root, 'packages', 'database', 'tests', 'notification_monitoring_destinations.sql');
 const qualityRolloutAssertions = join(root, 'packages', 'database', 'tests', 'quality_rollout_control.sql');
 const qualityBaselineShadowAssertions = join(root, 'packages', 'database', 'tests', 'quality_baseline_shadow_pipeline.sql');
+const agentRegistryAssertions = join(root, 'packages', 'database', 'tests', 'agent_registry.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -77,6 +78,7 @@ psql('-f', capacityAssertions);
 psql('-f', notificationAssertions);
 psql('-f', qualityRolloutAssertions);
 psql('-f', qualityBaselineShadowAssertions);
+psql('-f', agentRegistryAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -84,6 +86,8 @@ psql('-f', qualityBaselineShadowAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.agent_role_registry') IS NOT NULL OR to_regclass('tanaghom.agent_workflow_registry') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0022_agent_registry') THEN RAISE EXCEPTION '0022 rollback left agent registry objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.quality_evaluation_datasets') IS NOT NULL OR to_regprocedure('tanaghom.claim_quality_shadow_job()') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0021_quality_baseline_shadow_pipeline') THEN RAISE EXCEPTION '0021 rollback left quality pipeline objects behind'; END IF; END $$;");
 database('rollback');
