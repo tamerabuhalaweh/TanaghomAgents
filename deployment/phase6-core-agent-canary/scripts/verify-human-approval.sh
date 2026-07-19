@@ -16,7 +16,8 @@ assert_workflow_inactive "$STRATEGIST_ID"
 assert_workflow_inactive "$PRODUCER_ID"
 export_all_workflows "$evidence/workflows.human-approval-verification.json"
 node "$SCRIPT_DIR/workflow-contract.mjs" verify "$evidence/workflows.human-approval-verification.json" "$evidence/workflow-manifest.json" original
-operator verify-approved "$TANAGHOM_CANARY_CAMPAIGN" | tee "$evidence/human-approval.json"
+operator verify-approved "$TANAGHOM_CANARY_CAMPAIGN" >"$evidence/human-approval.json"
+cat "$evidence/human-approval.json"
 test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_jobs j JOIN tanaghom.campaigns c ON c.id=j.campaign_id WHERE c.name='$(printf '%s' "$TANAGHOM_CANARY_CAMPAIGN" | sed "s/'/''/g")' AND j.job_type IN ('content.postiz.draft','lead.ghl.contact_upsert','ghl.action.execute');")" = 0 || die 'a provider job was queued'
 assert_protected_health
 assert_public_boundary

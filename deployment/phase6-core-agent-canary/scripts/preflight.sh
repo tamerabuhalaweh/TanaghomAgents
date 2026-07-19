@@ -4,7 +4,7 @@ set -eu
 
 require_root
 require_environment
-for command in docker git jq node psql curl iptables systemctl sha256sum; do command -v "$command" >/dev/null 2>&1 || die "required command is missing: $command"; done
+for command in docker git jq node psql curl iptables systemctl sha256sum openssl; do command -v "$command" >/dev/null 2>&1 || die "required command is missing: $command"; done
 test "$(git -C "$PRODUCTION_ROOT" rev-parse HEAD)" = "$TANAGHOM_EXPECTED_PRODUCTION_COMMIT" || die 'production dashboard commit differs from the approved baseline'
 test "$(git -C "$RELEASE_SOURCE_ROOT" rev-parse HEAD)" = "$TANAGHOM_CANARY_SOURCE_COMMIT" || die 'canary package checkout differs from the approved source commit'
 test -z "$(git -C "$RELEASE_SOURCE_ROOT" status --porcelain --untracked-files=no)" || die 'canary package checkout has tracked modifications'
@@ -19,6 +19,9 @@ test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_workflow_registry WHERE c
 assert_no_claimable_core_backlog
 test "$(db_scalar "SELECT count(*) FROM tanaghom.campaigns WHERE name='$(printf '%s' "$TANAGHOM_CANARY_CAMPAIGN" | sed "s/'/''/g")';")" = 0 || die 'canary campaign name already exists'
 test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_jobs WHERE status='running';")" = 0 || die 'an agent job is already running'
+test -s "$DATABASE_CA_CERT" || die 'reviewed database CA certificate is missing'
+openssl x509 -in "$DATABASE_CA_CERT" -noout >/dev/null 2>&1 || die 'reviewed database CA certificate is invalid'
+operator check-database "$TANAGHOM_CANARY_CAMPAIGN" >/dev/null
 
 temporary=$(mktemp -d); trap 'rm -rf -- "$temporary"' EXIT HUP INT TERM
 export_all_workflows "$temporary/before.json"

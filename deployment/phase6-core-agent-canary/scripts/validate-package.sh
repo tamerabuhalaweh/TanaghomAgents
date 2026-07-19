@@ -18,6 +18,23 @@ grep -q 'unpublish_workflow "$PRODUCER_ID"' "$package/scripts/run-canary.sh"
 grep -q 'max_items: 2' "$package/scripts/canary-operator.mjs"
 grep -q "budget_target: 0" "$package/scripts/canary-operator.mjs"
 grep -q "forbidden_jobs" "$package/scripts/canary-operator.mjs"
+grep -q 'NODE_EXTRA_CA_CERTS="$DATABASE_CA_CERT"' "$package/scripts/common.sh"
+grep -q 'TANAGHOM_DATABASE_SSL_MODE=verify-full' "$package/scripts/common.sh"
+grep -q 'searchParams.set("sslmode", "verify-full")' "$package/scripts/canary-operator.mjs"
+grep -q 'BEGIN READ ONLY' "$package/scripts/canary-operator.mjs"
+grep -q 'operator check-database' "$package/scripts/preflight.sh"
+if grep -R -F 'operator seed "$TANAGHOM_CANARY_CAMPAIGN" | tee' --exclude=validate-package.sh "$package/scripts"; then
+  echo 'seed operator exit can be masked by a pipeline' >&2; exit 1
+fi
+if grep -R -F 'operator queue-content "$TANAGHOM_CANARY_CAMPAIGN" | tee' --exclude=validate-package.sh "$package/scripts"; then
+  echo 'content operator exit can be masked by a pipeline' >&2; exit 1
+fi
+if grep -R 'operator verify-' --exclude=validate-package.sh "$package/scripts" | grep -F '| tee'; then
+  echo 'verification operator exit can be masked by a pipeline' >&2; exit 1
+fi
+if grep -F '| tee' "$package/scripts/run-canary.sh" "$package/scripts/verify-human-approval.sh"; then
+  echo 'a critical canary command exit can be masked by tee' >&2; exit 1
+fi
 if grep -R -E 'Bearer [A-Za-z0-9_-]{20,}|postgresql://[^[:space:]:]+:[^[:space:]@]+@' --exclude=validate-package.sh "$package"; then
   echo 'possible secret found in canary package' >&2; exit 1
 fi

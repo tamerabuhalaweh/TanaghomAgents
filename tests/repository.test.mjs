@@ -1103,6 +1103,8 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.match(common, /assert_no_claimable_core_backlog/);
   assert.match(common, /postiz_draft_mode<>'manual'/);
   assert.match(common, /action_emergency_stop IS NOT TRUE/);
+  assert.match(common, /NODE_EXTRA_CA_CERTS="\$DATABASE_CA_CERT"/);
+  assert.match(common, /TANAGHOM_DATABASE_SSL_MODE=verify-full/);
   assert.match(workflowContract, /node\.disabled = true/);
   assert.match(workflowContract, /unexpected external endpoint/);
   assert.match(workflowContract, /publishing or CRM reference/);
@@ -1110,12 +1112,18 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.match(operator, /max_items: 2/);
   assert.match(operator, /verifyApproved/);
   assert.match(operator, /human_approvals/);
+  assert.match(operator, /BEGIN READ ONLY/);
+  assert.match(operator, /check-database/);
+  assert.match(operator, /searchParams\.set\("sslmode", "verify-full"\)/);
   assert.match(run, /publish_workflow "\$STRATEGIST_ID"[\s\S]+unpublish_workflow "\$STRATEGIST_ID"[\s\S]+publish_workflow "\$PRODUCER_ID"[\s\S]+unpublish_workflow "\$PRODUCER_ID"/);
   assert.match(run, /operator verify-pending/);
+  assert.doesNotMatch(run, /operator (seed|queue-content|verify-pending).+\| tee/);
   assert.match(run, /n8n audit/);
+  assert.doesNotMatch(run, /\| tee/);
   assert.match(restore, /import_workflow_inactive/);
   assert.match(verify, /YES-VERIFY-AUTHENTICATED-HUMAN-APPROVAL/);
   assert.match(verify, /content\.postiz\.draft/);
+  assert.doesNotMatch(verify, /operator verify-approved.+\| tee/);
   assert.match(runbook, /intentionally ends before[\s\S]+publishing/i);
   assert.match(runbook, /does not restart\/recreate n8n/i);
   assert.match(quality, /phase6-core-agent-canary\/scripts\/validate-package\.sh/);
