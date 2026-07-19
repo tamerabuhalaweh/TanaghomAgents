@@ -1096,6 +1096,7 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   const run = await readFile(new URL('scripts/run-canary.sh', root), 'utf8');
   const restore = await readFile(new URL('scripts/restore-workflows.sh', root), 'utf8');
   const verify = await readFile(new URL('scripts/verify-human-approval.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
@@ -1119,6 +1120,15 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.match(run, /operator verify-pending/);
   assert.doesNotMatch(run, /operator (seed|queue-content|verify-pending).+\| tee/);
   assert.match(run, /n8n audit/);
+  assert.match(common, /normalize_firewall_snapshot/);
+  assert.match(common, /sed -E '\/\^#\/d; s\//);
+  assert.match(common, /\[COUNTERS\]/);
+  assert.match(run, /iptables\.rules\.before/);
+  assert.match(run, /iptables\.rules\.after/);
+  assert.match(run, /cmp -s "\$evidence\/iptables\.rules\.before" "\$evidence\/iptables\.rules\.after"/);
+  assert.doesNotMatch(run, /cmp -s "\$evidence\/iptables\.before" "\$evidence\/iptables\.after"/);
+  assert.match(packageValidation, /firewall normalization did not exclude timestamps and counters/);
+  assert.match(packageValidation, /firewall normalization concealed a rule change/);
   assert.doesNotMatch(run, /\| tee/);
   assert.match(restore, /import_workflow_inactive/);
   assert.match(verify, /YES-VERIFY-AUTHENTICATED-HUMAN-APPROVAL/);

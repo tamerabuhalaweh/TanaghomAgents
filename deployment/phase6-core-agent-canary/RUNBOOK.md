@@ -80,6 +80,12 @@ The script performs the following transaction-like sequence:
 8. Proves the campaign has one strategy, one or two pending drafts, and no post,
    lead, external operation, publishing job, or CRM job.
 
+The raw before/after `iptables-save` files remain in evidence. The policy gate
+compares normalized rule snapshots that retain every table, chain, policy, and
+rule while excluding only generated timestamps and live packet/byte counters.
+Those volatile values change during ordinary health checks and are not firewall
+policy.
+
 Evidence is written with mode `0700/0600` under
 `/var/backups/tanaghom-$TANAGHOM_CANARY_ID`. No secrets are copied into Git.
 
