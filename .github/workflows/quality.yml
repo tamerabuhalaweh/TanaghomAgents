@@ -426,6 +426,53 @@ jobs:
       - run: git diff --exit-code -- n8n/workflows/phase5g
       - run: npm run test:phase5g-quality
 
+  phase6-agentic-simulation:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_workflow_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_workflow_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_workflow_test
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_workflow_test
+      APP_ENV: integration
+      PHASE6_AGENTIC_EVIDENCE_PATH: tmp/phase6-agentic-simulation-evidence.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 -f packages/database/seeds/staging.sql
+      - run: npm run build:dashboard
+      - run: npm run generate:phase3-workflows
+      - run: npm run generate:phase4-workflows
+      - run: npm run generate:phase5-workflows
+      - run: npm run generate:phase5g-workflows
+      - run: git diff --exit-code -- n8n/workflows
+      - run: npm run test:phase6-agentic
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase6-agentic-simulation-evidence
+          path: |
+            tmp/phase6-agentic-simulation-evidence.json
+            tmp/phase6-support/*.json
+          if-no-files-found: error
+          retention-days: 30
+
   phase5-resilience-integration:
     runs-on: ubuntu-latest
     timeout-minutes: 20
