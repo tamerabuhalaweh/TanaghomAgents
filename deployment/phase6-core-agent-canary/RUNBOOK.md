@@ -25,6 +25,8 @@ Postiz, GHL, lead creation, scheduling, publishing, messaging, or budget spend.
   emergency stops stay active.
 - All protected services, n8n containers, firewall hooks, and public boundaries
   are healthy.
+- The Node operator loads the reviewed Supabase root CA and completes a
+  read-only TLS/database handshake before any workflow definition is changed.
 
 No new database backup is required: the canary applies no schema change and
 deletes no business record. Its append-only `.test` campaign, job, strategy,
@@ -52,6 +54,10 @@ sudo -E deployment/phase6-core-agent-canary/scripts/preflight.sh
 ```
 
 The command must print `PASS` and changes no production state.
+
+The preflight fails closed if the reviewed CA is missing, invalid, or cannot
+validate the live database chain. Do not bypass this with
+`NODE_TLS_REJECT_UNAUTHORIZED=0` or a non-verifying SSL mode.
 
 ## Controlled run
 

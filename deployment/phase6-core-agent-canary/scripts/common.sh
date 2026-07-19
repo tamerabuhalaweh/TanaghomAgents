@@ -14,6 +14,7 @@ PRODUCER_ID=phase3ContentProducerV1
 STRATEGIST_REGISTRY=campaign_strategy_generator
 PRODUCER_REGISTRY=campaign_content_generator
 EXPECTED_MIGRATION=0022_agent_registry
+DATABASE_CA_CERT=${TANAGHOM_DATABASE_CA_CERT:-$RELEASE_SOURCE_ROOT/deployment/phase3-shadow-canary/certificates/supabase-root-2021-ca.pem}
 PROTECTED_N8N_CONTAINERS='smartlabs-n8n-postgres-1 smartlabs-n8n-redis-1 smartlabs-n8n-egress-proxy-1 smartlabs-n8n-n8n-1 smartlabs-n8n-n8n-worker-1'
 PROTECTED_UNITS='smartlabs-api.service convai-ws.service convai-stt-api.service omnivoice-tts.service gemma4-26b-a4b-vllm-canary.service smartcc-api.service smartcc-smartlabs-bridge.service smartcc-web.service nginx.service'
 
@@ -104,4 +105,7 @@ assert_business_locks() {
   test "$(db_scalar "SELECT count(*) FROM tanaghom.organization_crm_policies WHERE contact_sync_mode<>'manual' OR conversation_processing_mode<>'paused' OR conversation_emergency_stop IS NOT TRUE OR action_mode<>'manual' OR proactive_message_mode<>'disabled' OR action_emergency_stop IS NOT TRUE;")" = 0 || die 'CRM safety policy is not locked'
 }
 
-operator() { DATABASE_URL=$(database_url) node "$SCRIPT_DIR/canary-operator.mjs" "$@"; }
+operator() {
+  test -s "$DATABASE_CA_CERT" || die "reviewed database CA certificate is missing: $DATABASE_CA_CERT"
+  DATABASE_URL=$(database_url) NODE_EXTRA_CA_CERTS="$DATABASE_CA_CERT" node "$SCRIPT_DIR/canary-operator.mjs" "$@"
+}

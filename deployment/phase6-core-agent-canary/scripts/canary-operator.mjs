@@ -3,7 +3,7 @@ import { randomUUID } from "node:crypto";
 import pg from "pg";
 
 const [action, campaignName] = process.argv.slice(2);
-const allowed = ["seed", "queue-content", "verify-pending", "verify-approved", "mark-failed"];
+const allowed = ["check-database", "seed", "queue-content", "verify-pending", "verify-approved", "mark-failed"];
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 if (!allowed.includes(action) || !campaignName?.endsWith(".test")) {
   throw new Error(`usage: canary-operator.mjs ${allowed.join("|")} NAME.test`);
@@ -16,6 +16,16 @@ async function owner() {
   const result = await client.query("SELECT id,organization_id FROM tanaghom.app_users WHERE kind='human' AND role='owner' AND is_active ORDER BY created_at LIMIT 1");
   if (result.rowCount !== 1) throw new Error("exactly one first active owner is required");
   return result.rows[0];
+}
+
+async function checkDatabase() {
+  await client.query("BEGIN READ ONLY");
+  try {
+    const result = await client.query("SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1");
+    if (result.rows[0]?.version !== "0022_agent_registry") throw new Error("unexpected database migration during Node TLS check");
+    await client.query("ROLLBACK");
+    console.log(JSON.stringify({ database_tls: "verified", transaction: "read_only", migration: result.rows[0].version }));
+  } catch (error) { await client.query("ROLLBACK"); throw error; }
 }
 
 async function seed() {
@@ -123,7 +133,8 @@ async function markFailed() {
 }
 
 try {
-  if (action === "seed") await seed();
+  if (action === "check-database") await checkDatabase();
+  else if (action === "seed") await seed();
   else if (action === "queue-content") await queueContent();
   else if (action === "verify-pending") await verifyPending();
   else if (action === "verify-approved") await verifyApproved();

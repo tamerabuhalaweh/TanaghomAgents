@@ -25,7 +25,8 @@ cleanup() {
 }
 trap cleanup EXIT HUP INT TERM
 
-"$SCRIPT_DIR/preflight.sh" | tee "$evidence/preflight.txt"
+"$SCRIPT_DIR/preflight.sh" >"$evidence/preflight.txt"
+cat "$evidence/preflight.txt"
 capture_container_ids "$evidence/protected-container-ids.before"
 iptables-save >"$evidence/iptables.before"; chmod 0600 "$evidence/iptables.before"
 export_all_workflows "$evidence/workflows.before.json"
@@ -54,7 +55,8 @@ import_workflow_inactive "$evidence/$PRODUCER_ID.canary.json" producer-canary
 export_all_workflows "$evidence/workflows.canary-inactive.json"
 node "$SCRIPT_DIR/workflow-contract.mjs" verify "$evidence/workflows.canary-inactive.json" "$evidence/workflow-manifest.json" canary
 
-operator seed "$TANAGHOM_CANARY_CAMPAIGN" | tee "$evidence/seed.json"
+operator seed "$TANAGHOM_CANARY_CAMPAIGN" >"$evidence/seed.json"
+cat "$evidence/seed.json"
 seeded=1
 set_registry_active_disabled "$STRATEGIST_REGISTRY"
 publish_workflow "$STRATEGIST_ID"
@@ -65,7 +67,8 @@ set_registry_inactive "$STRATEGIST_REGISTRY"
 assert_workflow_inactive "$STRATEGIST_ID"
 test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_jobs j JOIN tanaghom.campaigns c ON c.id=j.campaign_id WHERE c.name='$(printf '%s' "$TANAGHOM_CANARY_CAMPAIGN" | sed "s/'/''/g")' AND j.job_type='campaign.strategy.generate' AND j.status='succeeded';")" = 1 || die 'strategist canary did not persist one successful strategy'
 
-operator queue-content "$TANAGHOM_CANARY_CAMPAIGN" | tee "$evidence/queue-content.json"
+operator queue-content "$TANAGHOM_CANARY_CAMPAIGN" >"$evidence/queue-content.json"
+cat "$evidence/queue-content.json"
 set_registry_active_disabled "$PRODUCER_REGISTRY"
 publish_workflow "$PRODUCER_ID"
 test "$(workflow_active "$PRODUCER_ID")" = 1 || die 'content producer did not enter the active state'
@@ -74,9 +77,11 @@ unpublish_workflow "$PRODUCER_ID"
 set_registry_inactive "$PRODUCER_REGISTRY"
 assert_workflow_inactive "$PRODUCER_ID"
 
-"$SCRIPT_DIR/restore-workflows.sh" "$evidence" | tee "$evidence/restore.txt"
+"$SCRIPT_DIR/restore-workflows.sh" "$evidence" >"$evidence/restore.txt"
+cat "$evidence/restore.txt"
 restored=1
-operator verify-pending "$TANAGHOM_CANARY_CAMPAIGN" | tee "$evidence/pending-approval.json"
+operator verify-pending "$TANAGHOM_CANARY_CAMPAIGN" >"$evidence/pending-approval.json"
+cat "$evidence/pending-approval.json"
 export_all_workflows "$evidence/workflows.after.json"
 node "$SCRIPT_DIR/workflow-contract.mjs" verify "$evidence/workflows.after.json" "$evidence/workflow-manifest.json" original
 node "$SCRIPT_DIR/workflow-contract.mjs" compare-others "$evidence/workflows.before.json" "$evidence/workflows.after.json"
