@@ -41,7 +41,8 @@
     "test:phase5-retention": "node scripts/n8n-retention-pruning-integration.mjs",
     "test:phase5-dependency-loss": "node scripts/n8n-dependency-loss-integration.mjs",
     "generate:phase5g-workflows": "node scripts/generate-phase5g-workflows.mjs",
-    "test:phase5g-quality": "node scripts/quality-shadow-workflow-integration.mjs"
+    "test:phase5g-quality": "node scripts/quality-shadow-workflow-integration.mjs",
+    "test:phase6-agentic": "node scripts/phase6-agentic-simulation.mjs"
   },
   "devDependencies": {
     "ajv": "^8.18.0",

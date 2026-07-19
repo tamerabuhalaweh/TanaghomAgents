@@ -1010,3 +1010,32 @@ test('Phase 5G baseline and shadow evaluation is de-identified, proposal-only, a
   assert.match(component, /Baseline → shadow evidence setup/);
   assert.match(component, /Nothing in this workspace sends a message/);
 });
+
+test('Phase 6 agentic simulation executes every inactive workflow without customer credentials', async () => {
+  const script = await readFile(new URL('../scripts/phase6-agentic-simulation.mjs', import.meta.url), 'utf8');
+  const runbook = await readFile(new URL('../docs/acceptance/PHASE6_AGENTIC_SIMULATION.md', import.meta.url), 'utf8');
+  const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.equal(manifest.scripts['test:phase6-agentic'], 'node scripts/phase6-agentic-simulation.mjs');
+  assert.match(quality, /phase6-agentic-simulation:/);
+  assert.match(quality, /POSTGRES_DB: tanaghom_agents_workflow_test/);
+  assert.match(quality, /npm run test:phase6-agentic/);
+  assert.match(quality, /phase6-agentic-simulation-evidence/);
+  assert.match(script, /workflowFiles = \[/);
+  for (const id of [
+    'campaign-strategist.v1.json', 'content-producer.v1.json',
+    'postiz-draft-publisher.v1.json', 'postiz-performance-monitor.v1.json',
+    'ghl-contact-sync.v1.json', 'governed-ghl-actions.v1.json',
+    'quality-shadow-evaluator.v1.json',
+  ]) assert.match(script, new RegExp(id.replaceAll('.', '\\.')));
+  assert.match(script, /customer_credentials_used: false/);
+  assert.match(script, /production_contacted: false/);
+  assert.match(script, /smartlabs_contacted_or_modified: false/);
+  assert.match(script, /quality_external_actions/);
+  assert.match(script, /unexpected_personal_data_records/);
+  assert.match(runbook, /does not authorize workflow activation/i);
+  assert.match(runbook, /English and Arabic/i);
+  assert.match(runbook, /Remaining acceptance after this gate/);
+  assert.doesNotMatch(`${script}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
