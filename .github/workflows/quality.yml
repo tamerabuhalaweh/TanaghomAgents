@@ -27,6 +27,7 @@ jobs:
       - run: deployment/phase6-agent-registry-production-update/scripts/validate-package.sh
       - run: deployment/phase6-core-agent-canary/scripts/validate-package.sh
       - run: deployment/phase6-core-agent-canary/scripts/test-refusal-paths.sh
+      - run: deployment/phase6-content-job-reconciliation/scripts/validate-package.sh
 
   database-contract:
     runs-on: ubuntu-latest
@@ -170,6 +171,34 @@ jobs:
       - uses: actions/checkout@v4
       - run: deployment/phase6-agent-registry-production-update/scripts/validate-package.sh
       - run: deployment/phase6-agent-registry-production-update/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
+
+  phase6-content-job-reconciliation-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    services:
+      postgres:
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_phase6_job_reconciliation_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_phase6_job_reconciliation_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase6_job_reconciliation_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: deployment/phase6-content-job-reconciliation/scripts/validate-package.sh
+      - run: deployment/phase6-content-job-reconciliation/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
 
   dashboard-contract:
     runs-on: ubuntu-latest

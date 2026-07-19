@@ -1150,3 +1150,48 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.doesNotMatch(mutationScope, /publish_workflow .*postiz|publish_workflow .*ghl/i);
   assert.doesNotMatch(`${common}\n${workflowContract}\n${operator}\n${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
+
+test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent, and provider-isolated', async () => {
+  const root = new URL('../deployment/phase6-content-job-reconciliation/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const operator = await readFile(new URL('scripts/reconcile-operator.mjs', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const reconcile = await readFile(new URL('scripts/reconcile-job.sh', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_MIGRATION=0022_agent_registry/);
+  assert.match(common, /TANAGHOM_JOB_RECONCILIATION_AUTHORIZATION/);
+  assert.match(common, /assert_canary_evidence/);
+  assert.match(common, /HUMAN_APPROVAL_VERIFIED_AT=/);
+  assert.match(operator, /BEGIN ISOLATION LEVEL SERIALIZABLE/);
+  assert.match(operator, /SET LOCAL ROLE tanaghom_n8n_worker/);
+  assert.match(operator, /SELECT tanaghom\.complete_content_job\(\$1::uuid\)/);
+  assert.match(operator, /matching_active_human_decisions !== 1/);
+  assert.match(operator, /worker_has_approval_table_access/);
+  assert.doesNotMatch(operator, /client\.query\([`"]\s*(?:INSERT|UPDATE|DELETE|ALTER|CREATE|DROP|TRUNCATE)\b/i);
+  assert.match(preflight, /operator preflight/);
+  assert.match(reconcile, /YES-COMPLETE-THE-REVIEWED-CONTENT-JOB/);
+  assert.equal((reconcile.match(/operator reconcile/g) || []).length, 1);
+  assert.match(reconcile, /RECONCILIATION_SUCCEEDED_AT=/);
+  assert.match(reconcile, /workflow_execution_count/);
+  assert.match(reconcile, /n8n audit/);
+  assert.match(lifecycle, /complete_content_job/);
+  assert.match(lifecycle, /inactive human reviewer/);
+  assert.match(lifecycle, /cross-organization human reviewer/);
+  assert.match(lifecycle, /repeated reconciliation unexpectedly succeeded/);
+  assert.match(lifecycle, /count\(\*\) FROM tanaghom\.external_operations/);
+  assert.match(packageValidation, /runtime package can modify or execute a workflow/);
+  assert.match(runbook, /There is intentionally no command/);
+  assert.match(runbook, /does not authorize\s+workflow activation/i);
+  assert.match(quality, /phase6-content-job-reconciliation-contract/);
+  assert.match(quality, /phase6-content-job-reconciliation\/scripts\/validate-package\.sh/);
+
+  const runtimeScope = `${common}\n${operator}\n${preflight}\n${reconcile}`;
+  assert.doesNotMatch(runtimeScope, /systemctl (?:stop|restart|reload)|iptables (?:-A|-I|-D|-N|-F|-X)|docker (?:stop|restart|rm)|docker compose/i);
+  assert.doesNotMatch(runtimeScope, /n8n (?:import|execute|publish|unpublish)|publish_workflow|execute_workflow/i);
+  assert.doesNotMatch(runtimeScope, /api\.postiz|services\.leadconnectorhq|^\s*Authorization:|Bearer /m);
+  assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
