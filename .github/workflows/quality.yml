@@ -51,7 +51,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0021_quality_baseline_shadow_pipeline
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0022_agent_registry
 
   phase5f-database-bridge-contract:
     runs-on: ubuntu-latest
