@@ -3,7 +3,7 @@ set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 package="$root/deployment/phase6-core-agent-canary"
 
-for file in README.md RUNBOOK.md scripts/common.sh scripts/preflight.sh scripts/run-canary.sh scripts/restore-workflows.sh scripts/verify-human-approval.sh scripts/validate-package.sh scripts/test-refusal-paths.sh scripts/workflow-contract.mjs scripts/canary-operator.mjs; do
+for file in README.md RUNBOOK.md scripts/common.sh scripts/preflight.sh scripts/run-canary.sh scripts/restore-workflows.sh scripts/reconcile-firewall-evidence.sh scripts/verify-human-approval.sh scripts/validate-package.sh scripts/test-refusal-paths.sh scripts/workflow-contract.mjs scripts/canary-operator.mjs; do
   test -s "$package/$file" || { echo "missing package file: $file" >&2; exit 1; }
 done
 sh -n "$package"/scripts/*.sh
@@ -26,6 +26,11 @@ grep -q 'operator check-database' "$package/scripts/preflight.sh"
 grep -q 'normalize_firewall_snapshot "\$evidence/iptables.before" "\$evidence/iptables.rules.before"' "$package/scripts/run-canary.sh"
 grep -q 'normalize_firewall_snapshot "\$evidence/iptables.after" "\$evidence/iptables.rules.after"' "$package/scripts/run-canary.sh"
 grep -q 'cmp -s "\$evidence/iptables.rules.before" "\$evidence/iptables.rules.after"' "$package/scripts/run-canary.sh"
+grep -q 'YES-RECONCILE-VOLATILE-FIREWALL-EVIDENCE' "$package/scripts/reconcile-firewall-evidence.sh"
+grep -q 'READY_FOR_HUMAN_APPROVAL_AT=' "$package/scripts/reconcile-firewall-evidence.sh"
+if grep -E 'publish_workflow|execute_workflow_once|operator (seed|queue-content)' "$package/scripts/reconcile-firewall-evidence.sh"; then
+  echo 'firewall evidence reconciliation must not rerun an agent' >&2; exit 1
+fi
 if grep -q 'cmp -s "\$evidence/iptables.before" "\$evidence/iptables.after"' "$package/scripts/run-canary.sh"; then
   echo 'raw iptables-save metadata must not be compared as firewall policy' >&2; exit 1
 fi

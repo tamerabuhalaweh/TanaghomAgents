@@ -1095,6 +1095,7 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   const operator = await readFile(new URL('scripts/canary-operator.mjs', root), 'utf8');
   const run = await readFile(new URL('scripts/run-canary.sh', root), 'utf8');
   const restore = await readFile(new URL('scripts/restore-workflows.sh', root), 'utf8');
+  const reconcile = await readFile(new URL('scripts/reconcile-firewall-evidence.sh', root), 'utf8');
   const verify = await readFile(new URL('scripts/verify-human-approval.sh', root), 'utf8');
   const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
@@ -1129,6 +1130,11 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.doesNotMatch(run, /cmp -s "\$evidence\/iptables\.before" "\$evidence\/iptables\.after"/);
   assert.match(packageValidation, /firewall normalization did not exclude timestamps and counters/);
   assert.match(packageValidation, /firewall normalization concealed a rule change/);
+  assert.match(reconcile, /YES-RECONCILE-VOLATILE-FIREWALL-EVIDENCE/);
+  assert.match(reconcile, /READY_FOR_HUMAN_APPROVAL_AT=/);
+  assert.match(reconcile, /compare-others/);
+  assert.match(reconcile, /operator verify-pending/);
+  assert.doesNotMatch(reconcile, /publish_workflow|execute_workflow_once|operator (seed|queue-content)/);
   assert.doesNotMatch(run, /\| tee/);
   assert.match(restore, /import_workflow_inactive/);
   assert.match(verify, /YES-VERIFY-AUTHENTICATED-HUMAN-APPROVAL/);
@@ -1139,7 +1145,7 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.match(quality, /phase6-core-agent-canary\/scripts\/validate-package\.sh/);
   assert.match(quality, /phase6-core-agent-canary\/scripts\/test-refusal-paths\.sh/);
 
-  const mutationScope = `${run}\n${restore}\n${verify}`;
+  const mutationScope = `${run}\n${restore}\n${reconcile}\n${verify}`;
   assert.doesNotMatch(mutationScope, /systemctl (stop|restart|reload)|iptables (-A|-I|-D|-N|-F|-X)|docker (stop|restart|rm)|docker compose/);
   assert.doesNotMatch(mutationScope, /publish_workflow .*postiz|publish_workflow .*ghl/i);
   assert.doesNotMatch(`${common}\n${workflowContract}\n${operator}\n${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
