@@ -80,6 +80,12 @@ The script performs the following transaction-like sequence:
 8. Proves the campaign has one strategy, one or two pending drafts, and no post,
    lead, external operation, publishing job, or CRM job.
 
+The raw before/after `iptables-save` files remain in evidence. The policy gate
+compares normalized rule snapshots that retain every table, chain, policy, and
+rule while excluding only generated timestamps and live packet/byte counters.
+Those volatile values change during ordinary health checks and are not firewall
+policy.
+
 Evidence is written with mode `0700/0600` under
 `/var/backups/tanaghom-$TANAGHOM_CANARY_ID`. No secrets are copied into Git.
 
@@ -139,3 +145,25 @@ The canary passes only when all of these are true:
 
 Passing this canary proves the core brief-to-approval path. It does not authorize
 scheduled polling, automatic publishing, CRM actions, or broader agent activation.
+
+## Existing-run firewall evidence reconciliation
+
+Use this only when an otherwise complete canary stopped at the historical raw
+`iptables-save` false negative, produced the pending-approval and n8n-audit
+evidence, and has no readiness marker. It never imports, publishes, or executes
+a workflow. It rechecks the execution deltas, inactive definitions and registry,
+zero external side effects, protected health, and normalized before/after/current
+firewall rules before adding the readiness marker.
+
+This is a separate authorization point and must use the original canary ID,
+campaign name, production commit, and source commit recorded in `canary.env`:
+
+```sh
+export TANAGHOM_FIREWALL_EVIDENCE_RECONCILIATION='YES-RECONCILE-VOLATILE-FIREWALL-EVIDENCE'
+sudo -E deployment/phase6-core-agent-canary/scripts/reconcile-firewall-evidence.sh \
+  "/var/backups/tanaghom-$TANAGHOM_CANARY_ID"
+```
+
+Do not use this command for an agent failure, missing draft, real firewall-rule
+change, workflow drift, provider-side effect, or any evidence directory that
+already has `READY_FOR_HUMAN_APPROVAL_AT`.

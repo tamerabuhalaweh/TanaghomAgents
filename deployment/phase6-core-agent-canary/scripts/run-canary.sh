@@ -29,6 +29,7 @@ trap cleanup EXIT HUP INT TERM
 cat "$evidence/preflight.txt"
 capture_container_ids "$evidence/protected-container-ids.before"
 iptables-save >"$evidence/iptables.before"; chmod 0600 "$evidence/iptables.before"
+normalize_firewall_snapshot "$evidence/iptables.before" "$evidence/iptables.rules.before"
 export_all_workflows "$evidence/workflows.before.json"
 node "$SCRIPT_DIR/workflow-contract.mjs" prepare "$evidence/workflows.before.json" "$RELEASE_SOURCE_ROOT/n8n/workflows/phase3" "$evidence"
 prepared=1
@@ -97,7 +98,8 @@ assert_protected_health
 assert_public_boundary
 assert_firewall_boundary
 iptables-save >"$evidence/iptables.after"; chmod 0600 "$evidence/iptables.after"
-cmp -s "$evidence/iptables.before" "$evidence/iptables.after" || die 'host firewall changed during the canary'
+normalize_firewall_snapshot "$evidence/iptables.after" "$evidence/iptables.rules.after"
+cmp -s "$evidence/iptables.rules.before" "$evidence/iptables.rules.after" || die 'host firewall rules changed during the canary'
 echo "READY_FOR_HUMAN_APPROVAL_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)" >>"$evidence/canary.env"
 find "$evidence" -maxdepth 1 -type f ! -name SHA256SUMS -print0 | sort -z | xargs -0 sha256sum >"$evidence/SHA256SUMS"
 echo "PASS: one zero-budget core-agent canary reached human approval. Both workflows are restored inactive; publishing and CRM remained untouched."

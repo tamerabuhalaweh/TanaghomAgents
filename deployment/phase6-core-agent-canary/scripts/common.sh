@@ -54,6 +54,13 @@ assert_public_boundary() {
   test "$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$PUBLIC_HOST/api/operations")" = 401 || die 'protected API boundary changed'
 }
 assert_firewall_boundary() { iptables -C DOCKER-USER -j TANAGHOM_N8N_DB_EGRESS >/dev/null 2>&1 || die 'approved n8n database firewall hook is absent'; }
+normalize_firewall_snapshot() {
+  source_snapshot=$1; destination_snapshot=$2
+  test -s "$source_snapshot" || die "firewall snapshot is missing or empty: $source_snapshot"
+  sed -E '/^#/d; s/\[[0-9]+:[0-9]+\]/[COUNTERS]/g' "$source_snapshot" >"$destination_snapshot"
+  test -s "$destination_snapshot" || die "normalized firewall snapshot is empty: $destination_snapshot"
+  chmod 0600 "$destination_snapshot"
+}
 
 workflow_count() { n8n_db_scalar "SELECT count(*) FROM workflow_entity WHERE id='$1';"; }
 workflow_active() { n8n_db_scalar "SELECT count(*) FROM workflow_entity WHERE id='$1' AND active IS TRUE AND \"isArchived\" IS FALSE;"; }
