@@ -515,6 +515,26 @@ try {
     post.id === livePost.rows[0].id && Number(post.metrics.impressions) === 1500));
   assert.ok(operationsBody.campaign_performance.some((campaign) =>
     campaign.campaign_id === campaignId && Number(campaign.impressions) === 1500));
+  assert.deepEqual(
+    {
+      business_roles: operationsBody.agent_registry.summary.business_roles,
+      specialized_workers: operationsBody.agent_registry.summary.specialized_workers,
+      imported: operationsBody.agent_registry.summary.imported,
+      active: operationsBody.agent_registry.summary.active,
+    },
+    { business_roles: 4, specialized_workers: 7, imported: 4, active: 0 },
+  );
+  assert.deepEqual(
+    operationsBody.agent_registry.roles.map((role) => role.code),
+    ["campaign_strategist", "content_producer", "publisher_monitor", "sales_crm"],
+  );
+  assert.equal(
+    operationsBody.agent_registry.roles.flatMap((role) => role.workers).length,
+    7,
+  );
+  assert.ok(operationsBody.agent_registry.roles.flatMap((role) => role.workers)
+    .every((worker) => worker.blockers.some((condition) =>
+      condition.code === "workflow_inactive" || condition.code === "workflow_not_imported")));
 
   const pauseMode = await fetch(`${dashboardOrigin}/api/admin/automation/postiz`, {
     method: "PUT",

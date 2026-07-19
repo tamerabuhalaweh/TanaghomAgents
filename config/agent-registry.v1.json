@@ -1,0 +1,146 @@
+{
+  "contract_version": "tanaghom.agent-registry.v1",
+  "runtime_snapshot": {
+    "environment": "production",
+    "verified_at": "2026-07-19T00:00:00Z",
+    "evidence": "production-audit-after-pr-83",
+    "description": "Last reviewed Tanaghom n8n inventory. This is deployment evidence, not a browser-to-n8n connection."
+  },
+  "roles": [
+    {
+      "code": "campaign_strategist",
+      "name": "Campaign Strategist",
+      "short_name": "Strategy",
+      "responsibility": "Turns an approved business brief into positioning, channels, messages, cadence, and measurable campaign direction.",
+      "display_order": 10
+    },
+    {
+      "code": "content_producer",
+      "name": "Content Producer",
+      "short_name": "Content",
+      "responsibility": "Creates channel-specific draft content from the approved strategy and hands every public-facing item to a human reviewer.",
+      "display_order": 20
+    },
+    {
+      "code": "publisher_monitor",
+      "name": "Publisher & Performance Monitor",
+      "short_name": "Publishing",
+      "responsibility": "Creates approved Postiz drafts, observes published performance, and returns attributable results without bypassing human control.",
+      "display_order": 30
+    },
+    {
+      "code": "sales_crm",
+      "name": "Sales & CRM Agent",
+      "short_name": "Sales",
+      "responsibility": "Synchronizes leads, prepares governed CRM actions, supports high-volume conversations, and proves reply quality before autonomy expands.",
+      "display_order": 40
+    }
+  ],
+  "workers": [
+    {
+      "code": "campaign_strategy_generator",
+      "role_code": "campaign_strategist",
+      "name": "Campaign Strategy Generator",
+      "responsibility": "Claims strategy jobs, asks Gemma for a versioned strategy contract, validates it, and persists accepted evidence.",
+      "phase": "Phase 3",
+      "workflow_name": "Tanaghom — Campaign Strategist v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase3/campaign-strategist.v1.json",
+      "job_types": ["campaign.strategy.generate"],
+      "release_state": "available",
+      "runtime_state": "imported_inactive",
+      "trigger_state": "workflow_inactive_only",
+      "display_order": 10
+    },
+    {
+      "code": "campaign_content_generator",
+      "role_code": "content_producer",
+      "name": "Campaign Content Generator",
+      "responsibility": "Claims content jobs, generates validated drafts, records provenance, and stops at the human approval gate.",
+      "phase": "Phase 3",
+      "workflow_name": "Tanaghom — Content Producer v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase3/content-producer.v1.json",
+      "job_types": ["campaign.content.generate"],
+      "release_state": "available",
+      "runtime_state": "imported_inactive",
+      "trigger_state": "workflow_inactive_only",
+      "display_order": 20
+    },
+    {
+      "code": "postiz_draft_publisher",
+      "role_code": "publisher_monitor",
+      "name": "Postiz Draft Publisher",
+      "responsibility": "Revalidates approval immediately before creating a Postiz draft; it has no automatic publish path.",
+      "phase": "Phase 4",
+      "workflow_name": "Tanaghom — Postiz Draft Publisher v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase4/postiz-draft-publisher.v1.json",
+      "job_types": ["content.postiz.draft"],
+      "release_state": "available",
+      "runtime_state": "imported_inactive",
+      "trigger_state": "disabled",
+      "display_order": 30
+    },
+    {
+      "code": "postiz_performance_monitor",
+      "role_code": "publisher_monitor",
+      "name": "Postiz Performance Monitor",
+      "responsibility": "Reads authorized analytics through the private gateway and records normalized performance and attribution evidence.",
+      "phase": "Phase 4",
+      "workflow_name": "Tanaghom — Postiz Performance Monitor v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase4/postiz-performance-monitor.v1.json",
+      "job_types": ["postiz.performance.sync"],
+      "release_state": "available",
+      "runtime_state": "available_not_imported",
+      "trigger_state": "disabled",
+      "display_order": 40
+    },
+    {
+      "code": "ghl_contact_sync",
+      "role_code": "sales_crm",
+      "name": "GHL Contact Sync",
+      "responsibility": "Creates or updates an explicitly queued GHL contact through the private credential gateway.",
+      "phase": "Phase 5",
+      "workflow_name": "Tanaghom — GHL Contact Sync v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase5/ghl-contact-sync.v1.json",
+      "job_types": ["lead.ghl.contact_upsert"],
+      "release_state": "available",
+      "runtime_state": "available_not_imported",
+      "trigger_state": "disabled",
+      "display_order": 50
+    },
+    {
+      "code": "governed_ghl_actions",
+      "role_code": "sales_crm",
+      "name": "Governed GHL Actions",
+      "responsibility": "Executes only database-authorized messages, qualification, booking, pipeline, and ownership actions with policy rechecks.",
+      "phase": "Phase 5E",
+      "workflow_name": "Tanaghom — Governed GHL Actions v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase5/governed-ghl-actions.v1.json",
+      "job_types": ["ghl.action.execute"],
+      "release_state": "available",
+      "runtime_state": "available_not_imported",
+      "trigger_state": "disabled",
+      "display_order": 60
+    },
+    {
+      "code": "quality_shadow_evaluator",
+      "role_code": "sales_crm",
+      "name": "Quality Shadow Evaluator",
+      "responsibility": "Compares proposal-only AI replies with de-identified human baselines and records evidence without taking an external action.",
+      "phase": "Phase 5G",
+      "workflow_name": "Tanaghom — Quality Shadow Evaluator v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase5g/quality-shadow-evaluator.v1.json",
+      "job_types": ["quality.shadow.evaluate"],
+      "release_state": "available",
+      "runtime_state": "imported_inactive",
+      "trigger_state": "disabled",
+      "display_order": 70
+    }
+  ]
+}

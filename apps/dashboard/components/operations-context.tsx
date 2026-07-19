@@ -32,6 +32,81 @@ export interface OperationsAgent {
   current_job_started_at: string | null;
 }
 
+export interface AgentRegistryBlocker {
+  code: string;
+  title: string;
+  detail: string;
+  next_action: string;
+  severity: "blocking" | "attention" | "info";
+}
+
+export interface AgentRegistryJob {
+  id: string;
+  worker_code: string | null;
+  job_type: string;
+  status: string;
+  campaign_id: string | null;
+  campaign_name: string | null;
+  attempt: number;
+  max_attempts: number;
+  created_at: string;
+  started_at: string | null;
+  updated_at: string;
+  finished_at: string | null;
+  error_code: string | null;
+  error_message: string | null;
+  pending_approvals: number;
+  requires_reconciliation: boolean;
+}
+
+export interface AgentRegistryWorker {
+  code: string;
+  role_code: string;
+  name: string;
+  responsibility: string;
+  phase: string;
+  workflow_name: string;
+  workflow_version: string;
+  source_path: string;
+  job_types: string[];
+  release_state: "available" | "retired";
+  runtime_state: "available_not_imported" | "imported_inactive" | "active";
+  trigger_state: "disabled" | "workflow_inactive_only" | "enabled";
+  runtime_verified_at: string;
+  runtime_evidence: string;
+  display_order: number;
+  blockers: AgentRegistryBlocker[];
+}
+
+export interface AgentRegistryRole {
+  code: string;
+  name: string;
+  short_name: string;
+  responsibility: string;
+  display_order: number;
+  agent_record_id: string | null;
+  operational_state: "working" | "waiting_approval" | "blocked" | "ready" | "inactive";
+  current_job: AgentRegistryJob | null;
+  recent_jobs: AgentRegistryJob[];
+  blockers: AgentRegistryBlocker[];
+  workers: AgentRegistryWorker[];
+}
+
+export interface AgentRegistrySnapshot {
+  contract_version: "tanaghom.agent-registry.v1";
+  generated_at: string;
+  summary: {
+    business_roles: number;
+    specialized_workers: number;
+    release_available: number;
+    imported: number;
+    active: number;
+    jobs_open: number;
+    jobs_requiring_reconciliation: number;
+  };
+  roles: AgentRegistryRole[];
+}
+
 export interface OperationsLead {
   id: string;
   campaign_id: string;
@@ -108,6 +183,7 @@ export interface OperationsSnapshot {
   };
   campaigns: OperationsCampaign[];
   agents: OperationsAgent[];
+  agent_registry: AgentRegistrySnapshot;
   leads: OperationsLead[];
   performance: {
     impressions: string;

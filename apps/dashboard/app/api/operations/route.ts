@@ -1,5 +1,7 @@
 import type { NextRequest } from "next/server";
 
+import { buildAgentRegistry, type RegistryJobRow } from "@/lib/server/agent-registry";
+import { ghlActionRuntimeBlockers, postizAutomationRuntimeBlockers } from "@/lib/server/automation-management";
 import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { apiFailure, noStore } from "@/lib/server/responses";
@@ -49,25 +51,103 @@ export async function GET(request: NextRequest) {
           LIMIT 100`,
         [user.organizationId],
       );
-      const agents = await client.query(
-        `SELECT agent.id, agent.code, agent.name, agent.description, agent.status,
-                agent.last_heartbeat_at,
-                job.id AS current_job_id, job.job_type AS current_job_type,
-                job.status AS current_job_status, job.campaign_id,
-                job.started_at AS current_job_started_at
-           FROM tanaghom.agents AS agent
-           LEFT JOIN LATERAL (
-             SELECT agent_job.id, agent_job.job_type, agent_job.status,
-                    agent_job.campaign_id, agent_job.started_at
-               FROM tanaghom.agent_jobs agent_job
-              JOIN tanaghom.campaigns campaign ON campaign.id = agent_job.campaign_id
-              WHERE agent_job.agent_id = agent.id
-                AND campaign.organization_id = $1
-                AND agent_job.status IN ('queued', 'running', 'waiting_approval')
-              ORDER BY agent_job.created_at DESC
-              LIMIT 1
-           ) AS job ON true
-          ORDER BY agent.created_at ASC`,
+      const agentRoles = await client.query(
+        `SELECT role.code,role.name,role.short_name,role.responsibility,role.display_order,
+                agent.id AS agent_record_id
+           FROM tanaghom.agent_role_registry role
+           LEFT JOIN tanaghom.agents agent ON agent.code=role.code
+          ORDER BY role.display_order`,
+      );
+      const agentWorkers = await client.query(
+        `SELECT code,role_code,name,responsibility,phase,workflow_name,workflow_version,
+                source_path,job_types,release_state,runtime_state,trigger_state,
+                runtime_verified_at,runtime_evidence,display_order
+           FROM tanaghom.agent_workflow_registry
+          ORDER BY display_order`,
+      );
+      const agentJobs = await client.query(
+        `WITH scoped AS (
+           SELECT job.id,role.code AS role_code,worker.code AS worker_code,job.job_type,job.status,
+                  job.campaign_id,campaign.name AS campaign_name,job.attempt,job.max_attempts,
+                  job.created_at,job.started_at,job.updated_at,job.finished_at,
+                  job.error_code,job.error_message,
+                  (SELECT count(*)::int FROM tanaghom.content_items content
+                    WHERE content.campaign_id=job.campaign_id AND content.status='pending_approval') AS pending_approvals,
+                  row_number() OVER (
+                    PARTITION BY role.code
+                    ORDER BY (job.status IN ('queued','running','waiting_approval')) DESC,job.created_at DESC
+                  ) AS role_rank
+             FROM tanaghom.agent_jobs job
+             JOIN tanaghom.agents agent ON agent.id=job.agent_id
+             JOIN tanaghom.agent_role_registry role ON role.code=agent.code
+             LEFT JOIN tanaghom.agent_workflow_registry worker ON job.job_type=ANY(worker.job_types)
+             LEFT JOIN tanaghom.campaigns campaign ON campaign.id=job.campaign_id
+            WHERE campaign.organization_id=$1
+               OR (job.campaign_id IS NULL AND job.input->>'organization_id'=$1::text)
+         )
+         SELECT id,role_code,worker_code,job_type,status,campaign_id,campaign_name,
+                attempt,max_attempts,created_at,started_at,updated_at,finished_at,error_code,error_message,
+                pending_approvals,
+                (job_type='campaign.content.generate' AND status='waiting_approval'
+                  AND pending_approvals=0) AS requires_reconciliation
+           FROM scoped WHERE role_rank<=5
+          ORDER BY role_code,(status IN ('queued','running','waiting_approval')) DESC,created_at DESC`,
+        [user.organizationId],
+      );
+      const qualityJobs = await client.query(
+        `SELECT job.id,'sales_crm'::text AS role_code,'quality_shadow_evaluator'::text AS worker_code,
+                'quality.shadow.evaluate'::text AS job_type,job.status,NULL::uuid AS campaign_id,
+                dataset.source_label AS campaign_name,job.attempt_count AS attempt,3 AS max_attempts,
+                job.queued_at AS created_at,job.claimed_at AS started_at,
+                coalesce(job.completed_at,job.claimed_at,job.queued_at) AS updated_at,
+                job.completed_at AS finished_at,job.error_code,job.error_message,
+                0 AS pending_approvals,false AS requires_reconciliation
+           FROM tanaghom.quality_shadow_jobs job
+           JOIN tanaghom.quality_evaluation_datasets dataset ON dataset.id=job.dataset_id
+          WHERE job.organization_id=$1
+          ORDER BY (job.status IN ('queued','running')) DESC,job.queued_at DESC LIMIT 5`,
+        [user.organizationId],
+      );
+      const ghlActionJobs = await client.query(
+        `SELECT job.id,'sales_crm'::text AS role_code,'governed_ghl_actions'::text AS worker_code,
+                ('ghl.action.'||job.action_type)::text AS job_type,
+                CASE job.status WHEN 'claimed' THEN 'running' WHEN 'dispatching' THEN 'running'
+                  WHEN 'awaiting_approval' THEN 'waiting_approval' WHEN 'canceled' THEN 'cancelled'
+                  ELSE job.status END AS status,
+                NULL::uuid AS campaign_id,
+                concat_ws(' · ',initcap(job.action_type),job.channel,job.contact_id) AS campaign_name,
+                job.attempt,job.max_attempts,job.created_at,job.claimed_at AS started_at,
+                job.updated_at,job.finished_at,job.error_code,job.error_message,
+                0 AS pending_approvals,false AS requires_reconciliation
+           FROM tanaghom.ghl_action_jobs job
+          WHERE job.organization_id=$1
+          ORDER BY (job.status IN ('queued','claimed','dispatching','awaiting_approval','indeterminate')) DESC,
+                   job.created_at DESC LIMIT 5`,
+        [user.organizationId],
+      );
+      const postizReadiness = await client.query(
+        `SELECT postiz_draft_mode,emergency_stop,emergency_stop_reason,
+                connection_ready,channel_mapping_ready,operations_clear
+           FROM tanaghom.postiz_automation_status WHERE organization_id=$1`,
+        [user.organizationId],
+      );
+      const ghlReadiness = await client.query(
+        `SELECT action_mode,proactive_message_mode,platform_emergency_stop,
+                action_emergency_stop,action_emergency_reason,connection_ready,
+                operations_clear,action_allowed_channels
+           FROM tanaghom.ghl_action_automation_status WHERE organization_id=$1`,
+        [user.organizationId],
+      );
+      const qualityReadiness = await client.query(
+        `SELECT policy.current_stage,policy.minimum_sample_size,
+                count(DISTINCT dataset.id)::int AS dataset_count,
+                count(DISTINCT dataset.id) FILTER (WHERE dataset.baseline_snapshot_id IS NOT NULL)::int AS baseline_recorded_count,
+                count(DISTINCT shadow.id)::int AS shadow_job_count
+           FROM tanaghom.quality_rollout_policies policy
+           LEFT JOIN tanaghom.quality_evaluation_datasets dataset ON dataset.organization_id=policy.organization_id
+           LEFT JOIN tanaghom.quality_shadow_jobs shadow ON shadow.dataset_id=dataset.id
+          WHERE policy.organization_id=$1
+          GROUP BY policy.organization_id,policy.current_stage,policy.minimum_sample_size`,
         [user.organizationId],
       );
       const leads = await client.query(
@@ -198,12 +278,77 @@ export async function GET(request: NextRequest) {
           LIMIT 50`,
         [user.organizationId],
       );
+      const postiz = postizReadiness.rows[0] || {
+        postiz_draft_mode: "manual", emergency_stop: true,
+        emergency_stop_reason: "Postiz policy is unavailable", connection_ready: false,
+        channel_mapping_ready: false, operations_clear: false,
+      };
+      const ghl = ghlReadiness.rows[0] || {
+        action_mode: "manual", proactive_message_mode: "disabled",
+        platform_emergency_stop: true, action_emergency_stop: true,
+        action_emergency_reason: "GHL policy is unavailable", connection_ready: false,
+        operations_clear: false, action_allowed_channels: [],
+      };
+      const quality = qualityReadiness.rows[0] || {
+        current_stage: "baseline", minimum_sample_size: 25,
+        dataset_count: 0, baseline_recorded_count: 0, shadow_job_count: 0,
+      };
+      const registryJobs = (
+        [...agentJobs.rows, ...qualityJobs.rows, ...ghlActionJobs.rows]
+      ) as Array<RegistryJobRow & { role_code: string }>;
+      const agentRegistry = buildAgentRegistry({
+        roles: agentRoles.rows,
+        workers: agentWorkers.rows,
+        jobs: registryJobs,
+        readiness: {
+          postiz: {
+            mode: postiz.postiz_draft_mode,
+            emergency_stop: postiz.emergency_stop,
+            emergency_stop_reason: postiz.emergency_stop_reason,
+            connection_ready: postiz.connection_ready,
+            channel_mapping_ready: postiz.channel_mapping_ready,
+            operations_clear: postiz.operations_clear,
+            runtime_blockers: postizAutomationRuntimeBlockers(),
+          },
+          ghl: {
+            mode: ghl.action_mode,
+            proactive_message_mode: ghl.proactive_message_mode,
+            platform_emergency_stop: ghl.platform_emergency_stop,
+            organization_emergency_stop: ghl.action_emergency_stop,
+            organization_emergency_reason: ghl.action_emergency_reason,
+            connection_ready: ghl.connection_ready,
+            operations_clear: ghl.operations_clear,
+            allowed_channels: ghl.action_allowed_channels,
+            runtime_blockers: ghlActionRuntimeBlockers(),
+          },
+          quality: {
+            current_stage: quality.current_stage,
+            minimum_sample_size: quality.minimum_sample_size,
+            dataset_count: quality.dataset_count,
+            baseline_recorded_count: quality.baseline_recorded_count,
+            shadow_job_count: quality.shadow_job_count,
+          },
+        },
+      });
       await client.query("COMMIT");
 
       return noStore({
         summary: summary.rows[0],
         campaigns: campaigns.rows,
-        agents: agents.rows,
+        agents: agentRegistry.roles.map((role) => ({
+          id: role.agent_record_id || role.code,
+          code: role.code,
+          name: role.name,
+          description: role.responsibility,
+          status: role.operational_state,
+          last_heartbeat_at: role.current_job?.updated_at || null,
+          current_job_id: role.current_job?.id || null,
+          current_job_type: role.current_job?.job_type || null,
+          current_job_status: role.current_job?.status || null,
+          campaign_id: role.current_job?.campaign_id || null,
+          current_job_started_at: role.current_job?.started_at || null,
+        })),
+        agent_registry: agentRegistry,
         leads: leads.rows,
         performance: performance.rows[0],
         campaign_performance: campaignPerformance.rows,
