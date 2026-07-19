@@ -1087,3 +1087,42 @@ test('Phase 6 agentic simulation executes every inactive workflow without custom
   assert.match(runbook, /Remaining acceptance after this gate/);
   assert.doesNotMatch(`${script}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
+
+test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and transactionally restored', async () => {
+  const root = new URL('../deployment/phase6-core-agent-canary/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const workflowContract = await readFile(new URL('scripts/workflow-contract.mjs', root), 'utf8');
+  const operator = await readFile(new URL('scripts/canary-operator.mjs', root), 'utf8');
+  const run = await readFile(new URL('scripts/run-canary.sh', root), 'utf8');
+  const restore = await readFile(new URL('scripts/restore-workflows.sh', root), 'utf8');
+  const verify = await readFile(new URL('scripts/verify-human-approval.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_MIGRATION=0022_agent_registry/);
+  assert.match(common, /assert_no_claimable_core_backlog/);
+  assert.match(common, /postiz_draft_mode<>'manual'/);
+  assert.match(common, /action_emergency_stop IS NOT TRUE/);
+  assert.match(workflowContract, /node\.disabled = true/);
+  assert.match(workflowContract, /unexpected external endpoint/);
+  assert.match(workflowContract, /publishing or CRM reference/);
+  assert.match(operator, /budget_target,revenue_target/);
+  assert.match(operator, /max_items: 2/);
+  assert.match(operator, /verifyApproved/);
+  assert.match(operator, /human_approvals/);
+  assert.match(run, /publish_workflow "\$STRATEGIST_ID"[\s\S]+unpublish_workflow "\$STRATEGIST_ID"[\s\S]+publish_workflow "\$PRODUCER_ID"[\s\S]+unpublish_workflow "\$PRODUCER_ID"/);
+  assert.match(run, /operator verify-pending/);
+  assert.match(run, /n8n audit/);
+  assert.match(restore, /import_workflow_inactive/);
+  assert.match(verify, /YES-VERIFY-AUTHENTICATED-HUMAN-APPROVAL/);
+  assert.match(verify, /content\.postiz\.draft/);
+  assert.match(runbook, /intentionally ends before[\s\S]+publishing/i);
+  assert.match(runbook, /does not restart\/recreate n8n/i);
+  assert.match(quality, /phase6-core-agent-canary\/scripts\/validate-package\.sh/);
+  assert.match(quality, /phase6-core-agent-canary\/scripts\/test-refusal-paths\.sh/);
+
+  const mutationScope = `${run}\n${restore}\n${verify}`;
+  assert.doesNotMatch(mutationScope, /systemctl (stop|restart|reload)|iptables (-A|-I|-D|-N|-F|-X)|docker (stop|restart|rm)|docker compose/);
+  assert.doesNotMatch(mutationScope, /publish_workflow .*postiz|publish_workflow .*ghl/i);
+  assert.doesNotMatch(`${common}\n${workflowContract}\n${operator}\n${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
