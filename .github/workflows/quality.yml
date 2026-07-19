@@ -25,6 +25,8 @@ jobs:
       - run: deployment/phase5g-production-update/scripts/validate-package.sh
       - run: deployment/phase5g-shadow-production-update/scripts/validate-package.sh
       - run: deployment/phase6-agent-registry-production-update/scripts/validate-package.sh
+      - run: deployment/phase6-core-agent-canary/scripts/validate-package.sh
+      - run: deployment/phase6-core-agent-canary/scripts/test-refusal-paths.sh
 
   database-contract:
     runs-on: ubuntu-latest
