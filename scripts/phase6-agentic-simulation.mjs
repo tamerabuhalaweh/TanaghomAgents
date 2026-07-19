@@ -28,7 +28,7 @@ const steps = [
   {
     key: "campaign_strategy_and_content",
     script: "scripts/n8n-workflow-integration.mjs",
-    marker: "PASS: pinned n8n executed Strategist, Content Producer, and retry paths.",
+    marker: "PASS: pinned n8n ran a sequential schedule-disabled core canary, stopped at human approval, produced no provider side effects, restored both workflows inactive, and retained retry coverage.",
   },
   {
     key: "approved_postiz_draft_and_performance",
