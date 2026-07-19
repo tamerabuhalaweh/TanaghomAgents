@@ -845,7 +845,7 @@ test('Phase 5G production update is exact, quality-evidence-preserving, and Tana
   assert.match(rollback, /assert_quality_tables_safe_to_drop/);
   assert.match(backup, /ExpectedMigration = '0019_notification_monitoring_destinations'/);
   assert.match(backup, /-ExpectedMigration \$ExpectedMigration/);
-  assert.match(sharedBackup, /phase5\[fg\]-\\d\{8\}T\\d\{6\}Z/);
+  assert.match(sharedBackup, /\(phase5\[fg\]\|phase6\)-\\d\{8\}T\\d\{6\}Z/);
   assert.match(lifecycle, /0020 rollback unexpectedly accepted quality evidence/);
   assert.match(lifecycle, /count\(\*\) FROM tanaghom\.notification_destinations/);
   assert.match(packageValidation, /sh -n/);
@@ -914,6 +914,54 @@ test('Phase 5G shadow production update is exact, inactive, reversible, and exis
   assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|gemma|voice|smartcc)/i);
   assert.doesNotMatch(protectedScope, /\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
   assert.doesNotMatch(protectedScope, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});
+
+test('Phase 6 Agent Registry production update is exact, inactive, reversible, and Tanaghom-only', async () => {
+  const root = new URL('../deployment/phase6-agent-registry-production-update/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const backup = await readFile(new URL('scripts/prepare-offserver-backup.ps1', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_START_MIGRATION=0021_quality_baseline_shadow_pipeline/);
+  assert.match(common, /TARGET_MIGRATION=0022_agent_registry/);
+  assert.match(common, /PENDING_MIGRATIONS='0022_agent_registry'/);
+  assert.match(common, /assert_agent_registry_safe_to_drop/);
+  assert.match(common, /campaign_strategist,content_producer,publisher_monitor,sales_crm/);
+  assert.match(common, /campaign_content_generator,campaign_strategy_generator,ghl_contact_sync,governed_ghl_actions,postiz_draft_publisher,postiz_performance_monitor,quality_shadow_evaluator/);
+  assert.match(preflight, /assert_database_at_start/);
+  assert.match(preflight, /less than 20 GiB/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(deploy, /assert_agent_registry_safe_to_drop/);
+  assert.match(deploy, /compose up -d --no-deps dashboard/);
+  assert.doesNotMatch(deploy, /npm run db:(migrate|rollback)/);
+  assert.match(validate, /count\(\*\) FROM tanaghom\.agent_role_registry/);
+  assert.match(validate, /count\(\*\) FROM tanaghom\.agent_workflow_registry/);
+  assert.match(validate, /runtime_state='active'/);
+  assert.match(validate, /has_table_privilege\('tanaghom_n8n_worker','tanaghom\.agent_workflow_registry'/);
+  assert.match(validate, /has_table_privilege\('tanaghom_api','tanaghom\.agent_workflow_registry','SELECT'/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE/);
+  assert.match(rollback, /assert_agent_registry_safe_to_drop/);
+  assert.match(backup, /ExpectedMigration = '0021_quality_baseline_shadow_pipeline'/);
+  assert.match(lifecycle, /0022 rollback guard unexpectedly accepted modified registry evidence/);
+  assert.match(lifecycle, /count\(\*\) FROM tanaghom\.quality_evaluation_snapshots/);
+  assert.match(packageValidation, /sh -n/);
+  assert.match(runbook, /No deployment is authorized by this document/);
+  assert.match(runbook, /only the Tanaghom dashboard image\/container/i);
+  assert.match(runbook, /does not import, activate, execute, or edit an n8n workflow/i);
+  assert.match(quality, /phase6-agent-registry-production-update-contract/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|n8n)/i);
+  assert.doesNotMatch(protectedScope, /\/data\/|\/opt\/(smartlabs|n8n-smartlabs)/i);
+  assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
 });
 
 test('Phase 5F database bridge is database-only, PostgreSQL 17.6-pinned, and reversibly tested', async () => {
