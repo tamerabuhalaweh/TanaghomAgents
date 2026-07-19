@@ -117,9 +117,30 @@ async function snapshot() {
 
   const privileges = (await client.query(`
     SELECT
+      current_user AS operator_current_user,
+      session_user AS operator_session_user,
+      role.rolsuper AS operator_superuser,
+      role.rolcreaterole AS operator_can_create_role,
+      membership.admin_option AS operator_worker_admin_option,
+      membership.inherit_option AS operator_worker_inherit_option,
+      membership.set_option AS operator_worker_set_option,
+      grantor.rolname AS operator_worker_grantor,
+      (SELECT count(*)::int
+         FROM pg_auth_members candidate
+         JOIN pg_roles candidate_member ON candidate_member.oid=candidate.member
+         JOIN pg_roles candidate_granted ON candidate_granted.oid=candidate.roleid
+        WHERE candidate_member.rolname=session_user
+          AND candidate_granted.rolname='tanaghom_n8n_worker') AS operator_worker_membership_rows,
       has_function_privilege('tanaghom_n8n_worker','tanaghom.complete_content_job(uuid)','EXECUTE') AS worker_can_complete,
       has_table_privilege('tanaghom_n8n_worker','tanaghom.content_approvals','SELECT,INSERT,UPDATE,DELETE') AS worker_has_approval_table_access,
-      has_table_privilege('tanaghom_n8n_worker','tanaghom.agent_jobs','INSERT,UPDATE,DELETE') AS worker_has_job_table_write`)).rows[0];
+      has_table_privilege('tanaghom_n8n_worker','tanaghom.agent_jobs','INSERT,UPDATE,DELETE') AS worker_has_job_table_write
+    FROM pg_roles role
+    JOIN pg_auth_members membership ON membership.member=role.oid
+    JOIN pg_roles granted ON granted.oid=membership.roleid
+    JOIN pg_roles grantor ON grantor.oid=membership.grantor
+    WHERE role.rolname=session_user
+      AND granted.rolname='tanaghom_n8n_worker'`)).rows[0];
+  if (!privileges) throw new Error("operator-to-worker membership evidence is missing");
 
   return {
     migration,
@@ -166,6 +187,10 @@ function assertCommon(state) {
   if (state.metrics.globally_running_jobs) throw new Error("an agent job is already running");
   if (state.metrics.inactive_registry_entries !== 2) throw new Error("core workflow registry is not restored inactive");
   if (state.metrics.open_provider_stops || state.metrics.nonmanual_postiz_policies || state.metrics.open_crm_policies) throw new Error("automation safety locks are not closed");
+  if (state.privileges.operator_current_user !== state.privileges.operator_session_user) throw new Error("operator session began under an assumed role");
+  if (state.privileges.operator_superuser || !state.privileges.operator_can_create_role) throw new Error("operator role capability shape is invalid");
+  if (state.privileges.operator_worker_membership_rows !== 1 || state.privileges.operator_worker_grantor === state.privileges.operator_session_user) throw new Error("operator worker membership grantor shape is invalid");
+  if (!state.privileges.operator_worker_admin_option || state.privileges.operator_worker_inherit_option || state.privileges.operator_worker_set_option) throw new Error("operator worker membership is not ADMIN TRUE, INHERIT FALSE, SET FALSE");
   if (!state.privileges.worker_can_complete || state.privileges.worker_has_approval_table_access || state.privileges.worker_has_job_table_write) throw new Error("n8n worker privilege boundary is invalid");
 }
 
@@ -203,6 +228,22 @@ async function reconcile() {
     await lockTargetContext();
     const before = await snapshot();
     assertWaiting(before);
+    const enableSet = (await client.query(
+      "SELECT format('GRANT tanaghom_n8n_worker TO %I WITH SET TRUE',session_user) AS sql",
+    )).rows[0].sql;
+    await client.query(enableSet);
+    const enabled = (await client.query(`
+      SELECT count(*)::int AS membership_rows,
+             count(*) FILTER (WHERE grantor.rolname=session_user AND NOT membership.admin_option AND NOT membership.inherit_option AND membership.set_option)::int AS temporary_set_rows,
+             count(*) FILTER (WHERE grantor.rolname<>session_user AND membership.admin_option AND NOT membership.inherit_option AND NOT membership.set_option)::int AS original_rows
+      FROM pg_auth_members membership
+      JOIN pg_roles member ON member.oid=membership.member
+      JOIN pg_roles granted ON granted.oid=membership.roleid
+      JOIN pg_roles grantor ON grantor.oid=membership.grantor
+      WHERE member.rolname=session_user AND granted.rolname='tanaghom_n8n_worker'`)).rows[0];
+    if (enabled?.membership_rows !== 2 || enabled.temporary_set_rows !== 1 || enabled.original_rows !== 1) {
+      throw new Error("transactional worker SET option was not enabled exactly");
+    }
     await client.query("SET LOCAL ROLE tanaghom_n8n_worker");
     const role = (await client.query("SELECT current_user,session_user")).rows[0];
     if (role.current_user !== "tanaghom_n8n_worker" || role.session_user === role.current_user) {
@@ -214,6 +255,10 @@ async function reconcile() {
     )).rows[0];
     if (completion.completed !== true) throw new Error("controlled completion function did not return true");
     await client.query("RESET ROLE");
+    const revokeTemporarySet = (await client.query(
+      "SELECT format('REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER',session_user) AS sql",
+    )).rows[0].sql;
+    await client.query(revokeTemporarySet);
     const after = await snapshot();
     assertCompleted(after);
     await client.query("COMMIT");

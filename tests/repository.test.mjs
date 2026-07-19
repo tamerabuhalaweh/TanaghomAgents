@@ -1167,10 +1167,13 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   assert.match(common, /assert_canary_evidence/);
   assert.match(common, /HUMAN_APPROVAL_VERIFIED_AT=/);
   assert.match(operator, /BEGIN ISOLATION LEVEL SERIALIZABLE/);
+  assert.match(operator, /WITH SET TRUE/);
+  assert.match(operator, /REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER/);
   assert.match(operator, /SET LOCAL ROLE tanaghom_n8n_worker/);
   assert.match(operator, /SELECT tanaghom\.complete_content_job\(\$1::uuid\)/);
   assert.match(operator, /matching_active_human_decisions !== 1/);
   assert.match(operator, /worker_has_approval_table_access/);
+  assert.match(operator, /operator_worker_set_option/);
   assert.doesNotMatch(operator, /client\.query\([`"]\s*(?:INSERT|UPDATE|DELETE|ALTER|CREATE|DROP|TRUNCATE)\b/i);
   assert.match(preflight, /operator preflight/);
   assert.match(reconcile, /YES-COMPLETE-THE-REVIEWED-CONTENT-JOB/);
@@ -1182,6 +1185,7 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   assert.match(lifecycle, /inactive human reviewer/);
   assert.match(lifecycle, /cross-organization human reviewer/);
   assert.match(lifecycle, /repeated reconciliation unexpectedly succeeded/);
+  assert.match(lifecycle, /true\|false\|false/);
   assert.match(lifecycle, /count\(\*\) FROM tanaghom\.external_operations/);
   assert.match(packageValidation, /runtime package can modify or execute a workflow/);
   assert.match(runbook, /There is intentionally no command/);
@@ -1192,6 +1196,7 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   const runtimeScope = `${common}\n${operator}\n${preflight}\n${reconcile}`;
   assert.doesNotMatch(runtimeScope, /systemctl (?:stop|restart|reload)|iptables (?:-A|-I|-D|-N|-F|-X)|docker (?:stop|restart|rm)|docker compose/i);
   assert.doesNotMatch(runtimeScope, /n8n (?:import|execute|publish|unpublish)|publish_workflow|execute_workflow/i);
+  assert.doesNotMatch(runtimeScope, /export:credentials|--decrypted/i);
   assert.doesNotMatch(runtimeScope, /api\.postiz|services\.leadconnectorhq|^\s*Authorization:|Bearer /m);
   assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
