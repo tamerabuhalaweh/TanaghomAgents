@@ -19,6 +19,8 @@ grep -q 'max_items: 2' "$package/scripts/canary-operator.mjs"
 grep -q "budget_target: 0" "$package/scripts/canary-operator.mjs"
 grep -q "forbidden_jobs" "$package/scripts/canary-operator.mjs"
 grep -q 'NODE_EXTRA_CA_CERTS="$DATABASE_CA_CERT"' "$package/scripts/common.sh"
+grep -q 'TANAGHOM_DATABASE_SSL_MODE=verify-full' "$package/scripts/common.sh"
+grep -q 'searchParams.set("sslmode", "verify-full")' "$package/scripts/canary-operator.mjs"
 grep -q 'BEGIN READ ONLY' "$package/scripts/canary-operator.mjs"
 grep -q 'operator check-database' "$package/scripts/preflight.sh"
 if grep -R -F 'operator seed "$TANAGHOM_CANARY_CAMPAIGN" | tee' --exclude=validate-package.sh "$package/scripts"; then

@@ -26,7 +26,8 @@ Postiz, GHL, lead creation, scheduling, publishing, messaging, or budget spend.
 - All protected services, n8n containers, firewall hooks, and public boundaries
   are healthy.
 - The Node operator loads the reviewed Supabase root CA and completes a
-  read-only TLS/database handshake before any workflow definition is changed.
+  read-only TLS/database handshake with explicit `verify-full` hostname and
+  chain validation before any workflow definition is changed.
 
 No new database backup is required: the canary applies no schema change and
 deletes no business record. Its append-only `.test` campaign, job, strategy,

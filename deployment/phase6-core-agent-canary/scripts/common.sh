@@ -107,5 +107,5 @@ assert_business_locks() {
 
 operator() {
   test -s "$DATABASE_CA_CERT" || die "reviewed database CA certificate is missing: $DATABASE_CA_CERT"
-  DATABASE_URL=$(database_url) NODE_EXTRA_CA_CERTS="$DATABASE_CA_CERT" node "$SCRIPT_DIR/canary-operator.mjs" "$@"
+  DATABASE_URL=$(database_url) NODE_EXTRA_CA_CERTS="$DATABASE_CA_CERT" TANAGHOM_DATABASE_SSL_MODE=verify-full node "$SCRIPT_DIR/canary-operator.mjs" "$@"
 }

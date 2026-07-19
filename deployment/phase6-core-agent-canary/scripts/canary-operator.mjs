@@ -9,7 +9,12 @@ if (!allowed.includes(action) || !campaignName?.endsWith(".test")) {
   throw new Error(`usage: canary-operator.mjs ${allowed.join("|")} NAME.test`);
 }
 
-const client = new pg.Client({ connectionString: process.env.DATABASE_URL, application_name: "tanaghom-core-canary" });
+const connectionUrl = new URL(process.env.DATABASE_URL);
+if (process.env.TANAGHOM_DATABASE_SSL_MODE) {
+  if (process.env.TANAGHOM_DATABASE_SSL_MODE !== "verify-full") throw new Error("TANAGHOM_DATABASE_SSL_MODE must be verify-full");
+  connectionUrl.searchParams.set("sslmode", "verify-full");
+}
+const client = new pg.Client({ connectionString: connectionUrl.toString(), application_name: "tanaghom-core-canary" });
 await client.connect();
 
 async function owner() {
