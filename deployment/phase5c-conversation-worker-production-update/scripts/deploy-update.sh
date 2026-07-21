@@ -131,10 +131,12 @@ PY
 set -a
 . "$connection_env"
 set +a
-PGPASSFILE="$pgpass_file" PGCONNECT_TIMEOUT=10 psql -X -v ON_ERROR_STOP=1 -At \
-  -c "SELECT CASE WHEN current_user='$RUNTIME_ROLE' THEN 'AUTHENTICATED' ELSE 'WRONG_ROLE' END;" \
-  > "$evidence_dir/runtime-authentication.txt"
-test "$(cat "$evidence_dir/runtime-authentication.txt")" = AUTHENTICATED || die 'runtime role could not authenticate through the production database endpoint'
+authenticate_runtime_role_with_retry \
+  "$pgpass_file" \
+  "$evidence_dir/runtime-authentication.txt" \
+  "$evidence_dir/runtime-authentication-errors.txt" \
+  "$evidence_dir/runtime-authentication-attempts.txt" \
+  || die 'runtime role could not authenticate through the production database endpoint after bounded retries'
 unset PGHOST PGPORT PGDATABASE PGUSER PGSSLMODE
 
 docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$credential_remote" >/dev/null 2>&1 || true

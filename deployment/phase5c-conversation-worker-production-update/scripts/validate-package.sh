@@ -6,6 +6,7 @@ package="$root/deployment/phase5c-conversation-worker-production-update"
 
 sh -n "$package"/scripts/*.sh
 "$package/scripts/test-refusal-paths.sh"
+"$package/scripts/test-runtime-auth-retry.sh"
 test -s "$package/RUNBOOK.md"
 
 for file in "$package"/scripts/*.sh; do
@@ -29,6 +30,8 @@ grep -q 'import:workflow.*--activeState=false' "$package/scripts/deploy-update.s
 grep -q 'openssl rand -hex 32' "$package/scripts/deploy-update.sh"
 grep -q 'rm -f.*secret_file.*role_sql.*credential_json.*connection_env.*pgpass_file' "$package/scripts/deploy-update.sh"
 grep -q 'runtime-authentication.txt' "$package/scripts/deploy-update.sh"
+grep -q 'authenticate_runtime_role_with_retry' "$package/scripts/deploy-update.sh"
+grep -q 'TANAGHOM_RUNTIME_AUTH_ATTEMPTS:-24' "$package/scripts/common.sh"
 grep -q 'n8n audit' "$package/scripts/deploy-update.sh"
 grep -q 'assert_existing_workflows_unchanged' "$package/scripts/deploy-update.sh"
 grep -q 'assert_existing_credentials_unchanged' "$package/scripts/deploy-update.sh"
