@@ -4,6 +4,12 @@ Status: prepared for review only. No deployment is authorized by this document o
 
 This package performs exactly two Tanaghom changes: apply `0023_campaign_lifecycle` on the deployed `0022_agent_registry` database and rebuild/recreate only the Tanaghom dashboard. It enables governed campaign creation, authoritative campaign detail, brief revision, strategy/content queueing, content reconciliation, and readiness decisions. It does not import, activate, execute, or edit an n8n workflow; call Gemma, Postiz, or GHL; change credentials or automation policy; publish content; contact a lead; alter Nginx/firewall rules; or operate on SmartLabs, SmartCC, voice, Gemma, or the protected n8n stack.
 
+## Interrupted release recovery
+
+The first authorized production attempt, `phase6-20260721T100731Z`, applied migration `0023_campaign_lifecycle` and built the reviewed dashboard, then refused final validation because two Agent Registry rows had legitimate historical `updated_at` values from July 19. The validator incorrectly assumed every registry row must have `updated_at=created_at`. Its automatic path restored the previous Tanaghom source commit and dashboard image but deliberately left the additive migration in place when the over-strict registry guard refused schema downgrade. Public health remained ready, provider operations remained zero, workflows remained inactive, emergency stops remained active, and the preserved Squid file retained its reviewed checksum.
+
+The corrected design captures a complete Agent Registry fingerprint immediately before each transaction and compares that fingerprint afterward. Historical reviewed changes are accepted; any change during the release is refused. It also runs rollback assertions in isolated subshells so a refusal cannot abort rollback evidence recording. For the observed migration-0023/previous-dashboard state, `resume-preflight.sh` and `resume-update.sh` provide a dashboard-only completion path that applies no SQL and cannot downgrade the database. No deployment or resume is authorized by merging this correction.
+
 ## Release invariants
 
 - The release-source checkout is clean and both checkouts match separately approved full commit SHAs.
@@ -16,7 +22,7 @@ This package performs exactly two Tanaghom changes: apply `0023_campaign_lifecyc
 - Nine protected services and five protected n8n containers remain healthy and retain their identities.
 - Firewall rules and `/etc/nginx/conf.d/tanaghom-public.conf` remain byte-for-byte unchanged.
 - Only the Tanaghom dashboard image/container may be rebuilt or recreated.
-- The four-role/seven-worker Agent Registry remains unchanged and every workflow remains inactive.
+- The four-role/seven-worker Agent Registry is fingerprinted at transaction start, remains byte-for-byte unchanged during the release, and every workflow remains inactive. Historical reviewed timestamps are preserved.
 - Only `tanaghom_api` may execute the new campaign-control functions; n8n, readonly, and PUBLIC cannot.
 - The deployment itself creates no campaign, job, draft, approval, outbox event, provider operation, or audit action.
 
@@ -89,6 +95,38 @@ The transaction:
 
 Before commit, any failure automatically restores the previous dashboard commit/image and rolls back only migration 0023 when the campaign-domain fingerprint and content targets remain unchanged. If campaign data changed during the transaction, schema rollback refuses and preserves the data.
 
+## 5A. Complete the observed interrupted release
+
+Use this path only when the database is already at `0023_campaign_lifecycle`, production Git and the running dashboard have been restored to the recorded pre-release state, and the interrupted release evidence remains at `/var/backups/tanaghom-phase6-20260721T100731Z`. It does not execute an up or down migration.
+
+Prepare a new clean release checkout at the merged corrective commit and a new unique release ID. Reuse the already verified off-server backup proof by explicitly binding it to the interrupted release:
+
+```sh
+export TANAGHOM_RELEASE_AUTHORIZATION='YES-I-AM-THE-AUTHORIZED-OWNER'
+export TANAGHOM_RESUME_AUTHORIZATION='RESUME-THE-REVIEWED-TANAGHOM-RELEASE'
+export TANAGHOM_RESUME_SOURCE_RELEASE_ID='phase6-20260721T100731Z'
+export TANAGHOM_BACKUP_RELEASE_ID='phase6-20260721T100731Z'
+export TANAGHOM_RELEASE_ID='phase6-YYYYMMDDTHHMMSSZ'
+export TANAGHOM_EXPECTED_CURRENT_COMMIT='<RESTORED_PREVIOUS_40_CHARACTER_SHA>'
+export TANAGHOM_TARGET_COMMIT='<MERGED_CORRECTIVE_40_CHARACTER_SHA>'
+export TANAGHOM_BACKUP_PROOF='/root/tanaghom-campaign-lifecycle-backup-proof.env'
+export TANAGHOM_PRESERVED_FILE_SHA256='<REVIEWED_64_CHARACTER_LOWERCASE_SHA256>'
+export TANAGHOM_PRODUCTION_ROOT='/opt/tanaghom-dashboard'
+export TANAGHOM_RELEASE_SOURCE_ROOT='/opt/tanaghom-release-campaign-lifecycle-correction'
+
+/opt/tanaghom-release-campaign-lifecycle-correction/deployment/phase6-campaign-lifecycle-production-update/scripts/resume-preflight.sh
+```
+
+The resume preflight proves the prior release never committed, the exact migration file already applied is unchanged, migration 0023 is structurally present, no governed campaign data changed, the restored dashboard image matches the prior evidence, workflows remain inactive, provider operations remain zero, and all protected boundaries remain healthy.
+
+Only after separate owner authorization, execute:
+
+```sh
+/opt/tanaghom-release-campaign-lifecycle-correction/deployment/phase6-campaign-lifecycle-production-update/scripts/resume-update.sh
+```
+
+The resume transaction snapshots the current campaign and Agent Registry data, checks out the approved corrective commit, builds/recreates only the Tanaghom dashboard, and runs full release validation. It never calls `db_file`, never applies or reverses SQL, and on failure restores only the previous Tanaghom source/image. After a committed resume, use the dashboard-only rollback in section 8; do not run the schema rollback in section 7 against resume evidence.
+
 ## 6. Acceptance window
 
 Keep emergency stops active and workflows inactive. First confirm:
@@ -128,7 +166,9 @@ The additive 0023 schema is compatible with the previous dashboard. A later sche
 unset TANAGHOM_RELEASE_AUTHORIZATION TANAGHOM_RELEASE_ID \
   TANAGHOM_EXPECTED_CURRENT_COMMIT TANAGHOM_TARGET_COMMIT \
   TANAGHOM_BACKUP_PROOF TANAGHOM_PRESERVED_FILE_SHA256 \
-  TANAGHOM_PRODUCTION_ROOT TANAGHOM_RELEASE_SOURCE_ROOT
+  TANAGHOM_PRODUCTION_ROOT TANAGHOM_RELEASE_SOURCE_ROOT \
+  TANAGHOM_RESUME_AUTHORIZATION TANAGHOM_RESUME_SOURCE_RELEASE_ID \
+  TANAGHOM_BACKUP_RELEASE_ID
 ```
 
 Release evidence and the rollback image remain until separately approved retention. This package contains no command that stops, restarts, removes, edits, reloads, or prunes Squid, SmartLabs, SmartCC, voice, Gemma, or the protected n8n stack.

@@ -972,6 +972,8 @@ test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, r
   const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
   const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
   const dashboardRollback = await readFile(new URL('scripts/rollback-dashboard-only.sh', root), 'utf8');
+  const resumePreflight = await readFile(new URL('scripts/resume-preflight.sh', root), 'utf8');
+  const resume = await readFile(new URL('scripts/resume-update.sh', root), 'utf8');
   const backup = await readFile(new URL('scripts/prepare-offserver-backup.ps1', root), 'utf8');
   const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
   const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
@@ -983,6 +985,9 @@ test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, r
   assert.match(common, /PENDING_MIGRATIONS='0023_campaign_lifecycle'/);
   assert.match(common, /campaign_lifecycle_fingerprint/);
   assert.match(common, /assert_campaign_lifecycle_unchanged/);
+  assert.match(common, /agent_registry_fingerprint/);
+  assert.match(common, /assert_agent_registry_unchanged/);
+  assert.doesNotMatch(common, /updated_at<>created_at/);
   assert.match(common, /content_item_target<>2/);
   assert.match(common, /PRESERVED_RELATIVE_PATH=deployment\/phase4-postiz-activation\/egress\/squid\.conf/);
   assert.match(common, /assert_preserved_path_stable/);
@@ -994,6 +999,9 @@ test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, r
   assert.match(deploy, /trap automatic_rollback EXIT/);
   assert.match(deploy, /campaign-lifecycle\.before\.md5/);
   assert.match(deploy, /assert_campaign_lifecycle_unchanged/);
+  assert.match(deploy, /capture_agent_registry_fingerprint/);
+  assert.match(deploy, /\( assert_agent_registry_unchanged/);
+  assert.match(deploy, /ROLLBACK_FAILED=YES/);
   assert.match(deploy, /preserved-squid\.before\.sha256/);
   assert.match(deploy, /assert_preserved_file_unchanged/);
   assert.match(deploy, /compose up -d --no-deps dashboard/);
@@ -1007,6 +1015,13 @@ test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, r
   assert.match(rollback, /assert_campaign_lifecycle_unchanged/);
   assert.match(dashboardRollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-DASHBOARD/);
   assert.match(dashboardRollback, /DATABASE_MIGRATION_PRESERVED/);
+  assert.match(resumePreflight, /RESUME-THE-REVIEWED-TANAGHOM-RELEASE/);
+  assert.match(resumePreflight, /assert_database_at_target/);
+  assert.match(resumePreflight, /already applied/);
+  assert.match(resume, /RESUMED_FROM_RELEASE_ID/);
+  assert.match(resume, /capture_agent_registry_fingerprint/);
+  assert.match(resume, /compose up -d --no-deps dashboard/);
+  assert.doesNotMatch(resume, /db_file|\.down\.sql/);
   assert.match(backup, /ExpectedMigration = '0022_agent_registry'/);
   assert.match(lifecycle, /campaign lifecycle fingerprint did not detect a governed mutation/);
   assert.match(lifecycle, /external_operations/);
@@ -1018,7 +1033,7 @@ test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, r
   assert.match(runbook, /never edited, reloaded, or restarted/i);
   assert.match(quality, /phase6-campaign-lifecycle-production-update-contract/);
 
-  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}\n${dashboardRollback}`;
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}\n${dashboardRollback}\n${resumePreflight}\n${resume}`;
   assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)/i);
   assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|n8n)/i);
   assert.doesNotMatch(protectedScope, /\/data\/|\/opt\/(smartlabs|n8n-smartlabs)/i);

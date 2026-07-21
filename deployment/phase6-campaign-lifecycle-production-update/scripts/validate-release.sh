@@ -10,6 +10,7 @@ evidence_dir="/var/backups/tanaghom-$TANAGHOM_RELEASE_ID"
 test -d "$evidence_dir" || die 'release evidence directory is missing'
 test -s "$evidence_dir/n8n-container-ids.before" || die 'protected-container baseline is missing'
 test -s "$evidence_dir/preserved-squid.before.sha256" || die 'preserved Squid checksum baseline is missing'
+test -s "$evidence_dir/agent-registry.before.md5" || die 'Agent Registry transaction baseline is missing'
 
 test "$(latest_migration)" = "$TARGET_MIGRATION" || die 'target migration is not applied'
 test "$(db_scalar "SELECT count(*) FROM tanaghom.automation_platform_controls WHERE provider IN ('postiz','ghl') AND emergency_stop IS TRUE;")" = 2 || die 'provider emergency stops are not active'
@@ -17,7 +18,7 @@ test "$(db_scalar "SELECT count(*) FROM tanaghom.organization_automation_policie
 test "$(db_scalar "SELECT count(*) FROM tanaghom.organization_crm_policies WHERE contact_sync_mode <> 'manual' OR conversation_processing_mode <> 'paused' OR conversation_emergency_stop IS NOT TRUE OR action_mode <> 'manual' OR proactive_message_mode <> 'disabled' OR action_emergency_stop IS NOT TRUE;")" = 0 || die 'CRM, conversation, or GHL action policy is not locked'
 test "$(db_scalar "SELECT count(*) FROM tanaghom.notification_delivery_controls WHERE runtime_ready IS NOT FALSE OR emergency_stop IS NOT TRUE;")" = 0 || die 'notification delivery did not remain locked'
 test "$(db_scalar "SELECT count(*) FROM tanaghom.external_operations;")" = 0 || die 'external operations were created'
-assert_agent_registry_safe_to_drop
+assert_agent_registry_unchanged "$evidence_dir/agent-registry.before.md5"
 assert_campaign_lifecycle_unchanged "$evidence_dir/campaign-lifecycle.before.md5"
 test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_role_registry;")" = 4 || die 'business-agent registry count is not four'
 test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_workflow_registry;")" = 7 || die 'workflow-agent registry count is not seven'
