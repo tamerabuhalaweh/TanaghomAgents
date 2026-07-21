@@ -29,6 +29,7 @@ assert_existing_credentials_unchanged "$evidence_dir/n8n-credentials.before.txt"
 assert_protected_units_active
 assert_protected_containers_healthy
 assert_protected_container_ids_unchanged "$evidence_dir/n8n-container-ids.before"
+assert_production_worktree_unchanged "$evidence_dir/production-worktree.before"
 current_firewall=$(mktemp)
 capture_firewall_boundary "$current_firewall"
 cmp -s "$evidence_dir/firewall.before" "$current_firewall" || die 'package-owned firewall state changed'

@@ -976,11 +976,15 @@ test('Phase 5C Conversation Intelligence production update is least-privileged, 
   assert.match(common, /TARGET_MIGRATION=0024_conversation_intelligence_worker_registry/);
   assert.match(common, /RUNTIME_ROLE=tanaghom_conversation_runtime/);
   assert.match(common, /CREDENTIAL_ID=62000000-0000-4000-8000-000000000005/);
+  assert.match(common, /REVIEWED_DIRTY_PATH=deployment\/phase4-postiz-activation\/egress\/squid\.conf/);
+  assert.match(common, /REVIEWED_DIRTY_DIFF_SHA256=94733679d940cc704f568fac6b488c4001638a39336ec843dd99306a64044c5d/);
+  assert.match(common, /assert_production_worktree_unchanged/);
   assert.match(common, /has_table_privilege\('\$RUNTIME_ROLE','tanaghom\.conversation_intelligence_proposals'/);
   assert.match(common, /has_function_privilege\('\$RUNTIME_ROLE','\$signature','EXECUTE'/);
   assert.match(common, /DELETE FROM shared_credentials/);
   assert.match(preflight, /assert_credential_absent/);
   assert.match(preflight, /assert_workflow_absent/);
+  assert.match(preflight, /assert_production_worktree_reviewed/);
   assert.match(preflight, /Gemma credential is unavailable/);
   assert.match(deploy, /openssl rand -hex 32/);
   assert.match(deploy, /import:credentials/);
@@ -993,6 +997,7 @@ test('Phase 5C Conversation Intelligence production update is least-privileged, 
   assert.match(deploy, /trap automatic_rollback EXIT/);
   assert.match(validate, /inactive-zero-execution/);
   assert.match(validate, /external_operations/);
+  assert.match(validate, /assert_production_worktree_unchanged/);
   assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-CONVERSATION-WORKER-RELEASE/);
   assert.match(databaseLifecycle, /0024 rollback unexpectedly accepted an imported runtime/);
   assert.match(n8nLifecycle, /one encrypted credential and one inactive zero-execution workflow/);

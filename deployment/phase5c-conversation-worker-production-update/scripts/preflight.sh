@@ -11,7 +11,7 @@ test -d "$RELEASE_SOURCE_ROOT/.git" || die 'reviewed release-source checkout is 
 test -z "$(git -C "$RELEASE_SOURCE_ROOT" status --porcelain)" || die 'release-source checkout is dirty'
 test "$(git -C "$RELEASE_SOURCE_ROOT" rev-parse HEAD)" = "$TANAGHOM_TARGET_COMMIT" || die 'release-source checkout is not the authorized target'
 test -d "$PRODUCTION_ROOT/.git" || die 'production Git checkout is missing'
-test -z "$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" status --porcelain)" || die 'production checkout is dirty'
+assert_production_worktree_reviewed
 test "$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" rev-parse HEAD)" = "$TANAGHOM_EXPECTED_CURRENT_COMMIT" || die 'production commit does not match the reviewed current commit'
 remote_target=$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" ls-remote origin refs/heads/main | awk '{print $1}')
 test "$remote_target" = "$TANAGHOM_TARGET_COMMIT" || die 'target commit is not current remote main'

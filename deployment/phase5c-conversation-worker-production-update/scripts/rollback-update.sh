@@ -23,6 +23,7 @@ assert_runtime_role_least_privilege
 assert_protected_units_active
 assert_protected_containers_healthy
 assert_protected_container_ids_unchanged "$evidence_dir/n8n-container-ids.before"
+assert_production_worktree_unchanged "$evidence_dir/production-worktree.before"
 
 delete_conversation_workflow
 delete_conversation_credential
@@ -39,6 +40,7 @@ cmp -s "$evidence_dir/n8n-credentials.before.txt" "$evidence_dir/n8n-credentials
 assert_protected_units_active
 assert_protected_containers_healthy
 assert_protected_container_ids_unchanged "$evidence_dir/n8n-container-ids.before"
+assert_production_worktree_unchanged "$evidence_dir/production-worktree.before"
 assert_firewall_boundary
 assert_public_boundary
 printf 'ROLLED_BACK_AT=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$evidence_dir/rollback-complete"

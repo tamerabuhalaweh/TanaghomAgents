@@ -15,6 +15,8 @@ CREDENTIAL_NAME='Tanaghom Conversation PostgreSQL'
 N8N_MAIN_CONTAINER=smartlabs-n8n-n8n-1
 N8N_DATABASE_CONTAINER=smartlabs-n8n-postgres-1
 N8N_EXPECTED_VERSION=2.26.8
+REVIEWED_DIRTY_PATH=deployment/phase4-postiz-activation/egress/squid.conf
+REVIEWED_DIRTY_DIFF_SHA256=94733679d940cc704f568fac6b488c4001638a39336ec843dd99306a64044c5d
 
 require_release_environment() {
   test "${TANAGHOM_WORKER_RELEASE_AUTHORIZATION:-}" = 'YES-I-AM-THE-AUTHORIZED-OWNER' || die 'explicit owner authorization is absent'
@@ -28,6 +30,32 @@ require_release_environment() {
     echo "$value" | grep -Eq '^[0-9a-f]{40}$' || die 'expected and target commits must be full lowercase Git SHAs'
   done
   test "$TANAGHOM_EXPECTED_CURRENT_COMMIT" != "$TANAGHOM_TARGET_COMMIT" || die 'current and target commits must differ'
+}
+
+assert_production_worktree_reviewed() {
+  status=$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" status --porcelain=v1)
+  test -n "$status" || return 0
+  test "$status" = " M $REVIEWED_DIRTY_PATH" || die 'production checkout contains an unreviewed worktree change'
+  actual=$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" diff --binary --no-ext-diff -- "$REVIEWED_DIRTY_PATH" | sha256sum | awk '{print $1}')
+  test "$actual" = "$REVIEWED_DIRTY_DIFF_SHA256" || die 'reviewed operational worktree diff changed'
+}
+
+capture_production_worktree_state() {
+  prefix=$1
+  git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" status --porcelain=v1 > "$prefix.status"
+  git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" diff --binary --no-ext-diff > "$prefix.diff"
+  chmod 0600 "$prefix.status" "$prefix.diff"
+}
+
+assert_production_worktree_unchanged() {
+  prefix=$1
+  current_status=$(mktemp)
+  current_diff=$(mktemp)
+  git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" status --porcelain=v1 > "$current_status"
+  git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" diff --binary --no-ext-diff > "$current_diff"
+  cmp -s "$prefix.status" "$current_status" || { rm -f "$current_status" "$current_diff"; die 'production worktree status changed'; }
+  cmp -s "$prefix.diff" "$current_diff" || { rm -f "$current_status" "$current_diff"; die 'production worktree diff changed'; }
+  rm -f "$current_status" "$current_diff"
 }
 
 n8n_db_scalar() {
