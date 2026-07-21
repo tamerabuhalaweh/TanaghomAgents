@@ -12,6 +12,8 @@ This package performs one additive Tanaghom release:
 
 It does not activate a workflow, accept a webhook, call Gemma/GHL/Postiz, import customer data, rebuild or recreate a container, alter the dashboard image, change Nginx/firewall rules, or operate on SmartLabs, SmartCC, voice, or Gemma services.
 
+Supavisor can take time to recognize a newly created custom login. The release waits five seconds before each authentication attempt and retries at most 24 times. Every failure is captured without a password; exhaustion still triggers the exact automatic rollback before any n8n import.
+
 The current production checkout contains one pre-existing operational Squid diff for `cc.thesmartlabs.net`. This package does not edit, stage, revert, deploy, or interpret that SmartCC change. Preflight accepts only its exact reviewed path and SHA-256 fingerprint (or a clean checkout), captures the complete status/diff, and requires byte-identical state after deployment and rollback. Any other worktree change is a hard stop.
 
 ## Why this additive release does not require another full backup

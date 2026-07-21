@@ -125,6 +125,39 @@ assert_runtime_role_least_privilege() {
   done
 }
 
+authenticate_runtime_role_with_retry() {
+  pgpass_file=$1
+  authentication_output=$2
+  authentication_errors=$3
+  authentication_attempts=$4
+  max_attempts=${TANAGHOM_RUNTIME_AUTH_ATTEMPTS:-24}
+  retry_delay=${TANAGHOM_RUNTIME_AUTH_RETRY_DELAY_SECONDS:-5}
+
+  case "$max_attempts" in ''|*[!0-9]*) die 'runtime authentication attempt count must be numeric' ;; esac
+  case "$retry_delay" in ''|*[!0-9]*) die 'runtime authentication retry delay must be numeric' ;; esac
+  test "$max_attempts" -ge 1 && test "$max_attempts" -le 60 || die 'runtime authentication attempt count is outside 1..60'
+  test "$retry_delay" -le 30 || die 'runtime authentication retry delay exceeds 30 seconds'
+
+  : > "$authentication_output"
+  : > "$authentication_errors"
+  : > "$authentication_attempts"
+  attempt=1
+  while test "$attempt" -le "$max_attempts"; do
+    sleep "$retry_delay"
+    if PGPASSFILE="$pgpass_file" PGCONNECT_TIMEOUT=10 psql -X -v ON_ERROR_STOP=1 -At \
+      -c "SELECT CASE WHEN current_user='$RUNTIME_ROLE' THEN 'AUTHENTICATED' ELSE 'WRONG_ROLE' END;" \
+      > "$authentication_output" 2>> "$authentication_errors"; then
+      if test "$(cat "$authentication_output")" = AUTHENTICATED; then
+        printf '%s\n' "$attempt" > "$authentication_attempts"
+        return 0
+      fi
+    fi
+    attempt=$((attempt + 1))
+  done
+  printf '%s\n' "$max_attempts" > "$authentication_attempts"
+  return 1
+}
+
 capture_credential_inventory() {
   destination=$1
   n8n_db_scalar "SELECT id||'|'||name||'|'||type FROM credentials_entity ORDER BY id;" > "$destination"
