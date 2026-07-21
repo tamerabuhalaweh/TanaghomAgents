@@ -1253,6 +1253,8 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   assert.match(operator, /claimable_core_jobs !== 1/);
   assert.match(operator, /the exact content job is not the sole safe claimable core work/);
   assert.match(operator, /persisted strategy is not at the exact safe resume boundary/);
+  assert.match(operator, /content_succeeded/);
+  assert.match(operator, /content\.review_completed/);
   assert.match(operator, /privileged governed-function invocation boundary/);
   assert.match(operator, /procedure\.proowner = role\.oid/);
   assert.match(operator, /has_function_privilege\('tanaghom_n8n_worker'/);
@@ -1273,6 +1275,7 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   assert.match(lifecycle, /operator accepted competing claimable work/);
   assert.match(lifecycle, /persist_strategy_result/);
   assert.match(lifecycle, /persist_content_result/);
+  assert.match(lifecycle, /reconcile_campaign_content_jobs/);
   assert.match(runbook, /Issue #100 remains open/);
   assert.match(quality, /phase6-existing-campaign-canary-contract/);
   assert.match(quality, /phase6-existing-campaign-canary\/scripts\/test-disposable-lifecycle\.sh/);

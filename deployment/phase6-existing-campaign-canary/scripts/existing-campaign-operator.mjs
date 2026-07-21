@@ -171,7 +171,9 @@ async function completionSnapshot() {
       (SELECT count(*)::int FROM tanaghom.external_operations x WHERE x.correlation_id IN (SELECT j.correlation_id FROM tanaghom.agent_jobs j WHERE j.campaign_id=c.id)) external_operations,
       (SELECT count(*)::int FROM tanaghom.agent_jobs j WHERE j.campaign_id=c.id AND j.job_type NOT IN ('campaign.strategy.generate','campaign.content.generate')) forbidden_jobs,
       (SELECT count(*)::int FROM tanaghom.agent_jobs j WHERE j.campaign_id=c.id AND j.job_type='campaign.strategy.generate' AND j.id=$2 AND j.status='succeeded') strategy_succeeded,
-      (SELECT count(*)::int FROM tanaghom.agent_jobs j WHERE j.campaign_id=c.id AND j.job_type='campaign.content.generate' AND j.id=$4 AND j.status='waiting_approval' AND j.attempt=1 AND (j.input->>'max_items')::int=$5) content_waiting
+      (SELECT count(*)::int FROM tanaghom.agent_jobs j WHERE j.campaign_id=c.id AND j.job_type='campaign.content.generate' AND j.id=$4 AND j.status='waiting_approval' AND j.attempt=1 AND (j.input->>'max_items')::int=$5) content_waiting,
+      (SELECT count(*)::int FROM tanaghom.agent_jobs j WHERE j.campaign_id=c.id AND j.job_type='campaign.content.generate' AND j.id=$4 AND j.status='succeeded' AND j.attempt=1 AND (j.input->>'max_items')::int=$5) content_succeeded,
+      (SELECT count(*)::int FROM tanaghom.agent_actions_log l WHERE l.job_id=$4 AND l.action_type='content.review_completed' AND l.result='success') review_completed_audits
     FROM tanaghom.campaigns c WHERE c.id=$1 AND c.name=$3`, [campaignId, strategyJobId, campaignName, contentJobId, expectedItems]);
   if (result.rowCount !== 1) throw new Error("canary campaign not found");
   return result.rows[0];
@@ -180,17 +182,17 @@ async function completionSnapshot() {
 function commonCompletion(row) {
   if (Number(row.budget_target) !== 0 || Number(row.revenue_target) !== 0 || row.content_item_target !== expectedItems) throw new Error("campaign business boundary changed");
   if (row.strategies !== 1 || row.drafts < 1 || row.drafts > expectedItems) throw new Error("strategy or draft count is outside the requested batch boundary");
-  if (row.posts || row.leads || row.external_operations || row.forbidden_jobs || row.strategy_succeeded !== 1 || row.content_waiting !== 1) throw new Error("canary job state or side-effect boundary is invalid");
+  if (row.posts || row.leads || row.external_operations || row.forbidden_jobs || row.strategy_succeeded !== 1 || row.content_waiting + row.content_succeeded !== 1) throw new Error("canary job state or side-effect boundary is invalid");
 }
 
 async function verifyPending() {
   const row = await completionSnapshot(); commonCompletion(row);
-  if (row.status !== "awaiting_approval" || row.pending !== row.drafts || row.approved || row.approvals) throw new Error("canary did not stop cleanly at human approval");
+  if (row.status !== "awaiting_approval" || row.pending !== row.drafts || row.approved || row.approvals || row.content_waiting !== 1 || row.content_succeeded || row.review_completed_audits) throw new Error("canary did not stop cleanly at human approval");
   return { ...row, requested_drafts: expectedItems, target_fulfilled: row.drafts === expectedItems };
 }
 async function verifyApproved() {
   const row = await completionSnapshot(); commonCompletion(row);
-  if (row.pending || row.approved !== row.drafts || row.approvals !== row.drafts || row.human_approvals !== row.drafts) throw new Error("every generated draft must have an active human approval");
+  if (row.pending || row.approved !== row.drafts || row.approvals !== row.drafts || row.human_approvals !== row.drafts || row.content_waiting || row.content_succeeded !== 1 || row.review_completed_audits !== 1) throw new Error("every generated draft must have an active human approval and one completed content job");
   return { ...row, requested_drafts: expectedItems, target_fulfilled: row.drafts === expectedItems };
 }
 
