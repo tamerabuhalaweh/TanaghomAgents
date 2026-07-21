@@ -138,6 +138,7 @@ unset PGHOST PGPORT PGDATABASE PGUSER PGSSLMODE
 
 docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$credential_remote" >/dev/null 2>&1 || true
 docker cp "$credential_json" "$N8N_MAIN_CONTAINER:$credential_remote" >/dev/null
+docker exec -u root "$N8N_MAIN_CONTAINER" chown node:node "$credential_remote"
 docker exec -u root "$N8N_MAIN_CONTAINER" chmod 0400 "$credential_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" test -r "$credential_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" n8n import:credentials --input="$credential_remote"

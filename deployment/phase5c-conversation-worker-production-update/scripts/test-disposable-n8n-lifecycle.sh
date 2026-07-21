@@ -41,7 +41,9 @@ docker exec -u node "$n8n_container" n8n list:workflow --onlyId >/dev/null
 credential_remote=/home/node/conversation-credential.json
 workflow_remote=/home/node/conversation-workflow.json
 docker cp "$temporary/credential.json" "$n8n_container:$credential_remote" >/dev/null
+docker exec -u root "$n8n_container" chown node:node "$credential_remote"
 docker exec -u root "$n8n_container" chmod 0400 "$credential_remote"
+docker exec -u node "$n8n_container" test -r "$credential_remote"
 docker exec -u node "$n8n_container" n8n import:credentials --input="$credential_remote" >/dev/null
 docker exec -u node "$n8n_container" rm -f "$credential_remote"
 docker cp "$root/n8n/workflows/phase5/conversation-intelligence.v1.json" "$n8n_container:$workflow_remote" >/dev/null

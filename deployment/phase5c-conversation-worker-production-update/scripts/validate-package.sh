@@ -19,6 +19,8 @@ grep -q 'TARGET_MIGRATION=0024_conversation_intelligence_worker_registry' "$pack
 grep -q 'RUNTIME_ROLE=tanaghom_conversation_runtime' "$package/scripts/common.sh"
 grep -q 'CREDENTIAL_ID=62000000-0000-4000-8000-000000000005' "$package/scripts/common.sh"
 grep -q 'import:credentials' "$package/scripts/deploy-update.sh"
+grep -q 'chown node:node.*credential_remote' "$package/scripts/deploy-update.sh"
+grep -q 'test -r.*credential_remote' "$package/scripts/deploy-update.sh"
 grep -q 'import:workflow.*--activeState=false' "$package/scripts/deploy-update.sh"
 grep -q 'openssl rand -hex 32' "$package/scripts/deploy-update.sh"
 grep -q 'rm -f.*secret_file.*role_sql.*credential_json.*connection_env.*pgpass_file' "$package/scripts/deploy-update.sh"

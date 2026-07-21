@@ -984,6 +984,8 @@ test('Phase 5C Conversation Intelligence production update is least-privileged, 
   assert.match(preflight, /Gemma credential is unavailable/);
   assert.match(deploy, /openssl rand -hex 32/);
   assert.match(deploy, /import:credentials/);
+  assert.match(deploy, /chown node:node "\$credential_remote"/);
+  assert.match(deploy, /test -r "\$credential_remote"/);
   assert.match(deploy, /import:workflow --input=.*--activeState=false/);
   assert.match(deploy, /rm -f "\$secret_file" "\$role_sql" "\$credential_json" "\$connection_env" "\$pgpass_file"/);
   assert.match(deploy, /runtime-authentication\.txt/);
