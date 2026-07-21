@@ -5,6 +5,8 @@ const [action, campaignId, strategyJobId, campaignName, expectedItemsRaw, conten
 const allowed = ["check-database", "verify-authorized", "verify-strategy", "verify-resume-authorized", "queue-content", "verify-content-ready", "verify-pending", "verify-approved"];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const expectedItems = Number(expectedItemsRaw);
+const expectedMigration = process.env.TANAGHOM_EXPECTED_MIGRATION || "0023_campaign_lifecycle";
+if (!["0023_campaign_lifecycle", "0024_conversation_intelligence_worker_registry"].includes(expectedMigration)) throw new Error("TANAGHOM_EXPECTED_MIGRATION is not an approved canary baseline");
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 if (!allowed.includes(action) || !uuid.test(campaignId) || !uuid.test(strategyJobId) || !campaignName?.endsWith(".test") || !Number.isInteger(expectedItems) || expectedItems < 1 || expectedItems > 12) {
   throw new Error(`usage: existing-campaign-operator.mjs ${allowed.join("|")} CAMPAIGN_UUID STRATEGY_JOB_UUID NAME.test EXPECTED_ITEMS [CONTENT_JOB_UUID]`);
@@ -23,7 +25,7 @@ async function checkDatabase() {
   await client.query("BEGIN READ ONLY");
   try {
     const migration = (await client.query("SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1")).rows[0]?.version;
-    if (migration !== "0023_campaign_lifecycle") throw new Error("unexpected database migration during Node TLS check");
+    if (migration !== expectedMigration) throw new Error("unexpected database migration during Node TLS check");
     await client.query("ROLLBACK");
     return { database_tls: "verified", transaction: "read_only", migration };
   } catch (error) { await client.query("ROLLBACK"); throw error; }

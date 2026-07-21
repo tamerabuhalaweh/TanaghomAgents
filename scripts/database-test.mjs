@@ -89,6 +89,8 @@ psql('-f', campaignLifecycleAssertions);
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 database('rollback');
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM tanaghom.agent_workflow_registry WHERE code='conversation_intelligence_worker') OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0024_conversation_intelligence_worker_registry') THEN RAISE EXCEPTION '0024 rollback left Conversation Intelligence registry state behind'; END IF; END $$;");
+database('rollback');
 psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='tanaghom' AND table_name='campaigns' AND column_name='content_item_target') OR to_regprocedure('tanaghom.create_campaign_draft(uuid,text,text,text,jsonb,numeric,numeric,text,integer)') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0023_campaign_lifecycle') THEN RAISE EXCEPTION '0023 rollback left campaign lifecycle objects behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.agent_role_registry') IS NOT NULL OR to_regclass('tanaghom.agent_workflow_registry') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0022_agent_registry') THEN RAISE EXCEPTION '0022 rollback left agent registry objects behind'; END IF; END $$;");

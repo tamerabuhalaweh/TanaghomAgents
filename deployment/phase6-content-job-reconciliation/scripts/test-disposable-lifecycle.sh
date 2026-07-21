@@ -16,7 +16,7 @@ scalar() { psql "$url" -X -v ON_ERROR_STOP=1 -At -c "$1"; }
 
 for file in "$root"/packages/database/migrations/*.up.sql; do psql_file "$file"; done
 psql_file "$root/packages/database/seeds/staging.sql"
-test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0023_campaign_lifecycle
+test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0024_conversation_intelligence_worker_registry
 
 psql "$url" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 CREATE ROLE tanaghom_reconciliation_operator LOGIN NOSUPERUSER NOCREATEDB CREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD 'disposable-only';
@@ -27,7 +27,7 @@ GRANT tanaghom_n8n_worker TO tanaghom_reconciliation_operator WITH ADMIN TRUE, I
 SQL
 test "$(scalar "SELECT rolinherit FROM pg_roles WHERE rolname='tanaghom_reconciliation_operator';")" = t
 operator_url=$(DATABASE_TEST_URL="$url" node -e 'const u=new URL(process.env.DATABASE_TEST_URL); u.username="tanaghom_reconciliation_operator"; u.password="disposable-only"; process.stdout.write(u.toString())')
-operator() { DATABASE_URL="$operator_url" node "$package/scripts/reconcile-operator.mjs" "$1" "$campaign" "$job_id"; }
+operator() { DATABASE_URL="$operator_url" TANAGHOM_EXPECTED_MIGRATION=0024_conversation_intelligence_worker_registry node "$package/scripts/reconcile-operator.mjs" "$1" "$campaign" "$job_id"; }
 if psql "$operator_url" -X -v ON_ERROR_STOP=1 -c 'SET ROLE tanaghom_n8n_worker;' >/dev/null 2>&1; then
   echo 'disposable operator unexpectedly began with worker SET permission' >&2; exit 1
 fi
