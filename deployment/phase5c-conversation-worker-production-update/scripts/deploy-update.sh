@@ -51,6 +51,7 @@ trap automatic_rollback EXIT
 trap 'exit 70' HUP INT TERM
 
 capture_protected_container_ids "$evidence_dir/n8n-container-ids.before"
+capture_production_worktree_state "$evidence_dir/production-worktree.before"
 capture_firewall_boundary "$evidence_dir/firewall.before"
 sha256sum /etc/nginx/conf.d/tanaghom-public.conf > "$evidence_dir/nginx.before.sha256"
 export_all_workflows "$evidence_dir/n8n-workflows.before.json"

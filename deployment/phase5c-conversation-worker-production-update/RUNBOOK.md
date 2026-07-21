@@ -12,6 +12,8 @@ This package performs one additive Tanaghom release:
 
 It does not activate a workflow, accept a webhook, call Gemma/GHL/Postiz, import customer data, rebuild or recreate a container, alter the dashboard image, change Nginx/firewall rules, or operate on SmartLabs, SmartCC, voice, or Gemma services.
 
+The current production checkout contains one pre-existing operational Squid diff for `cc.thesmartlabs.net`. This package does not edit, stage, revert, deploy, or interpret that SmartCC change. Preflight accepts only its exact reviewed path and SHA-256 fingerprint (or a clean checkout), captures the complete status/diff, and requires byte-identical state after deployment and rollback. Any other worktree change is a hard stop.
+
 ## Why this additive release does not require another full backup
 
 Migration 0024 adds one registry row only. The package snapshots the relevant Tanaghom ledger, n8n workflow inventory, credential metadata, protected container identities, Nginx hash, and firewall rules before changing anything. Its automatic rollback deletes only the new inactive zero-execution workflow and encrypted credential, drops only the new login role, restores the registry state, and runs the guarded 0024 down migration. It never deletes customer or campaign data.
