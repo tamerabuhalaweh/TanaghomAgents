@@ -23,7 +23,10 @@ cat > "$temporary/credential.json" <<'JSON'
 [{"id":"62000000-0000-4000-8000-000000000005","name":"Tanaghom Conversation PostgreSQL","type":"postgres","data":{"host":"database.example.test","database":"postgres","user":"tanaghom_conversation_runtime.project","password":"disposable-only","port":5432,"maxConnections":4,"allowUnauthorizedCerts":false,"ssl":"require"}}]
 JSON
 chmod 0644 "$temporary/credential.json"
-case "$(uname -s)" in MINGW*|MSYS*|CYGWIN*) host=host.docker.internal ;; *) host=127.0.0.1 ;; esac
+case "$(uname -s)" in
+  MINGW*|MSYS*|CYGWIN*) export MSYS_NO_PATHCONV=1; host=host.docker.internal ;;
+  *) host=127.0.0.1 ;;
+esac
 
 docker run -d --name "$postgres_container" -e POSTGRES_PASSWORD=postgres -e POSTGRES_DB=n8n_conversation_release_test -p "$port:5432" "$postgres_image" >/dev/null
 attempt=0
@@ -40,14 +43,11 @@ docker run -d --name "$n8n_container" --network host \
 docker exec -u node "$n8n_container" n8n list:workflow --onlyId >/dev/null
 credential_remote=/home/node/conversation-credential.json
 workflow_remote=/home/node/conversation-workflow.json
-docker cp "$temporary/credential.json" "$n8n_container:$credential_remote" >/dev/null
-docker exec -u root "$n8n_container" chown node:node "$credential_remote"
-docker exec -u root "$n8n_container" chmod 0400 "$credential_remote"
+docker exec -i -u node "$n8n_container" sh -ec 'umask 077; cat > "$1"' sh "$credential_remote" < "$temporary/credential.json"
 docker exec -u node "$n8n_container" test -r "$credential_remote"
 docker exec -u node "$n8n_container" n8n import:credentials --input="$credential_remote" >/dev/null
 docker exec -u node "$n8n_container" rm -f "$credential_remote"
-docker cp "$root/n8n/workflows/phase5/conversation-intelligence.v1.json" "$n8n_container:$workflow_remote" >/dev/null
-docker exec -u root "$n8n_container" chmod 0444 "$workflow_remote"
+docker exec -i -u node "$n8n_container" sh -ec 'umask 077; cat > "$1"' sh "$workflow_remote" < "$root/n8n/workflows/phase5/conversation-intelligence.v1.json"
 docker exec -u node "$n8n_container" n8n import:workflow --input="$workflow_remote" --activeState=false >/dev/null
 docker exec -u node "$n8n_container" rm -f "$workflow_remote"
 

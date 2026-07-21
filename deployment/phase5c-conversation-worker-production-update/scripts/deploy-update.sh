@@ -138,9 +138,7 @@ test "$(cat "$evidence_dir/runtime-authentication.txt")" = AUTHENTICATED || die 
 unset PGHOST PGPORT PGDATABASE PGUSER PGSSLMODE
 
 docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$credential_remote" >/dev/null 2>&1 || true
-docker cp "$credential_json" "$N8N_MAIN_CONTAINER:$credential_remote" >/dev/null
-docker exec -u root "$N8N_MAIN_CONTAINER" chown node:node "$credential_remote"
-docker exec -u root "$N8N_MAIN_CONTAINER" chmod 0400 "$credential_remote"
+docker exec -i -u node "$N8N_MAIN_CONTAINER" sh -ec 'umask 077; cat > "$1"' sh "$credential_remote" < "$credential_json"
 docker exec -u node "$N8N_MAIN_CONTAINER" test -r "$credential_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" n8n import:credentials --input="$credential_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$credential_remote"
@@ -148,8 +146,7 @@ rm -f "$secret_file" "$role_sql" "$credential_json" "$connection_env" "$pgpass_f
 assert_credential_encrypted
 
 docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote" >/dev/null 2>&1 || true
-docker cp "$WORKFLOW_SOURCE" "$N8N_MAIN_CONTAINER:$workflow_remote" >/dev/null
-docker exec -u root "$N8N_MAIN_CONTAINER" chmod 0444 "$workflow_remote"
+docker exec -i -u node "$N8N_MAIN_CONTAINER" sh -ec 'umask 077; cat > "$1"' sh "$workflow_remote" < "$WORKFLOW_SOURCE"
 docker exec -u node "$N8N_MAIN_CONTAINER" test -r "$workflow_remote"
 docker exec -u node "$N8N_MAIN_CONTAINER" n8n import:workflow --input="$workflow_remote" --activeState=false
 docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote"
