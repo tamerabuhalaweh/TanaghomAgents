@@ -140,7 +140,19 @@ try {
     VALUES ($1,'ghl','connected','https://services.leadconnectorhq.com','private_token',decode('01','hex'),
       decode(repeat('02',12),'hex'),decode(repeat('03',16),'hex'),1,'test','{"location_id":"location-test-1"}',
       $2,now(),'passed')
-    ON CONFLICT (organization_id,provider) DO UPDATE SET status='connected',last_tested_at=now(),last_test_status='passed'`,
+    ON CONFLICT (organization_id,provider) DO UPDATE SET
+      status='connected',
+      base_url=EXCLUDED.base_url,
+      credential_kind=EXCLUDED.credential_kind,
+      credential_ciphertext=EXCLUDED.credential_ciphertext,
+      credential_nonce=EXCLUDED.credential_nonce,
+      credential_auth_tag=EXCLUDED.credential_auth_tag,
+      credential_key_version=EXCLUDED.credential_key_version,
+      secret_last_four=EXCLUDED.secret_last_four,
+      configuration=EXCLUDED.configuration,
+      configured_by=EXCLUDED.configured_by,
+      last_tested_at=EXCLUDED.last_tested_at,
+      last_test_status=EXCLUDED.last_test_status`,
   [organizationId, ownerId]);
   await pool.query(`UPDATE tanaghom.organization_crm_policies SET
       conversation_processing_mode='shadow',conversation_emergency_stop=false,
