@@ -18,3 +18,5 @@ The run is sequential:
 The content contract currently promises no more than the requested count. The package therefore accepts 1..N drafts, records whether the requested target was fulfilled, and requires a human decision for every generated draft. A shortfall remains visible evidence and does not get represented as target fulfillment.
 
 Execution is not authorized by this package or its merge. See `RUNBOOK.md` for the separate read-only preflight, execution, human-verification, and rollback gates.
+
+If an interrupted run has already persisted the exact authorized strategy but has not created a content job, `resume-preflight.sh` and `resume-after-strategy.sh` provide a separate fail-closed Content Producer-only path. The resume refuses claimable/running competing work and proves the Strategist execution count does not change.

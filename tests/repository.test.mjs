@@ -1233,6 +1233,8 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   const operator = await readFile(new URL('scripts/existing-campaign-operator.mjs', root), 'utf8');
   const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
   const run = await readFile(new URL('scripts/run-canary.sh', root), 'utf8');
+  const resumePreflight = await readFile(new URL('scripts/resume-preflight.sh', root), 'utf8');
+  const resume = await readFile(new URL('scripts/resume-after-strategy.sh', root), 'utf8');
   const restore = await readFile(new URL('scripts/restore-workflows.sh', root), 'utf8');
   const verify = await readFile(new URL('scripts/verify-human-approval.sh', root), 'utf8');
   const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
@@ -1249,6 +1251,7 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   assert.match(operator, /exact campaign and strategy job identity did not match/);
   assert.match(operator, /claimable_core_jobs !== 1/);
   assert.match(operator, /the exact content job is not the sole safe claimable core work/);
+  assert.match(operator, /persisted strategy is not at the exact safe resume boundary/);
   assert.match(operator, /SET LOCAL ROLE tanaghom_api/);
   assert.match(operator, /SELECT \* FROM tanaghom\.queue_campaign_content/);
   assert.match(operator, /row\.drafts < 1 \|\| row\.drafts > expectedItems/);
@@ -1256,6 +1259,10 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   assert.match(run, /publish_workflow "\$STRATEGIST_ID"[\s\S]+unpublish_workflow "\$STRATEGIST_ID"[\s\S]+operator queue-content[\s\S]+publish_workflow "\$PRODUCER_ID"[\s\S]+unpublish_workflow "\$PRODUCER_ID"/);
   assert.match(run, /publish_workflow "\$PRODUCER_ID"[\s\S]+operator verify-content-ready[\s\S]+execute_workflow_once "\$PRODUCER_ID"/);
   assert.match(run, /existing campaign and jobs were deliberately preserved/);
+  assert.match(resumePreflight, /operator verify-resume-authorized/);
+  assert.match(resume, /RESUME_MODE=CONTENT_PRODUCER_ONLY/);
+  assert.match(resume, /resume unexpectedly executed Campaign Strategist/);
+  assert.doesNotMatch(resume, /publish_workflow "\$STRATEGIST_ID"|execute_workflow_once "\$STRATEGIST_ID"/);
   assert.doesNotMatch(`${operator}\n${run}`, /operator (seed|mark-failed)|INSERT INTO tanaghom\.(campaigns|agent_jobs)/);
   assert.match(restore, /import_workflow_inactive/);
   assert.match(verify, /YES-VERIFY-AUTHENTICATED-HUMAN-APPROVAL/);
@@ -1266,7 +1273,7 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   assert.match(quality, /phase6-existing-campaign-canary-contract/);
   assert.match(quality, /phase6-existing-campaign-canary\/scripts\/test-disposable-lifecycle\.sh/);
 
-  const mutationScope = `${run}\n${restore}\n${verify}`;
+  const mutationScope = `${run}\n${resume}\n${restore}\n${verify}`;
   assert.doesNotMatch(mutationScope, /systemctl (stop|restart|reload)|iptables (-A|-I|-D|-N|-F|-X)|docker (stop|restart|rm)|docker compose/);
   assert.doesNotMatch(mutationScope, /publish_workflow .*postiz|publish_workflow .*ghl/i);
   assert.doesNotMatch(`${common}\n${operator}\n${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);

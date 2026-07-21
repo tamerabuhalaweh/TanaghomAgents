@@ -38,9 +38,11 @@ SELECT tanaghom.persist_strategy_result(
 RESET ROLE;
 SQL
 operator verify-strategy >/dev/null
+operator verify-resume-authorized >/dev/null
 queue_json=$(operator queue-content)
 content_job_id=$(printf '%s' "$queue_json" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>process.stdout.write(JSON.parse(s).content_job_id))')
 printf '%s' "$content_job_id" | grep -Eq '^[0-9a-f-]{36}$'
+if operator verify-resume-authorized >/dev/null 2>&1; then echo 'resume authorization accepted an existing content job' >&2; exit 1; fi
 operator verify-content-ready "$content_job_id" >/dev/null
 
 psql "$url" -X -q -v ON_ERROR_STOP=1 >/dev/null <<SQL
