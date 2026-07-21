@@ -18,6 +18,11 @@ The values remain execution-time inputs so every command is auditable. Substitut
 - Both schedules are disabled in the temporary definitions.
 - The generic worker claim is safe only because the operator proves the exact authorized job is the sole claimable core job immediately before publication.
 - The content job is created only by the governed API function; n8n cannot create it.
+- The production dashboard secret is currently the non-superuser database owner.
+  The operator may invoke the governed function only after proving that the
+  connection owns the SECURITY DEFINER function, `tanaghom_api` has EXECUTE,
+  and n8n, readonly, and PUBLIC do not. It does not impersonate an unavailable
+  role or change role membership.
 - Both workflows are restored inactive on success, interruption, or failure.
 - Failure never deletes, retries, or marks the customer campaign/job failed. Partial evidence remains for human investigation.
 - Postiz, GHL, publishing, CRM, messaging, proactive outreach, provider actions, and budget are outside scope.
@@ -27,6 +32,7 @@ The values remain execution-time inputs so every command is auditable. Substitut
 
 ```sh
 export TANAGHOM_CANARY_AUTHORIZATION='YES-I-AM-THE-AUTHORIZED-OWNER'
+export TANAGHOM_CANARY_ALLOW_OWNER_FUNCTION_CALL='YES-USE-EXISTING-DASHBOARD-DATABASE-OWNER'
 export TANAGHOM_CANARY_ID='uatcanary-YYYYMMDDTHHMMSSZ'
 export TANAGHOM_CANARY_CAMPAIGN_ID='2826cef0-58e1-44cf-84c6-92ae12c18ab8'
 export TANAGHOM_CANARY_STRATEGY_JOB_ID='33900f7a-5c07-441e-9908-af1410afe14a'

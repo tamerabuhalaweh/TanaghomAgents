@@ -1245,6 +1245,7 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   assert.match(common, /TANAGHOM_CANARY_CAMPAIGN_ID/);
   assert.match(common, /TANAGHOM_CANARY_STRATEGY_JOB_ID/);
   assert.match(common, /TANAGHOM_EXPECTED_CONTENT_ITEMS/);
+  assert.match(common, /TANAGHOM_CANARY_ALLOW_OWNER_FUNCTION_CALL/);
   assert.match(common, /NODE_EXTRA_CA_CERTS="\$DATABASE_CA_CERT"/);
   assert.match(common, /TANAGHOM_DATABASE_SSL_MODE=verify-full/);
   assert.match(preflight, /operator verify-authorized/);
@@ -1252,7 +1253,10 @@ test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and e
   assert.match(operator, /claimable_core_jobs !== 1/);
   assert.match(operator, /the exact content job is not the sole safe claimable core work/);
   assert.match(operator, /persisted strategy is not at the exact safe resume boundary/);
-  assert.match(operator, /SET LOCAL ROLE tanaghom_api/);
+  assert.match(operator, /privileged governed-function invocation boundary/);
+  assert.match(operator, /procedure\.proowner = role\.oid/);
+  assert.match(operator, /has_function_privilege\('tanaghom_n8n_worker'/);
+  assert.doesNotMatch(operator, /SET LOCAL ROLE tanaghom_api/);
   assert.match(operator, /SELECT \* FROM tanaghom\.queue_campaign_content/);
   assert.match(operator, /row\.drafts < 1 \|\| row\.drafts > expectedItems/);
   assert.match(run, /operator verify-authorized[\s\S]+publish_workflow "\$STRATEGIST_ID"/);
