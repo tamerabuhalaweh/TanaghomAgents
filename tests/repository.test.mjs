@@ -960,6 +960,51 @@ test('Phase 5G shadow production update is exact, inactive, reversible, and exis
   assert.doesNotMatch(protectedScope, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
 });
 
+test('Phase 5C Conversation Intelligence production update is least-privileged, inactive, and exactly reversible', async () => {
+  const root = new URL('../deployment/phase5c-conversation-worker-production-update/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const databaseLifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const n8nLifecycle = await readFile(new URL('scripts/test-disposable-n8n-lifecycle.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_START_MIGRATION=0023_campaign_lifecycle/);
+  assert.match(common, /TARGET_MIGRATION=0024_conversation_intelligence_worker_registry/);
+  assert.match(common, /RUNTIME_ROLE=tanaghom_conversation_runtime/);
+  assert.match(common, /CREDENTIAL_ID=62000000-0000-4000-8000-000000000005/);
+  assert.match(common, /has_table_privilege\('\$RUNTIME_ROLE','tanaghom\.conversation_intelligence_proposals'/);
+  assert.match(common, /has_function_privilege\('\$RUNTIME_ROLE','\$signature','EXECUTE'/);
+  assert.match(common, /DELETE FROM shared_credentials/);
+  assert.match(preflight, /assert_credential_absent/);
+  assert.match(preflight, /assert_workflow_absent/);
+  assert.match(preflight, /Gemma credential is unavailable/);
+  assert.match(deploy, /openssl rand -hex 32/);
+  assert.match(deploy, /import:credentials/);
+  assert.match(deploy, /import:workflow --input=.*--activeState=false/);
+  assert.match(deploy, /rm -f "\$secret_file" "\$role_sql" "\$credential_json" "\$connection_env" "\$pgpass_file"/);
+  assert.match(deploy, /runtime-authentication\.txt/);
+  assert.match(deploy, /n8n audit/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(validate, /inactive-zero-execution/);
+  assert.match(validate, /external_operations/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-CONVERSATION-WORKER-RELEASE/);
+  assert.match(databaseLifecycle, /0024 rollback unexpectedly accepted an imported runtime/);
+  assert.match(n8nLifecycle, /one encrypted credential and one inactive zero-execution workflow/);
+  assert.match(runbook, /does \*\*not\*\* authorize production execution/);
+  assert.match(runbook, /does not activate a workflow/i);
+  assert.match(quality, /phase5c-conversation-worker-production-update-contract/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|gemma|voice|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
+  assert.doesNotMatch(protectedScope, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});
+
 test('Phase 6 Agent Registry production update is exact, inactive, reversible, and Tanaghom-only', async () => {
   const root = new URL('../deployment/phase6-agent-registry-production-update/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
