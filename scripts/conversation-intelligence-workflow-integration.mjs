@@ -158,6 +158,22 @@ try {
       conversation_processing_mode='shadow',conversation_emergency_stop=false,
       conversation_emergency_reason='Disposable proposal-only workflow gate'
     WHERE organization_id=$1`, [organizationId]);
+  // The Phase 6 suite runs the gateway load scenario against this same disposable
+  // database first. Retire only its unclaimed synthetic backlog so this worker
+  // proof can deterministically assert the events it creates below.
+  await pool.query(`WITH retired AS (
+      UPDATE tanaghom.agent_jobs SET
+        status='cancelled',finished_at=statement_timestamp(),
+        error_code='disposable_fixture_replaced',
+        error_message='Retired before the Conversation Intelligence worker scenario'
+      WHERE job_type='conversation.ghl.inbound_event' AND status='queued'
+      RETURNING (input->>'event_id')::uuid AS event_id
+    )
+    UPDATE tanaghom.ghl_inbound_events event SET
+      status='dead_letter',processed_at=statement_timestamp(),
+      last_error_code='disposable_fixture_replaced',
+      last_error_message='Retired before the Conversation Intelligence worker scenario'
+    FROM retired WHERE event.id=retired.event_id AND event.status='pending'`);
   const knowledge = (await pool.query(
     `SELECT * FROM tanaghom.create_sales_knowledge_draft(
       'workflow_growth_plan','Workflow Growth plan facts','pricing','en',
