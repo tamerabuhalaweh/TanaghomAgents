@@ -12,6 +12,7 @@ PUBLIC_HOST=tanaghom.38-247-187-232.sslip.io
 EXPECTED_START_MIGRATION=0022_agent_registry
 TARGET_MIGRATION=0023_campaign_lifecycle
 PENDING_MIGRATIONS='0023_campaign_lifecycle'
+PRESERVED_RELATIVE_PATH=deployment/phase4-postiz-activation/egress/squid.conf
 PROTECTED_UNITS='smartlabs-api.service convai-ws.service convai-stt-api.service omnivoice-tts.service gemma4-26b-a4b-vllm-canary.service smartcc-api.service smartcc-smartlabs-bridge.service smartcc-web.service nginx.service'
 PROTECTED_N8N_CONTAINERS='smartlabs-n8n-postgres-1 smartlabs-n8n-redis-1 smartlabs-n8n-egress-proxy-1 smartlabs-n8n-n8n-1 smartlabs-n8n-n8n-worker-1'
 
@@ -35,6 +36,31 @@ require_release_environment() {
   done
   test "$TANAGHOM_EXPECTED_CURRENT_COMMIT" != "$TANAGHOM_TARGET_COMMIT" || die 'current and target commits must differ'
   test -n "${TANAGHOM_BACKUP_PROOF:-}" || die 'TANAGHOM_BACKUP_PROOF is required'
+  echo "${TANAGHOM_PRESERVED_FILE_SHA256:-}" | grep -Eq '^[0-9a-f]{64}$' || die 'preserved-file checksum must be a lowercase SHA-256 value'
+}
+
+assert_preserved_path_stable() {
+  git -C "$RELEASE_SOURCE_ROOT" diff --quiet "$TANAGHOM_EXPECTED_CURRENT_COMMIT" "$TANAGHOM_TARGET_COMMIT" -- "$PRESERVED_RELATIVE_PATH" || die 'the preserved Squid file differs between current and target Git commits'
+}
+
+assert_production_checkout_at() {
+  expected_commit=$1
+  test "$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" rev-parse HEAD)" = "$expected_commit" || die 'production commit does not match the reviewed commit'
+  status=$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" status --porcelain)
+  test "$status" = " M $PRESERVED_RELATIVE_PATH" || die 'production checkout differs from the one explicitly preserved Squid file'
+  test "$(sha256sum "$PRODUCTION_ROOT/$PRESERVED_RELATIVE_PATH" | awk '{print $1}')" = "$TANAGHOM_PRESERVED_FILE_SHA256" || die 'preserved Squid file checksum changed'
+}
+
+capture_preserved_file_checksum() {
+  destination=$1
+  sha256sum "$PRODUCTION_ROOT/$PRESERVED_RELATIVE_PATH" > "$destination"
+  chmod 0600 "$destination"
+}
+
+assert_preserved_file_unchanged() {
+  expected=$1
+  test -s "$expected" || die 'preserved Squid checksum evidence is missing'
+  sha256sum -c "$expected" >/dev/null || die 'preserved Squid file changed during the transaction'
 }
 
 database_url() {

@@ -984,17 +984,25 @@ test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, r
   assert.match(common, /campaign_lifecycle_fingerprint/);
   assert.match(common, /assert_campaign_lifecycle_unchanged/);
   assert.match(common, /content_item_target<>2/);
+  assert.match(common, /PRESERVED_RELATIVE_PATH=deployment\/phase4-postiz-activation\/egress\/squid\.conf/);
+  assert.match(common, /assert_preserved_path_stable/);
+  assert.match(common, /assert_production_checkout_at/);
+  assert.match(common, /TANAGHOM_PRESERVED_FILE_SHA256/);
   assert.match(preflight, /assert_database_at_start/);
+  assert.match(preflight, /assert_preserved_path_stable/);
   assert.match(preflight, /less than 20 GiB/);
   assert.match(deploy, /trap automatic_rollback EXIT/);
   assert.match(deploy, /campaign-lifecycle\.before\.md5/);
   assert.match(deploy, /assert_campaign_lifecycle_unchanged/);
+  assert.match(deploy, /preserved-squid\.before\.sha256/);
+  assert.match(deploy, /assert_preserved_file_unchanged/);
   assert.match(deploy, /compose up -d --no-deps dashboard/);
   assert.doesNotMatch(deploy, /npm run db:(migrate|rollback)/);
   assert.match(validate, /create_campaign_draft/);
   assert.match(validate, /has_function_privilege\('tanaghom_n8n_worker'/);
   assert.match(validate, /agent_jobs_one_open_core_job_per_campaign_idx/);
   assert.match(validate, /api\/campaigns/);
+  assert.match(validate, /assert_preserved_file_unchanged/);
   assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE/);
   assert.match(rollback, /assert_campaign_lifecycle_unchanged/);
   assert.match(dashboardRollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-DASHBOARD/);
@@ -1007,6 +1015,7 @@ test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, r
   assert.match(runbook, /only the Tanaghom dashboard image\/container/i);
   assert.match(runbook, /does not import, activate, execute, or edit an n8n workflow/i);
   assert.match(runbook, /dashboard-only rollback/i);
+  assert.match(runbook, /never edited, reloaded, or restarted/i);
   assert.match(quality, /phase6-campaign-lifecycle-production-update-contract/);
 
   const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}\n${dashboardRollback}`;

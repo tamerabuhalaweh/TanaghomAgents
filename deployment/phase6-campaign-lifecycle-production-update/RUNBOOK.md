@@ -6,7 +6,8 @@ This package performs exactly two Tanaghom changes: apply `0023_campaign_lifecyc
 
 ## Release invariants
 
-- Production and release-source Git checkouts are clean and match separately approved full commit SHAs.
+- The release-source checkout is clean and both checkouts match separately approved full commit SHAs.
+- The production checkout contains exactly one reviewed local change: `deployment/phase4-postiz-activation/egress/squid.conf` at the explicitly supplied SHA-256 checksum. The file is identical in Git at the current and target commits, is preserved across checkout, and is never edited, reloaded, or restarted by this package.
 - Remote `main` equals the approved target commit.
 - The database starts exactly at migration `0022_agent_registry`.
 - Postiz and GHL emergency stops remain active; Postiz and CRM modes remain manual; conversation processing remains paused.
@@ -55,6 +56,7 @@ export TANAGHOM_RELEASE_ID='phase6-YYYYMMDDTHHMMSSZ'
 export TANAGHOM_EXPECTED_CURRENT_COMMIT='<CURRENT_PRODUCTION_40_CHARACTER_SHA>'
 export TANAGHOM_TARGET_COMMIT='<TARGET_40_CHARACTER_SHA>'
 export TANAGHOM_BACKUP_PROOF='/root/tanaghom-campaign-lifecycle-backup-proof.env'
+export TANAGHOM_PRESERVED_FILE_SHA256='<REVIEWED_64_CHARACTER_LOWERCASE_SHA256>'
 export TANAGHOM_PRODUCTION_ROOT='/opt/tanaghom-dashboard'
 export TANAGHOM_RELEASE_SOURCE_ROOT='/opt/tanaghom-release-campaign-lifecycle'
 ```
@@ -65,7 +67,7 @@ export TANAGHOM_RELEASE_SOURCE_ROOT='/opt/tanaghom-release-campaign-lifecycle'
 /opt/tanaghom-release-campaign-lifecycle/deployment/phase6-campaign-lifecycle-production-update/scripts/preflight.sh
 ```
 
-Preflight refuses missing authorization, dirty or mismatched Git state, an invalid restoration proof, less than 20 GiB free, any migration other than 0022, unsafe automation policy, existing provider operations, unhealthy protected services, changed firewall/public authentication boundaries, or publicly reachable n8n. If preflight fails, stop; do not bypass a check on the server.
+Preflight refuses missing authorization, any unreviewed working-tree change, a changed or commit-conflicting preserved Squid file, mismatched Git state, an invalid restoration proof, less than 20 GiB free, any migration other than 0022, unsafe automation policy, existing provider operations, unhealthy protected services, changed firewall/public authentication boundaries, or publicly reachable n8n. If preflight fails, stop; do not bypass a check on the server.
 
 ## 5. Execute only after explicit deployment approval
 
@@ -77,12 +79,12 @@ The transaction:
 
 1. Re-runs preflight.
 2. Captures root-only evidence in `/var/backups/tanaghom-$TANAGHOM_RELEASE_ID`.
-3. Records protected identities, firewall/Nginx state, Git commits, migration hashes, dashboard image, backup proof, and a campaign-domain fingerprint.
+3. Records protected identities, firewall/Nginx state, the preserved Squid checksum, Git commits, migration hashes, dashboard image, backup proof, and a campaign-domain fingerprint.
 4. Tags the current dashboard image for rollback.
 5. Checks out only the approved target commit.
 6. Applies only migration `0023_campaign_lifecycle` with an exact 0022 predecessor check.
 7. Builds and recreates only the Tanaghom dashboard.
-8. Validates the new column/index/functions, least privilege, campaign/API authentication boundaries, zero domain/provider mutations, protected identities, and unchanged firewall/Nginx state.
+8. Validates the new column/index/functions, least privilege, campaign/API authentication boundaries, zero domain/provider mutations, protected identities, and unchanged Squid/firewall/Nginx state.
 9. Marks the release committed only after every validation passes.
 
 Before commit, any failure automatically restores the previous dashboard commit/image and rolls back only migration 0023 when the campaign-domain fingerprint and content targets remain unchanged. If campaign data changed during the transaction, schema rollback refuses and preserves the data.
@@ -125,7 +127,8 @@ The additive 0023 schema is compatible with the previous dashboard. A later sche
 ```sh
 unset TANAGHOM_RELEASE_AUTHORIZATION TANAGHOM_RELEASE_ID \
   TANAGHOM_EXPECTED_CURRENT_COMMIT TANAGHOM_TARGET_COMMIT \
-  TANAGHOM_BACKUP_PROOF TANAGHOM_PRODUCTION_ROOT TANAGHOM_RELEASE_SOURCE_ROOT
+  TANAGHOM_BACKUP_PROOF TANAGHOM_PRESERVED_FILE_SHA256 \
+  TANAGHOM_PRODUCTION_ROOT TANAGHOM_RELEASE_SOURCE_ROOT
 ```
 
-Release evidence and the rollback image remain until separately approved retention. This package contains no command that stops, restarts, removes, edits, or prunes SmartLabs, SmartCC, voice, Gemma, or the protected n8n stack.
+Release evidence and the rollback image remain until separately approved retention. This package contains no command that stops, restarts, removes, edits, reloads, or prunes Squid, SmartLabs, SmartCC, voice, Gemma, or the protected n8n stack.

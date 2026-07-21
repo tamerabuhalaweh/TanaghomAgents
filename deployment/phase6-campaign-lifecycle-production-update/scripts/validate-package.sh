@@ -17,6 +17,11 @@ for file in "$package"/scripts/*.sh; do
 done
 
 grep -q 'YES-I-AM-THE-AUTHORIZED-OWNER' "$package/scripts/common.sh"
+grep -q 'PRESERVED_RELATIVE_PATH=deployment/phase4-postiz-activation/egress/squid.conf' "$package/scripts/common.sh"
+grep -q 'TANAGHOM_PRESERVED_FILE_SHA256' "$package/scripts/common.sh"
+grep -q 'assert_preserved_path_stable' "$package/scripts/preflight.sh"
+grep -q 'assert_production_checkout_at' "$package/scripts/deploy-update.sh"
+grep -q 'assert_preserved_file_unchanged' "$package/scripts/validate-release.sh"
 grep -q 'sub(/\\r$/' "$package/scripts/common.sh"
 grep -q 'ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE' "$package/scripts/rollback-update.sh"
 grep -q 'ROLLBACK-THE-AUTHORIZED-TANAGHOM-DASHBOARD' "$package/scripts/rollback-dashboard-only.sh"
@@ -42,6 +47,7 @@ grep -q -- '--network none' "$shared_backup"
 grep -q 'campaign lifecycle fingerprint did not detect a governed mutation' "$package/scripts/test-disposable-lifecycle.sh"
 grep -q 'create_campaign_draft' "$package/scripts/test-disposable-lifecycle.sh"
 grep -q 'Windows CRLF backup proof is accepted' "$package/scripts/test-refusal-paths.sh"
+grep -q 'exactly one stable preserved Squid file crosses checkout safely' "$package/scripts/test-refusal-paths.sh"
 grep -q 'No deployment is authorized by this document' "$package/RUNBOOK.md"
 
 echo 'PASS: Phase 6 Campaign Lifecycle production update package is syntax-valid, least-privileged, rollback-guarded, reversible, and protected-service scoped.'

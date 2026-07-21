@@ -22,6 +22,7 @@ chmod 0600 "$applied_file"
 
 capture_protected_container_ids "$evidence_dir/n8n-container-ids.before"
 capture_firewall_boundary "$evidence_dir/firewall.before"
+capture_preserved_file_checksum "$evidence_dir/preserved-squid.before.sha256"
 campaign_lifecycle_fingerprint > "$evidence_dir/campaign-lifecycle.before.md5"
 chmod 0600 "$evidence_dir/campaign-lifecycle.before.md5"
 sha256sum /etc/nginx/conf.d/tanaghom-public.conf > "$evidence_dir/nginx.before.sha256"
@@ -76,6 +77,7 @@ automatic_rollback() {
   echo 'Release did not commit; restoring only the Tanaghom dashboard and package-applied migrations.' >&2
   if test "$source_changed" = true; then
     git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" checkout --detach "$TANAGHOM_EXPECTED_CURRENT_COMMIT" >/dev/null 2>&1 || rollback_failed=1
+    assert_production_checkout_at "$TANAGHOM_EXPECTED_CURRENT_COMMIT" >/dev/null 2>&1 || rollback_failed=1
   fi
   if test "$image_saved" = true; then
     docker image tag "$rollback_image" tanaghom-dashboard-canary:canary >/dev/null 2>&1 || rollback_failed=1
@@ -104,7 +106,8 @@ git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" fetch --no-tags o
 test "$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" rev-parse FETCH_HEAD)" = "$TANAGHOM_TARGET_COMMIT" || die 'fetched main does not match the authorized target'
 git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" checkout --detach "$TANAGHOM_TARGET_COMMIT"
 source_changed=true
-test -z "$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" status --porcelain)" || die 'target checkout is dirty'
+assert_production_checkout_at "$TANAGHOM_TARGET_COMMIT"
+assert_preserved_file_unchanged "$evidence_dir/preserved-squid.before.sha256"
 compose config --quiet
 
 expected_previous=$EXPECTED_START_MIGRATION
