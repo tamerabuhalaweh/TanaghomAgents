@@ -1330,6 +1330,61 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.doesNotMatch(`${common}\n${workflowContract}\n${operator}\n${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
 
+test('Phase 6 Conversation Intelligence canary is synthetic, exclusive, grounded, and restored inactive', async () => {
+  const root = new URL('../deployment/phase6-conversation-shadow-canary/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const run = await readFile(new URL('scripts/run-canary.sh', root), 'utf8');
+  const restore = await readFile(new URL('scripts/restore-locks.sh', root), 'utf8');
+  const operator = await readFile(new URL('scripts/canary-operator.mjs', root), 'utf8');
+  const workflowContract = await readFile(new URL('scripts/workflow-contract.mjs', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_MIGRATION=0024_conversation_intelligence_worker_registry/);
+  assert.match(common, /WORKFLOW_ID=phase5ConversationIntelligenceV1/);
+  assert.match(common, /assert_conversation_baseline/);
+  assert.match(common, /integration_connections WHERE provider='ghl' AND status='connected'/);
+  assert.match(common, /conversation_processing_mode<>'paused'/);
+  assert.match(common, /assert_counts_unchanged_except_execution/);
+  assert.match(preflight, /workflow_execution_count/);
+  assert.match(preflight, /assert_production_worktree_reviewed/);
+  assert.match(preflight, /tanaghom_conversation_runtime/);
+  assert.match(preflight, /operator check-database/);
+  assert.match(workflowContract, /schedule-disabled|disabled schedule/);
+  assert.match(workflowContract, /unexpected external endpoint/);
+  assert.match(workflowContract, /62000000-0000-4000-8000-000000000005/);
+  assert.match(workflowContract, /62000000-0000-4000-8000-000000000002/);
+  assert.match(operator, /conversation-canary\.test/);
+  assert.match(operator, /What is the approved Tanaghom Canary Growth plan price/);
+  assert.match(operator, /USD 99 per month/);
+  assert.match(operator, /assertOnlyCanary/);
+  assert.match(operator, /connected_ghl: 1/);
+  assert.match(operator, /external_action_count/);
+  assert.match(operator, /awaiting_approval/);
+  assert.match(operator, /integration_status !== "disconnected"/);
+  assert.match(run, /operator assert-only-canary[\s\S]+operator unlock[\s\S]+publish_workflow[\s\S]+execute_workflow_once[\s\S]+unpublish_workflow[\s\S]+operator restore-locks/);
+  assert.match(run, /operator verify-ready/);
+  assert.match(run, /operator verify-finalized/);
+  assert.match(run, /n8n audit/);
+  assert.match(run, /trap cleanup EXIT HUP INT TERM/);
+  assert.match(restore, /operator quarantine/);
+  assert.match(lifecycle, /operator accepted a competing connected GHL integration/);
+  assert.match(lifecycle, /zero external actions passed in disposable PostgreSQL/);
+  assert.match(packageValidation, /protected-service scoped/);
+  assert.match(runbook, /does not test or[\s\S]+outbound messaging/i);
+  assert.match(runbook, /Customer GHL credentials[\s\S]+remain separate approval gates/i);
+  assert.match(quality, /phase6-conversation-shadow-canary-contract/);
+  assert.match(quality, /postgres:17\.6-alpine3\.22@sha256:[0-9a-f]{64}/);
+
+  const mutationScope = `${common}\n${preflight}\n${run}\n${restore}\n${operator}\n${workflowContract}`;
+  assert.doesNotMatch(mutationScope, /systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)/i);
+  assert.doesNotMatch(mutationScope, /https:\/\/[^\s"']*(gohighlevel|leadconnectorhq)|\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
+  assert.doesNotMatch(`${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
+
 test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and evidence-preserving', async () => {
   const root = new URL('../deployment/phase6-existing-campaign-canary/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
