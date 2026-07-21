@@ -70,6 +70,23 @@ deployment/phase6-existing-campaign-canary/scripts/restore-workflows.sh \
 
 This unpublishes the two core workflows, imports their captured reviewed originals inactive, restores Agent Registry state to `imported_inactive/workflow_inactive_only`, and verifies hashes. It does not roll back or erase database evidence.
 
+## Interrupted run after persisted strategy
+
+Never rerun the full canary after the exact strategist job has succeeded. If the campaign is `strategy_ready`, has exactly one persisted strategy, and still has no content job/item/external operation, use a fresh canary ID and the reviewed resume gate:
+
+```sh
+export TANAGHOM_CANARY_ID='uatcanary-YYYYMMDDTHHMMSSZ'
+deployment/phase6-existing-campaign-canary/scripts/resume-preflight.sh
+```
+
+After its read-only evidence is approved, execute:
+
+```sh
+deployment/phase6-existing-campaign-canary/scripts/resume-after-strategy.sh
+```
+
+The resume imports both temporary definitions inactive to preserve the same hash boundary, publishes and executes only Content Producer, proves Campaign Strategist received zero additional executions, restores both definitions inactive, and stops at human approval. It refuses any existing content job, content item, external operation, running agent job, or claimable competing core work.
+
 ## Gate 3 — authenticated human approval verification
 
 After a human approves or rejects every generated draft in Tanaghom, verification requires separate authorization:

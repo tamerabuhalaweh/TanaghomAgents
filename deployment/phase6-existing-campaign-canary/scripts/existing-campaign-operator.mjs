@@ -2,7 +2,7 @@
 import pg from "pg";
 
 const [action, campaignId, strategyJobId, campaignName, expectedItemsRaw, contentJobId] = process.argv.slice(2);
-const allowed = ["check-database", "verify-authorized", "verify-strategy", "queue-content", "verify-content-ready", "verify-pending", "verify-approved"];
+const allowed = ["check-database", "verify-authorized", "verify-strategy", "verify-resume-authorized", "queue-content", "verify-content-ready", "verify-pending", "verify-approved"];
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const expectedItems = Number(expectedItemsRaw);
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
@@ -88,6 +88,23 @@ async function verifyStrategy() {
   return row;
 }
 
+async function verifyResumeAuthorized() {
+  await client.query("BEGIN READ ONLY");
+  try {
+    const strategy = await verifyStrategy();
+    const result = await client.query(`SELECT
+        (SELECT count(*)::int FROM tanaghom.agent_jobs j WHERE j.job_type IN ('campaign.strategy.generate','campaign.content.generate') AND j.status='queued' AND j.available_at<=now() AND j.attempt<j.max_attempts) claimable_core_jobs,
+        (SELECT count(*)::int FROM tanaghom.agent_jobs j WHERE j.status='running') running_jobs,
+        (SELECT count(*)::int FROM tanaghom.agent_actions_log l WHERE l.job_id=$2::uuid AND l.action_type='strategy.persisted' AND l.payload->>'campaign_id'=($1::uuid)::text AND l.result='success') strategy_persisted_audits,
+        (SELECT count(*)::int FROM tanaghom.app_users u JOIN tanaghom.campaigns c ON c.created_by=u.id WHERE c.id=$1::uuid AND c.name=$3::text AND u.kind='human' AND u.role IN ('owner','operator') AND u.is_active AND u.accepted_at IS NOT NULL) active_campaign_operators`,
+      [campaignId, strategyJobId, campaignName]);
+    const row = { ...strategy, ...result.rows[0] };
+    if (row.claimable_core_jobs !== 0 || row.running_jobs !== 0 || row.strategy_persisted_audits !== 1 || row.active_campaign_operators !== 1) throw new Error("persisted strategy is not at the exact safe resume boundary");
+    await client.query("ROLLBACK");
+    return row;
+  } catch (error) { await client.query("ROLLBACK"); throw error; }
+}
+
 async function queueContent() {
   await client.query("BEGIN");
   try {
@@ -167,6 +184,7 @@ try {
   if (action === "check-database") result = await checkDatabase();
   else if (action === "verify-authorized") result = await verifyAuthorized();
   else if (action === "verify-strategy") result = await verifyStrategy();
+  else if (action === "verify-resume-authorized") result = await verifyResumeAuthorized();
   else if (action === "queue-content") result = await queueContent();
   else if (action === "verify-content-ready") result = await verifyContentReady();
   else if (action === "verify-pending") result = await verifyPending();
