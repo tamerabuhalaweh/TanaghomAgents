@@ -6,13 +6,14 @@ the existing `tanaghom.complete_content_job(uuid)` function exactly once under
 `tanaghom_n8n_worker` and records the resulting job, agent, and immutable audit
 state.
 
-The Supabase operator holds `ADMIN TRUE, INHERIT FALSE, SET FALSE` membership
-in the worker role. During the same serializable transaction, the package
-temporarily enables only that membership's `SET` option, assumes the worker
-role, calls the function, revokes only its temporary self-granted membership
-row, verifies the original grantor's row is unchanged at `SET FALSE`, and only
-then commits. Any error rolls back both the job and role-option changes. No
-credential is decrypted or exported.
+The Supabase operator login has role-level `INHERIT TRUE`, while its existing
+worker membership is `ADMIN TRUE, INHERIT FALSE, SET FALSE`. During the same
+serializable transaction, the package creates a separate current-user grant
+with explicit `ADMIN FALSE, INHERIT FALSE, SET TRUE`, assumes the worker role,
+calls the function, revokes only that temporary self-granted membership row,
+verifies the original grantor's row is unchanged at `SET FALSE`, and only then
+commits. Any error rolls back both the job and membership changes. No credential
+is decrypted or exported.
 
 It does not generate content, import or execute an n8n workflow, call Gemma,
 queue a provider job, publish, contact a lead, modify a migration, or change a

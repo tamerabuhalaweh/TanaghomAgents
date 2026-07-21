@@ -13,7 +13,8 @@ node --check "$package/scripts/reconcile-operator.mjs"
 "$package/scripts/test-workflow-baseline.sh"
 
 grep -q 'BEGIN ISOLATION LEVEL SERIALIZABLE' "$package/scripts/reconcile-operator.mjs"
-grep -q "WITH SET TRUE'" "$package/scripts/reconcile-operator.mjs"
+grep -q "WITH INHERIT FALSE GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs"
+grep -q "WITH SET TRUE GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs"
 grep -q "REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs"
 grep -q 'SET LOCAL ROLE tanaghom_n8n_worker' "$package/scripts/reconcile-operator.mjs"
 grep -q 'SELECT tanaghom.complete_content_job' "$package/scripts/reconcile-operator.mjs"
@@ -30,8 +31,10 @@ grep -Fq 'compare-others "$evidence/workflows.before.json" "$evidence/workflows.
 if grep -Fq '$CANARY_EVIDENCE/workflows.before.json' "$package/scripts/preflight.sh" "$package/scripts/reconcile-job.sh"; then
   echo 'runtime package incorrectly treats historical canary inventory as a permanent allowlist' >&2; exit 1
 fi
-test "$(grep -c "WITH SET TRUE'" "$package/scripts/reconcile-operator.mjs")" = 1
+test "$(grep -c "WITH INHERIT FALSE GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs")" = 1
+test "$(grep -c "WITH SET TRUE GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs")" = 1
 test "$(grep -c "REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs")" = 1
+grep -q 'CREATEROLE INHERIT NOREPLICATION' "$package/scripts/test-disposable-lifecycle.sh"
 grep -q 'RECONCILIATION_SUCCEEDED_AT=' "$package/scripts/reconcile-job.sh"
 grep -q 'There is intentionally no command' "$package/RUNBOOK.md"
 grep -q 'Preparation and merge do not authorize' "$package/README.md"

@@ -228,8 +228,12 @@ async function reconcile() {
     await lockTargetContext();
     const before = await snapshot();
     assertWaiting(before);
+    const disableInherit = (await client.query(
+      "SELECT format('GRANT tanaghom_n8n_worker TO %I WITH INHERIT FALSE GRANTED BY CURRENT_USER',session_user) AS sql",
+    )).rows[0].sql;
+    await client.query(disableInherit);
     const enableSet = (await client.query(
-      "SELECT format('GRANT tanaghom_n8n_worker TO %I WITH SET TRUE',session_user) AS sql",
+      "SELECT format('GRANT tanaghom_n8n_worker TO %I WITH SET TRUE GRANTED BY CURRENT_USER',session_user) AS sql",
     )).rows[0].sql;
     await client.query(enableSet);
     const enabled = (await client.query(`
