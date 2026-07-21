@@ -20,5 +20,13 @@ service, container, firewall rule, credential, or proxy. SmartLabs, SmartCC,
 voice, Gemma configuration, Nginx, Postiz, and GHL are outside its mutation
 scope.
 
+The two Tanaghom core workflows must still match their reviewed original hashes
+and remain inactive. Other workflows are protected by an operation-scoped
+inventory: the package captures the complete current inventory immediately
+before mutation and requires every non-core workflow to be identical
+immediately afterward. A workflow added after the original canary is therefore
+not mistaken for unauthorized drift, and no unrelated workflow is inspected,
+executed, authorized, or changed by this package.
+
 Preparation and merge do not authorize the production mutation. See
 [RUNBOOK.md](RUNBOOK.md) for the separate preflight and execution gates.

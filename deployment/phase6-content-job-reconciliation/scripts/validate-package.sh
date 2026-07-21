@@ -4,12 +4,13 @@ set -eu
 root=$(CDPATH= cd -- "$(dirname -- "$0")/../../.." && pwd)
 package="$root/deployment/phase6-content-job-reconciliation"
 
-for file in README.md RUNBOOK.md scripts/common.sh scripts/reconcile-operator.mjs scripts/preflight.sh scripts/reconcile-job.sh scripts/test-refusal-paths.sh scripts/test-disposable-lifecycle.sh scripts/validate-package.sh; do
+for file in README.md RUNBOOK.md scripts/common.sh scripts/reconcile-operator.mjs scripts/preflight.sh scripts/reconcile-job.sh scripts/test-refusal-paths.sh scripts/test-disposable-lifecycle.sh scripts/test-workflow-baseline.sh scripts/validate-package.sh; do
   test -s "$package/$file" || { echo "missing package file: $file" >&2; exit 1; }
 done
 sh -n "$package"/scripts/*.sh
 node --check "$package/scripts/reconcile-operator.mjs"
 "$package/scripts/test-refusal-paths.sh"
+"$package/scripts/test-workflow-baseline.sh"
 
 grep -q 'BEGIN ISOLATION LEVEL SERIALIZABLE' "$package/scripts/reconcile-operator.mjs"
 grep -q "WITH SET TRUE'" "$package/scripts/reconcile-operator.mjs"
@@ -21,6 +22,14 @@ grep -q 'worker_has_approval_table_access' "$package/scripts/reconcile-operator.
 grep -q 'matching_active_human_decisions !== 1' "$package/scripts/reconcile-operator.mjs"
 grep -q 'YES-COMPLETE-THE-REVIEWED-CONTENT-JOB' "$package/scripts/reconcile-job.sh"
 test "$(grep -c 'operator reconcile' "$package/scripts/reconcile-job.sh")" = 1
+test "$(grep -c 'compare-others' "$package/scripts/reconcile-job.sh")" = 1
+if grep -q 'compare-others' "$package/scripts/preflight.sh"; then
+  echo 'read-only preflight incorrectly compares against a historical full-workflow inventory' >&2; exit 1
+fi
+grep -Fq 'compare-others "$evidence/workflows.before.json" "$evidence/workflows.after.json"' "$package/scripts/reconcile-job.sh"
+if grep -Fq '$CANARY_EVIDENCE/workflows.before.json' "$package/scripts/preflight.sh" "$package/scripts/reconcile-job.sh"; then
+  echo 'runtime package incorrectly treats historical canary inventory as a permanent allowlist' >&2; exit 1
+fi
 test "$(grep -c "WITH SET TRUE'" "$package/scripts/reconcile-operator.mjs")" = 1
 test "$(grep -c "REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs")" = 1
 grep -q 'RECONCILIATION_SUCCEEDED_AT=' "$package/scripts/reconcile-job.sh"

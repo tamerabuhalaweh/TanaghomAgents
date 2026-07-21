@@ -28,7 +28,6 @@ iptables-save >"$evidence/iptables.before"; chmod 0600 "$evidence/iptables.befor
 normalize_firewall_snapshot "$evidence/iptables.before" "$evidence/iptables.rules.before"
 export_all_workflows "$evidence/workflows.before.json"
 node "$CORE_CANARY_PACKAGE/scripts/workflow-contract.mjs" verify "$evidence/workflows.before.json" "$CANARY_EVIDENCE/workflow-manifest.json" original
-node "$CORE_CANARY_PACKAGE/scripts/workflow-contract.mjs" compare-others "$CANARY_EVIDENCE/workflows.before.json" "$evidence/workflows.before.json"
 operator preflight >"$evidence/job.before.json"
 
 strategist_executions=$(workflow_execution_count "$STRATEGIST_ID")

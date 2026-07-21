@@ -1158,6 +1158,7 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
   const reconcile = await readFile(new URL('scripts/reconcile-job.sh', root), 'utf8');
   const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const workflowBaseline = await readFile(new URL('scripts/test-workflow-baseline.sh', root), 'utf8');
   const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
@@ -1176,8 +1177,12 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   assert.match(operator, /operator_worker_set_option/);
   assert.doesNotMatch(operator, /client\.query\([`"]\s*(?:INSERT|UPDATE|DELETE|ALTER|CREATE|DROP|TRUNCATE)\b/i);
   assert.match(preflight, /operator preflight/);
+  assert.doesNotMatch(preflight, /compare-others/);
   assert.match(reconcile, /YES-COMPLETE-THE-REVIEWED-CONTENT-JOB/);
   assert.equal((reconcile.match(/operator reconcile/g) || []).length, 1);
+  assert.equal((reconcile.match(/compare-others/g) || []).length, 1);
+  assert.match(reconcile, /compare-others "\$evidence\/workflows\.before\.json" "\$evidence\/workflows\.after\.json"/);
+  assert.doesNotMatch(`${preflight}\n${reconcile}`, /\$CANARY_EVIDENCE\/workflows\.before\.json/);
   assert.match(reconcile, /RECONCILIATION_SUCCEEDED_AT=/);
   assert.match(reconcile, /workflow_execution_count/);
   assert.match(reconcile, /n8n audit/);
@@ -1187,6 +1192,8 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   assert.match(lifecycle, /repeated reconciliation unexpectedly succeeded/);
   assert.match(lifecycle, /true\|false\|false/);
   assert.match(lifecycle, /count\(\*\) FROM tanaghom\.external_operations/);
+  assert.match(workflowBaseline, /post-canary workflows are accepted in the current operation baseline/);
+  assert.match(workflowBaseline, /in-window unrelated workflow drift was not rejected/);
   assert.match(packageValidation, /runtime package can modify or execute a workflow/);
   assert.match(runbook, /There is intentionally no command/);
   assert.match(runbook, /does not authorize\s+workflow activation/i);
