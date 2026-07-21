@@ -406,7 +406,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0022_agent_registry/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0023_campaign_lifecycle/);
   assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
   assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
   assert.match(integration, /accept_ghl_inbound_event/);
@@ -1101,7 +1101,7 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
-  assert.match(common, /EXPECTED_MIGRATION=0022_agent_registry/);
+  assert.match(common, /EXPECTED_MIGRATION=0023_campaign_lifecycle/);
   assert.match(common, /assert_no_claimable_core_backlog/);
   assert.match(common, /postiz_draft_mode<>'manual'/);
   assert.match(common, /action_emergency_stop IS NOT TRUE/);
@@ -1163,7 +1163,7 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
-  assert.match(common, /EXPECTED_MIGRATION=0022_agent_registry/);
+  assert.match(common, /EXPECTED_MIGRATION=0023_campaign_lifecycle/);
   assert.match(common, /TANAGHOM_JOB_RECONCILIATION_AUTHORIZATION/);
   assert.match(common, /assert_canary_evidence/);
   assert.match(common, /HUMAN_APPROVAL_VERIFIED_AT=/);

@@ -33,7 +33,7 @@ table write.
 - The package PR is approved and merged.
 - The production dashboard checkout remains at the reviewed baseline commit.
 - A separate clean checkout contains the approved reconciliation source.
-- Migration `0022_agent_registry` is current.
+- Migration `0023_campaign_lifecycle` is current.
 - The original canary evidence checksum and human-approval marker are valid.
 - The exact campaign and job are still zero-budget `.test` records.
 - Every generated item is `approved` or `rejected` with a matching decision

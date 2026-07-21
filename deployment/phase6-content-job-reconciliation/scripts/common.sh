@@ -14,7 +14,7 @@ N8N_DATABASE_CONTAINER=smartlabs-n8n-postgres-1
 N8N_EXPECTED_VERSION=2.26.8
 STRATEGIST_ID=phase3StrategistV1
 PRODUCER_ID=phase3ContentProducerV1
-EXPECTED_MIGRATION=0022_agent_registry
+EXPECTED_MIGRATION=0023_campaign_lifecycle
 PROTECTED_N8N_CONTAINERS='smartlabs-n8n-postgres-1 smartlabs-n8n-redis-1 smartlabs-n8n-egress-proxy-1 smartlabs-n8n-n8n-1 smartlabs-n8n-n8n-worker-1'
 PROTECTED_UNITS='smartlabs-api.service convai-ws.service convai-stt-api.service omnivoice-tts.service gemma4-26b-a4b-vllm-canary.service smartcc-api.service smartcc-smartlabs-bridge.service smartcc-web.service nginx.service'
 

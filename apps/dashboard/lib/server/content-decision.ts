@@ -188,6 +188,14 @@ export async function decideContent(request: NextRequest, contentItemId: string)
         ],
       );
 
+      const campaignReview = (await client.query<{
+        completed_jobs: number;
+        ready_for_handoff: boolean;
+      }>(
+        "SELECT * FROM tanaghom.reconcile_campaign_content_jobs($1::uuid,$2::uuid)",
+        [content.rows[0].campaign_id, user.id],
+      )).rows[0];
+
       const automaticDraft = input.decision === "approved"
         ? (await client.query<{ queued: boolean; reason: string; job_id: string | null }>(
             "SELECT * FROM tanaghom.maybe_queue_automatic_postiz_draft($1::uuid, $2::uuid, $3::boolean)",
@@ -203,6 +211,7 @@ export async function decideContent(request: NextRequest, contentItemId: string)
         correlation_id: correlationId,
         decided_at: approval.rows[0].decided_at,
         delivery: "queued",
+        campaign_review: campaignReview,
         postiz_draft: automaticDraft,
       };
       await client.query(

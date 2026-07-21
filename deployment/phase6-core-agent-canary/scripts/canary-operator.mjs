@@ -27,7 +27,7 @@ async function checkDatabase() {
   await client.query("BEGIN READ ONLY");
   try {
     const result = await client.query("SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1");
-    if (result.rows[0]?.version !== "0022_agent_registry") throw new Error("unexpected database migration during Node TLS check");
+    if (result.rows[0]?.version !== "0023_campaign_lifecycle") throw new Error("unexpected database migration during Node TLS check");
     await client.query("ROLLBACK");
     console.log(JSON.stringify({ database_tls: "verified", transaction: "read_only", migration: result.rows[0].version }));
   } catch (error) { await client.query("ROLLBACK"); throw error; }
