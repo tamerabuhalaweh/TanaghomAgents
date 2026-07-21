@@ -62,7 +62,9 @@ operator verify-pending "$content_job_id" >/dev/null
 test "$(scalar "SELECT count(*) FROM tanaghom.content_items WHERE campaign_id='$campaign_id' AND status='pending_approval';")" = 3
 test "$(scalar 'SELECT count(*) FROM tanaghom.external_operations;')" = 0
 
-scalar "SET ROLE tanaghom_api; INSERT INTO tanaghom.content_approvals(content_item_id,decision,decided_by) SELECT id,'approved','$actor' FROM tanaghom.content_items WHERE campaign_id='$campaign_id'; UPDATE tanaghom.content_items SET status='approved' WHERE campaign_id='$campaign_id'; RESET ROLE;" >/dev/null
+scalar "SET ROLE tanaghom_api; INSERT INTO tanaghom.content_approvals(content_item_id,decision,decided_by) SELECT id,'approved','$actor' FROM tanaghom.content_items WHERE campaign_id='$campaign_id'; UPDATE tanaghom.content_items SET status='approved' WHERE campaign_id='$campaign_id'; SELECT completed_jobs FROM tanaghom.reconcile_campaign_content_jobs('$campaign_id','$actor'); RESET ROLE;" >/dev/null
 operator verify-approved "$content_job_id" >/dev/null
+test "$(scalar "SELECT count(*) FROM tanaghom.agent_jobs WHERE id='$content_job_id' AND status='succeeded';")" = 1
+test "$(scalar "SELECT count(*) FROM tanaghom.agent_actions_log WHERE job_id='$content_job_id' AND action_type='content.review_completed' AND result='success';")" = 1
 test "$(scalar "SELECT count(*) FROM tanaghom.agent_jobs WHERE campaign_id='$campaign_id' AND job_type NOT IN ('campaign.strategy.generate','campaign.content.generate');")" = 0
 echo 'PASS: exact identity, competing-work refusal, governed queueing, three-draft generation, human approval, and provider isolation passed in disposable PostgreSQL.'
