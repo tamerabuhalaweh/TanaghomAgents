@@ -366,7 +366,10 @@ test('Phase 5C Conversation Intelligence worker is inactive, least privileged, a
   assert.match(integration, /gemma_invalid_json/);
   assert.match(integration, /gemma_contract_mismatch/);
   assert.match(integration, /gemma_rate_limited/);
-  assert.match(integration, /gemma_unavailable/);
+  assert.match(integration, /gemma_overloaded/);
+  assert.match(integration, /tanaghom_conversation_runtime/);
+  assert.match(integration, /general_worker_member: false/);
+  assert.match(integration, /proposal_table_access: false/);
   assert.match(integration, /external_operations/);
   assert.equal(manifest.scripts['test:phase5-conversation-workflow'], 'node scripts/conversation-intelligence-workflow-integration.mjs');
   assert.match(quality, /phase5-conversation-workflow-integration:/);

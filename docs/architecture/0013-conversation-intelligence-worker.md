@@ -14,7 +14,8 @@ It never sends a message or performs a provider action.
 
 The workflow uses a dedicated `Tanaghom Conversation PostgreSQL` credential
 whose production login may only inherit `tanaghom_conversation_worker`. It has
-no direct table permissions. Its complete database surface is:
+no direct table permissions and is not a member of the general n8n worker role.
+This workflow's complete invocation surface is:
 
 1. `claim_ghl_inbound_event_job()`
 2. `prepare_conversation_intelligence(uuid)`
@@ -24,6 +25,9 @@ no direct table permissions. Its complete database surface is:
 These functions enforce tenant policy, emergency stops, capacity, dependency
 cooldowns, claim ownership, active approved citations, and zero external
 actions. PostgreSQL remains authoritative for retry and proposal state.
+The inherited NOLOGIN role also retains the separately reviewed conversation
+lease/recovery functions used by the wider supervised-conversation subsystem;
+none grants direct provider action or table mutation authority.
 
 ## Model boundary
 

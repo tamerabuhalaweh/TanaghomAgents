@@ -19,8 +19,10 @@ const containerHost = process.env.N8N_TEST_HOST || (process.platform === "win32"
 const bindHost = process.platform === "win32" ? "0.0.0.0" : "127.0.0.1";
 const organizationId = "10000000-0000-4000-8000-000000000001";
 const ownerId = "00000000-0000-4000-8000-000000000001";
+const runtimeRole = "tanaghom_conversation_runtime";
 let modelCalls = 0;
 let cleanupFailure;
+let runtimeRoleCreated = false;
 
 function run(command, args, options = {}) {
   return new Promise((resolve, reject) => {
@@ -65,9 +67,9 @@ const modelServer = createServer(async (request, response) => {
     response.end(JSON.stringify({ error: { message: "Synthetic model throttle" } }));
     return;
   }
-  if (message === "UNAVAILABLE") {
-    response.writeHead(500, { "Content-Type": "application/json" });
-    response.end(JSON.stringify({ error: { message: "Synthetic model outage" } }));
+  if (message === "OVERLOADED") {
+    response.writeHead(503, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ error: { message: "Synthetic model overload" } }));
     return;
   }
   if (message === "CONTRACT MISMATCH") {
@@ -113,7 +115,24 @@ const modelServer = createServer(async (request, response) => {
 const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
 try {
   modelServer.listen(modelPort, bindHost); await once(modelServer, "listening");
-  await pool.query("ALTER ROLE tanaghom_conversation_worker LOGIN PASSWORD 'integration-only'");
+  await pool.query(`CREATE ROLE ${runtimeRole}
+    LOGIN PASSWORD 'integration-only'
+    NOSUPERUSER NOCREATEDB NOCREATEROLE INHERIT NOREPLICATION NOBYPASSRLS
+    IN ROLE tanaghom_conversation_worker`);
+  runtimeRoleCreated = true;
+  const runtimeBoundary = (await pool.query(`SELECT
+      pg_has_role($1, 'tanaghom_conversation_worker', 'MEMBER') AS conversation_member,
+      pg_has_role($1, 'tanaghom_n8n_worker', 'MEMBER') AS general_worker_member,
+      has_table_privilege($1, 'tanaghom.conversation_intelligence_proposals', 'SELECT,INSERT,UPDATE,DELETE') AS proposal_table_access,
+      has_function_privilege($1, 'tanaghom.claim_ghl_inbound_event_job()', 'EXECUTE') AS can_claim,
+      has_function_privilege($1, 'tanaghom.prepare_conversation_intelligence(uuid)', 'EXECUTE') AS can_prepare,
+      has_function_privilege($1, 'tanaghom.persist_conversation_intelligence_proposal(uuid,jsonb)', 'EXECUTE') AS can_persist,
+      has_function_privilege($1, 'tanaghom.record_ghl_inbound_event_failure(uuid,text,text,integer)', 'EXECUTE') AS can_fail`,
+    [runtimeRole])).rows[0];
+  assert.deepEqual(runtimeBoundary, {
+    conversation_member: true, general_worker_member: false, proposal_table_access: false,
+    can_claim: true, can_prepare: true, can_persist: true, can_fail: true,
+  });
   await pool.query("UPDATE tanaghom.automation_platform_controls SET emergency_stop=false,reason='Disposable conversation workflow test' WHERE provider='ghl'");
   await pool.query(`INSERT INTO tanaghom.integration_connections
     (organization_id,provider,status,base_url,credential_kind,credential_ciphertext,credential_nonce,
@@ -141,7 +160,7 @@ try {
   const database = new URL(databaseUrl);
   const credentials = [
     { id: "62000000-0000-4000-8000-000000000005", name: "Tanaghom Conversation PostgreSQL", type: "postgres", data: {
-      host: containerHost, database: database.pathname.slice(1), user: "tanaghom_conversation_worker",
+      host: containerHost, database: database.pathname.slice(1), user: runtimeRole,
       password: "integration-only", port: Number(database.port || 5432), ssl: "disable",
     } },
     { id: "62000000-0000-4000-8000-000000000002", name: "Tanaghom Gemma API", type: "httpHeaderAuth",
@@ -218,21 +237,24 @@ try {
     FROM tanaghom.agent_jobs job WHERE job.input->>'event_id'=$1::text`, [mismatched.event_id])).rows[0];
   assert.deepEqual(mismatchState, { status: "queued", attempt: 1, error_code: "gemma_contract_mismatch", proposals: 0 });
 
-  const unavailable = await accept("workflow-unavailable-1", "workflow-conversation-unavailable", "UNAVAILABLE");
+  const unavailable = await accept("workflow-overloaded-1", "workflow-conversation-overloaded", "OVERLOADED");
   await execute();
   const unavailableState = (await pool.query(`SELECT job.status,job.attempt,job.error_code,
       (SELECT count(*)::int FROM tanaghom.conversation_intelligence_proposals proposal WHERE proposal.event_id=$1) proposals
     FROM tanaghom.agent_jobs job WHERE job.input->>'event_id'=$1::text`, [unavailable.event_id])).rows[0];
-  assert.deepEqual(unavailableState, { status: "queued", attempt: 1, error_code: "gemma_unavailable", proposals: 0 });
+  assert.deepEqual(unavailableState, { status: "queued", attempt: 1, error_code: "gemma_overloaded", proposals: 0 });
 
   assert.equal(modelCalls, 6);
   assert.equal((await pool.query("SELECT count(*)::int count FROM tanaghom.external_operations")).rows[0].count, 0);
   assert.equal(workflow.active, false);
   assert.equal(workflow.nodes.find((entry) => entry.type === "n8n-nodes-base.scheduleTrigger").disabled, true);
   assert.ok(workflow.nodes.every((entry) => !["n8n-nodes-base.webhook", "n8n-nodes-base.executeCommand", "n8n-nodes-base.readWriteFile", "n8n-nodes-base.ssh"].includes(entry.type)));
-  console.log("PASS: inactive Conversation Intelligence processed grounded English and Arabic escalation scenarios and failed malformed, contract-invalid, throttled, and unavailable model calls safely with zero external actions.");
+  console.log("PASS: inactive Conversation Intelligence used a dedicated inherited runtime login, processed grounded English and Arabic escalation scenarios, and failed malformed, contract-invalid, throttled, and overloaded model calls safely with zero external actions.");
 } finally {
   modelServer.close();
+  if (runtimeRoleCreated) {
+    await pool.query(`DROP ROLE ${runtimeRole}`).catch((error) => { cleanupFailure ||= error; });
+  }
   await pool.end().catch((error) => { cleanupFailure ||= error; });
   await run("docker", ["volume", "rm", "-f", volume]).catch((error) => { cleanupFailure ||= error; });
   await rm(temporary, { recursive: true, force: true }).catch((error) => { cleanupFailure ||= error; });

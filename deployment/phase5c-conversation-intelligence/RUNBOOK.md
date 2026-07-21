@@ -28,7 +28,9 @@ uploads it as `phase5-conversation-intelligence-evidence`.
 The workflow integration test uses disposable PostgreSQL, a pinned n8n image,
 and a local Gemma simulator. It proves cited English output, safe Arabic
 escalation when approved knowledge is missing, bounded retry after malformed or
-rate-limited model responses, duplicate-event safety, and zero external actions.
+contract-invalid model output, HTTP 429/503 handling, a dedicated inherited
+runtime login with no direct table writes, duplicate-event safety, and zero
+external actions.
 
 ## Runtime credential boundary
 
