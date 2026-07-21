@@ -11,7 +11,7 @@ customer staging acceptance and does not authorize workflow activation.
 
 - One disposable PostgreSQL database at migration `0021`.
 - The immutable n8n `2.26.8` image already used by the component workflow gates.
-- All seven committed workflow exports imported and executed only through their
+- All eight committed workflow exports imported and executed only through their
   manual test triggers while `active=false`.
 - Deterministic local Gemma, Postiz, and GHL simulators.
 - Synthetic `.test` identities and zero advertising spend.

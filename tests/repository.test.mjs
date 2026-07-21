@@ -334,6 +334,45 @@ test('Phase 5C knowledge is versioned, tenant-bound, grounded, and proposal-only
   assert.match(runbook, /pg_restore --exit-on-error/);
 });
 
+test('Phase 5C Conversation Intelligence worker is inactive, least privileged, and proposal-only', async () => {
+  const workflow = JSON.parse(await readFile(new URL('../n8n/workflows/phase5/conversation-intelligence.v1.json', import.meta.url), 'utf8'));
+  const generator = await readFile(new URL('../scripts/generate-phase5-workflows.mjs', import.meta.url), 'utf8');
+  const integration = await readFile(new URL('../scripts/conversation-intelligence-workflow-integration.mjs', import.meta.url), 'utf8');
+  const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+  const serialized = JSON.stringify(workflow);
+
+  assert.equal(workflow.id, 'phase5ConversationIntelligenceV1');
+  assert.equal(workflow.active, false);
+  assert.equal(workflow.nodes.find(node => node.type === 'n8n-nodes-base.scheduleTrigger')?.disabled, true);
+  assert.ok(workflow.nodes.every(node => ![
+    'n8n-nodes-base.webhook', 'n8n-nodes-base.executeCommand',
+    'n8n-nodes-base.readWriteFile', 'n8n-nodes-base.ssh',
+  ].includes(node.type)));
+  assert.match(serialized, /https:\/\/api\.thesmartlabs\.net\/gemma4\/v1\/chat\/completions/);
+  assert.doesNotMatch(serialized, /services\.leadconnectorhq\.com|postiz|\/conversations\/messages/i);
+  for (const functionName of [
+    'claim_ghl_inbound_event_job', 'prepare_conversation_intelligence',
+    'persist_conversation_intelligence_proposal', 'record_ghl_inbound_event_failure',
+  ]) assert.match(serialized, new RegExp(`tanaghom\\.${functionName}`));
+  assert.equal((serialized.match(/tanaghom\.[a-z_]+/g) ?? []).length, 4);
+  assert.match(serialized, /62000000-0000-4000-8000-000000000005/);
+  assert.match(serialized, /Tanaghom Conversation PostgreSQL/);
+  assert.match(serialized, /62000000-0000-4000-8000-000000000002/);
+  assert.match(serialized, /Tanaghom Gemma API/);
+  assert.match(serialized, /external_action_count/);
+  assert.match(generator, /conversation-intelligence\.v1\.json/);
+  assert.match(integration, /grounded English and Arabic escalation scenarios/);
+  assert.match(integration, /gemma_invalid_json/);
+  assert.match(integration, /gemma_contract_mismatch/);
+  assert.match(integration, /gemma_rate_limited/);
+  assert.match(integration, /gemma_unavailable/);
+  assert.match(integration, /external_operations/);
+  assert.equal(manifest.scripts['test:phase5-conversation-workflow'], 'node scripts/conversation-intelligence-workflow-integration.mjs');
+  assert.match(quality, /phase5-conversation-workflow-integration:/);
+  assert.match(quality, /npm run test:phase5-conversation-workflow/);
+});
+
 test('Phase 5D supervisor ownership is atomic, tenant-bound, and dispatch-safe', async () => {
   const migration = await readFile(new URL('../packages/database/migrations/0014_supervised_conversation_ownership.up.sql', import.meta.url), 'utf8');
   const rollback = await readFile(new URL('../packages/database/migrations/0014_supervised_conversation_ownership.down.sql', import.meta.url), 'utf8');
@@ -406,7 +445,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0023_campaign_lifecycle/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0024_conversation_intelligence_worker_registry/);
   assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
   assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
   assert.match(integration, /accept_ghl_inbound_event/);
@@ -1151,6 +1190,7 @@ test('Phase 6 agentic simulation executes every inactive workflow without custom
     'campaign-strategist.v1.json', 'content-producer.v1.json',
     'postiz-draft-publisher.v1.json', 'postiz-performance-monitor.v1.json',
     'ghl-contact-sync.v1.json', 'governed-ghl-actions.v1.json',
+    'conversation-intelligence.v1.json',
     'quality-shadow-evaluator.v1.json',
   ]) assert.match(script, new RegExp(id.replaceAll('.', '\\.')));
   assert.match(script, /customer_credentials_used: false/);

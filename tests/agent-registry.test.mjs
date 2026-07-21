@@ -8,10 +8,10 @@ test("agent registry reconciles every shipped workflow export with reviewed runt
   const registry = JSON.parse(await readFile(new URL("config/agent-registry.v1.json", root), "utf8"));
   assert.equal(registry.contract_version, "tanaghom.agent-registry.v1");
   assert.equal(registry.roles.length, 4);
-  assert.equal(registry.workers.length, 7);
+  assert.equal(registry.workers.length, 8);
   assert.equal(new Set(registry.roles.map((role) => role.code)).size, 4);
-  assert.equal(new Set(registry.workers.map((worker) => worker.code)).size, 7);
-  assert.equal(new Set(registry.workers.map((worker) => worker.source_path)).size, 7);
+  assert.equal(new Set(registry.workers.map((worker) => worker.code)).size, 8);
+  assert.equal(new Set(registry.workers.map((worker) => worker.source_path)).size, 8);
 
   const roleCodes = new Set(registry.roles.map((role) => role.code));
   for (const worker of registry.workers) {
@@ -30,7 +30,7 @@ test("agent registry reconciles every shipped workflow export with reviewed runt
   }
 
   assert.equal(registry.workers.filter((worker) => worker.runtime_state === "imported_inactive").length, 4);
-  assert.equal(registry.workers.filter((worker) => worker.runtime_state === "available_not_imported").length, 3);
+  assert.equal(registry.workers.filter((worker) => worker.runtime_state === "available_not_imported").length, 4);
   assert.equal(registry.workers.filter((worker) => worker.runtime_state === "active").length, 0);
   assert.deepEqual(
     registry.workers.slice(0, 5).map((worker) => worker.job_types[0]),
@@ -46,7 +46,7 @@ test("agent registry reconciles every shipped workflow export with reviewed runt
 
 test("database registry seed stays aligned with the versioned contract", async () => {
   const registry = JSON.parse(await readFile(new URL("config/agent-registry.v1.json", root), "utf8"));
-  const migration = await readFile(new URL("packages/database/migrations/0022_agent_registry.up.sql", root), "utf8");
+  const migration = `${await readFile(new URL("packages/database/migrations/0022_agent_registry.up.sql", root), "utf8")}\n${await readFile(new URL("packages/database/migrations/0024_conversation_intelligence_worker_registry.up.sql", root), "utf8")}`;
   for (const role of registry.roles) {
     assert.match(migration, new RegExp(`'${role.code}'`));
   }

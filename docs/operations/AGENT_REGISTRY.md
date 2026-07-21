@@ -22,11 +22,15 @@ engine and cannot activate itself or be controlled from the Agents page.
 | Publisher & Performance Monitor | Postiz Draft Publisher v1 | Available | Imported, inactive | Polling disabled |
 | Publisher & Performance Monitor | Postiz Performance Monitor v1 | Available | Not imported | Polling disabled |
 | Sales & CRM Agent | GHL Contact Sync v1 | Available | Not imported | Polling disabled |
+| Sales & CRM Agent | Conversation Intelligence Worker v1 | Available | Not imported | Polling disabled |
 | Sales & CRM Agent | Governed GHL Actions v1 | Available | Not imported | Polling disabled |
 | Sales & CRM Agent | Quality Shadow Evaluator v1 | Available | Imported, inactive | Polling disabled |
 
-The snapshot was reviewed on 2026-07-19 after PR #83. It is evidence with a
-timestamp, not a claim that the dashboard is polling n8n in real time.
+The original production snapshot was reviewed on 2026-07-19 after PR #83. The
+Conversation Intelligence row is versioned as available but not imported; its
+runtime evidence must change only through the controlled inactive-import
+package. Registry timestamps are evidence, not a claim that the dashboard is
+polling n8n in real time.
 
 ## State meanings
 

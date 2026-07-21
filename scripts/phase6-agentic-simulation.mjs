@@ -21,6 +21,7 @@ const workflowFiles = [
   "n8n/workflows/phase4/postiz-performance-monitor.v1.json",
   "n8n/workflows/phase5/ghl-contact-sync.v1.json",
   "n8n/workflows/phase5/governed-ghl-actions.v1.json",
+  "n8n/workflows/phase5/conversation-intelligence.v1.json",
   "n8n/workflows/phase5g/quality-shadow-evaluator.v1.json",
 ];
 
@@ -64,6 +65,11 @@ const steps = [
     environment: {
       CONVERSATION_EVALUATION_EVIDENCE_PATH: join(supportDirectory, "conversation-intelligence-evidence.json"),
     },
+  },
+  {
+    key: "conversation_intelligence_worker",
+    script: "scripts/conversation-intelligence-workflow-integration.mjs",
+    marker: "PASS: inactive Conversation Intelligence processed grounded English and Arabic escalation scenarios and failed malformed, contract-invalid, throttled, and unavailable model calls safely with zero external actions.",
   },
 ];
 
@@ -111,8 +117,8 @@ async function workflowInventory() {
       public_webhook_nodes: 0,
     });
   }
-  assert.equal(inventory.length, 7);
-  assert.equal(new Set(inventory.map((entry) => entry.id)).size, 7);
+  assert.equal(inventory.length, 8);
+  assert.equal(new Set(inventory.map((entry) => entry.id)).size, 8);
   return inventory;
 }
 
@@ -164,7 +170,7 @@ try {
     const audit = await pool.query("SELECT count(*)::int AS count FROM tanaghom.agent_actions_log");
     const unexpectedPersonalData = await pool.query(`SELECT count(*)::int AS count FROM tanaghom.app_users
       WHERE email !~* '(@example\\.test$|@tanaghom\\.test$)'`);
-    assert.equal(migration.rows[0].version, "0023_campaign_lifecycle");
+    assert.equal(migration.rows[0].version, "0024_conversation_intelligence_worker_registry");
     assert.equal(quality.rows[0].external_actions, 0);
     assert.equal(unexpectedPersonalData.rows[0].count, 0);
     databaseEvidence = {
@@ -203,6 +209,7 @@ try {
       "Human-approved Postiz draft plus historical performance normalization",
       "Attributable lead and duplicate-safe GHL contact synchronization",
       "Signed inbound question, approved knowledge, grounded proposal, and supervised release",
+      "Dedicated Conversation Intelligence worker with cited English output and Arabic escalation",
       "Human-approved reply, qualification, appointment, and opportunity operations",
       "English and Arabic policy evaluation",
       "Proposal-only quality shadow evidence with zero external actions",
@@ -238,7 +245,7 @@ try {
 
   await mkdir(dirname(evidencePath), { recursive: true });
   await writeFile(evidencePath, `${JSON.stringify(evidence, null, 2)}\n`, "utf8");
-  console.log(`PASS: Phase 6 executed all seven inactive workflows and the credential-independent content-to-sales narrative. Evidence: ${evidencePath}`);
+  console.log(`PASS: Phase 6 executed all eight inactive workflows and the credential-independent content-to-sales narrative. Evidence: ${evidencePath}`);
 } catch (error) {
   const failure = {
     contract_version: "phase6.agentic-simulation-evidence.v1",

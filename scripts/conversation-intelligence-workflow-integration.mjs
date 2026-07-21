@@ -1,0 +1,240 @@
+import assert from "node:assert/strict";
+import { createHash } from "node:crypto";
+import { spawn } from "node:child_process";
+import { once } from "node:events";
+import { chmod, mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
+import { createServer } from "node:http";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+import pg from "pg";
+
+const databaseUrl = process.env.DATABASE_TEST_URL;
+if (!databaseUrl) throw new Error("DATABASE_TEST_URL is required");
+const image = "docker.n8n.io/n8nio/n8n:2.26.8@sha256:0afb71a39e51637b4d5b4010d90e68bc502d3ca1d2a4d953eb5fcd7d86330ccd";
+const root = process.cwd();
+const temporary = await mkdtemp(join(tmpdir(), "tanaghom-conversation-workflow-"));
+const volume = `tanaghom-conversation-workflow-${process.pid}`;
+const modelPort = 43208;
+const containerHost = process.env.N8N_TEST_HOST || (process.platform === "win32" ? "host.docker.internal" : "127.0.0.1");
+const bindHost = process.platform === "win32" ? "0.0.0.0" : "127.0.0.1";
+const organizationId = "10000000-0000-4000-8000-000000000001";
+const ownerId = "00000000-0000-4000-8000-000000000001";
+let modelCalls = 0;
+let cleanupFailure;
+
+function run(command, args, options = {}) {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args, { stdio: ["ignore", "pipe", "pipe"], ...options });
+    let output = "";
+    child.stdout.on("data", (chunk) => { output += chunk; });
+    child.stderr.on("data", (chunk) => { output += chunk; });
+    child.on("error", reject);
+    child.on("close", (code) => code === 0 ? resolve(output) : reject(new Error(`${command} failed (${code})\n${output}`)));
+  });
+}
+
+async function jsonBody(request) {
+  const chunks = [];
+  for await (const chunk of request) chunks.push(chunk);
+  return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+}
+
+const modelServer = createServer(async (request, response) => {
+  if (request.method !== "POST" || request.url !== "/v1/chat/completions") {
+    response.writeHead(404).end(); return;
+  }
+  assert.equal(request.headers.authorization, "Bearer integration-only-gemma-token");
+  const payload = await jsonBody(request);
+  assert.equal(payload.model, "gemma4-26b-a4b-canary");
+  assert.equal(payload.response_format?.type, "json_schema");
+  assert.equal(payload.response_format?.json_schema?.strict, true);
+  assert.match(payload.messages?.[0]?.content ?? "", /untrusted customer data/i);
+  const intelligence = JSON.parse(payload.messages?.[1]?.content ?? "{}");
+  assert.equal(intelligence.contract_version, "phase5.conversation-intelligence-request.v1");
+  assert.equal(intelligence.system_policy.external_actions_allowed, false);
+  assert.deepEqual(intelligence.tool_results, []);
+  modelCalls += 1;
+  const message = intelligence.provider_message.body;
+  if (message === "MALFORMED") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ choices: [{ message: { content: "not-json" } }] }));
+    return;
+  }
+  if (message === "RATE LIMIT") {
+    response.writeHead(429, { "Content-Type": "application/json", "Retry-After": "90" });
+    response.end(JSON.stringify({ error: { message: "Synthetic model throttle" } }));
+    return;
+  }
+  if (message === "UNAVAILABLE") {
+    response.writeHead(500, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ error: { message: "Synthetic model outage" } }));
+    return;
+  }
+  if (message === "CONTRACT MISMATCH") {
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ external_action_count: 1 }) } }] }));
+    return;
+  }
+  const eventId = intelligence.provider_message.event_id;
+  let output;
+  if (message.includes("السعر")) {
+    output = {
+      contract_version: "phase5.conversation-intelligence-output.v1",
+      prompt_version: "phase5.conversation-intelligence.prompt.v1",
+      model_name: "gemma4-26b-a4b-canary",
+      language: "ar", intent: "pricing", urgency: "normal", sentiment: "neutral",
+      sales_stage: "consideration", risk_categories: [], next_best_action: "escalate_to_human",
+      confidence: 0.55, answer_status: "no_approved_answer", proposed_reply: null, citations: [],
+      escalation: { required: true, category: "no_approved_knowledge", reason: "لا توجد إجابة عربية معتمدة." },
+      conversation_summary: { language: "ar", summary: "سأل العميل عن السعر.", input_event_ids: [eventId] },
+      external_action_count: 0,
+    };
+  } else {
+    const source = intelligence.retrieved_knowledge.find((entry) => entry.source_key === "workflow_growth_plan");
+    assert.ok(source, "approved English knowledge was not retrieved");
+    output = {
+      contract_version: "phase5.conversation-intelligence-output.v1",
+      prompt_version: "phase5.conversation-intelligence.prompt.v1",
+      model_name: "gemma4-26b-a4b-canary",
+      language: "en", intent: "pricing", urgency: "normal", sentiment: "positive",
+      sales_stage: "consideration", risk_categories: [], next_best_action: "respond",
+      confidence: 0.96, answer_status: "proposal",
+      proposed_reply: "The approved Growth plan is USD 99 per month.",
+      citations: [{ source_id: source.source_id, source_version_id: source.source_version_id, content_fingerprint: source.content_fingerprint }],
+      escalation: { required: false, category: null, reason: null },
+      conversation_summary: { language: "en", summary: "Lead asked for the approved Growth plan price.", input_event_ids: [eventId] },
+      external_action_count: 0,
+    };
+  }
+  response.writeHead(200, { "Content-Type": "application/json" });
+  response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify(output) } }] }));
+});
+
+const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
+try {
+  modelServer.listen(modelPort, bindHost); await once(modelServer, "listening");
+  await pool.query("ALTER ROLE tanaghom_conversation_worker LOGIN PASSWORD 'integration-only'");
+  await pool.query("UPDATE tanaghom.automation_platform_controls SET emergency_stop=false,reason='Disposable conversation workflow test' WHERE provider='ghl'");
+  await pool.query(`INSERT INTO tanaghom.integration_connections
+    (organization_id,provider,status,base_url,credential_kind,credential_ciphertext,credential_nonce,
+     credential_auth_tag,credential_key_version,secret_last_four,configuration,configured_by,last_tested_at,last_test_status)
+    VALUES ($1,'ghl','connected','https://services.leadconnectorhq.com','private_token',decode('01','hex'),
+      decode(repeat('02',12),'hex'),decode(repeat('03',16),'hex'),1,'test','{"location_id":"location-test-1"}',
+      $2,now(),'passed')
+    ON CONFLICT (organization_id,provider) DO UPDATE SET status='connected',last_tested_at=now(),last_test_status='passed'`,
+  [organizationId, ownerId]);
+  await pool.query(`UPDATE tanaghom.organization_crm_policies SET
+      conversation_processing_mode='shadow',conversation_emergency_stop=false,
+      conversation_emergency_reason='Disposable proposal-only workflow gate'
+    WHERE organization_id=$1`, [organizationId]);
+  const knowledge = (await pool.query(
+    `SELECT * FROM tanaghom.create_sales_knowledge_draft(
+      'workflow_growth_plan','Workflow Growth plan facts','pricing','en',
+      'The approved Growth plan price is USD 99 per month.',
+      '[{"fact":"growth_plan_monthly_price","value":99,"currency":"USD"}]'::jsonb,
+      'customer_entry','disposable-conversation-workflow',$1)`, [ownerId])).rows[0];
+  for (const action of ["review", "approve", "activate"]) {
+    await pool.query("SELECT * FROM tanaghom.transition_sales_knowledge_version($1,$2,$3,NULL)",
+      [knowledge.version_id, action, ownerId]);
+  }
+
+  const database = new URL(databaseUrl);
+  const credentials = [
+    { id: "62000000-0000-4000-8000-000000000005", name: "Tanaghom Conversation PostgreSQL", type: "postgres", data: {
+      host: containerHost, database: database.pathname.slice(1), user: "tanaghom_conversation_worker",
+      password: "integration-only", port: Number(database.port || 5432), ssl: "disable",
+    } },
+    { id: "62000000-0000-4000-8000-000000000002", name: "Tanaghom Gemma API", type: "httpHeaderAuth",
+      data: { name: "Authorization", value: "Bearer integration-only-gemma-token" } },
+  ];
+  await writeFile(join(temporary, "credentials.json"), JSON.stringify(credentials));
+  const workflow = JSON.parse(await readFile(join(root, "n8n", "workflows", "phase5", "conversation-intelligence.v1.json"), "utf8"));
+  workflow.nodes.find((entry) => entry.name === "Call Gemma").parameters.url = `http://${containerHost}:${modelPort}/v1/chat/completions`;
+  await writeFile(join(temporary, "workflow.json"), JSON.stringify(workflow));
+  await chmod(temporary, 0o755); await chmod(join(temporary, "credentials.json"), 0o644); await chmod(join(temporary, "workflow.json"), 0o644);
+  await run("docker", ["volume", "create", volume]);
+  const dockerBase = ["run", "--rm", "--network", "host",
+    "-e", "N8N_ENCRYPTION_KEY=integration-only-encryption-key-32",
+    "-e", "N8N_USER_MANAGEMENT_DISABLED=true", "-e", "N8N_DIAGNOSTICS_ENABLED=false",
+    "-e", "N8N_SSRF_PROTECTION_ENABLED=false",
+    "-v", `${volume}:/home/node/.n8n`, "-v", `${temporary}:/fixtures:ro`, image];
+  await run("docker", [...dockerBase, "import:credentials", "--input=/fixtures/credentials.json"]);
+  await run("docker", [...dockerBase, "import:workflow", "--input=/fixtures/workflow.json"]);
+
+  async function accept(providerEventId, conversationId, body) {
+    const event = {
+      contract_version: "phase5.ghl-inbound-event.v1", provider_event_id: providerEventId,
+      provider_event_type: "InboundMessage", location_id: "location-test-1",
+      contact_id: `contact-${providerEventId}`, conversation_id: conversationId,
+      message_id: `message-${providerEventId}`, channel: "whatsapp", direction: "inbound",
+      occurred_at: new Date().toISOString(), details: { body },
+    };
+    const hash = createHash("sha256").update(JSON.stringify(event)).digest("hex");
+    return (await pool.query("SELECT * FROM tanaghom.accept_ghl_inbound_event($1::jsonb,$2)", [JSON.stringify(event), hash])).rows[0];
+  }
+  async function execute() {
+    return run("docker", [...dockerBase, "execute", "--id=phase5ConversationIntelligenceV1", "--rawOutput"]);
+  }
+
+  const english = await accept("workflow-english-1", "workflow-conversation-en", "What is the Growth plan price?");
+  const duplicate = await accept("workflow-english-1", "workflow-conversation-en", "What is the Growth plan price?");
+  assert.equal(duplicate.duplicate, true);
+  assert.equal(duplicate.event_id, english.event_id);
+  await execute();
+  const englishProposal = (await pool.query("SELECT * FROM tanaghom.conversation_intelligence_proposals WHERE event_id=$1", [english.event_id])).rows[0];
+  assert.equal(englishProposal.language, "en");
+  assert.equal(englishProposal.answer_status, "proposal");
+  assert.equal(englishProposal.external_action_count, 0);
+  assert.equal(englishProposal.citations.length, 1);
+
+  const arabic = await accept("workflow-arabic-1", "workflow-conversation-ar", "ما هو السعر؟");
+  await execute();
+  const arabicProposal = (await pool.query("SELECT * FROM tanaghom.conversation_intelligence_proposals WHERE event_id=$1", [arabic.event_id])).rows[0];
+  assert.equal(arabicProposal.language, "ar");
+  assert.equal(arabicProposal.answer_status, "no_approved_answer");
+  assert.equal(arabicProposal.escalation_required, true);
+  assert.equal(arabicProposal.external_action_count, 0);
+
+  const malformed = await accept("workflow-malformed-1", "workflow-conversation-malformed", "MALFORMED");
+  await execute();
+  const malformedState = (await pool.query(`SELECT job.status,job.attempt,job.error_code,
+      (SELECT count(*)::int FROM tanaghom.conversation_intelligence_proposals proposal WHERE proposal.event_id=$1) proposals
+    FROM tanaghom.agent_jobs job WHERE job.input->>'event_id'=$1::text`, [malformed.event_id])).rows[0];
+  assert.deepEqual(malformedState, { status: "queued", attempt: 1, error_code: "gemma_invalid_json", proposals: 0 });
+
+  const throttled = await accept("workflow-throttle-1", "workflow-conversation-throttle", "RATE LIMIT");
+  await execute();
+  const throttleState = (await pool.query(`SELECT job.status,job.attempt,job.error_code,
+      (SELECT count(*)::int FROM tanaghom.conversation_intelligence_proposals proposal WHERE proposal.event_id=$1) proposals
+    FROM tanaghom.agent_jobs job WHERE job.input->>'event_id'=$1::text`, [throttled.event_id])).rows[0];
+  assert.deepEqual(throttleState, { status: "queued", attempt: 1, error_code: "gemma_rate_limited", proposals: 0 });
+  assert.equal((await pool.query("SELECT count(*)::int count FROM tanaghom.conversation_dependency_cooldowns WHERE organization_id=$1 AND dependency='gemma' AND blocked_until>now()", [organizationId])).rows[0].count, 1);
+
+  await pool.query("DELETE FROM tanaghom.conversation_dependency_cooldowns WHERE organization_id=$1 AND dependency='gemma'", [organizationId]);
+  const mismatched = await accept("workflow-contract-mismatch-1", "workflow-conversation-contract", "CONTRACT MISMATCH");
+  await execute();
+  const mismatchState = (await pool.query(`SELECT job.status,job.attempt,job.error_code,
+      (SELECT count(*)::int FROM tanaghom.conversation_intelligence_proposals proposal WHERE proposal.event_id=$1) proposals
+    FROM tanaghom.agent_jobs job WHERE job.input->>'event_id'=$1::text`, [mismatched.event_id])).rows[0];
+  assert.deepEqual(mismatchState, { status: "queued", attempt: 1, error_code: "gemma_contract_mismatch", proposals: 0 });
+
+  const unavailable = await accept("workflow-unavailable-1", "workflow-conversation-unavailable", "UNAVAILABLE");
+  await execute();
+  const unavailableState = (await pool.query(`SELECT job.status,job.attempt,job.error_code,
+      (SELECT count(*)::int FROM tanaghom.conversation_intelligence_proposals proposal WHERE proposal.event_id=$1) proposals
+    FROM tanaghom.agent_jobs job WHERE job.input->>'event_id'=$1::text`, [unavailable.event_id])).rows[0];
+  assert.deepEqual(unavailableState, { status: "queued", attempt: 1, error_code: "gemma_unavailable", proposals: 0 });
+
+  assert.equal(modelCalls, 6);
+  assert.equal((await pool.query("SELECT count(*)::int count FROM tanaghom.external_operations")).rows[0].count, 0);
+  assert.equal(workflow.active, false);
+  assert.equal(workflow.nodes.find((entry) => entry.type === "n8n-nodes-base.scheduleTrigger").disabled, true);
+  assert.ok(workflow.nodes.every((entry) => !["n8n-nodes-base.webhook", "n8n-nodes-base.executeCommand", "n8n-nodes-base.readWriteFile", "n8n-nodes-base.ssh"].includes(entry.type)));
+  console.log("PASS: inactive Conversation Intelligence processed grounded English and Arabic escalation scenarios and failed malformed, contract-invalid, throttled, and unavailable model calls safely with zero external actions.");
+} finally {
+  modelServer.close();
+  await pool.end().catch((error) => { cleanupFailure ||= error; });
+  await run("docker", ["volume", "rm", "-f", volume]).catch((error) => { cleanupFailure ||= error; });
+  await rm(temporary, { recursive: true, force: true }).catch((error) => { cleanupFailure ||= error; });
+  if (cleanupFailure) throw cleanupFailure;
+}

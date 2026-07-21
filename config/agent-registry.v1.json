@@ -113,6 +113,21 @@
       "display_order": 50
     },
     {
+      "code": "conversation_intelligence_worker",
+      "role_code": "sales_crm",
+      "name": "Conversation Intelligence Worker",
+      "responsibility": "Claims accepted inbound conversations, asks Gemma for a grounded cited proposal, and persists proposal-only evidence for human supervision.",
+      "phase": "Phase 5C",
+      "workflow_name": "Tanaghom — Conversation Intelligence v1",
+      "workflow_version": "v1",
+      "source_path": "n8n/workflows/phase5/conversation-intelligence.v1.json",
+      "job_types": ["conversation.ghl.inbound_event"],
+      "release_state": "available",
+      "runtime_state": "available_not_imported",
+      "trigger_state": "disabled",
+      "display_order": 55
+    },
+    {
       "code": "governed_ghl_actions",
       "role_code": "sales_crm",
       "name": "Governed GHL Actions",
