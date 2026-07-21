@@ -1168,7 +1168,8 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   assert.match(common, /assert_canary_evidence/);
   assert.match(common, /HUMAN_APPROVAL_VERIFIED_AT=/);
   assert.match(operator, /BEGIN ISOLATION LEVEL SERIALIZABLE/);
-  assert.match(operator, /WITH SET TRUE/);
+  assert.match(operator, /WITH INHERIT FALSE GRANTED BY CURRENT_USER/);
+  assert.match(operator, /WITH SET TRUE GRANTED BY CURRENT_USER/);
   assert.match(operator, /REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER/);
   assert.match(operator, /SET LOCAL ROLE tanaghom_n8n_worker/);
   assert.match(operator, /SELECT tanaghom\.complete_content_job\(\$1::uuid\)/);
@@ -1187,6 +1188,8 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   assert.match(reconcile, /workflow_execution_count/);
   assert.match(reconcile, /n8n audit/);
   assert.match(lifecycle, /complete_content_job/);
+  assert.match(lifecycle, /CREATEROLE INHERIT NOREPLICATION/);
+  assert.match(lifecycle, /SELECT rolinherit FROM pg_roles/);
   assert.match(lifecycle, /inactive human reviewer/);
   assert.match(lifecycle, /cross-organization human reviewer/);
   assert.match(lifecycle, /repeated reconciliation unexpectedly succeeded/);

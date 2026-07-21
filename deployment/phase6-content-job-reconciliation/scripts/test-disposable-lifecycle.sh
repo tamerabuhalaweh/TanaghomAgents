@@ -19,12 +19,13 @@ psql_file "$root/packages/database/seeds/staging.sql"
 test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0022_agent_registry
 
 psql "$url" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
-CREATE ROLE tanaghom_reconciliation_operator LOGIN NOSUPERUSER NOCREATEDB CREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS PASSWORD 'disposable-only';
+CREATE ROLE tanaghom_reconciliation_operator LOGIN NOSUPERUSER NOCREATEDB CREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD 'disposable-only';
 GRANT USAGE ON SCHEMA public,tanaghom TO tanaghom_reconciliation_operator;
 GRANT SELECT ON ALL TABLES IN SCHEMA public,tanaghom TO tanaghom_reconciliation_operator;
 GRANT UPDATE ON tanaghom.agent_jobs,tanaghom.campaigns,tanaghom.agents,tanaghom.content_items,tanaghom.content_approvals,tanaghom.app_users TO tanaghom_reconciliation_operator;
 GRANT tanaghom_n8n_worker TO tanaghom_reconciliation_operator WITH ADMIN TRUE, INHERIT FALSE, SET FALSE;
 SQL
+test "$(scalar "SELECT rolinherit FROM pg_roles WHERE rolname='tanaghom_reconciliation_operator';")" = t
 operator_url=$(DATABASE_TEST_URL="$url" node -e 'const u=new URL(process.env.DATABASE_TEST_URL); u.username="tanaghom_reconciliation_operator"; u.password="disposable-only"; process.stdout.write(u.toString())')
 operator() { DATABASE_URL="$operator_url" node "$package/scripts/reconcile-operator.mjs" "$1" "$campaign" "$job_id"; }
 if psql "$operator_url" -X -v ON_ERROR_STOP=1 -c 'SET ROLE tanaghom_n8n_worker;' >/dev/null 2>&1; then
