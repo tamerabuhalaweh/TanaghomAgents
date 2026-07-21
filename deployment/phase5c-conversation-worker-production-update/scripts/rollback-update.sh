@@ -29,7 +29,7 @@ delete_conversation_workflow
 delete_conversation_credential
 db_scalar "DROP ROLE $RUNTIME_ROLE;" >/dev/null
 test "$(runtime_role_count)" = 0 || die 'runtime role was not removed'
-test "$(db_scalar "UPDATE tanaghom.agent_workflow_registry SET runtime_state='available_not_imported',trigger_state='disabled',runtime_verified_at=statement_timestamp(),runtime_evidence='rollback-before-runtime-use' WHERE code='$WORKFLOW_REGISTRY_CODE' RETURNING 1;")" = 1 || die 'registry could not be prepared for rollback'
+test "$(db_scalar "WITH updated AS (UPDATE tanaghom.agent_workflow_registry SET runtime_state='available_not_imported',trigger_state='disabled',runtime_verified_at=statement_timestamp(),runtime_evidence='rollback-before-runtime-use' WHERE code='$WORKFLOW_REGISTRY_CODE' RETURNING 1) SELECT count(*) FROM updated;")" = 1 || die 'registry could not be prepared for rollback'
 db_file "$RELEASE_SOURCE_ROOT/packages/database/migrations/$TARGET_MIGRATION.down.sql"
 test "$(latest_migration)" = "$EXPECTED_START_MIGRATION" || die 'migration rollback did not reach 0023'
 

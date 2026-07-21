@@ -32,6 +32,8 @@ grep -q 'rm -f.*secret_file.*role_sql.*credential_json.*connection_env.*pgpass_f
 grep -q 'runtime-authentication.txt' "$package/scripts/deploy-update.sh"
 grep -q 'authenticate_runtime_role_with_retry' "$package/scripts/deploy-update.sh"
 grep -q 'TANAGHOM_RUNTIME_AUTH_ATTEMPTS:-24' "$package/scripts/common.sh"
+grep -q 'WITH updated AS.*SELECT count(\*) FROM updated' "$package/scripts/deploy-update.sh"
+grep -q 'WITH updated AS.*SELECT count(\*) FROM updated' "$package/scripts/rollback-update.sh"
 grep -q 'n8n audit' "$package/scripts/deploy-update.sh"
 grep -q 'assert_existing_workflows_unchanged' "$package/scripts/deploy-update.sh"
 grep -q 'assert_existing_credentials_unchanged' "$package/scripts/deploy-update.sh"

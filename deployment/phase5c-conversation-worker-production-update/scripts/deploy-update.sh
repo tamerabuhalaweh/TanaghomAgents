@@ -154,7 +154,7 @@ docker exec -u node "$N8N_MAIN_CONTAINER" n8n import:workflow --input="$workflow
 docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$workflow_remote"
 assert_workflow_inactive
 
-test "$(db_scalar "UPDATE tanaghom.agent_workflow_registry SET runtime_state='imported_inactive',trigger_state='disabled',runtime_verified_at=statement_timestamp(),runtime_evidence='$TANAGHOM_RELEASE_ID-inactive-zero-execution' WHERE code='$WORKFLOW_REGISTRY_CODE' AND runtime_state='available_not_imported' RETURNING 1;")" = 1 || die 'worker registry did not enter the imported-inactive state'
+test "$(db_scalar "WITH updated AS (UPDATE tanaghom.agent_workflow_registry SET runtime_state='imported_inactive',trigger_state='disabled',runtime_verified_at=statement_timestamp(),runtime_evidence='$TANAGHOM_RELEASE_ID-inactive-zero-execution' WHERE code='$WORKFLOW_REGISTRY_CODE' AND runtime_state='available_not_imported' RETURNING 1) SELECT count(*) FROM updated;")" = 1 || die 'worker registry did not enter the imported-inactive state'
 
 export_all_workflows "$evidence_dir/n8n-workflows.after.json"
 capture_credential_inventory "$evidence_dir/n8n-credentials.after.txt"
