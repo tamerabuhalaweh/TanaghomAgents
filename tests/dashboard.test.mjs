@@ -69,9 +69,17 @@ test("GHL settings are customer managed and lead handoff stays explicit", async 
 
 test("dashboard includes reduced-motion and responsive navigation behavior", async () => {
   const css = await readFile(new URL("app/globals.css", dashboard), "utf8");
+  const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
   assert.match(css, /prefers-reduced-motion: reduce/);
   assert.match(css, /\.mobile-navigation/);
   assert.match(css, /min-height: 2\.75rem/);
+  assert.match(css, /\.sidebar\s*\{[\s\S]*?max-block-size: 100dvh;[\s\S]*?overflow-y: auto;[\s\S]*?overscroll-behavior-y: contain;[\s\S]*?scrollbar-gutter: stable;/);
+  assert.match(css, /\.sidebar-open\s*\{[^}]*visibility: visible;/);
+  assert.match(css, /:dir\(rtl\) \.sidebar:not\(\.sidebar-open\)/);
+  assert.match(shell, /event\.key !== "Escape"/);
+  assert.match(shell, /menuButtonRef\.current\?\.focus\(\)/);
+  assert.match(shell, /href="\/team"[\s\S]*?aria-current=[\s\S]*?onClick=\{\(\) => closeMenu\(\)\}/);
+  assert.match(shell, /href="\/settings\/integrations"[\s\S]*?aria-current=[\s\S]*?onClick=\{\(\) => closeMenu\(\)\}/);
 });
 
 test("server API verifies Supabase JWTs and keeps fixture UI disconnected", async () => {

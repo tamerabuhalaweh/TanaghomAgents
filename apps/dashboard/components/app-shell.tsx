@@ -21,7 +21,7 @@ import {
   ShieldCheck,
   X,
 } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "./brand-mark";
 import { SessionProfile } from "./session-profile";
 
@@ -42,6 +42,23 @@ const primaryNavigation = [
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const [menuOpen, setMenuOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key !== "Escape") return;
+      setMenuOpen(false);
+      menuButtonRef.current?.focus();
+    }
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [menuOpen]);
+
+  function closeMenu({ returnFocus = false } = {}) {
+    setMenuOpen(false);
+    if (returnFocus) menuButtonRef.current?.focus();
+  }
 
   return (
     <div className="app-shell">
@@ -51,7 +68,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <BrandMark />
           <span>Tanaghom</span>
         </Link>
-        <button className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
+        <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </header>
@@ -66,7 +83,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           {primaryNavigation.map(({ href, label, icon: Icon }) => {
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
-              <Link key={href} href={href} className={`nav-link ${active ? "nav-link-active" : ""}`} aria-current={active ? "page" : undefined} onClick={() => setMenuOpen(false)}>
+              <Link key={href} href={href} className={`nav-link ${active ? "nav-link-active" : ""}`} aria-current={active ? "page" : undefined} onClick={() => closeMenu()}>
                 <Icon size={18} strokeWidth={1.8} />
                 <span>{label}</span>
               </Link>
@@ -75,15 +92,15 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="sidebar-footer">
-          <Link href="/team" className={`nav-link ${pathname.startsWith("/team") ? "nav-link-active" : ""}`}>
+          <Link href="/team" className={`nav-link ${pathname.startsWith("/team") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/team") ? "page" : undefined} onClick={() => closeMenu()}>
             <UsersRound size={18} />
             <span>Team & access</span>
           </Link>
-          <Link href="/system" className={`nav-link ${pathname.startsWith("/system") ? "nav-link-active" : ""}`} onClick={() => setMenuOpen(false)}>
+          <Link href="/system" className={`nav-link ${pathname.startsWith("/system") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/system") ? "page" : undefined} onClick={() => closeMenu()}>
             <Bell size={18} />
             <span>Alerts</span>
           </Link>
-          <Link href="/settings/integrations" className={`nav-link ${pathname.startsWith("/settings") ? "nav-link-active" : ""}`}>
+          <Link href="/settings/integrations" className={`nav-link ${pathname.startsWith("/settings") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/settings") ? "page" : undefined} onClick={() => closeMenu()}>
             <Settings size={18} />
             <span>Settings</span>
           </Link>
@@ -91,7 +108,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </div>
       </aside>
 
-      {menuOpen ? <button className="sidebar-backdrop" type="button" aria-label="Close navigation" onClick={() => setMenuOpen(false)} /> : null}
+      {menuOpen ? <button className="sidebar-backdrop" type="button" aria-label="Close navigation" onClick={() => closeMenu({ returnFocus: true })} /> : null}
 
       <div className="workspace">
         <header className="topbar">
