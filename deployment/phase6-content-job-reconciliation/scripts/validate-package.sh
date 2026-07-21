@@ -12,6 +12,8 @@ node --check "$package/scripts/reconcile-operator.mjs"
 "$package/scripts/test-refusal-paths.sh"
 
 grep -q 'BEGIN ISOLATION LEVEL SERIALIZABLE' "$package/scripts/reconcile-operator.mjs"
+grep -q "WITH SET TRUE'" "$package/scripts/reconcile-operator.mjs"
+grep -q "REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs"
 grep -q 'SET LOCAL ROLE tanaghom_n8n_worker' "$package/scripts/reconcile-operator.mjs"
 grep -q 'SELECT tanaghom.complete_content_job' "$package/scripts/reconcile-operator.mjs"
 grep -q 'RESET ROLE' "$package/scripts/reconcile-operator.mjs"
@@ -19,6 +21,8 @@ grep -q 'worker_has_approval_table_access' "$package/scripts/reconcile-operator.
 grep -q 'matching_active_human_decisions !== 1' "$package/scripts/reconcile-operator.mjs"
 grep -q 'YES-COMPLETE-THE-REVIEWED-CONTENT-JOB' "$package/scripts/reconcile-job.sh"
 test "$(grep -c 'operator reconcile' "$package/scripts/reconcile-job.sh")" = 1
+test "$(grep -c "WITH SET TRUE'" "$package/scripts/reconcile-operator.mjs")" = 1
+test "$(grep -c "REVOKE tanaghom_n8n_worker FROM %I GRANTED BY CURRENT_USER'" "$package/scripts/reconcile-operator.mjs")" = 1
 grep -q 'RECONCILIATION_SUCCEEDED_AT=' "$package/scripts/reconcile-job.sh"
 grep -q 'There is intentionally no command' "$package/RUNBOOK.md"
 grep -q 'Preparation and merge do not authorize' "$package/README.md"
@@ -29,6 +33,9 @@ fi
 runtime_scope="$package/scripts/common.sh $package/scripts/preflight.sh $package/scripts/reconcile-job.sh $package/scripts/reconcile-operator.mjs"
 if grep -E 'n8n (import|execute|publish|unpublish)|publish_workflow|execute_workflow' $runtime_scope; then
   echo 'runtime package can modify or execute a workflow' >&2; exit 1
+fi
+if grep -E 'export:credentials|--decrypted' $runtime_scope; then
+  echo 'runtime package can expose an encrypted n8n credential' >&2; exit 1
 fi
 if grep -E 'systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)|nft ' $runtime_scope; then
   echo 'runtime package can modify protected services, containers, or firewall state' >&2; exit 1

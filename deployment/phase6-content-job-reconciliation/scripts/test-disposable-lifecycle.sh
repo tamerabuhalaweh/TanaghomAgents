@@ -13,11 +13,23 @@ content_two='93000000-0000-4000-8000-000000000012'
 
 psql_file() { psql "$url" -X -v ON_ERROR_STOP=1 -f "$1" >/dev/null; }
 scalar() { psql "$url" -X -v ON_ERROR_STOP=1 -At -c "$1"; }
-operator() { DATABASE_URL="$url" node "$package/scripts/reconcile-operator.mjs" "$1" "$campaign" "$job_id"; }
 
 for file in "$root"/packages/database/migrations/*.up.sql; do psql_file "$file"; done
 psql_file "$root/packages/database/seeds/staging.sql"
 test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0022_agent_registry
+
+psql "$url" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+CREATE ROLE tanaghom_reconciliation_operator LOGIN NOSUPERUSER NOCREATEDB CREATEROLE NOINHERIT NOREPLICATION NOBYPASSRLS PASSWORD 'disposable-only';
+GRANT USAGE ON SCHEMA public,tanaghom TO tanaghom_reconciliation_operator;
+GRANT SELECT ON ALL TABLES IN SCHEMA public,tanaghom TO tanaghom_reconciliation_operator;
+GRANT UPDATE ON tanaghom.agent_jobs,tanaghom.campaigns,tanaghom.agents,tanaghom.content_items,tanaghom.content_approvals,tanaghom.app_users TO tanaghom_reconciliation_operator;
+GRANT tanaghom_n8n_worker TO tanaghom_reconciliation_operator WITH ADMIN TRUE, INHERIT FALSE, SET FALSE;
+SQL
+operator_url=$(DATABASE_TEST_URL="$url" node -e 'const u=new URL(process.env.DATABASE_TEST_URL); u.username="tanaghom_reconciliation_operator"; u.password="disposable-only"; process.stdout.write(u.toString())')
+operator() { DATABASE_URL="$operator_url" node "$package/scripts/reconcile-operator.mjs" "$1" "$campaign" "$job_id"; }
+if psql "$operator_url" -X -v ON_ERROR_STOP=1 -c 'SET ROLE tanaghom_n8n_worker;' >/dev/null 2>&1; then
+  echo 'disposable operator unexpectedly began with worker SET permission' >&2; exit 1
+fi
 
 psql "$url" -X -v ON_ERROR_STOP=1 >/dev/null <<SQL
 INSERT INTO tanaghom.campaign_strategies
@@ -89,6 +101,7 @@ psql "$url" -X -v ON_ERROR_STOP=1 -c "UPDATE tanaghom.app_users SET organization
 operator preflight >/dev/null
 operator reconcile >"${TMPDIR:-/tmp}/tanaghom-disposable-reconciliation.json"
 operator verify-complete >/dev/null
+test "$(scalar "SELECT admin_option::text||'|'||inherit_option::text||'|'||set_option::text FROM pg_auth_members membership JOIN pg_roles member ON member.oid=membership.member JOIN pg_roles granted ON granted.oid=membership.roleid WHERE member.rolname='tanaghom_reconciliation_operator' AND granted.rolname='tanaghom_n8n_worker';")" = 'true|false|false'
 test "$(scalar "SELECT status||'|'||(finished_at IS NOT NULL)::text FROM tanaghom.agent_jobs WHERE id='$job_id';")" = 'succeeded|true'
 test "$(scalar "SELECT status FROM tanaghom.agents WHERE id='10000000-0000-4000-8000-000000000002';")" = idle
 test "$(scalar "SELECT count(*) FROM tanaghom.agent_actions_log WHERE job_id='$job_id' AND action_type='content.review_completed' AND result='success';")" = 1
@@ -103,4 +116,5 @@ SQL
 then echo 'completed function unexpectedly accepted a repeated call' >&2; exit 1; fi
 
 rm -f "${TMPDIR:-/tmp}/tanaghom-disposable-reconciliation.json"
+unset operator_url
 echo 'PASS: incomplete, inactive-reviewer, cross-organization, success, and repeated reconciliation paths are exact and idempotent.'

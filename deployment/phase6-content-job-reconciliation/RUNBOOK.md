@@ -13,6 +13,14 @@ SET LOCAL ROLE tanaghom_n8n_worker;
 SELECT tanaghom.complete_content_job('<reviewed-job-id>'::uuid);
 ```
 
+Supabase intentionally stores the operator-to-worker membership as
+`ADMIN TRUE, INHERIT FALSE, SET FALSE`. The same serializable transaction
+temporarily changes only `SET` to `TRUE`, assumes the worker role, invokes the
+function, revokes only its temporary self-granted membership row, verifies the
+original grantor's row remains exactly `ADMIN TRUE, INHERIT FALSE, SET FALSE`,
+and then commits. The uncommitted role-option change is not a durable privilege
+expansion. A failure before commit rolls back both changes.
+
 The controlled function changes that job to `succeeded`, populates
 `finished_at`, returns its Content Producer agent to `idle`, and appends one
 immutable `content.review_completed` audit action. The package makes no direct
@@ -30,6 +38,9 @@ table write.
   from an accepted, active human in the same organization.
 - The target job is `campaign.content.generate / waiting_approval`, has no
   prior completion audit, and its Content Producer is `waiting_approval`.
+- The operator is non-superuser with `CREATEROLE` and exactly
+  `ADMIN TRUE, INHERIT FALSE, SET FALSE` membership in
+  `tanaghom_n8n_worker`.
 - Both core workflows and registry entries are inactive.
 - No provider job, post, lead, external operation, or unrelated canary job
   exists.
@@ -73,9 +84,11 @@ sudo -E deployment/phase6-content-job-reconciliation/scripts/reconcile-job.sh
 
 The operator opens a serializable transaction, locks the target context,
 repeats every decision and side-effect check, switches locally to
-`tanaghom_n8n_worker`, invokes the controlled function once, resets the role,
-verifies the exact result, and commits. The role switch and transaction role
-are captured in secret-free JSON evidence.
+`tanaghom_n8n_worker` through the transaction-local membership option, invokes
+the controlled function once, resets the role, revokes only the temporary
+self-grant, verifies the exact result and original membership, and commits. The
+role switch and transaction role are captured in secret-free JSON evidence. It
+never exports or decrypts the n8n PostgreSQL credential.
 
 Evidence is written with mode `0700/0600` under
 `/var/backups/tanaghom-$TANAGHOM_JOB_RECONCILIATION_ID`.
