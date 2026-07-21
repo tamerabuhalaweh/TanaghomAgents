@@ -27,6 +27,5 @@ trap 'rm -rf -- "$temporary"' EXIT HUP INT TERM
 operator preflight >"$temporary/job-preflight.json"
 export_all_workflows "$temporary/workflows.json"
 node "$CORE_CANARY_PACKAGE/scripts/workflow-contract.mjs" verify "$temporary/workflows.json" "$CANARY_EVIDENCE/workflow-manifest.json" original
-node "$CORE_CANARY_PACKAGE/scripts/workflow-contract.mjs" compare-others "$CANARY_EVIDENCE/workflows.before.json" "$temporary/workflows.json"
 cat "$temporary/job-preflight.json"
 echo 'PASS: the reviewed content job is ready for least-privilege reconciliation; no state was changed.'

@@ -42,6 +42,9 @@ table write.
   `ADMIN TRUE, INHERIT FALSE, SET FALSE` membership in
   `tanaghom_n8n_worker`.
 - Both core workflows and registry entries are inactive.
+- Both core workflows match the original reviewed canary hashes. Workflows
+  added after that canary are not treated as unauthorized merely because they
+  are absent from its historical full-inventory snapshot.
 - No provider job, post, lead, external operation, or unrelated canary job
   exists.
 - Provider and CRM emergency stops remain active.
@@ -90,6 +93,13 @@ self-grant, verifies the exact result and original membership, and commits. The
 role switch and transaction role are captured in secret-free JSON evidence. It
 never exports or decrypts the n8n PostgreSQL credential.
 
+Immediately before the mutation, the package exports the current complete n8n
+workflow inventory as its operation baseline. Immediately afterward, it proves
+that every non-core workflow is identical to that baseline. It neither inspects
+the business purpose of unrelated workflows nor authorizes or mutates them.
+The two Tanaghom core workflows are checked separately against their reviewed
+original hashes and inactive state before and after the operation.
+
 Evidence is written with mode `0700/0600` under
 `/var/backups/tanaghom-$TANAGHOM_JOB_RECONCILIATION_ID`.
 
@@ -121,7 +131,8 @@ There is intentionally no command that changes a succeeded job back to
 - The Content Producer is `idle`.
 - Exactly one `content.review_completed` audit action exists.
 - Both core workflows remain inactive and execution counts do not change.
-- Every unrelated n8n workflow remains unchanged.
+- Every unrelated n8n workflow remains unchanged relative to the inventory
+  captured immediately before this operation.
 - Provider jobs, posts, leads, and external operations remain zero for the
   canary.
 - Protected containers, services, public boundary, and firewall policy remain
