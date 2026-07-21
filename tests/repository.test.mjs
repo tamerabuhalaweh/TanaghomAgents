@@ -1227,6 +1227,51 @@ test('Phase 6 core-agent canary is sequential, zero-budget, human-gated, and tra
   assert.doesNotMatch(`${common}\n${workflowContract}\n${operator}\n${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
 
+test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and evidence-preserving', async () => {
+  const root = new URL('../deployment/phase6-existing-campaign-canary/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const operator = await readFile(new URL('scripts/existing-campaign-operator.mjs', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const run = await readFile(new URL('scripts/run-canary.sh', root), 'utf8');
+  const restore = await readFile(new URL('scripts/restore-workflows.sh', root), 'utf8');
+  const verify = await readFile(new URL('scripts/verify-human-approval.sh', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_MIGRATION=0023_campaign_lifecycle/);
+  assert.match(common, /TANAGHOM_CANARY_CAMPAIGN_ID/);
+  assert.match(common, /TANAGHOM_CANARY_STRATEGY_JOB_ID/);
+  assert.match(common, /TANAGHOM_EXPECTED_CONTENT_ITEMS/);
+  assert.match(common, /NODE_EXTRA_CA_CERTS="\$DATABASE_CA_CERT"/);
+  assert.match(common, /TANAGHOM_DATABASE_SSL_MODE=verify-full/);
+  assert.match(preflight, /operator verify-authorized/);
+  assert.match(operator, /exact campaign and strategy job identity did not match/);
+  assert.match(operator, /claimable_core_jobs !== 1/);
+  assert.match(operator, /the exact content job is not the sole safe claimable core work/);
+  assert.match(operator, /SET LOCAL ROLE tanaghom_api/);
+  assert.match(operator, /SELECT \* FROM tanaghom\.queue_campaign_content/);
+  assert.match(operator, /row\.drafts < 1 \|\| row\.drafts > expectedItems/);
+  assert.match(run, /operator verify-authorized[\s\S]+publish_workflow "\$STRATEGIST_ID"/);
+  assert.match(run, /publish_workflow "\$STRATEGIST_ID"[\s\S]+unpublish_workflow "\$STRATEGIST_ID"[\s\S]+operator queue-content[\s\S]+publish_workflow "\$PRODUCER_ID"[\s\S]+unpublish_workflow "\$PRODUCER_ID"/);
+  assert.match(run, /publish_workflow "\$PRODUCER_ID"[\s\S]+operator verify-content-ready[\s\S]+execute_workflow_once "\$PRODUCER_ID"/);
+  assert.match(run, /existing campaign and jobs were deliberately preserved/);
+  assert.doesNotMatch(`${operator}\n${run}`, /operator (seed|mark-failed)|INSERT INTO tanaghom\.(campaigns|agent_jobs)/);
+  assert.match(restore, /import_workflow_inactive/);
+  assert.match(verify, /YES-VERIFY-AUTHENTICATED-HUMAN-APPROVAL/);
+  assert.match(lifecycle, /operator accepted competing claimable work/);
+  assert.match(lifecycle, /persist_strategy_result/);
+  assert.match(lifecycle, /persist_content_result/);
+  assert.match(runbook, /Issue #100 remains open/);
+  assert.match(quality, /phase6-existing-campaign-canary-contract/);
+  assert.match(quality, /phase6-existing-campaign-canary\/scripts\/test-disposable-lifecycle\.sh/);
+
+  const mutationScope = `${run}\n${restore}\n${verify}`;
+  assert.doesNotMatch(mutationScope, /systemctl (stop|restart|reload)|iptables (-A|-I|-D|-N|-F|-X)|docker (stop|restart|rm)|docker compose/);
+  assert.doesNotMatch(mutationScope, /publish_workflow .*postiz|publish_workflow .*ghl/i);
+  assert.doesNotMatch(`${common}\n${operator}\n${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
+
 test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent, and provider-isolated', async () => {
   const root = new URL('../deployment/phase6-content-job-reconciliation/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
