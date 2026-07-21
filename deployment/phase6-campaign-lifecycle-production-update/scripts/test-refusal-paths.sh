@@ -81,6 +81,17 @@ env \
   TANAGHOM_BACKUP_PROOF="$proof" \
   sh -c ". '$SCRIPT_DIR/common.sh'; require_release_environment; validate_backup_proof"
 
+RESUME_RELEASE=phase6-20260721T130000Z
+env \
+  TANAGHOM_RELEASE_AUTHORIZATION=YES-I-AM-THE-AUTHORIZED-OWNER \
+  TANAGHOM_RELEASE_ID="$RESUME_RELEASE" \
+  TANAGHOM_BACKUP_RELEASE_ID="$RELEASE" \
+  TANAGHOM_EXPECTED_CURRENT_COMMIT="$CURRENT" \
+  TANAGHOM_TARGET_COMMIT="$TARGET" \
+  TANAGHOM_PRESERVED_FILE_SHA256="$PRESERVED" \
+  TANAGHOM_BACKUP_PROOF="$proof" \
+  sh -c ". '$SCRIPT_DIR/common.sh'; require_release_environment; validate_backup_proof"
+
 repository="$workdir/production"
 preserved_path="$repository/deployment/phase4-postiz-activation/egress/squid.conf"
 mkdir -p "$(dirname "$preserved_path")"
@@ -114,4 +125,4 @@ expect_refusal env \
   TANAGHOM_PRESERVED_FILE_SHA256="$preserved_checksum" \
   sh -c ". '$SCRIPT_DIR/common.sh'; assert_production_checkout_at '$checkout_target'"
 
-echo 'PASS: invalid release inputs are refused, Windows CRLF backup proof is accepted, and exactly one stable preserved Squid file crosses checkout safely.'
+echo 'PASS: invalid release inputs are refused, Windows CRLF and interrupted-release backup proof are accepted, and exactly one stable preserved Squid file crosses checkout safely.'

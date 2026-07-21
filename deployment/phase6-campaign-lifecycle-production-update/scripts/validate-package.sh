@@ -9,6 +9,8 @@ sh -n "$package"/scripts/*.sh
 "$package/scripts/test-refusal-paths.sh"
 test -s "$package/scripts/prepare-offserver-backup.ps1"
 test -s "$package/RUNBOOK.md"
+test -x "$package/scripts/resume-preflight.sh"
+test -x "$package/scripts/resume-update.sh"
 
 for file in "$package"/scripts/*.sh; do
   ! grep -Eq 'docker (stop|restart|rm|compose .+ (stop|restart|rm)).*(smartlabs|n8n|gemma|voice)' "$file"
@@ -29,8 +31,19 @@ grep -q 'EXPECTED_START_MIGRATION=0022_agent_registry' "$package/scripts/common.
 grep -q 'TARGET_MIGRATION=0023_campaign_lifecycle' "$package/scripts/common.sh"
 test "$(grep -o '0023_[a-z_]*' "$package/scripts/common.sh" | sort -u | wc -l | tr -d ' ')" = 1
 grep -q 'rollback_applied_migrations' "$package/scripts/deploy-update.sh"
-grep -q 'assert_agent_registry_safe_to_drop' "$package/scripts/deploy-update.sh"
-grep -q 'assert_agent_registry_safe_to_drop' "$package/scripts/rollback-update.sh"
+grep -q 'capture_agent_registry_fingerprint' "$package/scripts/deploy-update.sh"
+grep -q 'assert_agent_registry_unchanged' "$package/scripts/deploy-update.sh"
+grep -q 'assert_agent_registry_unchanged' "$package/scripts/rollback-update.sh"
+grep -q 'agent_registry_fingerprint' "$package/scripts/common.sh"
+! grep -R -q 'assert_agent_registry_safe_to_drop' "$package/scripts"
+grep -q '( assert_agent_registry_unchanged' "$package/scripts/deploy-update.sh"
+grep -q 'ROLLBACK_FAILED=YES' "$package/scripts/deploy-update.sh"
+grep -q 'RESUME-THE-REVIEWED-TANAGHOM-RELEASE' "$package/scripts/resume-preflight.sh"
+grep -q 'assert_database_at_target' "$package/scripts/resume-preflight.sh"
+grep -q 'RESUMED_FROM_RELEASE_ID' "$package/scripts/resume-update.sh"
+grep -q '( assert_agent_registry_unchanged' "$package/scripts/resume-update.sh"
+grep -q 'ROLLBACK_FAILED=YES' "$package/scripts/resume-update.sh"
+! grep -q 'db_file' "$package/scripts/resume-update.sh"
 grep -q 'campaign_lifecycle_fingerprint' "$package/scripts/common.sh"
 grep -q 'assert_campaign_lifecycle_unchanged' "$package/scripts/deploy-update.sh"
 grep -q 'assert_campaign_lifecycle_unchanged' "$package/scripts/rollback-update.sh"
@@ -46,8 +59,10 @@ grep -q 'phase6' "$shared_backup"
 grep -q -- '--network none' "$shared_backup"
 grep -q 'campaign lifecycle fingerprint did not detect a governed mutation' "$package/scripts/test-disposable-lifecycle.sh"
 grep -q 'create_campaign_draft' "$package/scripts/test-disposable-lifecycle.sh"
-grep -q 'Windows CRLF backup proof is accepted' "$package/scripts/test-refusal-paths.sh"
+grep -q 'interrupted-release backup proof are accepted' "$package/scripts/test-refusal-paths.sh"
 grep -q 'exactly one stable preserved Squid file crosses checkout safely' "$package/scripts/test-refusal-paths.sh"
+grep -q 'historically reconciled Agent Registry rows' "$package/scripts/test-disposable-lifecycle.sh"
+grep -q 'Interrupted release recovery' "$package/RUNBOOK.md"
 grep -q 'No deployment is authorized by this document' "$package/RUNBOOK.md"
 
-echo 'PASS: Phase 6 Campaign Lifecycle production update package is syntax-valid, least-privileged, rollback-guarded, reversible, and protected-service scoped.'
+echo 'PASS: Phase 6 Campaign Lifecycle package is syntax-valid, least-privileged, transaction-baselined, resumable, rollback-guarded, reversible, and protected-service scoped.'

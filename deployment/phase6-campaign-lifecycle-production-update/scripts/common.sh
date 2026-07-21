@@ -105,7 +105,12 @@ validate_backup_proof() {
   test -f "$TANAGHOM_BACKUP_PROOF" || die 'off-server backup proof is missing'
   test ! -L "$TANAGHOM_BACKUP_PROOF" || die 'backup proof must not be a symbolic link'
   test "$(stat -c '%a' "$TANAGHOM_BACKUP_PROOF")" = 600 || die 'backup proof mode must be 0600'
-  test "$(proof_value RELEASE_ID)" = "$TANAGHOM_RELEASE_ID" || die 'backup proof release ID mismatch'
+  expected_backup_release=${TANAGHOM_BACKUP_RELEASE_ID:-$TANAGHOM_RELEASE_ID}
+  case "$expected_backup_release" in
+    phase6-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z) ;;
+    *) die 'backup proof release ID must use phase6-YYYYMMDDTHHMMSSZ' ;;
+  esac
+  test "$(proof_value RELEASE_ID)" = "$expected_backup_release" || die 'backup proof release ID mismatch'
   test "$(proof_value SOURCE_MIGRATION)" = "$EXPECTED_START_MIGRATION" || die 'backup proof migration mismatch'
   test "$(proof_value RESTORE_VERIFIED)" = YES || die 'backup restoration was not verified'
   proof_value ARCHIVE_SHA256 | grep -Eq '^[0-9A-Fa-f]{64}$' || die 'backup archive checksum is invalid'
@@ -152,13 +157,43 @@ assert_database_at_start() {
   test "$(db_scalar "SELECT count(*) FROM tanaghom.external_operations;")" = 0 || die 'external operations exist'
 }
 
-assert_agent_registry_safe_to_drop() {
+assert_database_at_target() {
+  test "$(latest_migration)" = "$TARGET_MIGRATION" || die "unexpected migration ledger; expected $TARGET_MIGRATION"
+  test "$(db_scalar "SELECT count(*) FROM tanaghom.automation_platform_controls WHERE emergency_stop IS NOT TRUE;")" = 0 || die 'a provider emergency stop is inactive'
+  test "$(db_scalar "SELECT count(*) FROM tanaghom.organization_automation_policies WHERE postiz_draft_mode <> 'manual';")" = 0 || die 'Postiz organization mode is not manual'
+  test "$(db_scalar "SELECT count(*) FROM tanaghom.organization_crm_policies WHERE contact_sync_mode <> 'manual' OR conversation_processing_mode <> 'paused' OR conversation_emergency_stop IS NOT TRUE;")" = 0 || die 'CRM or conversation policy is not locked'
+  test "$(db_scalar "SELECT count(*) FROM tanaghom.external_operations;")" = 0 || die 'external operations exist'
+  test "$(db_scalar "SELECT count(*) FROM information_schema.columns WHERE table_schema='tanaghom' AND table_name='campaigns' AND column_name='content_item_target' AND data_type='integer' AND is_nullable='NO';")" = 1 || die 'campaign lifecycle target column is absent'
+  test "$(db_scalar "SELECT count(*) FROM pg_indexes WHERE schemaname='tanaghom' AND indexname='agent_jobs_one_open_core_job_per_campaign_idx' AND indexdef LIKE 'CREATE UNIQUE INDEX%';")" = 1 || die 'campaign lifecycle uniqueness index is absent'
+}
+
+assert_agent_registry_contract() {
   test "$(db_scalar "SELECT string_agg(code,',' ORDER BY code) FROM tanaghom.agent_role_registry;")" = 'campaign_strategist,content_producer,publisher_monitor,sales_crm' || die 'business-agent registry differs from the reviewed contract; automatic schema rollback is unsafe'
   test "$(db_scalar "SELECT string_agg(code,',' ORDER BY code) FROM tanaghom.agent_workflow_registry;")" = 'campaign_content_generator,campaign_strategy_generator,ghl_contact_sync,governed_ghl_actions,postiz_draft_publisher,postiz_performance_monitor,quality_shadow_evaluator' || die 'workflow-agent registry differs from the reviewed contract; automatic schema rollback is unsafe'
   test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_role_registry WHERE contract_version<>'tanaghom.agent-registry.v1';")" = 0 || die 'business-agent contract version changed; automatic schema rollback is unsafe'
   test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_workflow_registry WHERE contract_version<>'tanaghom.agent-registry.v1';")" = 0 || die 'workflow-agent contract version changed; automatic schema rollback is unsafe'
-  test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_role_registry WHERE updated_at<>created_at;")" = 0 || die 'business-agent registry was modified after migration; automatic schema rollback is unsafe'
-  test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_workflow_registry WHERE updated_at<>created_at;")" = 0 || die 'workflow-agent registry was modified after migration; automatic schema rollback is unsafe'
+}
+
+agent_registry_fingerprint() {
+  db_scalar "SELECT md5(jsonb_build_object(
+    'roles', (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.code) FROM tanaghom.agent_role_registry r),
+    'workflows', (SELECT jsonb_agg(to_jsonb(w) ORDER BY w.code) FROM tanaghom.agent_workflow_registry w)
+  )::text);"
+}
+
+capture_agent_registry_fingerprint() {
+  destination=$1
+  agent_registry_fingerprint > "$destination"
+  chmod 0600 "$destination"
+}
+
+assert_agent_registry_unchanged() {
+  expected_file=$1
+  test -s "$expected_file" || die 'Agent Registry transaction baseline is missing'
+  assert_agent_registry_contract
+  expected=$(cat "$expected_file")
+  actual=$(agent_registry_fingerprint)
+  test "$actual" = "$expected" || die 'Agent Registry changed during the release transaction'
 }
 
 campaign_lifecycle_fingerprint() {

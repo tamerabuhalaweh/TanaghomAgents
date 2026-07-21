@@ -30,7 +30,7 @@ assert_protected_containers_healthy
 assert_protected_container_ids_unchanged "$evidence_dir/n8n-container-ids.before"
 test "$(db_scalar "SELECT count(*) FROM tanaghom.automation_platform_controls WHERE emergency_stop IS NOT TRUE;")" = 0 || die 'all provider emergency stops must be active before rollback'
 test "$(db_scalar "SELECT count(*) FROM tanaghom.external_operations;")" = 0 || die 'external operations exist; schema rollback is unsafe'
-assert_agent_registry_safe_to_drop
+assert_agent_registry_unchanged "$evidence_dir/agent-registry.before.md5"
 assert_campaign_lifecycle_unchanged "$evidence_dir/campaign-lifecycle.before.md5"
 
 git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" checkout --detach "$expected_current"

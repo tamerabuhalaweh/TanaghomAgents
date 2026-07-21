@@ -19,6 +19,13 @@ fingerprint() {
   )::text);"
 }
 
+registry_fingerprint() {
+  scalar "SELECT md5(jsonb_build_object(
+    'roles', (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.code) FROM tanaghom.agent_role_registry r),
+    'workflows', (SELECT jsonb_agg(to_jsonb(w) ORDER BY w.code) FROM tanaghom.agent_workflow_registry w)
+  )::text);"
+}
+
 for file in "$root"/packages/database/migrations/*.up.sql; do
   version=$(basename "$file" .up.sql)
   psql_file "$file"
@@ -30,6 +37,9 @@ psql_file "$root/packages/database/seeds/staging.sql"
 test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0022_agent_registry
 test "$(scalar 'SELECT count(*) FROM tanaghom.agent_role_registry;')" = 4
 test "$(scalar 'SELECT count(*) FROM tanaghom.agent_workflow_registry;')" = 7
+scalar "UPDATE tanaghom.agent_workflow_registry SET runtime_evidence='historical-reviewed-import' WHERE code='campaign_strategy_generator' RETURNING code;" >/dev/null
+test "$(scalar "SELECT count(*) FROM tanaghom.agent_workflow_registry WHERE updated_at<>created_at;")" = 1
+registry_baseline=$(registry_fingerprint)
 baseline=$(fingerprint)
 
 psql_file "$root/packages/database/migrations/0023_campaign_lifecycle.up.sql"
@@ -49,6 +59,34 @@ for signature in \
   test "$(scalar "SELECT count(*) FROM pg_proc p, LATERAL aclexplode(coalesce(p.proacl, acldefault('f',p.proowner))) acl WHERE p.oid='$signature'::regprocedure AND acl.grantee=0 AND acl.privilege_type='EXECUTE';")" = 0
 done
 test "$(fingerprint)" = "$baseline"
+test "$(registry_fingerprint)" = "$registry_baseline"
+
+psql "$url" -X -q -v ON_ERROR_STOP=1 -v registry_baseline="$registry_baseline" >/dev/null <<'SQL'
+BEGIN;
+SELECT set_config('tanaghom.test_registry_baseline', :'registry_baseline', true);
+UPDATE tanaghom.agent_workflow_registry
+SET runtime_evidence='transaction-time-unreviewed-change'
+WHERE code='campaign_strategy_generator';
+DO $$
+DECLARE current_fingerprint text;
+BEGIN
+  IF (SELECT count(*) FROM tanaghom.agent_workflow_registry
+      WHERE code='campaign_strategy_generator'
+        AND runtime_evidence='transaction-time-unreviewed-change') <> 1 THEN
+    RAISE EXCEPTION 'Agent Registry mutation was not visible to the transaction guard';
+  END IF;
+  SELECT md5(jsonb_build_object(
+    'roles', (SELECT jsonb_agg(to_jsonb(r) ORDER BY r.code) FROM tanaghom.agent_role_registry r),
+    'workflows', (SELECT jsonb_agg(to_jsonb(w) ORDER BY w.code) FROM tanaghom.agent_workflow_registry w)
+  )::text) INTO current_fingerprint;
+  IF current_fingerprint = current_setting('tanaghom.test_registry_baseline') THEN
+    RAISE EXCEPTION 'Agent Registry fingerprint did not detect a transaction-time mutation';
+  END IF;
+END;
+$$;
+ROLLBACK;
+SQL
+test "$(registry_fingerprint)" = "$registry_baseline"
 
 psql "$url" -X -q -v ON_ERROR_STOP=1 -v baseline="$baseline" >/dev/null <<'SQL'
 BEGIN;
@@ -113,10 +151,12 @@ test "$(scalar "SELECT to_regprocedure('tanaghom.create_campaign_draft(uuid,text
 test "$(scalar 'SELECT count(*) FROM tanaghom.campaigns;')" = 1
 test "$(scalar 'SELECT count(*) FROM tanaghom.agent_role_registry;')" = 4
 test "$(fingerprint)" = "$baseline"
+test "$(registry_fingerprint)" = "$registry_baseline"
 
 psql_file "$root/packages/database/migrations/0023_campaign_lifecycle.up.sql"
 test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0023_campaign_lifecycle
 test "$(fingerprint)" = "$baseline"
+test "$(registry_fingerprint)" = "$registry_baseline"
 test "$(scalar "SELECT count(*) FROM tanaghom.external_operations;")" = 0
 
-echo 'PASS: migration 0023 is additive, least-privileged, data-safe, rollback-guarded, reversible, and provider-free.'
+echo 'PASS: migration 0023 is additive, least-privileged, data-safe, rollback-guarded, reversible, provider-free, and compatible with historically reconciled Agent Registry rows.'
