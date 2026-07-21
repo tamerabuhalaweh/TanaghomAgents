@@ -111,10 +111,25 @@ async function queueContent() {
     const before = await verifyStrategy();
     if (before.successful_job !== 1) throw new Error("strategy baseline changed before content queueing");
     const actorId = (await authorizedSnapshot()).created_by;
-    await client.query("SET LOCAL ROLE tanaghom_api");
+    const boundary = (await client.query(`SELECT
+        current_user = session_user AS single_identity,
+        procedure.prosecdef,
+        procedure.proowner = role.oid AS connection_owns_function,
+        has_function_privilege('tanaghom_api','tanaghom.queue_campaign_content(uuid,uuid)','EXECUTE') AS api_may_execute,
+        has_function_privilege('tanaghom_n8n_worker','tanaghom.queue_campaign_content(uuid,uuid)','EXECUTE') AS n8n_may_execute,
+        has_function_privilege('tanaghom_readonly','tanaghom.queue_campaign_content(uuid,uuid)','EXECUTE') AS readonly_may_execute,
+        EXISTS (
+          SELECT 1 FROM aclexplode(coalesce(procedure.proacl,acldefault('f',procedure.proowner))) acl
+          WHERE acl.grantee=0 AND acl.privilege_type='EXECUTE'
+        ) AS public_may_execute
+      FROM pg_proc procedure
+      JOIN pg_roles role ON role.rolname=current_user
+      WHERE procedure.oid='tanaghom.queue_campaign_content(uuid,uuid)'::regprocedure`)).rows[0];
+    if (!boundary?.single_identity || !boundary.prosecdef || !boundary.connection_owns_function || !boundary.api_may_execute || boundary.n8n_may_execute || boundary.readonly_may_execute || boundary.public_may_execute) {
+      throw new Error("privileged governed-function invocation boundary is not the reviewed production shape");
+    }
     const queued = await client.query("SELECT * FROM tanaghom.queue_campaign_content($1::uuid,$2::uuid)", [campaignId, actorId]);
     if (queued.rowCount !== 1 || queued.rows[0].job_status !== "queued") throw new Error("governed content queue did not return one queued job");
-    await client.query("RESET ROLE");
     const job = (await client.query(`SELECT id,status,attempt,max_attempts,input FROM tanaghom.agent_jobs
       WHERE id=$1 AND campaign_id=$2 AND job_type='campaign.content.generate'`, [queued.rows[0].job_id, campaignId])).rows[0];
     if (!job || job.status !== "queued" || job.attempt !== 0 || job.max_attempts !== 3 || job.input?.contract_version !== "phase3.content-producer-job.v1" || job.input?.job_id !== job.id || job.input?.campaign?.id !== campaignId || job.input?.max_items !== expectedItems) throw new Error("governed content job differs from the authorized contract");

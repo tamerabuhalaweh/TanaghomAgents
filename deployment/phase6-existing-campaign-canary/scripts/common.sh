@@ -25,6 +25,7 @@ is_uuid() { printf '%s' "$1" | grep -Eq '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{
 
 require_environment() {
   test "${TANAGHOM_CANARY_AUTHORIZATION:-}" = 'YES-I-AM-THE-AUTHORIZED-OWNER' || die 'explicit owner canary authorization is absent'
+  test "${TANAGHOM_CANARY_ALLOW_OWNER_FUNCTION_CALL:-}" = 'YES-USE-EXISTING-DASHBOARD-DATABASE-OWNER' || die 'explicit privileged function-call authorization is absent'
   case "${TANAGHOM_CANARY_ID:-}" in
     uatcanary-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z) ;;
     *) die 'TANAGHOM_CANARY_ID must use uatcanary-YYYYMMDDTHHMMSSZ' ;;
