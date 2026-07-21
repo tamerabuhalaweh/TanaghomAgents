@@ -995,6 +995,8 @@ test('Phase 5C Conversation Intelligence production update is least-privileged, 
   assert.match(deploy, /rm -f "\$secret_file" "\$role_sql" "\$credential_json" "\$connection_env" "\$pgpass_file"/);
   assert.match(deploy, /runtime-authentication\.txt/);
   assert.match(deploy, /authenticate_runtime_role_with_retry/);
+  assert.match(deploy, /WITH updated AS \(UPDATE .* SELECT count\(\*\) FROM updated/);
+  assert.match(rollback, /WITH updated AS \(UPDATE .* SELECT count\(\*\) FROM updated/);
   assert.match(common, /TANAGHOM_RUNTIME_AUTH_ATTEMPTS:-24/);
   assert.match(common, /runtime authentication attempt count is outside 1\.\.60/);
   assert.match(deploy, /n8n audit/);
