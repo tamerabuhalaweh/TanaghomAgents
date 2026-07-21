@@ -11,7 +11,8 @@ const conversationPostgresCredential = { postgres: { id: "62000000-0000-4000-800
 const gemmaCredential = { httpHeaderAuth: { id: "62000000-0000-4000-8000-000000000002", name: "Tanaghom Gemma API" } };
 const gatewayCredential = { httpHeaderAuth: { id: "62000000-0000-4000-8000-000000000004", name: "Tanaghom Integration Gateway" } };
 
-const conversationPrompt = readFileSync(join(root, "prompts", "conversation-intelligence", "v1.md"), "utf8");
+const conversationPrompt = readFileSync(join(root, "prompts", "conversation-intelligence", "v1.md"), "utf8")
+  .replace(/\r\n/g, "\n");
 const conversationOutputSchema = JSON.parse(readFileSync(join(root, "packages", "contracts", "schemas", "phase5", "conversation-intelligence-output.v1.schema.json"), "utf8"));
 delete conversationOutputSchema.$schema;
 delete conversationOutputSchema.$id;

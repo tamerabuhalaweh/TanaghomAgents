@@ -362,6 +362,8 @@ test('Phase 5C Conversation Intelligence worker is inactive, least privileged, a
   assert.match(serialized, /Tanaghom Gemma API/);
   assert.match(serialized, /external_action_count/);
   assert.match(generator, /conversation-intelligence\.v1\.json/);
+  assert.match(generator, /replace\(\/\\r\\n\/g, "\\n"\)/);
+  assert.equal(serialized.includes('\\r'), false);
   assert.match(integration, /grounded English and Arabic escalation scenarios/);
   assert.match(integration, /gemma_invalid_json/);
   assert.match(integration, /gemma_contract_mismatch/);

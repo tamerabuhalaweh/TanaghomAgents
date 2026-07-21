@@ -92,7 +92,7 @@ try {
 
   const campaignName = "Integration controlled core canary.test";
   const operator = join(root, "deployment", "phase6-core-agent-canary", "scripts", "canary-operator.mjs");
-  const operatorOptions = { env: { ...process.env, DATABASE_URL: databaseUrl } };
+  const operatorOptions = { env: { ...process.env, DATABASE_URL: databaseUrl, TANAGHOM_EXPECTED_MIGRATION: "0024_conversation_intelligence_worker_registry" } };
   await run(process.execPath, [operator, "check-database", campaignName], operatorOptions);
   await run(process.execPath, [operator, "seed", campaignName], operatorOptions);
   const campaignId = (await pool.query("SELECT id FROM tanaghom.campaigns WHERE name=$1", [campaignName])).rows[0].id;

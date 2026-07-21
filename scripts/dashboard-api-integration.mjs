@@ -590,7 +590,7 @@ try {
       imported: operationsBody.agent_registry.summary.imported,
       active: operationsBody.agent_registry.summary.active,
     },
-    { business_roles: 4, specialized_workers: 7, imported: 4, active: 0 },
+    { business_roles: 4, specialized_workers: 8, imported: 4, active: 0 },
   );
   assert.deepEqual(
     operationsBody.agent_registry.roles.map((role) => role.code),
@@ -598,7 +598,7 @@ try {
   );
   assert.equal(
     operationsBody.agent_registry.roles.flatMap((role) => role.workers).length,
-    7,
+    8,
   );
   assert.ok(operationsBody.agent_registry.roles.flatMap((role) => role.workers)
     .every((worker) => worker.blockers.some((condition) =>

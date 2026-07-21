@@ -12,13 +12,13 @@ psql_file() { psql "$url" -X -v ON_ERROR_STOP=1 >/dev/null <"$1"; }
 scalar() { psql "$url" -X -q -v ON_ERROR_STOP=1 -At -c "$1" | tr -d '\r'; }
 for file in "$root"/packages/database/migrations/*.up.sql; do psql_file "$file"; done
 psql_file "$root/packages/database/seeds/staging.sql"
-test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0023_campaign_lifecycle
+test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0024_conversation_intelligence_worker_registry
 
 campaign_id=$(scalar "SET ROLE tanaghom_api; SELECT campaign_id FROM tanaghom.create_campaign_draft('$actor','$name','Disposable zero-budget campaign for validating an existing campaign exact-ID canary without any provider action.','camp','{\"audience\":\"Fictional families evaluating a creativity camp\",\"geography\":\"Amman, Jordan\",\"languages\":[\"en\",\"ar\"]}',0,0,'USD',3); RESET ROLE;")
 scalar "SET ROLE tanaghom_api; SELECT campaign_id FROM tanaghom.revise_campaign_brief('$campaign_id','$actor','$name','Revised disposable zero-budget brief proving exact campaign preservation and governed job handoff.','camp','{\"audience\":\"Fictional families evaluating a creativity camp\",\"geography\":\"Amman, Jordan\",\"languages\":[\"en\",\"ar\"]}',0,0,'USD',3); RESET ROLE;" >/dev/null
 strategy_job_id=$(scalar "SET ROLE tanaghom_api; SELECT job_id FROM tanaghom.queue_campaign_strategy('$campaign_id','$actor'); RESET ROLE;")
 
-operator() { DATABASE_URL="$url" node "$package/scripts/existing-campaign-operator.mjs" "$1" "$campaign_id" "$strategy_job_id" "$name" 3 "${2:-}"; }
+operator() { DATABASE_URL="$url" TANAGHOM_EXPECTED_MIGRATION=0024_conversation_intelligence_worker_registry node "$package/scripts/existing-campaign-operator.mjs" "$1" "$campaign_id" "$strategy_job_id" "$name" 3 "${2:-}"; }
 operator check-database >/dev/null
 operator verify-authorized >/dev/null
 

@@ -3,6 +3,10 @@ import pg from "pg";
 
 const [action, campaignName, jobId] = process.argv.slice(2);
 const allowed = ["snapshot", "preflight", "reconcile", "verify-complete"];
+const expectedMigration = process.env.TANAGHOM_EXPECTED_MIGRATION || "0023_campaign_lifecycle";
+if (!["0023_campaign_lifecycle", "0024_conversation_intelligence_worker_registry"].includes(expectedMigration)) {
+  throw new Error("TANAGHOM_EXPECTED_MIGRATION is not an approved reconciliation baseline");
+}
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 if (!allowed.includes(action) || !campaignName?.endsWith(".test")) {
   throw new Error(`usage: reconcile-operator.mjs ${allowed.join("|")} NAME.test JOB_UUID`);
@@ -171,7 +175,7 @@ async function snapshot() {
 }
 
 function assertCommon(state) {
-  if (state.migration !== "0023_campaign_lifecycle") throw new Error("database is not at migration 0023_campaign_lifecycle");
+  if (state.migration !== expectedMigration) throw new Error(`database is not at migration ${expectedMigration}`);
   if (state.job.type !== "campaign.content.generate") throw new Error("target is not a content-generation job");
   if (state.agent.code !== "content_producer") throw new Error("target job does not belong to Content Producer");
   if (Number(state.campaign.budget_target) !== 0 || Number(state.campaign.revenue_target) !== 0) throw new Error("canary budget or revenue target is non-zero");
