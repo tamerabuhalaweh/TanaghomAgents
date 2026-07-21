@@ -964,6 +964,58 @@ test('Phase 6 Agent Registry production update is exact, inactive, reversible, a
   assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
 });
 
+test('Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, reversible, and Tanaghom-only', async () => {
+  const root = new URL('../deployment/phase6-campaign-lifecycle-production-update/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const dashboardRollback = await readFile(new URL('scripts/rollback-dashboard-only.sh', root), 'utf8');
+  const backup = await readFile(new URL('scripts/prepare-offserver-backup.ps1', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const packageValidation = await readFile(new URL('scripts/validate-package.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_START_MIGRATION=0022_agent_registry/);
+  assert.match(common, /TARGET_MIGRATION=0023_campaign_lifecycle/);
+  assert.match(common, /PENDING_MIGRATIONS='0023_campaign_lifecycle'/);
+  assert.match(common, /campaign_lifecycle_fingerprint/);
+  assert.match(common, /assert_campaign_lifecycle_unchanged/);
+  assert.match(common, /content_item_target<>2/);
+  assert.match(preflight, /assert_database_at_start/);
+  assert.match(preflight, /less than 20 GiB/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(deploy, /campaign-lifecycle\.before\.md5/);
+  assert.match(deploy, /assert_campaign_lifecycle_unchanged/);
+  assert.match(deploy, /compose up -d --no-deps dashboard/);
+  assert.doesNotMatch(deploy, /npm run db:(migrate|rollback)/);
+  assert.match(validate, /create_campaign_draft/);
+  assert.match(validate, /has_function_privilege\('tanaghom_n8n_worker'/);
+  assert.match(validate, /agent_jobs_one_open_core_job_per_campaign_idx/);
+  assert.match(validate, /api\/campaigns/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-RELEASE/);
+  assert.match(rollback, /assert_campaign_lifecycle_unchanged/);
+  assert.match(dashboardRollback, /ROLLBACK-THE-AUTHORIZED-TANAGHOM-DASHBOARD/);
+  assert.match(dashboardRollback, /DATABASE_MIGRATION_PRESERVED/);
+  assert.match(backup, /ExpectedMigration = '0022_agent_registry'/);
+  assert.match(lifecycle, /campaign lifecycle fingerprint did not detect a governed mutation/);
+  assert.match(lifecycle, /external_operations/);
+  assert.match(packageValidation, /sh -n/);
+  assert.match(runbook, /No deployment is authorized by this document/);
+  assert.match(runbook, /only the Tanaghom dashboard image\/container/i);
+  assert.match(runbook, /does not import, activate, execute, or edit an n8n workflow/i);
+  assert.match(runbook, /dashboard-only rollback/i);
+  assert.match(quality, /phase6-campaign-lifecycle-production-update-contract/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}\n${dashboardRollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)/i);
+  assert.doesNotMatch(protectedScope, /docker (stop|restart|rm).*(smartlabs|n8n)/i);
+  assert.doesNotMatch(protectedScope, /\/data\/|\/opt\/(smartlabs|n8n-smartlabs)/i);
+  assert.doesNotMatch(`${protectedScope}\n${backup}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});
+
 test('Phase 5F database bridge is database-only, PostgreSQL 17.6-pinned, and reversibly tested', async () => {
   const root = new URL('../deployment/phase5f-database-bridge/', import.meta.url);
   const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
