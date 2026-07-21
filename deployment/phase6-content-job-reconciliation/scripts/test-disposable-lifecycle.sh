@@ -16,7 +16,7 @@ scalar() { psql "$url" -X -v ON_ERROR_STOP=1 -At -c "$1"; }
 
 for file in "$root"/packages/database/migrations/*.up.sql; do psql_file "$file"; done
 psql_file "$root/packages/database/seeds/staging.sql"
-test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0022_agent_registry
+test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0023_campaign_lifecycle
 
 psql "$url" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 CREATE ROLE tanaghom_reconciliation_operator LOGIN NOSUPERUSER NOCREATEDB CREATEROLE INHERIT NOREPLICATION NOBYPASSRLS PASSWORD 'disposable-only';

@@ -18,7 +18,7 @@ Postiz, GHL, lead creation, scheduling, publishing, messaging, or budget spend.
 - The GPU server dashboard checkout remains at the explicitly reviewed
   production commit; this package does not update that checkout.
 - A separate clean checkout contains the merged canary source commit.
-- Migration `0022_agent_registry` is current.
+- Migration `0023_campaign_lifecycle` is current.
 - Both core workflows match the repository exports and are inactive.
 - No claimable strategy/content backlog and no running agent job exist.
 - Postiz stays Manual, CRM/conversation automation stays locked, and provider

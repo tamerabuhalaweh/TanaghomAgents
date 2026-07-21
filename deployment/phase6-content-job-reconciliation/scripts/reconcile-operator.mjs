@@ -171,7 +171,7 @@ async function snapshot() {
 }
 
 function assertCommon(state) {
-  if (state.migration !== "0022_agent_registry") throw new Error("database is not at migration 0022_agent_registry");
+  if (state.migration !== "0023_campaign_lifecycle") throw new Error("database is not at migration 0023_campaign_lifecycle");
   if (state.job.type !== "campaign.content.generate") throw new Error("target is not a content-generation job");
   if (state.agent.code !== "content_producer") throw new Error("target job does not belong to Content Producer");
   if (Number(state.campaign.budget_target) !== 0 || Number(state.campaign.revenue_target) !== 0) throw new Error("canary budget or revenue target is non-zero");
