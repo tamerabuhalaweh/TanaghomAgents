@@ -16,7 +16,10 @@ VALUES
   ('10000000-0000-4000-8000-000000000001', 'campaign_strategist', 'Campaign Strategist', 'Builds structured campaign strategy.'),
   ('10000000-0000-4000-8000-000000000002', 'content_producer', 'Content Producer', 'Creates content drafts for approval.'),
   ('10000000-0000-4000-8000-000000000003', 'publisher_monitor', 'Publisher & Performance Monitor', 'Publishes approved content and records performance.'),
-  ('10000000-0000-4000-8000-000000000004', 'sales_crm', 'Sales & CRM Agent', 'Runs bounded lead and sales workflows.');
+  ('10000000-0000-4000-8000-000000000004', 'sales_crm', 'Sales & CRM Agent', 'Runs bounded lead and sales workflows.')
+ON CONFLICT (code) DO UPDATE SET
+  name=EXCLUDED.name,
+  description=EXCLUDED.description;
 
 INSERT INTO tanaghom.campaigns (
   id, name, brief, product_type, target_audience, budget_target,

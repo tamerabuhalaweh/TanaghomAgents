@@ -6,7 +6,7 @@ const allowed = ["check-database", "verify-authorized", "verify-strategy", "veri
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const expectedItems = Number(expectedItemsRaw);
 const expectedMigration = process.env.TANAGHOM_EXPECTED_MIGRATION || "0023_campaign_lifecycle";
-if (!["0023_campaign_lifecycle", "0024_conversation_intelligence_worker_registry"].includes(expectedMigration)) throw new Error("TANAGHOM_EXPECTED_MIGRATION is not an approved canary baseline");
+if (!["0023_campaign_lifecycle", "0024_conversation_intelligence_worker_registry", "0025_runtime_agent_reconciliation"].includes(expectedMigration)) throw new Error("TANAGHOM_EXPECTED_MIGRATION is not an approved canary baseline");
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 if (!allowed.includes(action) || !uuid.test(campaignId) || !uuid.test(strategyJobId) || !campaignName?.endsWith(".test") || !Number.isInteger(expectedItems) || expectedItems < 1 || expectedItems > 12) {
   throw new Error(`usage: existing-campaign-operator.mjs ${allowed.join("|")} CAMPAIGN_UUID STRATEGY_JOB_UUID NAME.test EXPECTED_ITEMS [CONTENT_JOB_UUID]`);

@@ -57,6 +57,7 @@ const qualityRolloutAssertions = join(root, 'packages', 'database', 'tests', 'qu
 const qualityBaselineShadowAssertions = join(root, 'packages', 'database', 'tests', 'quality_baseline_shadow_pipeline.sql');
 const agentRegistryAssertions = join(root, 'packages', 'database', 'tests', 'agent_registry.sql');
 const campaignLifecycleAssertions = join(root, 'packages', 'database', 'tests', 'campaign_lifecycle.sql');
+const runtimeAgentAssertions = join(root, 'packages', 'database', 'tests', 'runtime_agent_reconciliation.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -81,6 +82,7 @@ psql('-f', qualityRolloutAssertions);
 psql('-f', qualityBaselineShadowAssertions);
 psql('-f', agentRegistryAssertions);
 psql('-f', campaignLifecycleAssertions);
+psql('-f', runtimeAgentAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -88,6 +90,8 @@ psql('-f', campaignLifecycleAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0025_runtime_agent_reconciliation') THEN RAISE EXCEPTION '0025 rollback left migration state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0024_conversation_intelligence_worker_registry') THEN RAISE EXCEPTION '0025 rollback crossed the 0024 boundary'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM tanaghom.agent_workflow_registry WHERE code='conversation_intelligence_worker') OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0024_conversation_intelligence_worker_registry') THEN RAISE EXCEPTION '0024 rollback left Conversation Intelligence registry state behind'; END IF; END $$;");
 database('rollback');

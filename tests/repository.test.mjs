@@ -450,7 +450,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0024_conversation_intelligence_worker_registry/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0025_runtime_agent_reconciliation/);
   assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
   assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
   assert.match(integration, /accept_ghl_inbound_event/);
@@ -1343,7 +1343,7 @@ test('Phase 6 Conversation Intelligence canary is synthetic, exclusive, grounded
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
-  assert.match(common, /EXPECTED_MIGRATION=0024_conversation_intelligence_worker_registry/);
+  assert.match(common, /EXPECTED_MIGRATION=0025_runtime_agent_reconciliation/);
   assert.match(common, /WORKFLOW_ID=phase5ConversationIntelligenceV1/);
   assert.match(common, /assert_conversation_baseline/);
   assert.match(common, /integration_connections WHERE provider='ghl' AND status='connected'/);
@@ -1383,6 +1383,53 @@ test('Phase 6 Conversation Intelligence canary is synthetic, exclusive, grounded
   assert.doesNotMatch(mutationScope, /systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)/i);
   assert.doesNotMatch(mutationScope, /https:\/\/[^\s"']*(gohighlevel|leadconnectorhq)|\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
   assert.doesNotMatch(`${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
+
+test('Phase 6 runtime-agent reconciliation guarantees Publisher and Sales workers without rewriting history', async () => {
+  const up = await readFile(new URL('../packages/database/migrations/0025_runtime_agent_reconciliation.up.sql', import.meta.url), 'utf8');
+  const down = await readFile(new URL('../packages/database/migrations/0025_runtime_agent_reconciliation.down.sql', import.meta.url), 'utf8');
+  const seed = await readFile(new URL('../packages/database/seeds/staging.sql', import.meta.url), 'utf8');
+  const databaseTest = await readFile(new URL('../scripts/database-test.mjs', import.meta.url), 'utf8');
+  const root = new URL('../deployment/phase6-runtime-agent-reconciliation/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const lifecycle = await readFile(new URL('scripts/test-disposable-lifecycle.sh', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(up, /10000000-0000-4000-8000-000000000003/);
+  assert.match(up, /10000000-0000-4000-8000-000000000004/);
+  assert.match(up, /publisher_monitor/);
+  assert.match(up, /sales_crm/);
+  assert.match(up, /fixed identity conflict/);
+  assert.match(up, /incompatible existing agent/);
+  assert.match(down, /NOT EXISTS[\s\S]+tanaghom\.agent_jobs/);
+  assert.match(seed, /ON CONFLICT \(code\) DO UPDATE SET/);
+  assert.match(databaseTest, /runtime_agent_reconciliation\.sql/);
+  assert.match(databaseTest, /0025 rollback left migration state behind/);
+  assert.match(common, /EXPECTED_START_MIGRATION=0024_conversation_intelligence_worker_registry/);
+  assert.match(common, /TARGET_MIGRATION=0025_runtime_agent_reconciliation/);
+  assert.match(common, /assert_prior_agents_unchanged/);
+  assert.match(common, /assert_new_agents_unused/);
+  assert.match(preflight, /assert_production_worktree_reviewed/);
+  assert.match(preflight, /assert_database_at_start_runtime_agents/);
+  assert.match(deploy, /trap automatic_rollback EXIT HUP INT TERM/);
+  assert.match(deploy, /db_file "\$MIGRATION_UP"/);
+  assert.match(validate, /n8n audit/);
+  assert.match(validate, /assert_prior_agents_unchanged/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-RUNTIME-AGENT-RELEASE/);
+  assert.match(lifecycle, /preserves prior rows and used history/);
+  assert.match(runbook, /does not update the dashboard checkout|No production action is authorized/i);
+  assert.match(quality, /phase6-runtime-agent-reconciliation-contract/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0025_runtime_agent_reconciliation/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)/i);
+  assert.doesNotMatch(protectedScope, /\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
+  assert.doesNotMatch(`${protectedScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
 });
 
 test('Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and evidence-preserving', async () => {

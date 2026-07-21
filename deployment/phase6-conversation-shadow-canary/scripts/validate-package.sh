@@ -10,7 +10,7 @@ sh -n "$package"/scripts/*.sh
 node --check "$package/scripts/canary-operator.mjs"
 node --check "$package/scripts/workflow-contract.mjs"
 
-grep -q 'EXPECTED_MIGRATION=0024_conversation_intelligence_worker_registry' "$package/scripts/common.sh"
+grep -q 'EXPECTED_MIGRATION=0025_runtime_agent_reconciliation' "$package/scripts/common.sh"
 grep -q 'WORKFLOW_ID=phase5ConversationIntelligenceV1' "$package/scripts/common.sh"
 grep -q 'REVIEWED_DIRTY_DIFF_SHA256=94733679d940cc704f568fac6b488c4001638a39336ec843dd99306a64044c5d' "$root/deployment/phase5c-conversation-worker-production-update/scripts/common.sh"
 grep -q "conversation_processing_mode<>'paused'" "$package/scripts/common.sh"
