@@ -229,6 +229,30 @@ test("remaining operational screens use the live snapshot without business fixtu
   assert.doesNotMatch(`${agentsPage}\n${agentsWorkspace}`, /@\/data\/fixtures.*agents|Not assigned|Jobs today/);
 });
 
+test("campaign lifecycle exposes real tenant-bound actions and no provider handoff", async () => {
+  const campaigns = await readFile(new URL("components/campaigns-view.tsx", dashboard), "utf8");
+  const detail = await readFile(new URL("components/campaign-detail-view.tsx", dashboard), "utf8");
+  const form = await readFile(new URL("components/campaign-form.tsx", dashboard), "utf8");
+  const service = await readFile(new URL("lib/server/campaign-management.ts", dashboard), "utf8");
+  const createRoute = await readFile(new URL("app/api/campaigns/route.ts", dashboard), "utf8");
+  const strategyRoute = await readFile(new URL("app/api/campaigns/[id]/strategy/route.ts", dashboard), "utf8");
+  const contentRoute = await readFile(new URL("app/api/campaigns/[id]/content/route.ts", dashboard), "utf8");
+  const readyRoute = await readFile(new URL("app/api/campaigns/[id]/ready/route.ts", dashboard), "utf8");
+
+  assert.match(campaigns, /Create campaign/);
+  assert.match(campaigns, /href={`\/campaigns\/\${campaign\.id}`}/);
+  assert.doesNotMatch(campaigns, /available in Phase 3|details not available|disabled/);
+  for (const state of ["Core agent work is", "Agent work needs a controlled retry", "Campaign is paused", "Start campaign strategy", "Strategy is ready", "need a human decision", "Human review is complete", "Ready for controlled handoff"]) {
+    assert.match(detail, new RegExp(state));
+  }
+  assert.match(form, /Creates a Tanaghom draft only/);
+  assert.match(service, /authorize\(request, \["owner", "operator"\]\)/);
+  assert.match(service, /campaign\.organization_id=\$1/);
+  assert.match(service, /api_idempotency_keys/);
+  assert.match(service, /enforceSameOriginForCookieMutation/);
+  assert.doesNotMatch(`${service}\n${createRoute}\n${strategyRoute}\n${contentRoute}\n${readyRoute}`, /postiz|leadconnectorhq|conversations\/messages|fetch\(|axios/i);
+});
+
 test("system monitoring uses a tenant-bound read-only snapshot and honest runtime evidence", async () => {
   const service = await readFile(new URL("lib/server/system-monitoring.ts", dashboard), "utf8");
   const route = await readFile(new URL("app/api/system/monitoring/route.ts", dashboard), "utf8");

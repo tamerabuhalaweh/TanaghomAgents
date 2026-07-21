@@ -12,6 +12,9 @@ export interface OperationsCampaign {
   budget_target: string | null;
   revenue_target: string | null;
   currency: string;
+  content_item_target: number;
+  core_job_type: string | null;
+  core_job_status: string | null;
   content_total: number;
   content_pending: number;
   leads_total: number;
@@ -172,6 +175,12 @@ export interface AttributionQuarantineRecord {
 }
 
 export interface OperationsSnapshot {
+  current_user: {
+    id: string;
+    organizationId: string;
+    displayName: string;
+    role: "owner" | "reviewer" | "operator" | "viewer";
+  };
   summary: {
     campaigns_total: number;
     campaigns_active: number;

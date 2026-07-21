@@ -247,6 +247,72 @@ try {
   session = await fetch(`${dashboardOrigin}/api/auth/session`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(session.status, 200);
 
+  const campaignDraftPayload = {
+    name: "Dashboard API lifecycle campaign.test",
+    brief: "Promote a verified family creativity workshop without invented claims or external actions.",
+    product_type: "course",
+    audience: "Parents aged 28 to 50 with school-age children",
+    geography: "Amman, Jordan",
+    languages: ["en", "ar"],
+    budget_target: "0",
+    revenue_target: "0",
+    currency: "JOD",
+    content_item_target: "2",
+  };
+  const campaignCreateHeaders = {
+    Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json",
+    "Idempotency-Key": "integration-campaign-create-1",
+  };
+  const campaignCreate = await fetch(`${dashboardOrigin}/api/campaigns`, {
+    method: "POST", headers: campaignCreateHeaders, body: JSON.stringify(campaignDraftPayload),
+  });
+  assert.equal(campaignCreate.status, 201);
+  const campaignCreateBody = await campaignCreate.json();
+  const lifecycleCampaignId = campaignCreateBody.campaign.campaign_id;
+  assert.match(lifecycleCampaignId, /^[0-9a-f-]{36}$/);
+  const campaignCreateReplay = await fetch(`${dashboardOrigin}/api/campaigns`, {
+    method: "POST", headers: campaignCreateHeaders, body: JSON.stringify(campaignDraftPayload),
+  });
+  assert.equal(campaignCreateReplay.status, 201);
+  assert.equal(campaignCreateReplay.headers.get("idempotency-replayed"), "true");
+  assert.equal((await campaignCreateReplay.json()).campaign.campaign_id, lifecycleCampaignId);
+
+  const campaignDetail = await fetch(`${dashboardOrigin}/api/campaigns/${lifecycleCampaignId}`, {
+    headers: { Cookie: jar.join("; ") },
+  });
+  assert.equal(campaignDetail.status, 200);
+  const campaignDetailBody = await campaignDetail.json();
+  assert.equal(campaignDetailBody.campaign.status, "draft");
+  assert.equal(campaignDetailBody.permissions.can_operate, true);
+  assert.deepEqual(campaignDetailBody.strategies, []);
+  assert.deepEqual(campaignDetailBody.content, []);
+
+  const strategyHeaders = {
+    Cookie: jar.join("; "), Origin: dashboardOrigin,
+    "Idempotency-Key": "integration-campaign-strategy-1",
+  };
+  const strategyStart = await fetch(`${dashboardOrigin}/api/campaigns/${lifecycleCampaignId}/strategy`, {
+    method: "POST", headers: strategyHeaders,
+  });
+  assert.equal(strategyStart.status, 200);
+  const strategyStartBody = await strategyStart.json();
+  assert.equal(strategyStartBody.result.job_status, "queued");
+  const strategyReplay = await fetch(`${dashboardOrigin}/api/campaigns/${lifecycleCampaignId}/strategy`, {
+    method: "POST", headers: strategyHeaders,
+  });
+  assert.equal(strategyReplay.status, 200);
+  assert.equal(strategyReplay.headers.get("idempotency-replayed"), "true");
+  assert.equal((await strategyReplay.json()).result.job_id, strategyStartBody.result.job_id);
+  const campaignProviderBoundary = await pool.query(
+    `SELECT
+       (SELECT count(*)::int FROM tanaghom.posts WHERE content_item_id IN
+         (SELECT id FROM tanaghom.content_items WHERE campaign_id=$1)) posts,
+       (SELECT count(*)::int FROM tanaghom.external_operations
+         WHERE correlation_id IN (SELECT correlation_id FROM tanaghom.agent_jobs WHERE campaign_id=$1)) operations`,
+    [lifecycleCampaignId],
+  );
+  assert.deepEqual(campaignProviderBoundary.rows[0], { posts: 0, operations: 0 });
+
   const supervisorInbox = await fetch(`${dashboardOrigin}/api/conversations`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(supervisorInbox.status, 200);
   const supervisorInboxBody = await supervisorInbox.json();
@@ -410,10 +476,12 @@ try {
        (SELECT count(*)::int FROM tanaghom.content_approvals WHERE content_item_id = $1) approvals,
        (SELECT count(*)::int FROM tanaghom.outbox_events WHERE aggregate_id = $1) outbox,
        (SELECT count(*)::int FROM tanaghom.agent_actions_log WHERE entity_id = $1) audit,
-       (SELECT count(*)::int FROM tanaghom.api_idempotency_keys WHERE actor_user_id = $2 AND idempotency_key LIKE 'integration-%') idempotency`,
+       (SELECT count(*)::int FROM tanaghom.api_idempotency_keys
+         WHERE actor_user_id = $2
+           AND idempotency_key IN ('integration-replay-1','integration-stale-1')) idempotency`,
     [contentId, ownerId],
   );
-  assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 2, audit: 2, idempotency: 2 });
+  assert.deepEqual(committed.rows[0], { approvals: 1, outbox: 2, audit: 2, idempotency: 1 });
 
   const library = await fetch(`${dashboardOrigin}/api/content`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(library.status, 200);
@@ -630,7 +698,7 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: sessions, approvals, encrypted integrations, Postiz performance, contact-only GHL sync, gateway isolation, Content Library, and invitations verified.");
+  console.log("PASS: sessions, controlled campaign lifecycle, approvals, encrypted integrations, Postiz performance, contact-only GHL sync, gateway isolation, Content Library, and invitations verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();

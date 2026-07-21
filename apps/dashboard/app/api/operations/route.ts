@@ -38,15 +38,24 @@ export async function GET(request: NextRequest) {
       const campaigns = await client.query(
         `SELECT campaign.id, campaign.name, campaign.product_type, campaign.status,
                 campaign.blocked_reason, campaign.budget_target, campaign.revenue_target,
-                campaign.currency, campaign.created_at, campaign.updated_at,
+                campaign.currency, campaign.content_item_target, campaign.created_at, campaign.updated_at,
+                core_job.job_type AS core_job_type, core_job.status AS core_job_status,
                 count(DISTINCT content.id)::int AS content_total,
                 count(DISTINCT content.id) FILTER (WHERE content.status = 'pending_approval')::int AS content_pending,
                 count(DISTINCT lead.id)::int AS leads_total
            FROM tanaghom.campaigns AS campaign
            LEFT JOIN tanaghom.content_items AS content ON content.campaign_id = campaign.id
            LEFT JOIN tanaghom.leads AS lead ON lead.campaign_id = campaign.id
+           LEFT JOIN LATERAL (
+             SELECT job.job_type,job.status
+               FROM tanaghom.agent_jobs job
+              WHERE job.campaign_id=campaign.id
+                AND job.job_type IN ('campaign.strategy.generate','campaign.content.generate')
+                AND job.status IN ('queued','running','waiting_approval')
+              ORDER BY job.created_at DESC LIMIT 1
+           ) core_job ON true
           WHERE campaign.organization_id = $1
-          GROUP BY campaign.id
+          GROUP BY campaign.id,core_job.job_type,core_job.status
           ORDER BY campaign.updated_at DESC
           LIMIT 100`,
         [user.organizationId],
@@ -333,6 +342,7 @@ export async function GET(request: NextRequest) {
       await client.query("COMMIT");
 
       return noStore({
+        current_user: user,
         summary: summary.rows[0],
         campaigns: campaigns.rows,
         agents: agentRegistry.roles.map((role) => ({
