@@ -9,6 +9,7 @@ require_release_environment
 evidence_dir="/var/backups/tanaghom-$TANAGHOM_RELEASE_ID"
 test -d "$evidence_dir" || die 'release evidence directory is missing'
 test -s "$evidence_dir/n8n-container-ids.before" || die 'protected-container baseline is missing'
+test -s "$evidence_dir/preserved-squid.before.sha256" || die 'preserved Squid checksum baseline is missing'
 
 test "$(latest_migration)" = "$TARGET_MIGRATION" || die 'target migration is not applied'
 test "$(db_scalar "SELECT count(*) FROM tanaghom.automation_platform_controls WHERE provider IN ('postiz','ghl') AND emergency_stop IS TRUE;")" = 2 || die 'provider emergency stops are not active'
@@ -54,6 +55,8 @@ done
 assert_protected_units_active
 assert_protected_containers_healthy
 assert_protected_container_ids_unchanged "$evidence_dir/n8n-container-ids.before"
+assert_production_checkout_at "$TANAGHOM_TARGET_COMMIT"
+assert_preserved_file_unchanged "$evidence_dir/preserved-squid.before.sha256"
 current_firewall=$(mktemp)
 capture_firewall_boundary "$current_firewall"
 cmp -s "$evidence_dir/firewall.before" "$current_firewall" || die 'package-owned firewall state changed'

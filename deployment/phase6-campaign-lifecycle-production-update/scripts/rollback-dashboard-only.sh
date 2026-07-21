@@ -20,6 +20,8 @@ rollback_image=$(evidence_value "$release_file" ROLLBACK_IMAGE)
 test "$expected_current" = "$TANAGHOM_EXPECTED_CURRENT_COMMIT" || die 'dashboard rollback current-commit authorization mismatch'
 test "$target_commit" = "$TANAGHOM_TARGET_COMMIT" || die 'dashboard rollback target authorization mismatch'
 test "$(git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" rev-parse HEAD)" = "$target_commit" || die 'production source is not the recorded target'
+assert_production_checkout_at "$target_commit"
+assert_preserved_file_unchanged "$evidence_dir/preserved-squid.before.sha256"
 test "$(latest_migration)" = "$TARGET_MIGRATION" || die 'campaign lifecycle migration is not current'
 docker image inspect "$rollback_image" >/dev/null
 
@@ -30,6 +32,8 @@ test "$(db_scalar "SELECT count(*) FROM tanaghom.automation_platform_controls WH
 test "$(db_scalar "SELECT count(*) FROM tanaghom.external_operations;")" = 0 || die 'external operations exist; dashboard rollback requires separate review'
 
 git -C "$PRODUCTION_ROOT" -c safe.directory="$PRODUCTION_ROOT" checkout --detach "$expected_current"
+assert_production_checkout_at "$expected_current"
+assert_preserved_file_unchanged "$evidence_dir/preserved-squid.before.sha256"
 docker image tag "$rollback_image" tanaghom-dashboard-canary:canary
 compose up -d --no-deps --force-recreate --no-build dashboard
 attempt=0
@@ -43,6 +47,7 @@ test "$(latest_migration)" = "$TARGET_MIGRATION" || die 'dashboard rollback chan
 assert_protected_units_active
 assert_protected_containers_healthy
 assert_protected_container_ids_unchanged "$evidence_dir/n8n-container-ids.before"
+assert_preserved_file_unchanged "$evidence_dir/preserved-squid.before.sha256"
 assert_firewall_boundary
 assert_public_boundary
 test "$(container_health tanaghom-dashboard-canary-dashboard-1)" = healthy || die 'restored dashboard is unhealthy'
