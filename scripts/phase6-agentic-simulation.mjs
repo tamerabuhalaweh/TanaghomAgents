@@ -69,7 +69,7 @@ const steps = [
   {
     key: "conversation_intelligence_worker",
     script: "scripts/conversation-intelligence-workflow-integration.mjs",
-    marker: "PASS: inactive Conversation Intelligence processed grounded English and Arabic escalation scenarios and failed malformed, contract-invalid, throttled, and unavailable model calls safely with zero external actions.",
+    marker: "PASS: inactive Conversation Intelligence used a dedicated inherited runtime login, processed grounded English and Arabic escalation scenarios, and failed malformed, contract-invalid, throttled, and overloaded model calls safely with zero external actions.",
   },
 ];
 
