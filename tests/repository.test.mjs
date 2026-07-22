@@ -387,6 +387,8 @@ test('Phase 5C Conversation Intelligence worker is inactive, least privileged, a
   assert.equal(serialized.includes('\\r'), false);
   assert.match(integration, /grounded English and Arabic escalation scenarios/);
   assert.match(integration, /Gemma grammar request retained unsupported uniqueItems/);
+  assert.match(integration, /must contain exactly these top-level keys/);
+  assert.match(integration, /Do not return wrapper objects named/);
   assert.match(integration, /gemma_invalid_json/);
   assert.match(integration, /gemma_contract_mismatch/);
   assert.match(integration, /gemma_rate_limited/);
@@ -1418,7 +1420,7 @@ test('Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, a
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
-  assert.match(common, /EXPECTED_OLD_OPERATIONAL_SHA=411ab209a2d1b5ea57fefa757b45f54067f7784c58a468b34be7fcdd9e259988/);
+  assert.match(common, /EXPECTED_OLD_OPERATIONAL_SHA=873fcd53572309efe2f0a9a2304955ba6fa86df81ea994d74a26f1bc67d0f88c/);
   assert.match(common, /activeState=false/);
   assert.match(common, /TANAGHOM_RELEASE_ID=\$TANAGHOM_CONVERSATION_HOTFIX_ID/);
   assert.match(common, /0025_runtime_agent_reconciliation/);
@@ -1431,6 +1433,7 @@ test('Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, a
   assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-CONVERSATION-SCHEMA-HOTFIX/);
   assert.match(contract, /target workflow still sends unsupported uniqueItems/);
   assert.match(contract, /strict approved-knowledge compatibility adapter/);
+  assert.match(contract, /explicit canonical prompt enforcement/);
   assert.match(contract, /target workflow lost local uniqueness validation/);
   assert.match(runbook, /imports only the corrected workflow with[\s\S]*activeState=false/i);
   assert.match(quality, /phase6-conversation-schema-hotfix-contract/);

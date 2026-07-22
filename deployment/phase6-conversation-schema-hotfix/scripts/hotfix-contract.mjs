@@ -65,8 +65,14 @@ function validateGrammarHotfix(current, target) {
   const targetNormalize = target.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
   if (currentBuild.includes('"uniqueItems":')) throw new Error("current workflow regressed to the unsupported Gemma grammar");
   if (targetBuild.includes('"uniqueItems":')) throw new Error("target workflow still sends unsupported uniqueItems to Gemma");
-  if (!currentNormalize.includes("canonicalizeLegacyOutput")) throw new Error("current workflow lacks the reviewed first compatibility adapter");
-  if (currentNormalize.includes("const legacyVariantB")) throw new Error("current workflow already contains the target second response variant");
+  if (!currentNormalize.includes("canonicalizeLegacyOutput") || !currentNormalize.includes("const legacyVariantA") || !currentNormalize.includes("const legacyVariantB")) {
+    throw new Error("current workflow lacks the reviewed two-variant compatibility adapter");
+  }
+  if (currentBuild.includes("The response object must contain exactly these top-level keys")) throw new Error("current workflow already contains the target canonical prompt enforcement");
+  if (!targetBuild.includes("The response object must contain exactly these top-level keys")
+      || !targetBuild.includes("Do not return wrapper objects named")) {
+    throw new Error("target workflow lacks explicit canonical prompt enforcement");
+  }
   if (!targetNormalize.includes("canonicalizeLegacyOutput")
       || !targetNormalize.includes("const legacyVariantA")
       || !targetNormalize.includes("const legacyVariantB")
@@ -107,12 +113,13 @@ async function prepare(exportPath, targetPath, outputDir, expectedOldHash) {
   await mkdir(resolve(outputDir), { recursive: true, mode: 0o700 });
   await writeFile(resolve(outputDir, `${ID}.original.json`), `${JSON.stringify([current], null, 2)}\n`, { mode: 0o600 });
   await writeFile(resolve(outputDir, "workflow-hotfix-manifest.json"), `${JSON.stringify({
-    contract: "tanaghom.conversation-schema-hotfix.v3",
+    contract: "tanaghom.conversation-schema-hotfix.v4",
     workflow_id: ID,
     old_operational_sha256: oldHash,
     target_operational_sha256: targetHash,
     unsupported_keyword_removed: "uniqueItems",
     legacy_output_adapter: "two-exact-variants-strict-approved-knowledge-canonicalization",
+    canonical_prompt_enforcement: true,
     local_uniqueness_validation_retained: true,
   }, null, 2)}\n`, { mode: 0o600 });
   console.log(`PASS: production workflow is the exact ${oldHash} baseline and target ${targetHash} adds strict canonicalization without restoring unsupported grammar.`);
@@ -148,6 +155,10 @@ async function validateTarget(targetPath, expectedOldHash) {
   const build = target.nodes.find((node) => node.name === "Build Conversation Request")?.parameters?.jsCode ?? "";
   const normalize = target.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
   if (build.includes('"uniqueItems":')) throw new Error("target still contains unsupported uniqueItems");
+  if (!build.includes("The response object must contain exactly these top-level keys")
+      || !build.includes("Do not return wrapper objects named")) {
+    throw new Error("target lacks explicit canonical prompt enforcement");
+  }
   if (!normalize.includes("canonicalizeLegacyOutput")
       || !normalize.includes("const legacyVariantA")
       || !normalize.includes("const legacyVariantB")
