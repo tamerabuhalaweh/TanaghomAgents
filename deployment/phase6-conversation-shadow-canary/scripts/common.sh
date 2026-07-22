@@ -11,7 +11,7 @@ unset TANAGHOM_WORKER_COMMON_DIR
 
 SCRIPT_DIR=$CANARY_SCRIPT_DIR
 PRODUCTION_ROOT=${TANAGHOM_PRODUCTION_ROOT:-/opt/tanaghom-dashboard}
-EXPECTED_MIGRATION=0024_conversation_intelligence_worker_registry
+EXPECTED_MIGRATION=0025_runtime_agent_reconciliation
 WORKFLOW_ID=phase5ConversationIntelligenceV1
 WORKFLOW_REGISTRY_CODE=conversation_intelligence_worker
 WORKFLOW_SOURCE="$RELEASE_SOURCE_ROOT/n8n/workflows/phase5/conversation-intelligence.v1.json"

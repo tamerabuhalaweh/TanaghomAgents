@@ -10,7 +10,7 @@ psql_file() { psql "$url" -X -v ON_ERROR_STOP=1 -f "$1" >/dev/null; }
 scalar() { psql "$url" -X -q -v ON_ERROR_STOP=1 -At -c "$1" | tr -d '\r'; }
 for file in "$root"/packages/database/migrations/*.up.sql; do psql_file "$file"; done
 psql_file "$root/packages/database/seeds/staging.sql"
-test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0024_conversation_intelligence_worker_registry
+test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0025_runtime_agent_reconciliation
 test "$(scalar "WITH updated AS (UPDATE tanaghom.agent_workflow_registry SET runtime_state='imported_inactive',trigger_state='disabled',runtime_evidence='disposable-canary-baseline' WHERE code='conversation_intelligence_worker' RETURNING 1) SELECT count(*) FROM updated;")" = 1
 
 operator() { DATABASE_URL="$url" node "$package/scripts/canary-operator.mjs" "$@"; }

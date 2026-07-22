@@ -60,7 +60,7 @@ async function checkDatabase() {
   await client.query("BEGIN READ ONLY");
   try {
     const migration = await client.query("SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1");
-    if (migration.rows[0]?.version !== "0024_conversation_intelligence_worker_registry") throw new Error("unexpected database migration");
+    if (migration.rows[0]?.version !== "0025_runtime_agent_reconciliation") throw new Error("unexpected database migration");
     const collision = await client.query(`SELECT
       (SELECT count(*) FROM tanaghom.organizations WHERE slug=$1)::int organizations,
       (SELECT count(*) FROM tanaghom.app_users WHERE email=$2)::int users,

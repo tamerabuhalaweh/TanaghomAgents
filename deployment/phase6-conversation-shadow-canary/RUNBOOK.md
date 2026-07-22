@@ -17,7 +17,7 @@ actions.
 ## Preconditions
 
 - Issue #108 and the package PR are approved and merged.
-- Production is at migration `0024_conversation_intelligence_worker_registry`.
+- Production is at migration `0025_runtime_agent_reconciliation`.
 - The Conversation Intelligence workflow matches the reviewed repository
   export, is inactive, has its polling schedule disabled, and has zero prior
   executions.

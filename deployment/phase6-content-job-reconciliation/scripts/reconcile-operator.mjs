@@ -4,7 +4,7 @@ import pg from "pg";
 const [action, campaignName, jobId] = process.argv.slice(2);
 const allowed = ["snapshot", "preflight", "reconcile", "verify-complete"];
 const expectedMigration = process.env.TANAGHOM_EXPECTED_MIGRATION || "0023_campaign_lifecycle";
-if (!["0023_campaign_lifecycle", "0024_conversation_intelligence_worker_registry"].includes(expectedMigration)) {
+if (!["0023_campaign_lifecycle", "0024_conversation_intelligence_worker_registry", "0025_runtime_agent_reconciliation"].includes(expectedMigration)) {
   throw new Error("TANAGHOM_EXPECTED_MIGRATION is not an approved reconciliation baseline");
 }
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
