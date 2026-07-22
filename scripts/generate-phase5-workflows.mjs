@@ -76,13 +76,17 @@ const exactKeys = (value, keys) => value && typeof value === 'object' && !Array.
 const oneOf = (value, values) => values.includes(value);
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const canonicalizeLegacyOutput = (value) => {
-  if (!exactKeys(value, ['classification','proposal','summary_update','external_action_count','contract_version','prompt_version'])) return value;
+  const legacyVariantA = exactKeys(value, ['classification','proposal','summary_update','external_action_count','contract_version','prompt_version']);
+  const legacyVariantB = exactKeys(value, ['classification','proposal','summary','external_action_count','contract_version','prompt_version']);
+  if (!legacyVariantA && !legacyVariantB) return value;
   const classification = value.classification;
   const proposal = value.proposal;
-  const summary = value.summary_update;
+  const summary = legacyVariantA ? value.summary_update : value.summary;
   if (!exactKeys(classification, ['intent','confidence','risk_category','requires_escalation'])
-      || !exactKeys(proposal, ['language','message','citations','no_approved_answer'])
-      || !exactKeys(summary, ['new_summary','event_ids','sales_stage','customer_needs','unresolved_questions','language'])) return value;
+      || !(legacyVariantA
+        ? exactKeys(proposal, ['language','message','citations','no_approved_answer']) && exactKeys(summary, ['new_summary','event_ids','sales_stage','customer_needs','unresolved_questions','language'])
+        : exactKeys(proposal, ['language','content','citations','no_approved_answer']) && exactKeys(summary, ['event_ids','decisions','customer_needs','unresolved_questions','language','sales_stage']))) return value;
+  const proposalMessage = legacyVariantA ? proposal.message : proposal.content;
   const intentMap = { pricing_inquiry: 'pricing', product_inquiry: 'product_question', availability_inquiry: 'availability' };
   const intent = intentMap[classification.intent] ?? classification.intent;
   const stageMap = { inquiry: 'discovery', discovery: 'discovery', qualification: 'qualification', consideration: 'consideration', decision: 'decision', customer_support: 'customer_support', unknown: 'unknown' };
@@ -96,32 +100,40 @@ const canonicalizeLegacyOutput = (value) => {
       || typeof classification.requires_escalation !== 'boolean'
       || !languageValues.includes(proposal.language) || summary.language !== proposal.language
       || typeof proposal.no_approved_answer !== 'boolean'
-      || !(proposal.message === null || (typeof proposal.message === 'string' && proposal.message.length <= 5000))
+      || !(proposalMessage === null || (typeof proposalMessage === 'string' && proposalMessage.length <= 5000))
       || !Array.isArray(proposal.citations) || proposal.citations.length > 12
-      || typeof summary.new_summary !== 'string' || summary.new_summary.length < 1 || summary.new_summary.length > 4000
+      || (legacyVariantA && (typeof summary.new_summary !== 'string' || summary.new_summary.length < 1 || summary.new_summary.length > 4000))
+      || (legacyVariantB && (!Array.isArray(summary.decisions) || summary.decisions.length > 20 || !summary.decisions.every(item => typeof item === 'string' && item.length <= 1000)))
       || !Array.isArray(summary.event_ids) || summary.event_ids.length < 1 || summary.event_ids.length > 12 || summary.event_ids.some(eventId => !uuid.test(eventId))
       || new Set(summary.event_ids).size !== summary.event_ids.length
       || summary.event_ids.some(eventId => !allowedEventIds.has(eventId))
-      || !Array.isArray(summary.customer_needs) || !summary.customer_needs.every(item => typeof item === 'string')
-      || !Array.isArray(summary.unresolved_questions) || !summary.unresolved_questions.every(item => typeof item === 'string')
+      || !Array.isArray(summary.customer_needs) || summary.customer_needs.length > 20 || !summary.customer_needs.every(item => typeof item === 'string' && item.length <= 1000)
+      || !Array.isArray(summary.unresolved_questions) || summary.unresolved_questions.length > 20 || !summary.unresolved_questions.every(item => typeof item === 'string' && item.length <= 1000)
       || value.external_action_count !== 0
       || value.contract_version !== 'phase5.conversation-intelligence-output.v1'
       || value.prompt_version !== 'phase5.conversation-intelligence.prompt.v1') return value;
   const approvedKnowledge = Array.isArray(prepared.request_body.retrieved_knowledge) ? prepared.request_body.retrieved_knowledge : [];
   const citations = [];
   for (const citation of proposal.citations) {
-    if (!exactKeys(citation, ['source_id','source_version_id','fact_description']) || typeof citation.fact_description !== 'string') return value;
+    const citationText = legacyVariantA ? citation?.fact_description : citation?.text;
+    const citationKeys = legacyVariantA ? ['source_id','source_version_id','fact_description'] : ['source_id','source_version_id','text'];
+    if (!exactKeys(citation, citationKeys) || typeof citationText !== 'string' || citationText.length > 4000) return value;
     const approved = approvedKnowledge.find(source => source.source_id === citation.source_id && source.source_version_id === citation.source_version_id);
     if (!approved || !/^md5:[0-9a-f]{32}$/.test(approved.content_fingerprint)) return value;
     citations.push({ source_id: approved.source_id, source_version_id: approved.source_version_id, content_fingerprint: approved.content_fingerprint });
   }
   const noApprovedAnswer = proposal.no_approved_answer === true;
-  if ((!noApprovedAnswer && (typeof proposal.message !== 'string' || proposal.message.length < 1 || citations.length < 1)) || (noApprovedAnswer && citations.length !== 0)) return value;
+  if ((!noApprovedAnswer && (typeof proposalMessage !== 'string' || proposalMessage.length < 1 || citations.length < 1)) || (noApprovedAnswer && citations.length !== 0)) return value;
   const policy = prepared.request_body.system_policy ?? {};
   const escalationRequired = noApprovedAnswer || classification.requires_escalation
     || classification.confidence < Number(policy.confidence_threshold ?? 1)
     || (policy.mandatory_escalations ?? []).includes(intent)
     || (policy.mandatory_escalations ?? []).includes(classification.risk_category);
+  const summaryText = legacyVariantA ? summary.new_summary : ([
+    summary.customer_needs.length ? 'Customer needs: ' + summary.customer_needs.join('; ') + '.' : '',
+    summary.decisions.length ? 'Decisions: ' + summary.decisions.join('; ') + '.' : '',
+    summary.unresolved_questions.length ? 'Unresolved questions: ' + summary.unresolved_questions.join('; ') + '.' : '',
+  ].filter(Boolean).join(' ') || (summary.language === 'ar' ? 'تم تسجيل تفاعل العميل للمراجعة البشرية.' : 'Customer interaction recorded for human review.')).slice(0, 4000);
   return {
     contract_version: value.contract_version,
     prompt_version: value.prompt_version,
@@ -135,10 +147,10 @@ const canonicalizeLegacyOutput = (value) => {
     next_best_action: escalationRequired ? 'escalate_to_human' : 'respond',
     confidence: classification.confidence,
     answer_status: noApprovedAnswer ? 'no_approved_answer' : (escalationRequired ? 'escalate' : 'proposal'),
-    proposed_reply: noApprovedAnswer ? null : proposal.message,
+    proposed_reply: noApprovedAnswer ? null : proposalMessage,
     citations: noApprovedAnswer ? [] : citations,
     escalation: { required: escalationRequired, category: escalationRequired ? (classification.risk_category === 'none' ? intent : classification.risk_category) : null, reason: escalationRequired ? 'Compatibility-normalized response requires human review.' : null },
-    conversation_summary: { language: summary.language, summary: summary.new_summary, input_event_ids: summary.event_ids },
+    conversation_summary: { language: summary.language, summary: summaryText, input_event_ids: summary.event_ids },
     external_action_count: 0,
   };
 };

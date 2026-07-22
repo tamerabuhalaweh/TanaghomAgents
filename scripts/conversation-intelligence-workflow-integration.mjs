@@ -123,13 +123,13 @@ const modelServer = createServer(async (request, response) => {
     output = {
       classification: { intent: "pricing_inquiry", confidence: 0.96, risk_category: "none", requires_escalation: false },
       proposal: {
-        language: "en", message: "The approved Growth plan is USD 99 per month.",
-        citations: [{ source_id: source.source_id, source_version_id: source.source_version_id, fact_description: "Approved Growth plan price" }],
+        language: "en", content: "The approved Growth plan is USD 99 per month.",
+        citations: [{ source_id: source.source_id, source_version_id: source.source_version_id, text: "Approved Growth plan price" }],
         no_approved_answer: false,
       },
-      summary_update: {
-        new_summary: "Lead asked for the approved Growth plan price.", event_ids: [eventId],
-        sales_stage: "inquiry", customer_needs: ["pricing_information"], unresolved_questions: [], language: "en",
+      summary: {
+        event_ids: [eventId], decisions: [], customer_needs: ["pricing_information"],
+        unresolved_questions: [], language: "en", sales_stage: "inquiry",
       },
       external_action_count: 0,
       contract_version: "phase5.conversation-intelligence-output.v1",

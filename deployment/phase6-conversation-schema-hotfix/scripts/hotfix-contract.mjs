@@ -65,8 +65,13 @@ function validateGrammarHotfix(current, target) {
   const targetNormalize = target.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
   if (currentBuild.includes('"uniqueItems":')) throw new Error("current workflow regressed to the unsupported Gemma grammar");
   if (targetBuild.includes('"uniqueItems":')) throw new Error("target workflow still sends unsupported uniqueItems to Gemma");
-  if (currentNormalize.includes("canonicalizeLegacyOutput")) throw new Error("current workflow already contains the target compatibility adapter");
+  if (!currentNormalize.includes("canonicalizeLegacyOutput")) throw new Error("current workflow lacks the reviewed first compatibility adapter");
+  if (currentNormalize.includes("const legacyVariantB")) throw new Error("current workflow already contains the target second response variant");
   if (!targetNormalize.includes("canonicalizeLegacyOutput")
+      || !targetNormalize.includes("const legacyVariantA")
+      || !targetNormalize.includes("const legacyVariantB")
+      || !targetNormalize.includes("proposal.content")
+      || !targetNormalize.includes("citation?.text")
       || !targetNormalize.includes("source.source_id === citation.source_id && source.source_version_id === citation.source_version_id")
       || !targetNormalize.includes("content_fingerprint: approved.content_fingerprint")
       || !targetNormalize.includes("allowedEventIds.has(eventId)")) {
@@ -102,12 +107,12 @@ async function prepare(exportPath, targetPath, outputDir, expectedOldHash) {
   await mkdir(resolve(outputDir), { recursive: true, mode: 0o700 });
   await writeFile(resolve(outputDir, `${ID}.original.json`), `${JSON.stringify([current], null, 2)}\n`, { mode: 0o600 });
   await writeFile(resolve(outputDir, "workflow-hotfix-manifest.json"), `${JSON.stringify({
-    contract: "tanaghom.conversation-schema-hotfix.v2",
+    contract: "tanaghom.conversation-schema-hotfix.v3",
     workflow_id: ID,
     old_operational_sha256: oldHash,
     target_operational_sha256: targetHash,
     unsupported_keyword_removed: "uniqueItems",
-    legacy_output_adapter: "strict-approved-knowledge-canonicalization",
+    legacy_output_adapter: "two-exact-variants-strict-approved-knowledge-canonicalization",
     local_uniqueness_validation_retained: true,
   }, null, 2)}\n`, { mode: 0o600 });
   console.log(`PASS: production workflow is the exact ${oldHash} baseline and target ${targetHash} adds strict canonicalization without restoring unsupported grammar.`);
@@ -144,6 +149,10 @@ async function validateTarget(targetPath, expectedOldHash) {
   const normalize = target.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
   if (build.includes('"uniqueItems":')) throw new Error("target still contains unsupported uniqueItems");
   if (!normalize.includes("canonicalizeLegacyOutput")
+      || !normalize.includes("const legacyVariantA")
+      || !normalize.includes("const legacyVariantB")
+      || !normalize.includes("proposal.content")
+      || !normalize.includes("citation?.text")
       || !normalize.includes("source.source_id === citation.source_id && source.source_version_id === citation.source_version_id")
       || !normalize.includes("content_fingerprint: approved.content_fingerprint")
       || !normalize.includes("allowedEventIds.has(eventId)")) {
