@@ -16,16 +16,23 @@ The fourth canary produced a third wrapper variation with a `metadata` object,
 showing that accepting aliases individually would be unsafe and unbounded. It
 was rejected and quarantined with the same zero-action restoration guarantees.
 
+The fifth canary followed the canonical top-level structure and returned the
+correct approved USD 99 fact with the exact source, version, and fingerprint.
+The provider did not enforce the schema enums, however: it returned bounded
+synonyms such as `inquiry_pricing`, `medium`, `awareness`,
+`provide_pricing_information`, `approved`, and `requires_escalation`. The strict
+boundary rejected that response, persisted no proposal, restored every lock,
+and performed zero external actions.
+
 The target keeps the compatible model-server grammar and the narrowly bounded
-two-variant fallback adapter, but corrects the root prompt ambiguity. The
-system prompt enumerates the only allowed canonical top-level keys and forbids
-legacy wrapper objects. The fallback accepts only the two already reviewed
-shapes, resolves every citation by exact source and version against approved
-retrieved knowledge, copies the authoritative stored fingerprint, recalculates
-mandatory escalation locally, and then runs the existing strict validator.
-Unknown fields, unapproved citations, unsafe policy results, or malformed
-output still fail closed. Local `Set` cardinality checks and authoritative
-database constraints remain unchanged.
+two-variant fallback adapter. It adds explicit enum instructions and a separate
+normalizer for only the exact canonical top-level shape and the observed enum
+synonyms. That normalizer first proves every citation matches the exact source,
+version, and fingerprint in approved retrieved knowledge, maps only reviewed
+values, verifies summary event provenance, and recalculates escalation from
+Tanaghom policy. Unknown fields, unknown aliases, unapproved citations, unsafe
+policy results, or malformed output still fail closed. Local `Set` cardinality
+checks and authoritative database constraints remain unchanged.
 
 ## Environment
 
@@ -75,8 +82,9 @@ rollback requires a separate evidence review.
 
 - corrected workflow matches the approved operational hash and stays inactive;
 - `uniqueItems` is absent from the Gemma request grammar;
-- the prompt requires the canonical flat contract and forbids legacy wrappers;
+- the prompt requires the canonical flat contract, exact enums, and forbids legacy wrappers;
 - either reviewed fallback alias set can be canonicalized only through exact approved-knowledge citations;
+- the canonical-shape normalizer accepts only reviewed enum synonyms and exact approved citations;
 - local uniqueness enforcement remains present;
 - all other workflows, credentials, provider stops, database state, dashboard,
   Nginx, firewall, containers, and protected services are unchanged.

@@ -75,6 +75,52 @@ try { output = JSON.parse(raw); } catch (error) { return fail('gemma_invalid_jso
 const exactKeys = (value, keys) => value && typeof value === 'object' && !Array.isArray(value) && Object.keys(value).sort().join('|') === [...keys].sort().join('|');
 const oneOf = (value, values) => values.includes(value);
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
+const canonicalTopKeys = ['contract_version','prompt_version','model_name','language','intent','urgency','sentiment','sales_stage','risk_categories','next_best_action','confidence','answer_status','proposed_reply','citations','escalation','conversation_summary','external_action_count'];
+const approvedKnowledge = Array.isArray(prepared.request_body.retrieved_knowledge) ? prepared.request_body.retrieved_knowledge : [];
+const allowedEventIds = new Set([prepared.request_body.provider_message?.event_id, ...(prepared.request_body.conversation_context?.recent_turns ?? []).map(turn => turn?.event_id)].filter(eventId => typeof eventId === 'string' && uuid.test(eventId)));
+const approvedCitation = (citation) => exactKeys(citation, ['source_id','source_version_id','content_fingerprint'])
+  && uuid.test(citation.source_id) && uuid.test(citation.source_version_id)
+  && /^md5:[0-9a-f]{32}$/.test(citation.content_fingerprint)
+  && approvedKnowledge.some(source => source.source_id === citation.source_id
+    && source.source_version_id === citation.source_version_id
+    && source.content_fingerprint === citation.content_fingerprint);
+const canonicalizeCanonicalEnums = (value) => {
+  if (!exactKeys(value, canonicalTopKeys)
+      || value.contract_version !== 'phase5.conversation-intelligence-output.v1'
+      || value.prompt_version !== 'phase5.conversation-intelligence.prompt.v1'
+      || value.model_name !== 'gemma4-26b-a4b-canary'
+      || !Array.isArray(value.citations) || !value.citations.every(approvedCitation)
+      || !Array.isArray(value.risk_categories)) return value;
+  const mapValue = (entry, canonical, aliases) => canonical.includes(entry) ? entry : aliases[entry];
+  const intent = mapValue(value.intent, ['product_question','pricing','availability','objection','purchase_intent','booking','complaint','refund','payment','legal','abuse','policy_exception','sensitive_data','greeting','unknown'], {
+    inquiry_pricing: 'pricing', pricing_inquiry: 'pricing', product_inquiry: 'product_question', availability_inquiry: 'availability',
+  });
+  const urgency = mapValue(value.urgency, ['low','normal','high','critical'], { medium: 'normal' });
+  const salesStage = mapValue(value.sales_stage, ['discovery','qualification','consideration','decision','customer_support','unknown'], { awareness: 'discovery', inquiry: 'discovery' });
+  const nextBestAction = mapValue(value.next_best_action, ['respond','ask_clarifying_question','escalate_to_human','no_action'], { provide_pricing_information: 'respond' });
+  const answerStatus = mapValue(value.answer_status, ['proposal','escalate','no_approved_answer'], { approved: 'proposal' });
+  if (!intent || !urgency || !salesStage || !nextBestAction || !answerStatus) return value;
+  const observedEscalation = exactKeys(value.escalation, ['requires_escalation','reason'])
+    && typeof value.escalation.requires_escalation === 'boolean'
+    && (value.escalation.reason === null || (typeof value.escalation.reason === 'string' && value.escalation.reason.length <= 1000));
+  const canonicalEscalation = exactKeys(value.escalation, ['required','category','reason'])
+    && typeof value.escalation.required === 'boolean';
+  if (!observedEscalation && !canonicalEscalation) return value;
+  const policy = prepared.request_body.system_policy ?? {};
+  const locallyRequired = value.confidence < Number(policy.confidence_threshold ?? 1)
+    || (policy.mandatory_escalations ?? []).includes(intent)
+    || ['high','critical'].includes(urgency)
+    || value.risk_categories.some(risk => (policy.mandatory_escalations ?? []).includes(risk));
+  const modelRequired = observedEscalation ? value.escalation.requires_escalation : value.escalation.required;
+  const required = modelRequired || locallyRequired || answerStatus !== 'proposal';
+  const category = required
+    ? (canonicalEscalation && typeof value.escalation.category === 'string' ? value.escalation.category : value.risk_categories.find(risk => risk !== 'none') ?? intent)
+    : null;
+  const reason = required
+    ? (typeof value.escalation.reason === 'string' && value.escalation.reason ? value.escalation.reason : 'Policy-normalized response requires human review.')
+    : null;
+  return { ...value, intent, urgency, sales_stage: salesStage, next_best_action: nextBestAction, answer_status: answerStatus, escalation: { required, category, reason } };
+};
 const canonicalizeLegacyOutput = (value) => {
   const legacyVariantA = exactKeys(value, ['classification','proposal','summary_update','external_action_count','contract_version','prompt_version']);
   const legacyVariantB = exactKeys(value, ['classification','proposal','summary','external_action_count','contract_version','prompt_version']);
@@ -93,7 +139,6 @@ const canonicalizeLegacyOutput = (value) => {
   const salesStage = stageMap[summary.sales_stage];
   const riskValues = ['complaint','legal','payment','refund','abuse','policy_exception','sensitive_data','prompt_injection','none'];
   const languageValues = ['en','ar'];
-  const allowedEventIds = new Set([prepared.request_body.provider_message?.event_id, ...(prepared.request_body.conversation_context?.recent_turns ?? []).map(turn => turn?.event_id)].filter(eventId => typeof eventId === 'string' && uuid.test(eventId)));
   if (!oneOf(intent, ['product_question','pricing','availability','objection','purchase_intent','booking','complaint','refund','payment','legal','abuse','policy_exception','sensitive_data','greeting','unknown'])
       || !salesStage || !riskValues.includes(classification.risk_category)
       || typeof classification.confidence !== 'number' || classification.confidence < 0 || classification.confidence > 1
@@ -112,7 +157,6 @@ const canonicalizeLegacyOutput = (value) => {
       || value.external_action_count !== 0
       || value.contract_version !== 'phase5.conversation-intelligence-output.v1'
       || value.prompt_version !== 'phase5.conversation-intelligence.prompt.v1') return value;
-  const approvedKnowledge = Array.isArray(prepared.request_body.retrieved_knowledge) ? prepared.request_body.retrieved_knowledge : [];
   const citations = [];
   for (const citation of proposal.citations) {
     const citationText = legacyVariantA ? citation?.fact_description : citation?.text;
@@ -155,7 +199,8 @@ const canonicalizeLegacyOutput = (value) => {
   };
 };
 output = canonicalizeLegacyOutput(output);
-const topKeys = ['contract_version','prompt_version','model_name','language','intent','urgency','sentiment','sales_stage','risk_categories','next_best_action','confidence','answer_status','proposed_reply','citations','escalation','conversation_summary','external_action_count'];
+output = canonicalizeCanonicalEnums(output);
+const topKeys = canonicalTopKeys;
 let valid = exactKeys(output, topKeys)
   && output.contract_version === 'phase5.conversation-intelligence-output.v1'
   && output.prompt_version === 'phase5.conversation-intelligence.prompt.v1'
@@ -172,9 +217,9 @@ let valid = exactKeys(output, topKeys)
   && output.external_action_count === 0;
 const risks = ['complaint','legal','payment','refund','abuse','policy_exception','sensitive_data','prompt_injection','none'];
 valid = valid && Array.isArray(output.risk_categories) && output.risk_categories.length <= 8 && new Set(output.risk_categories).size === output.risk_categories.length && output.risk_categories.every(value => risks.includes(value));
-valid = valid && Array.isArray(output.citations) && output.citations.length <= 12 && output.citations.every(citation => exactKeys(citation, ['source_id','source_version_id','content_fingerprint']) && uuid.test(citation.source_id) && uuid.test(citation.source_version_id) && /^md5:[0-9a-f]{32}$/.test(citation.content_fingerprint));
+valid = valid && Array.isArray(output.citations) && output.citations.length <= 12 && output.citations.every(approvedCitation);
 valid = valid && exactKeys(output.escalation, ['required','category','reason']) && typeof output.escalation.required === 'boolean' && (output.escalation.category === null || (typeof output.escalation.category === 'string' && output.escalation.category.length <= 100)) && (output.escalation.reason === null || (typeof output.escalation.reason === 'string' && output.escalation.reason.length <= 1000));
-if (output.conversation_summary !== null) valid = valid && exactKeys(output.conversation_summary, ['language','summary','input_event_ids']) && oneOf(output.conversation_summary.language, ['en','ar']) && typeof output.conversation_summary.summary === 'string' && output.conversation_summary.summary.length >= 1 && output.conversation_summary.summary.length <= 4000 && Array.isArray(output.conversation_summary.input_event_ids) && output.conversation_summary.input_event_ids.length >= 1 && output.conversation_summary.input_event_ids.length <= 12 && new Set(output.conversation_summary.input_event_ids).size === output.conversation_summary.input_event_ids.length && output.conversation_summary.input_event_ids.every(value => uuid.test(value));
+if (output.conversation_summary !== null) valid = valid && exactKeys(output.conversation_summary, ['language','summary','input_event_ids']) && oneOf(output.conversation_summary.language, ['en','ar']) && typeof output.conversation_summary.summary === 'string' && output.conversation_summary.summary.length >= 1 && output.conversation_summary.summary.length <= 4000 && Array.isArray(output.conversation_summary.input_event_ids) && output.conversation_summary.input_event_ids.length >= 1 && output.conversation_summary.input_event_ids.length <= 12 && new Set(output.conversation_summary.input_event_ids).size === output.conversation_summary.input_event_ids.length && output.conversation_summary.input_event_ids.every(value => uuid.test(value) && allowedEventIds.has(value));
 if (output.answer_status === 'proposal') valid = valid && typeof output.proposed_reply === 'string' && output.proposed_reply.length >= 1 && output.citations.length >= 1;
 if (output.answer_status === 'no_approved_answer') valid = valid && output.citations.length === 0 && output.escalation.required === true;
 const policy = prepared.request_body.system_policy ?? {};

@@ -68,10 +68,18 @@ function validateGrammarHotfix(current, target) {
   if (!currentNormalize.includes("canonicalizeLegacyOutput") || !currentNormalize.includes("const legacyVariantA") || !currentNormalize.includes("const legacyVariantB")) {
     throw new Error("current workflow lacks the reviewed two-variant compatibility adapter");
   }
-  if (currentBuild.includes("The response object must contain exactly these top-level keys")) throw new Error("current workflow already contains the target canonical prompt enforcement");
+  if (!currentBuild.includes("The response object must contain exactly these top-level keys")
+      || !currentBuild.includes("Do not return wrapper objects named")) {
+    throw new Error("current workflow lacks the reviewed canonical prompt boundary");
+  }
+  if (currentBuild.includes("Use only these exact enum values") || currentNormalize.includes("canonicalizeCanonicalEnums")) {
+    throw new Error("current workflow already contains the target enum normalization");
+  }
   if (!targetBuild.includes("The response object must contain exactly these top-level keys")
-      || !targetBuild.includes("Do not return wrapper objects named")) {
-    throw new Error("target workflow lacks explicit canonical prompt enforcement");
+      || !targetBuild.includes("Do not return wrapper objects named")
+      || !targetBuild.includes("Use only these exact enum values")
+      || !targetBuild.includes("never use `requires_escalation`")) {
+    throw new Error("target workflow lacks explicit canonical enum enforcement");
   }
   if (!targetNormalize.includes("canonicalizeLegacyOutput")
       || !targetNormalize.includes("const legacyVariantA")
@@ -82,6 +90,15 @@ function validateGrammarHotfix(current, target) {
       || !targetNormalize.includes("content_fingerprint: approved.content_fingerprint")
       || !targetNormalize.includes("allowedEventIds.has(eventId)")) {
     throw new Error("target workflow lacks the strict approved-knowledge compatibility adapter");
+  }
+  if (!targetNormalize.includes("canonicalizeCanonicalEnums")
+      || !targetNormalize.includes("inquiry_pricing: 'pricing'")
+      || !targetNormalize.includes("medium: 'normal'")
+      || !targetNormalize.includes("provide_pricing_information: 'respond'")
+      || !targetNormalize.includes("approved: 'proposal'")
+      || !targetNormalize.includes("value.citations.every(approvedCitation)")
+      || !targetNormalize.includes("source.content_fingerprint === citation.content_fingerprint")) {
+    throw new Error("target workflow lacks the bounded canonical-enum and approved-citation normalizer");
   }
   if (!targetNormalize.includes("new Set(output.risk_categories).size") || !targetNormalize.includes("new Set(output.conversation_summary.input_event_ids).size")) {
     throw new Error("target workflow lost local uniqueness validation");
@@ -113,16 +130,18 @@ async function prepare(exportPath, targetPath, outputDir, expectedOldHash) {
   await mkdir(resolve(outputDir), { recursive: true, mode: 0o700 });
   await writeFile(resolve(outputDir, `${ID}.original.json`), `${JSON.stringify([current], null, 2)}\n`, { mode: 0o600 });
   await writeFile(resolve(outputDir, "workflow-hotfix-manifest.json"), `${JSON.stringify({
-    contract: "tanaghom.conversation-schema-hotfix.v4",
+    contract: "tanaghom.conversation-schema-hotfix.v5",
     workflow_id: ID,
     old_operational_sha256: oldHash,
     target_operational_sha256: targetHash,
     unsupported_keyword_removed: "uniqueItems",
     legacy_output_adapter: "two-exact-variants-strict-approved-knowledge-canonicalization",
     canonical_prompt_enforcement: true,
+    canonical_enum_normalizer: "bounded-observed-aliases-with-local-policy-recalculation",
+    canonical_citation_validation: "exact-retrieved-source-version-fingerprint",
     local_uniqueness_validation_retained: true,
   }, null, 2)}\n`, { mode: 0o600 });
-  console.log(`PASS: production workflow is the exact ${oldHash} baseline and target ${targetHash} adds strict canonicalization without restoring unsupported grammar.`);
+  console.log(`PASS: production workflow is the exact ${oldHash} baseline and target ${targetHash} adds bounded enum normalization without restoring unsupported grammar.`);
 }
 
 async function verifyTarget(beforePath, afterPath, targetPath, manifestPath) {
@@ -156,8 +175,10 @@ async function validateTarget(targetPath, expectedOldHash) {
   const normalize = target.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
   if (build.includes('"uniqueItems":')) throw new Error("target still contains unsupported uniqueItems");
   if (!build.includes("The response object must contain exactly these top-level keys")
-      || !build.includes("Do not return wrapper objects named")) {
-    throw new Error("target lacks explicit canonical prompt enforcement");
+      || !build.includes("Do not return wrapper objects named")
+      || !build.includes("Use only these exact enum values")
+      || !build.includes("never use `requires_escalation`")) {
+    throw new Error("target lacks explicit canonical enum enforcement");
   }
   if (!normalize.includes("canonicalizeLegacyOutput")
       || !normalize.includes("const legacyVariantA")
@@ -169,12 +190,21 @@ async function validateTarget(targetPath, expectedOldHash) {
       || !normalize.includes("allowedEventIds.has(eventId)")) {
     throw new Error("target lacks the strict approved-knowledge compatibility adapter");
   }
+  if (!normalize.includes("canonicalizeCanonicalEnums")
+      || !normalize.includes("inquiry_pricing: 'pricing'")
+      || !normalize.includes("medium: 'normal'")
+      || !normalize.includes("provide_pricing_information: 'respond'")
+      || !normalize.includes("approved: 'proposal'")
+      || !normalize.includes("value.citations.every(approvedCitation)")
+      || !normalize.includes("source.content_fingerprint === citation.content_fingerprint")) {
+    throw new Error("target lacks bounded canonical-enum and approved-citation normalization");
+  }
   if (!normalize.includes("new Set(output.risk_categories).size") || !normalize.includes("new Set(output.conversation_summary.input_event_ids).size")) {
     throw new Error("target lost local uniqueness validation");
   }
   const targetHash = digest(operational(target));
   if (targetHash === expectedOldHash) throw new Error("target hash equals the pre-hotfix hash");
-  console.log(`PASS: target ${targetHash} retains compatible grammar, adds strict canonicalization, and preserves local validation.`);
+  console.log(`PASS: target ${targetHash} retains compatible grammar, adds bounded enum normalization, and preserves local validation.`);
 }
 
 const [action, ...args] = process.argv.slice(2);
