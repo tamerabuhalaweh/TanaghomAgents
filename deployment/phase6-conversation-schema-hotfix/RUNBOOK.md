@@ -2,16 +2,23 @@
 
 ## Incident and correction
 
-The first production shadow canary reached Gemma but the model server rejected
-the structured-output grammar with `Unimplemented keys: ["uniqueItems"]`.
-The canary's automatic quarantine restored the workflow inactive, restored the
-global GHL stop, deactivated the synthetic organization and owner, erased its
-fake credential envelope, and recorded zero external actions.
+The first production shadow canary proved that Gemma rejects the
+`uniqueItems` grammar keyword, and the first correction removed only that
+unsupported keyword. The second canary reached Gemma successfully but exposed
+an older nested response shape (`classification`, `proposal`, and
+`summary_update`) that did not match Tanaghom's canonical flat contract. Both
+canaries automatically restored the workflow inactive, restored the global GHL
+stop, erased their fake credential envelopes, and recorded zero external
+actions.
 
-The target workflow omits only `uniqueItems` from the model-server grammar.
-Its local n8n validator still uses `Set` cardinality checks for both risk
-categories and summary event IDs, and the authoritative database constraints
-remain unchanged.
+The target keeps the compatible model-server grammar and adds a narrowly
+bounded canonicalization adapter. It accepts only the exact observed nested
+shape, resolves every citation by exact source and version against approved
+retrieved knowledge, copies the authoritative stored fingerprint, recalculates
+mandatory escalation locally, and then runs the existing strict validator.
+Unknown fields, unapproved citations, unsafe policy results, or malformed
+output still fail closed. Local `Set` cardinality checks and authoritative
+database constraints remain unchanged.
 
 ## Environment
 
@@ -30,7 +37,7 @@ export TANAGHOM_RELEASE_SOURCE_ROOT='/opt/tanaghom-release-phase5c-worker'
 sudo -E deployment/phase6-conversation-schema-hotfix/scripts/preflight.sh
 ```
 
-Preflight proves migration 0025, provider stops, the exact old workflow hash,
+Preflight proves migration 0025, provider stops, the exact currently deployed workflow hash,
 inactive/disabled runtime state, zero stored executions, reviewed credentials,
 the reviewed target hash, and every protected boundary without changing state.
 
@@ -61,6 +68,7 @@ rollback requires a separate evidence review.
 
 - corrected workflow matches the approved operational hash and stays inactive;
 - `uniqueItems` is absent from the Gemma request grammar;
+- legacy nested output can be canonicalized only through exact approved-knowledge citations;
 - local uniqueness enforcement remains present;
 - all other workflows, credentials, provider stops, database state, dashboard,
   Nginx, firewall, containers, and protected services are unchanged.
