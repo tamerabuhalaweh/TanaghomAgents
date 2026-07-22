@@ -18,6 +18,16 @@ delete conversationOutputSchema.$schema;
 delete conversationOutputSchema.$id;
 delete conversationOutputSchema.title;
 
+function omitModelGrammarKeywords(value) {
+  if (Array.isArray(value)) return value.map(omitModelGrammarKeywords);
+  if (!value || typeof value !== "object") return value;
+  return Object.fromEntries(Object.entries(value)
+    .filter(([key]) => key !== "uniqueItems")
+    .map(([key, entry]) => [key, omitModelGrammarKeywords(entry)]));
+}
+
+const conversationGenerationSchema = omitModelGrammarKeywords(conversationOutputSchema);
+
 function node(id, name, type, typeVersion, position, parameters, extra = {}) {
   return { parameters, id, name, type, typeVersion, position, ...extra };
 }
@@ -43,7 +53,7 @@ return [{ json: { ...prepared, ok: true, result: { contract_version: 'phase5.ghl
 
 const buildConversationRequestCode = `const claimed = $json;
 if (!claimed.job_id || !claimed.event_id || !claimed.request_body) throw new Error('Claimed conversation intelligence payload is missing');
-return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.1, response_format: { type: 'json_schema', json_schema: { name: 'tanaghom_conversation_intelligence_output_v1', strict: true, schema: ${JSON.stringify(conversationOutputSchema)} } }, messages: [ { role: 'system', content: ${JSON.stringify(conversationPrompt)} }, { role: 'user', content: JSON.stringify(claimed.request_body) } ] } } }];`;
+return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.1, response_format: { type: 'json_schema', json_schema: { name: 'tanaghom_conversation_intelligence_output_v1', strict: true, schema: ${JSON.stringify(conversationGenerationSchema)} } }, messages: [ { role: 'system', content: ${JSON.stringify(conversationPrompt)} }, { role: 'user', content: JSON.stringify(claimed.request_body) } ] } } }];`;
 
 const normalizeConversationCode = `const prepared = $('Build Conversation Request').first().json;
 const response = $json;

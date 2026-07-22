@@ -372,8 +372,12 @@ test('Phase 5C Conversation Intelligence worker is inactive, least privileged, a
   assert.match(serialized, /external_action_count/);
   assert.match(generator, /conversation-intelligence\.v1\.json/);
   assert.match(generator, /replace\(\/\\r\\n\/g, "\\n"\)/);
+  assert.match(generator, /omitModelGrammarKeywords/);
+  assert.match(generator, /key !== "uniqueItems"/);
+  assert.doesNotMatch(workflow.nodes.find(node => node.name === 'Build Conversation Request').parameters.jsCode, /"uniqueItems":/);
   assert.equal(serialized.includes('\\r'), false);
   assert.match(integration, /grounded English and Arabic escalation scenarios/);
+  assert.match(integration, /Gemma grammar request retained unsupported uniqueItems/);
   assert.match(integration, /gemma_invalid_json/);
   assert.match(integration, /gemma_contract_mismatch/);
   assert.match(integration, /gemma_rate_limited/);
@@ -1392,6 +1396,39 @@ test('Phase 6 Conversation Intelligence canary is synthetic, exclusive, grounded
   assert.doesNotMatch(mutationScope, /systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)/i);
   assert.doesNotMatch(mutationScope, /https:\/\/[^\s"']*(gohighlevel|leadconnectorhq)|\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
   assert.doesNotMatch(`${mutationScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
+
+test('Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, and reversible', async () => {
+  const root = new URL('../deployment/phase6-conversation-schema-hotfix/', import.meta.url);
+  const common = await readFile(new URL('scripts/common.sh', root), 'utf8');
+  const preflight = await readFile(new URL('scripts/preflight.sh', root), 'utf8');
+  const deploy = await readFile(new URL('scripts/deploy-update.sh', root), 'utf8');
+  const validate = await readFile(new URL('scripts/validate-release.sh', root), 'utf8');
+  const rollback = await readFile(new URL('scripts/rollback-update.sh', root), 'utf8');
+  const contract = await readFile(new URL('scripts/hotfix-contract.mjs', root), 'utf8');
+  const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_OLD_OPERATIONAL_SHA=dd445009e3527c7763bd5037ebda5048dd3bc815b38fb58e67c7ef98951311dd/);
+  assert.match(common, /activeState=false/);
+  assert.match(common, /TANAGHOM_RELEASE_ID=\$TANAGHOM_CONVERSATION_HOTFIX_ID/);
+  assert.match(common, /0025_runtime_agent_reconciliation/);
+  assert.match(preflight, /workflow_execution_count/);
+  assert.match(preflight, /assert_production_worktree_reviewed/);
+  assert.match(deploy, /trap automatic_rollback EXIT HUP INT TERM/);
+  assert.match(deploy, /import_hotfix_workflow_inactive "\$TARGET_WORKFLOW_SOURCE"/);
+  assert.match(validate, /verify-target/);
+  assert.match(validate, /n8n audit/);
+  assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-CONVERSATION-SCHEMA-HOTFIX/);
+  assert.match(contract, /target workflow still sends unsupported uniqueItems/);
+  assert.match(contract, /target workflow lost local uniqueness validation/);
+  assert.match(runbook, /imports only the corrected workflow with[\s\S]*activeState=false/i);
+  assert.match(quality, /phase6-conversation-schema-hotfix-contract/);
+
+  const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)/i);
+  assert.doesNotMatch(protectedScope, /\/opt\/(smartlabs|n8n-smartlabs)|\/data\//i);
+  assert.doesNotMatch(`${protectedScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
 });
 
 test('Phase 6 runtime-agent reconciliation guarantees Publisher and Sales workers without rewriting history', async () => {

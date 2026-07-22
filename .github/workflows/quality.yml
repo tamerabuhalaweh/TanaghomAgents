@@ -285,6 +285,19 @@ jobs:
       - run: deployment/phase6-conversation-shadow-canary/scripts/test-refusal-paths.sh
       - run: deployment/phase6-conversation-shadow-canary/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
 
+  phase6-conversation-schema-hotfix-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: deployment/phase6-conversation-schema-hotfix/scripts/validate-package.sh
+      - run: deployment/phase6-conversation-schema-hotfix/scripts/test-refusal-paths.sh
+
   phase6-runtime-agent-reconciliation-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 10

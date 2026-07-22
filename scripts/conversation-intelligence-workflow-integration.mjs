@@ -41,6 +41,12 @@ async function jsonBody(request) {
   return JSON.parse(Buffer.concat(chunks).toString("utf8"));
 }
 
+function hasSchemaKeyword(value, wanted) {
+  if (Array.isArray(value)) return value.some((entry) => hasSchemaKeyword(entry, wanted));
+  if (!value || typeof value !== "object") return false;
+  return Object.entries(value).some(([key, entry]) => key === wanted || hasSchemaKeyword(entry, wanted));
+}
+
 const modelServer = createServer(async (request, response) => {
   if (request.method !== "POST" || request.url !== "/v1/chat/completions") {
     response.writeHead(404).end(); return;
@@ -50,6 +56,8 @@ const modelServer = createServer(async (request, response) => {
   assert.equal(payload.model, "gemma4-26b-a4b-canary");
   assert.equal(payload.response_format?.type, "json_schema");
   assert.equal(payload.response_format?.json_schema?.strict, true);
+  assert.equal(hasSchemaKeyword(payload.response_format?.json_schema?.schema, "uniqueItems"), false,
+    "Gemma grammar request retained unsupported uniqueItems");
   assert.match(payload.messages?.[0]?.content ?? "", /untrusted customer data/i);
   const intelligence = JSON.parse(payload.messages?.[1]?.content ?? "{}");
   assert.equal(intelligence.contract_version, "phase5.conversation-intelligence-request.v1");
