@@ -7,13 +7,14 @@ for file in README.md RUNBOOK.md scripts/common.sh scripts/preflight.sh scripts/
 done
 sh -n "$package"/scripts/*.sh
 node --check "$package/scripts/hotfix-contract.mjs"
-grep -q 'EXPECTED_OLD_OPERATIONAL_SHA=dd445009e3527c7763bd5037ebda5048dd3bc815b38fb58e67c7ef98951311dd' "$package/scripts/common.sh"
+grep -q 'EXPECTED_OLD_OPERATIONAL_SHA=623a54d57ffb46393bc64b544e5034af1b81e54043a0cc6e80ab7fe7d6ae39ac' "$package/scripts/common.sh"
 grep -q 'activeState=false' "$package/scripts/common.sh"
 grep -q 'trap automatic_rollback EXIT HUP INT TERM' "$package/scripts/deploy-update.sh"
 grep -q 'verify-target' "$package/scripts/validate-release.sh"
 grep -q 'ROLLBACK-THE-AUTHORIZED-CONVERSATION-SCHEMA-HOTFIX' "$package/scripts/rollback-update.sh"
 grep -q 'local uniqueness' "$package/RUNBOOK.md"
-node "$package/scripts/hotfix-contract.mjs" validate-target "$root/n8n/workflows/phase5/conversation-intelligence.v1.json" dd445009e3527c7763bd5037ebda5048dd3bc815b38fb58e67c7ef98951311dd
+grep -q 'retrieved knowledge' "$package/RUNBOOK.md"
+node "$package/scripts/hotfix-contract.mjs" validate-target "$root/n8n/workflows/phase5/conversation-intelligence.v1.json" 623a54d57ffb46393bc64b544e5034af1b81e54043a0cc6e80ab7fe7d6ae39ac
 if grep -R -E --exclude=validate-package.sh 'systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)' "$package/scripts"; then
   echo 'hotfix package may not mutate protected services or firewall' >&2; exit 1
 fi

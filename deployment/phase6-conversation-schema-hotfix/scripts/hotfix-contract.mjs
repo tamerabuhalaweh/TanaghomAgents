@@ -61,9 +61,17 @@ function validateBoundary(workflow) {
 function validateGrammarHotfix(current, target) {
   const currentBuild = current.nodes.find((node) => node.name === "Build Conversation Request")?.parameters?.jsCode ?? "";
   const targetBuild = target.nodes.find((node) => node.name === "Build Conversation Request")?.parameters?.jsCode ?? "";
+  const currentNormalize = current.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
   const targetNormalize = target.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
-  if (!currentBuild.includes('"uniqueItems":true')) throw new Error("current workflow is not the reviewed incompatible grammar baseline");
+  if (currentBuild.includes('"uniqueItems":')) throw new Error("current workflow regressed to the unsupported Gemma grammar");
   if (targetBuild.includes('"uniqueItems":')) throw new Error("target workflow still sends unsupported uniqueItems to Gemma");
+  if (currentNormalize.includes("canonicalizeLegacyOutput")) throw new Error("current workflow already contains the target compatibility adapter");
+  if (!targetNormalize.includes("canonicalizeLegacyOutput")
+      || !targetNormalize.includes("source.source_id === citation.source_id && source.source_version_id === citation.source_version_id")
+      || !targetNormalize.includes("content_fingerprint: approved.content_fingerprint")
+      || !targetNormalize.includes("allowedEventIds.has(eventId)")) {
+    throw new Error("target workflow lacks the strict approved-knowledge compatibility adapter");
+  }
   if (!targetNormalize.includes("new Set(output.risk_categories).size") || !targetNormalize.includes("new Set(output.conversation_summary.input_event_ids).size")) {
     throw new Error("target workflow lost local uniqueness validation");
   }
@@ -94,14 +102,15 @@ async function prepare(exportPath, targetPath, outputDir, expectedOldHash) {
   await mkdir(resolve(outputDir), { recursive: true, mode: 0o700 });
   await writeFile(resolve(outputDir, `${ID}.original.json`), `${JSON.stringify([current], null, 2)}\n`, { mode: 0o600 });
   await writeFile(resolve(outputDir, "workflow-hotfix-manifest.json"), `${JSON.stringify({
-    contract: "tanaghom.conversation-schema-hotfix.v1",
+    contract: "tanaghom.conversation-schema-hotfix.v2",
     workflow_id: ID,
     old_operational_sha256: oldHash,
     target_operational_sha256: targetHash,
     unsupported_keyword_removed: "uniqueItems",
+    legacy_output_adapter: "strict-approved-knowledge-canonicalization",
     local_uniqueness_validation_retained: true,
   }, null, 2)}\n`, { mode: 0o600 });
-  console.log(`PASS: production workflow is the exact ${oldHash} baseline and target ${targetHash} removes only the unsupported grammar keyword.`);
+  console.log(`PASS: production workflow is the exact ${oldHash} baseline and target ${targetHash} adds strict canonicalization without restoring unsupported grammar.`);
 }
 
 async function verifyTarget(beforePath, afterPath, targetPath, manifestPath) {
@@ -134,12 +143,18 @@ async function validateTarget(targetPath, expectedOldHash) {
   const build = target.nodes.find((node) => node.name === "Build Conversation Request")?.parameters?.jsCode ?? "";
   const normalize = target.nodes.find((node) => node.name === "Normalize Conversation Response")?.parameters?.jsCode ?? "";
   if (build.includes('"uniqueItems":')) throw new Error("target still contains unsupported uniqueItems");
+  if (!normalize.includes("canonicalizeLegacyOutput")
+      || !normalize.includes("source.source_id === citation.source_id && source.source_version_id === citation.source_version_id")
+      || !normalize.includes("content_fingerprint: approved.content_fingerprint")
+      || !normalize.includes("allowedEventIds.has(eventId)")) {
+    throw new Error("target lacks the strict approved-knowledge compatibility adapter");
+  }
   if (!normalize.includes("new Set(output.risk_categories).size") || !normalize.includes("new Set(output.conversation_summary.input_event_ids).size")) {
     throw new Error("target lost local uniqueness validation");
   }
   const targetHash = digest(operational(target));
   if (targetHash === expectedOldHash) throw new Error("target hash equals the pre-hotfix hash");
-  console.log(`PASS: target ${targetHash} removes unsupported grammar syntax and retains local uniqueness enforcement.`);
+  console.log(`PASS: target ${targetHash} retains compatible grammar, adds strict canonicalization, and preserves local validation.`);
 }
 
 const [action, ...args] = process.argv.slice(2);

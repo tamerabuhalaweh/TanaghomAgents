@@ -9,7 +9,7 @@ CANARY_COMMON_DIR="$RELEASE_SOURCE_ROOT/deployment/phase6-conversation-shadow-ca
 SCRIPT_DIR=$HOTFIX_SCRIPT_DIR
 PRODUCTION_ROOT=${TANAGHOM_PRODUCTION_ROOT:-/opt/tanaghom-dashboard}
 TARGET_WORKFLOW_SOURCE="$RELEASE_SOURCE_ROOT/n8n/workflows/phase5/conversation-intelligence.v1.json"
-EXPECTED_OLD_OPERATIONAL_SHA=dd445009e3527c7763bd5037ebda5048dd3bc815b38fb58e67c7ef98951311dd
+EXPECTED_OLD_OPERATIONAL_SHA=623a54d57ffb46393bc64b544e5034af1b81e54043a0cc6e80ab7fe7d6ae39ac
 
 require_hotfix_environment() {
   test "${TANAGHOM_CONVERSATION_HOTFIX_AUTHORIZATION:-}" = 'YES-I-AM-THE-AUTHORIZED-OWNER' || die 'explicit Conversation Intelligence hotfix authorization is absent'

@@ -82,7 +82,25 @@ const modelServer = createServer(async (request, response) => {
   }
   if (message === "CONTRACT MISMATCH") {
     response.writeHead(200, { "Content-Type": "application/json" });
-    response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({ external_action_count: 1 }) } }] }));
+    response.end(JSON.stringify({ choices: [{ message: { content: JSON.stringify({
+      classification: { intent: "pricing_inquiry", confidence: 0.99, risk_category: "none", requires_escalation: false },
+      proposal: {
+        language: "en", message: "Invented price",
+        citations: [{
+          source_id: "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+          source_version_id: "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb",
+          fact_description: "Unapproved invented source",
+        }],
+        no_approved_answer: false,
+      },
+      summary_update: {
+        new_summary: "Attempted unapproved citation.", event_ids: [intelligence.provider_message.event_id],
+        sales_stage: "inquiry", customer_needs: [], unresolved_questions: [], language: "en",
+      },
+      external_action_count: 0,
+      contract_version: "phase5.conversation-intelligence-output.v1",
+      prompt_version: "phase5.conversation-intelligence.prompt.v1",
+    }) } }] }));
     return;
   }
   const eventId = intelligence.provider_message.event_id;
@@ -103,17 +121,19 @@ const modelServer = createServer(async (request, response) => {
     const source = intelligence.retrieved_knowledge.find((entry) => entry.source_key === "workflow_growth_plan");
     assert.ok(source, "approved English knowledge was not retrieved");
     output = {
+      classification: { intent: "pricing_inquiry", confidence: 0.96, risk_category: "none", requires_escalation: false },
+      proposal: {
+        language: "en", message: "The approved Growth plan is USD 99 per month.",
+        citations: [{ source_id: source.source_id, source_version_id: source.source_version_id, fact_description: "Approved Growth plan price" }],
+        no_approved_answer: false,
+      },
+      summary_update: {
+        new_summary: "Lead asked for the approved Growth plan price.", event_ids: [eventId],
+        sales_stage: "inquiry", customer_needs: ["pricing_information"], unresolved_questions: [], language: "en",
+      },
+      external_action_count: 0,
       contract_version: "phase5.conversation-intelligence-output.v1",
       prompt_version: "phase5.conversation-intelligence.prompt.v1",
-      model_name: "gemma4-26b-a4b-canary",
-      language: "en", intent: "pricing", urgency: "normal", sentiment: "positive",
-      sales_stage: "consideration", risk_categories: [], next_best_action: "respond",
-      confidence: 0.96, answer_status: "proposal",
-      proposed_reply: "The approved Growth plan is USD 99 per month.",
-      citations: [{ source_id: source.source_id, source_version_id: source.source_version_id, content_fingerprint: source.content_fingerprint }],
-      escalation: { required: false, category: null, reason: null },
-      conversation_summary: { language: "en", summary: "Lead asked for the approved Growth plan price.", input_event_ids: [eventId] },
-      external_action_count: 0,
     };
   }
   response.writeHead(200, { "Content-Type": "application/json" });
