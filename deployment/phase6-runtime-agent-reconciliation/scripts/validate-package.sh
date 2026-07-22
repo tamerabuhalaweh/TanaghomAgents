@@ -8,6 +8,7 @@ done
 sh -n "$package"/scripts/*.sh
 grep -q 'EXPECTED_START_MIGRATION=0024_conversation_intelligence_worker_registry' "$package/scripts/common.sh"
 grep -q 'TARGET_MIGRATION=0025_runtime_agent_reconciliation' "$package/scripts/common.sh"
+grep -q 'TANAGHOM_RELEASE_ID=\$TANAGHOM_RUNTIME_AGENT_RELEASE_ID' "$package/scripts/common.sh"
 grep -q 'assert_production_worktree_reviewed' "$package/scripts/preflight.sh"
 grep -q 'trap automatic_rollback EXIT HUP INT TERM' "$package/scripts/deploy-update.sh"
 grep -q 'assert_prior_agents_unchanged' "$package/scripts/validate-release.sh"

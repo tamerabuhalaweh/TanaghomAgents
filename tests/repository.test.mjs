@@ -1412,6 +1412,8 @@ test('Phase 6 runtime-agent reconciliation guarantees Publisher and Sales worker
   assert.match(databaseTest, /0025 rollback left migration state behind/);
   assert.match(common, /EXPECTED_START_MIGRATION=0024_conversation_intelligence_worker_registry/);
   assert.match(common, /TARGET_MIGRATION=0025_runtime_agent_reconciliation/);
+  assert.match(common, /TANAGHOM_RELEASE_ID=\$TANAGHOM_RUNTIME_AGENT_RELEASE_ID/);
+  assert.match(common, /export TANAGHOM_RELEASE_ID/);
   assert.match(common, /assert_prior_agents_unchanged/);
   assert.match(common, /assert_new_agents_unused/);
   assert.match(preflight, /assert_production_worktree_reviewed/);
