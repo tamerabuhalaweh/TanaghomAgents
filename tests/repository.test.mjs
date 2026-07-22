@@ -26,6 +26,15 @@ test('roadmap preserves the human publishing approval gate', async () => {
   assert.match(roadmap, /no\s+content can self-approve or publish/i);
 });
 
+test('security overrides keep audited URI and image dependencies on patched releases', async () => {
+  const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
+  const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
+  assert.equal(manifest.overrides['fast-uri'], '3.1.4');
+  assert.equal(manifest.overrides.sharp, '0.35.3');
+  assert.equal(lock.packages['node_modules/fast-uri'].version, '3.1.4');
+  assert.equal(lock.packages['node_modules/sharp'].version, '0.35.3');
+});
+
 test('migration runner accepts PostgreSQL boolean output variants', async () => {
   const runner = await readFile(new URL('../scripts/database.mjs', import.meta.url), 'utf8');
   assert.match(runner, /\['t', 'true', '1'\]\.includes/);
@@ -1412,6 +1421,8 @@ test('Phase 6 runtime-agent reconciliation guarantees Publisher and Sales worker
   assert.match(databaseTest, /0025 rollback left migration state behind/);
   assert.match(common, /EXPECTED_START_MIGRATION=0024_conversation_intelligence_worker_registry/);
   assert.match(common, /TARGET_MIGRATION=0025_runtime_agent_reconciliation/);
+  assert.match(common, /TANAGHOM_RELEASE_ID=\$TANAGHOM_RUNTIME_AGENT_RELEASE_ID/);
+  assert.match(common, /export TANAGHOM_RELEASE_ID/);
   assert.match(common, /assert_prior_agents_unchanged/);
   assert.match(common, /assert_new_agents_unused/);
   assert.match(preflight, /assert_production_worktree_reviewed/);

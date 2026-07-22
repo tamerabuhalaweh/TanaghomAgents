@@ -23,6 +23,8 @@ require_runtime_agent_environment() {
     phase6-runtime-agents-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z) ;;
     *) die 'TANAGHOM_RUNTIME_AGENT_RELEASE_ID must use phase6-runtime-agents-YYYYMMDDTHHMMSSZ' ;;
   esac
+  TANAGHOM_RELEASE_ID=$TANAGHOM_RUNTIME_AGENT_RELEASE_ID
+  export TANAGHOM_RELEASE_ID
   for value in "${TANAGHOM_EXPECTED_PRODUCTION_COMMIT:-}" "${TANAGHOM_RUNTIME_AGENT_SOURCE_COMMIT:-}"; do
     echo "$value" | grep -Eq '^[0-9a-f]{40}$' || die 'production and source commits must be full lowercase Git SHAs'
   done
