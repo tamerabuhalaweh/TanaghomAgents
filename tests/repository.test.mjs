@@ -1420,7 +1420,7 @@ test('Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, a
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
-  assert.match(common, /EXPECTED_OLD_OPERATIONAL_SHA=873fcd53572309efe2f0a9a2304955ba6fa86df81ea994d74a26f1bc67d0f88c/);
+  assert.match(common, /EXPECTED_OLD_OPERATIONAL_SHA=f649acad1b0a8ef3a717d514bbe3ba0590865d4aadadad65df62df045b354ee9/);
   assert.match(common, /activeState=false/);
   assert.match(common, /TANAGHOM_RELEASE_ID=\$TANAGHOM_CONVERSATION_HOTFIX_ID/);
   assert.match(common, /0025_runtime_agent_reconciliation/);
@@ -1433,7 +1433,8 @@ test('Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, a
   assert.match(rollback, /ROLLBACK-THE-AUTHORIZED-CONVERSATION-SCHEMA-HOTFIX/);
   assert.match(contract, /target workflow still sends unsupported uniqueItems/);
   assert.match(contract, /strict approved-knowledge compatibility adapter/);
-  assert.match(contract, /explicit canonical prompt enforcement/);
+  assert.match(contract, /explicit canonical enum enforcement/);
+  assert.match(contract, /bounded canonical-enum and approved-citation normalizer/);
   assert.match(contract, /target workflow lost local uniqueness validation/);
   assert.match(runbook, /imports only the corrected workflow with[\s\S]*activeState=false/i);
   assert.match(quality, /phase6-conversation-schema-hotfix-contract/);
