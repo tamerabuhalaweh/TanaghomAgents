@@ -59,6 +59,8 @@ const modelServer = createServer(async (request, response) => {
   assert.equal(hasSchemaKeyword(payload.response_format?.json_schema?.schema, "uniqueItems"), false,
     "Gemma grammar request retained unsupported uniqueItems");
   assert.match(payload.messages?.[0]?.content ?? "", /untrusted customer data/i);
+  assert.match(payload.messages?.[0]?.content ?? "", /must contain exactly these top-level keys/i);
+  assert.match(payload.messages?.[0]?.content ?? "", /Do not return wrapper objects named/i);
   const intelligence = JSON.parse(payload.messages?.[1]?.content ?? "{}");
   assert.equal(intelligence.contract_version, "phase5.conversation-intelligence-request.v1");
   assert.equal(intelligence.system_policy.external_actions_allowed, false);

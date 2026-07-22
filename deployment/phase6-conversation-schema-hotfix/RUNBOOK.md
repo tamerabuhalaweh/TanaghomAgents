@@ -12,8 +12,14 @@ third canary returned the same semantics with a second exact alias set:
 restored the workflow inactive, restored the global GHL stop, erased its fake
 credential envelope, and recorded zero external actions.
 
-The target keeps the compatible model-server grammar and adds a narrowly
-bounded canonicalization adapter. It accepts only the two exact observed nested
+The fourth canary produced a third wrapper variation with a `metadata` object,
+showing that accepting aliases individually would be unsafe and unbounded. It
+was rejected and quarantined with the same zero-action restoration guarantees.
+
+The target keeps the compatible model-server grammar and the narrowly bounded
+two-variant fallback adapter, but corrects the root prompt ambiguity. The
+system prompt enumerates the only allowed canonical top-level keys and forbids
+legacy wrapper objects. The fallback accepts only the two already reviewed
 shapes, resolves every citation by exact source and version against approved
 retrieved knowledge, copies the authoritative stored fingerprint, recalculates
 mandatory escalation locally, and then runs the existing strict validator.
@@ -69,7 +75,8 @@ rollback requires a separate evidence review.
 
 - corrected workflow matches the approved operational hash and stays inactive;
 - `uniqueItems` is absent from the Gemma request grammar;
-- either observed legacy alias set can be canonicalized only through exact approved-knowledge citations;
+- the prompt requires the canonical flat contract and forbids legacy wrappers;
+- either reviewed fallback alias set can be canonicalized only through exact approved-knowledge citations;
 - local uniqueness enforcement remains present;
 - all other workflows, credentials, provider stops, database state, dashboard,
   Nginx, firewall, containers, and protected services are unchanged.
