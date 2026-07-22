@@ -6,14 +6,15 @@ The first production shadow canary proved that Gemma rejects the
 `uniqueItems` grammar keyword, and the first correction removed only that
 unsupported keyword. The second canary reached Gemma successfully but exposed
 an older nested response shape (`classification`, `proposal`, and
-`summary_update`) that did not match Tanaghom's canonical flat contract. Both
-canaries automatically restored the workflow inactive, restored the global GHL
-stop, erased their fake credential envelopes, and recorded zero external
-actions.
+`summary_update`) that did not match Tanaghom's canonical flat contract. The
+third canary returned the same semantics with a second exact alias set:
+`proposal.content`, `summary`, and citation `text`. Every canary automatically
+restored the workflow inactive, restored the global GHL stop, erased its fake
+credential envelope, and recorded zero external actions.
 
 The target keeps the compatible model-server grammar and adds a narrowly
-bounded canonicalization adapter. It accepts only the exact observed nested
-shape, resolves every citation by exact source and version against approved
+bounded canonicalization adapter. It accepts only the two exact observed nested
+shapes, resolves every citation by exact source and version against approved
 retrieved knowledge, copies the authoritative stored fingerprint, recalculates
 mandatory escalation locally, and then runs the existing strict validator.
 Unknown fields, unapproved citations, unsafe policy results, or malformed
@@ -68,7 +69,7 @@ rollback requires a separate evidence review.
 
 - corrected workflow matches the approved operational hash and stays inactive;
 - `uniqueItems` is absent from the Gemma request grammar;
-- legacy nested output can be canonicalized only through exact approved-knowledge citations;
+- either observed legacy alias set can be canonicalized only through exact approved-knowledge citations;
 - local uniqueness enforcement remains present;
 - all other workflows, credentials, provider stops, database state, dashboard,
   Nginx, firewall, containers, and protected services are unchanged.

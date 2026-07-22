@@ -375,6 +375,10 @@ test('Phase 5C Conversation Intelligence worker is inactive, least privileged, a
   assert.match(generator, /omitModelGrammarKeywords/);
   assert.match(generator, /key !== "uniqueItems"/);
   assert.match(generator, /canonicalizeLegacyOutput/);
+  assert.match(generator, /const legacyVariantA/);
+  assert.match(generator, /const legacyVariantB/);
+  assert.match(generator, /proposal\.content/);
+  assert.match(generator, /citation\?\.text/);
   assert.match(generator, /source\.source_id === citation\.source_id && source\.source_version_id === citation\.source_version_id/);
   assert.match(generator, /content_fingerprint: approved\.content_fingerprint/);
   assert.match(generator, /allowedEventIds\.has\(eventId\)/);
@@ -1414,7 +1418,7 @@ test('Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, a
   const runbook = await readFile(new URL('RUNBOOK.md', root), 'utf8');
   const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
 
-  assert.match(common, /EXPECTED_OLD_OPERATIONAL_SHA=623a54d57ffb46393bc64b544e5034af1b81e54043a0cc6e80ab7fe7d6ae39ac/);
+  assert.match(common, /EXPECTED_OLD_OPERATIONAL_SHA=411ab209a2d1b5ea57fefa757b45f54067f7784c58a468b34be7fcdd9e259988/);
   assert.match(common, /activeState=false/);
   assert.match(common, /TANAGHOM_RELEASE_ID=\$TANAGHOM_CONVERSATION_HOTFIX_ID/);
   assert.match(common, /0025_runtime_agent_reconciliation/);
