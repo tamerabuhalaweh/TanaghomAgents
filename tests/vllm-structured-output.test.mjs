@@ -42,7 +42,7 @@ test("Gemma workflows use vLLM-compatible strict structured-output schemas", asy
   const request = workflow.nodes.find((node) => node.name === "Build Gemma Request");
   assert.doesNotMatch(request.parameters.jsCode, /"minProperties"/);
   assert.match(request.parameters.jsCode, /temperature: 0,/);
-  assert.match(request.parameters.jsCode, /max_tokens: 2048,/);
+  assert.match(request.parameters.jsCode, /max_tokens: 4096,/);
   assert.match(
     request.parameters.jsCode,
     /do not return a separate channel list/,
@@ -56,6 +56,12 @@ test("Gemma workflows use vLLM-compatible strict structured-output schemas", asy
     () => ({ first: () => ({ json: { job_id: "test-job", input: {} } }) }),
     { choices: [{ message: { content: JSON.stringify(output) } }] },
   )[0].json;
+  const truncated = new Function("$", "$json", parser.parameters.jsCode)(
+    () => ({ first: () => ({ json: { job_id: "test-job", input: {} } }) }),
+    { choices: [{ finish_reason: "length", message: { content: "{}" } }] },
+  )[0].json;
+  assert.equal(truncated.ok, false);
+  assert.equal(truncated.error_code, "gemma_output_truncated");
   const base = {
     contract_version: "phase3.strategist-output.v2",
     status: "ok",

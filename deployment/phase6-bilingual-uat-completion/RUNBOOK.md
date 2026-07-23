@@ -15,7 +15,7 @@ This package:
 1. requires the live Strategist request to match the reviewed PR #138
    baseline before change;
 2. sends one corrected zero-action probe with temperature zero and the
-   single-source v2 model contract, bounded to 2,048 output tokens;
+   single-source v2 model contract, bounded to 4,096 output tokens;
 3. adds migration `0028_strategy_cadence_integrity`, enforcing the same
    channel/cadence equality at PostgreSQL while transactionally preserving and
    normalizing the three reviewed legacy descriptive cadence rows;

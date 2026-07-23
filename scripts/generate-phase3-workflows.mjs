@@ -45,7 +45,7 @@ function workflow({
   };
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const temperature = agent === "campaign_strategist" ? 0 : 0.2;
-  const tokenBound = agent === "campaign_strategist" ? "max_tokens: 2048, " : "";
+  const tokenBound = agent === "campaign_strategist" ? "max_tokens: 4096, " : "";
   const semanticValidation = agent === "campaign_strategist"
     ? `if (data?.status === 'ok') {
   const allowedChannels = new Set(['instagram','tiktok','facebook','linkedin','youtube','email','whatsapp_status']);
@@ -77,6 +77,7 @@ if (response?.error) return [{ json: { ...claimed, ok: false, error_code: 'gemma
 const statusCode = Number(response.statusCode ?? response.status ?? 200);
 const body = response.body ?? response;
 if (statusCode >= 400) return [{ json: { ...claimed, ok: false, error_code: statusCode === 429 ? 'gemma_rate_limited' : 'gemma_http_error', error_message: String(body?.error?.message ?? body?.message ?? statusCode).slice(0, 1000) } }];
+if (body?.choices?.[0]?.finish_reason === 'length') return [{ json: { ...claimed, ok: false, error_code: 'gemma_output_truncated', error_message: 'Gemma reached the reviewed output-token ceiling before completing the contract' } }];
 const raw = body?.choices?.[0]?.message?.content ?? body?.message?.content;
 if (typeof raw !== 'string' || !raw.trim()) return [{ json: { ...claimed, ok: false, error_code: 'gemma_empty_response', error_message: 'Gemma returned no message content' } }];
 let data;
