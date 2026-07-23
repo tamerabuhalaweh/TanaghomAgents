@@ -126,6 +126,66 @@ assert_partial_bilingual_state() {
   ")" = 0 || die 'bilingual content exists before the resume'
 }
 
+assert_recorded_arabic_strategy_completion() {
+  evidence="/var/backups/tanaghom-$TANAGHOM_BILINGUAL_RESUME_ID"
+  test -s "$evidence/requeue-arabic.sql" ||
+    die 'recorded Arabic requeue SQL is unavailable'
+  grep -q '^ARABIC_REQUEUED_AT=' "$evidence/release.env" ||
+    die 'recorded Arabic requeue timestamp is unavailable'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.agent_actions_log action
+    JOIN tanaghom.agent_jobs job ON job.id=action.job_id
+    JOIN tanaghom.campaigns campaign ON campaign.id=job.campaign_id
+    WHERE campaign.name='.test Arabic Core-Agent UAT 2026-07-23'
+      AND job.job_type='campaign.strategy.generate'
+      AND action.action_type='uat.arabic_strategy_job_requeued'
+      AND action.result='success'
+      AND action.payload->>'resume_id'='$TANAGHOM_BILINGUAL_RESUME_ID'
+      AND action.payload->>'prior_attempt'='3'
+      AND action.payload->>'reason'=
+        'corrected_input_field_mapping_and_reviewed_ceiling';
+  ")" = 1 || die 'exactly one reviewed Arabic requeue audit is required'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.agent_jobs job
+    JOIN tanaghom.campaigns campaign ON campaign.id=job.campaign_id
+    WHERE job.job_type='campaign.strategy.generate'
+      AND job.status='succeeded'
+      AND job.attempt BETWEEN 1 AND job.max_attempts
+      AND job.error_code IS NULL
+      AND (
+        (campaign.name='.test English Core-Agent UAT 2026-07-23'
+          AND campaign.status='strategy_ready')
+        OR
+        (campaign.name='.test Arabic Core-Agent UAT 2026-07-23'
+          AND campaign.status='strategy_ready')
+      );
+  ")" = 2 || die 'both audited bilingual strategy jobs must be successful'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.campaign_strategies strategy
+    JOIN tanaghom.campaigns campaign ON campaign.id=strategy.campaign_id
+    WHERE campaign.name IN ($UAT_CAMPAIGNS)
+      AND tanaghom.campaign_strategy_cadence_is_valid(
+        strategy.channels,strategy.posting_cadence
+      );
+  ")" = 2 || die 'both audited bilingual strategies must be valid'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.agent_jobs job
+    JOIN tanaghom.campaigns campaign ON campaign.id=job.campaign_id
+    WHERE campaign.name IN ($UAT_CAMPAIGNS)
+      AND job.job_type='campaign.content.generate';
+  ")" = 0 || die 'content jobs already exist before audited continuation'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.content_items content
+    JOIN tanaghom.campaigns campaign ON campaign.id=content.campaign_id
+    WHERE campaign.name IN ($UAT_CAMPAIGNS);
+  ")" = 0 || die 'content drafts already exist before audited continuation'
+}
+
 export_live_strategist() {
   destination=$1
   remote="/home/node/tanaghom-$TANAGHOM_BILINGUAL_RESUME_ID-strategist.json"

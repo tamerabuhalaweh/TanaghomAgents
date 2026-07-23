@@ -30,6 +30,12 @@ This forward-only package:
 9. continues the original bilingual UAT to two strategies, two content jobs,
    and four pending human-review drafts.
 
+The continuation is forward-safe when the active Strategist completes the
+Arabic job between requeue and the runner's next precondition. It requires the
+single immutable requeue audit, both valid strategies, and zero content work,
+then skips duplicate requeueing and records the exact continuation release
+commit before proceeding.
+
 It does not start, stop, restart, edit, or delete Gemma, SmartLabs, SmartCC,
 voice, Nginx, firewall, Compose, credentials, providers, or unrelated
 workflows. Postiz and GHL remain locked with zero operations.

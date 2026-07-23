@@ -33,6 +33,8 @@ test("bilingual UAT completion remains fail-closed and provider-free", async () 
   assert.doesNotMatch(deploy, /systemctl (?:start|stop|restart)/);
   assert.doesNotMatch(deploy, /docker compose (?:up|down)/);
   assert.match(uat, /expected exactly two bilingual jobs/);
+  assert.match(uat, /job\.status='succeeded'/);
+  assert.match(uat, /content work already exists before bilingual continuation/);
   assert.match(uat, /PENDING_HUMAN_REVIEW_DRAFTS=4/);
   assert.match(uat, /EXTERNAL_PROVIDER_OPERATIONS=0/);
   assert.doesNotMatch(uat, /queue_postiz|claim_ghl|publish/);

@@ -11,9 +11,12 @@ grep -q '^COMMITTED_AT=' "$evidence/release.env" ||
   die 'resume correction did not commit'
 test ! -e "$evidence/resume-result.env" || die 'bilingual resume already completed'
 "$SCRIPT_DIR/validate-token-correction.sh"
-assert_partial_bilingual_state
 
-cat >"$evidence/requeue-arabic.sql" <<SQL
+if test -e "$evidence/requeue-arabic.sql"; then
+  assert_recorded_arabic_strategy_completion
+else
+  assert_partial_bilingual_state
+  cat >"$evidence/requeue-arabic.sql" <<SQL
 BEGIN;
 DO \$\$
 DECLARE v_count integer;
@@ -62,10 +65,20 @@ END
 \$\$;
 COMMIT;
 SQL
-chmod 0600 "$evidence/requeue-arabic.sql"
-db_file "$evidence/requeue-arabic.sql"
-printf 'ARABIC_REQUEUED_AT=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-  >>"$evidence/release.env"
+  chmod 0600 "$evidence/requeue-arabic.sql"
+  db_file "$evidence/requeue-arabic.sql"
+  printf 'ARABIC_REQUEUED_AT=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+    >>"$evidence/release.env"
+fi
+
+if grep -q '^CONTINUATION_RELEASE_COMMIT=' "$evidence/release.env"; then
+  grep -q "^CONTINUATION_RELEASE_COMMIT=$TANAGHOM_EXPECTED_RELEASE_COMMIT\$" \
+    "$evidence/release.env" ||
+    die 'continuation release commit differs from the recorded correction'
+else
+  printf 'CONTINUATION_RELEASE_COMMIT=%s\n' \
+    "$TANAGHOM_EXPECTED_RELEASE_COMMIT" >>"$evidence/release.env"
+fi
 
 TANAGHOM_BILINGUAL_UAT_ID=$ORIGINAL_UAT_ID \
 TANAGHOM_BILINGUAL_UAT_AUTHORIZATION=COMPLETE-REVIEWED-TANAGHOM-BILINGUAL-UAT \

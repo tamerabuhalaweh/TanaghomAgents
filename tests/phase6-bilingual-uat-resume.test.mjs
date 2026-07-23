@@ -21,6 +21,9 @@ test("Arabic bilingual resume is exact, bounded, provider-free, and forward-only
     ]);
 
   assert.match(common, /assert_partial_bilingual_state/);
+  assert.match(common, /assert_recorded_arabic_strategy_completion/);
+  assert.match(common, /exactly one reviewed Arabic requeue audit is required/);
+  assert.match(common, /both audited bilingual strategies must be valid/);
   assert.match(common, /job\.error_code='gemma_invalid_json'/);
   assert.match(common, /successful English strategy is unavailable or invalid/);
   assert.match(probe, /\.test Arabic Core-Agent UAT 2026-07-23/);
@@ -35,6 +38,8 @@ test("Arabic bilingual resume is exact, bounded, provider-free, and forward-only
   assert.match(validate, /assert_zero_provider_activity/);
   assert.match(resume, /expected exactly one terminal Arabic strategy job/);
   assert.match(resume, /TANAGHOM_BILINGUAL_CONTINUE_ONLY=true/);
+  assert.match(resume, /CONTINUATION_RELEASE_COMMIT/);
+  assert.match(resume, /assert_recorded_arabic_strategy_completion/);
   assert.match(
     resume,
     /corrected_input_field_mapping_and_reviewed_ceiling/,
