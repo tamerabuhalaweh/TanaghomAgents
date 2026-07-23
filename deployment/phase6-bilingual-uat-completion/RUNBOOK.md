@@ -17,7 +17,8 @@ This package:
 2. sends one corrected zero-action probe with temperature zero and the
    single-source v2 model contract, bounded to 2,048 output tokens;
 3. adds migration `0028_strategy_cadence_integrity`, enforcing the same
-   channel/cadence equality at PostgreSQL;
+   channel/cadence equality at PostgreSQL while transactionally preserving and
+   normalizing the three reviewed legacy descriptive cadence rows;
 4. imports and republishes only the reviewed Strategist workflow;
 5. restarts only the existing n8n main and worker containers, without
    recreation;
@@ -51,8 +52,10 @@ npm run test:database
 ```
 
 The database suite proves the new constraint accepts exact equality, rejects
-missing/extra/duplicate channel mappings and invalid cadence values, rolls
-back only 0028, and reapplies cleanly.
+missing/extra/duplicate channel mappings and invalid cadence values, converts
+legacy descriptive strings deterministically, preserves their exact source in
+a migration-owned backup, restores them on rollback, rolls back only 0028, and
+reapplies cleanly.
 
 ## Controlled correction
 

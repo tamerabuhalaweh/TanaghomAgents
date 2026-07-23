@@ -94,6 +94,43 @@ assert_bilingual_jobs_quarantined() {
   assert_no_claimable_core_backlog
 }
 
+assert_legacy_cadence_backfill_reviewed() {
+  test "$(db_scalar "
+    SELECT count(DISTINCT strategy.id)
+    FROM tanaghom.campaign_strategies strategy
+    CROSS JOIN LATERAL jsonb_each(strategy.posting_cadence) entry
+    WHERE jsonb_typeof(entry.value)='string';
+  ")" = 3 || die 'legacy cadence backfill no longer contains exactly three reviewed strategies'
+
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.campaign_strategies strategy
+    WHERE EXISTS (
+      SELECT 1
+      FROM jsonb_each(strategy.posting_cadence) entry
+      WHERE jsonb_typeof(entry.value)='string'
+        AND NOT (
+          trim(entry.value #>> '{}') ~* '^[[:space:]]*daily([[:space:]]|$)'
+          OR trim(entry.value #>> '{}') ~ '[0-9]+'
+        )
+    )
+    OR EXISTS (
+      SELECT 1
+      FROM jsonb_array_elements_text(strategy.channels) selected(channel)
+      WHERE selected.channel NOT IN (
+        'instagram','tiktok','facebook','linkedin','youtube','email',
+        'whatsapp_status'
+      )
+        OR NOT (strategy.posting_cadence ? selected.channel)
+    )
+    OR EXISTS (
+      SELECT 1
+      FROM jsonb_object_keys(strategy.posting_cadence) cadence(channel)
+      WHERE NOT (strategy.channels ? cadence.channel)
+    );
+  ")" = 0 || die 'legacy cadence rows differ from the reviewed parseable boundary'
+}
+
 export_live_strategist() {
   destination=$1
   remote="/home/node/tanaghom-$TANAGHOM_BILINGUAL_UAT_ID-strategist.json"

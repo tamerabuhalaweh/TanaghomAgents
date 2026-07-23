@@ -16,6 +16,17 @@ test "$(db_scalar "
     AND conname='campaign_strategies_cadence_integrity_check'
     AND contype='c' AND convalidated;
 ")" = 1 || die 'validated database cadence constraint is missing'
+test "$(db_scalar "
+  SELECT count(*)
+  FROM tanaghom.strategy_cadence_0028_legacy_backup;
+")" = 3 || die 'exactly three reviewed legacy cadence sources were not preserved'
+test "$(db_scalar "
+  SELECT count(*)
+  FROM tanaghom.campaign_strategies strategy
+  WHERE NOT tanaghom.campaign_strategy_cadence_is_valid(
+    strategy.channels,strategy.posting_cadence
+  );
+")" = 0 || die 'a persisted strategy remains outside the cadence guard'
 assert_n8n_healthy
 assert_container_ids_unchanged "$evidence/n8n-container-ids.before"
 assert_all_workflows_running
