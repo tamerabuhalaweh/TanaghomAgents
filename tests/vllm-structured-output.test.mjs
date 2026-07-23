@@ -31,5 +31,13 @@ test("Gemma workflows use vLLM-compatible strict structured-output schemas", asy
   ));
   const cadence = strategist.oneOf[0].properties.posting_cadence;
   assert.equal(cadence.additionalProperties, false);
+  assert.equal(cadence.minProperties, 1);
   assert.equal(Object.keys(cadence.properties).length, 7);
+
+  const workflow = JSON.parse(await readFile(
+    join(root, "n8n/workflows/phase3/campaign-strategist.v1.json"),
+    "utf8",
+  ));
+  const request = workflow.nodes.find((node) => node.name === "Build Gemma Request");
+  assert.doesNotMatch(request.parameters.jsCode, /"minProperties"/);
 });
