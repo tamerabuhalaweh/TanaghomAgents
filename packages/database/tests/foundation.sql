@@ -40,7 +40,7 @@ BEGIN
     posting_cadence, content_pillars, model_name, prompt_version
   ) VALUES (
     '20000000-0000-4000-8000-000000000001', 1, 'Staging positioning',
-    '["safe"]', '["instagram"]', '{"instagram":"weekly"}', '["growth"]',
+    '["safe"]', '["instagram"]', '{"instagram":{"posts_per_week":1}}', '["growth"]',
     'fixture-model', 'test-v1'
   ) RETURNING id INTO strategy_id;
 

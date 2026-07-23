@@ -96,7 +96,7 @@ try {
       is_active=true`);
   const strategy = await pool.query(`INSERT INTO tanaghom.campaign_strategies
     (campaign_id, version, positioning, key_messages, channels, posting_cadence, content_pillars, model_name, prompt_version)
-    VALUES ('20000000-0000-4000-8000-000000000001', 401, 'Postiz workflow test', '["safe"]', '["instagram"]', '{}', '["proof"]', 'none', 'phase4-test')
+    VALUES ('20000000-0000-4000-8000-000000000001', 401, 'Postiz workflow test', '["safe"]', '["instagram"]', '{"instagram":{"posts_per_week":1}}', '["proof"]', 'none', 'phase4-test')
     RETURNING id`);
   await pool.query(`INSERT INTO tanaghom.content_items
     (id, campaign_id, strategy_id, generation, channel, content_type, draft_copy, media_brief, status)

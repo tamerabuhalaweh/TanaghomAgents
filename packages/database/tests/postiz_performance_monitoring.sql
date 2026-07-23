@@ -35,7 +35,7 @@ INSERT INTO tanaghom.campaign_strategies (
 ) VALUES (
   '71000000-0000-4000-8000-000000000001',
   '20000000-0000-4000-8000-000000000001', 510, 'Performance fixture',
-  '["safe"]', '["instagram"]', '{}', '["proof"]', 'none', 'phase4h-test'
+  '["safe"]', '["instagram"]', '{"instagram":{"posts_per_week":1}}', '["proof"]', 'none', 'phase4h-test'
 );
 INSERT INTO tanaghom.content_items (
   id, campaign_id, strategy_id, generation, channel, content_type,

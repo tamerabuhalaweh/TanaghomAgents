@@ -170,7 +170,7 @@ try {
     const audit = await pool.query("SELECT count(*)::int AS count FROM tanaghom.agent_actions_log");
     const unexpectedPersonalData = await pool.query(`SELECT count(*)::int AS count FROM tanaghom.app_users
       WHERE email !~* '(@example\\.test$|@tanaghom\\.test$)'`);
-    assert.equal(migration.rows[0].version, "0027_governed_skill_library");
+    assert.equal(migration.rows[0].version, "0028_strategy_cadence_integrity");
     assert.equal(quality.rows[0].external_actions, 0);
     assert.equal(unexpectedPersonalData.rows[0].count, 0);
     databaseEvidence = {
