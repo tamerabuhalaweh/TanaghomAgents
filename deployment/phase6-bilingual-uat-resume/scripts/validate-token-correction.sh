@@ -11,7 +11,11 @@ assert_migration_0028
 assert_n8n_healthy
 assert_container_ids_unchanged "$evidence/n8n-container-ids.before"
 assert_all_workflows_running
-assert_partial_bilingual_state
+if test -e "$evidence/requeue-arabic.sql"; then
+  assert_recorded_arabic_strategy_completion
+else
+  assert_partial_bilingual_state
+fi
 assert_business_locks
 assert_zero_provider_activity
 assert_gemma_ready

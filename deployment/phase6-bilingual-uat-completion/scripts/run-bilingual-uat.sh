@@ -24,7 +24,12 @@ if test "$continue_only" = true; then
           AND job.status='succeeded')
         OR
         (campaign.name='.test Arabic Core-Agent UAT 2026-07-23'
-          AND job.status='queued' AND job.attempt=0)
+          AND (
+            (job.status='queued' AND job.attempt=0)
+            OR
+            (job.status='succeeded'
+              AND job.attempt BETWEEN 1 AND job.max_attempts)
+          ))
       );
   ")" = 2 || die 'bilingual continuation state is not exact'
   test "$(db_scalar "
@@ -33,6 +38,19 @@ if test "$continue_only" = true; then
     JOIN tanaghom.campaigns campaign ON campaign.id=strategy.campaign_id
     WHERE campaign.name='.test English Core-Agent UAT 2026-07-23';
   ")" = 1 || die 'the successful English strategy was not preserved'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.agent_jobs job
+    JOIN tanaghom.campaigns campaign ON campaign.id=job.campaign_id
+    WHERE campaign.name IN ($UAT_CAMPAIGNS)
+      AND job.job_type='campaign.content.generate';
+  ")" = 0 || die 'content work already exists before bilingual continuation'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.content_items content
+    JOIN tanaghom.campaigns campaign ON campaign.id=content.campaign_id
+    WHERE campaign.name IN ($UAT_CAMPAIGNS);
+  ")" = 0 || die 'content drafts already exist before bilingual continuation'
 else
   assert_bilingual_jobs_quarantined
 
