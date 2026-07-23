@@ -34,6 +34,7 @@ function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersi
   };
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const temperature = agent === "campaign_strategist" ? 0 : 0.2;
+  const tokenBound = agent === "campaign_strategist" ? "max_tokens: 2048, " : "";
   const semanticValidation = agent === "campaign_strategist"
     ? `if (data?.status === 'ok') {
   const allowedChannels = new Set(['instagram','tiktok','facebook','linkedin','youtube','email','whatsapp_status']);
@@ -88,7 +89,7 @@ ${semanticValidation}return [{ json: { ...claimed, ok: true, output: data } }];`
     node(`${prefix}-request`, "Build Gemma Request", "n8n-nodes-base.code", 2, [480, 270], {
       jsCode: `const claimed = $json;
 if (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');
-return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: ${temperature}, response_format: ${JSON.stringify(responseFormat)}, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
+return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: ${temperature}, ${tokenBound}response_format: ${JSON.stringify(responseFormat)}, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
     }),
     node(`${prefix}-gemma`, "Call Gemma", "n8n-nodes-base.httpRequest", 4.2, [720, 270], {
       method: "POST",

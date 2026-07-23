@@ -12,7 +12,7 @@ This package:
 1. requires the live Strategist request to match the reviewed PR #138
    baseline before change;
 2. sends one corrected zero-action probe with temperature zero and a stronger
-   exact-key prompt;
+   exact-key prompt, bounded to 2,048 output tokens;
 3. adds migration `0028_strategy_cadence_integrity`, enforcing the same
    channel/cadence equality at PostgreSQL;
 4. imports and republishes only the reviewed Strategist workflow;
