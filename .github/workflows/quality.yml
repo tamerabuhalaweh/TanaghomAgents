@@ -67,7 +67,7 @@ jobs:
       - run: npm ci
       - run: npm run test:database
       - run: deployment/phase6-bilingual-uat-completion/scripts/test-legacy-cadence-backfill.sh "$DATABASE_TEST_URL"
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0028_strategy_cadence_integrity
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0029_organization_agent_studio
 
   phase7b-skill-library-contract:
     runs-on: ubuntu-latest

@@ -218,6 +218,26 @@ separately reviewed Agent Studio phase.
 isolation, owner-only mutation, safe parsing, immutable publication, export
 audit, clean empty rollback, and zero agent binding or provider operations.
 
+## Phase 7C — No-code Agent Studio
+
+- Owner-controlled template gallery and governed agent composer
+- Immutable organization-agent definitions, versions, configuration, and audit
+- Exact published Skill and active tenant knowledge-version pinning
+- Customer-managed integration bindings with provider/channel compatibility
+- Bounded autonomy, approvals, consent, business-hours, rate, retry,
+  concurrency, runtime, token, action, follow-up, and budget policy
+- Mandatory bilingual safety scenarios and honest rollout blockers
+- Responsive and RTL-capable version, capability, policy, test, and history views
+
+Agent Studio creates configuration only. It cannot expose credentials, mutate
+n8n, call Gemma or a provider, or promote a version into a running rollout.
+Shared execution and runtime certification remain separately reviewed phases.
+
+**Gate:** disposable PostgreSQL migration, tenant isolation, stale-version
+rejection, compatibility validation, least privilege, append-only audit,
+empty-data rollback/reapply, dashboard tests, TypeScript, and production build
+all pass before a deployment package is authorized.
+
 ## External inputs requested only when their phase needs them
 
 - Product name, logo, colors, and tone before final Phase 2 visual polish
