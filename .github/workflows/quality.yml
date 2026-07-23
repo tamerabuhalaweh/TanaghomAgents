@@ -841,3 +841,14 @@ jobs:
           node-version: 22
       - run: deployment/phase6-uat-activation/scripts/validate-package.sh
       - run: deployment/phase6-uat-activation/scripts/test-disposable-n8n-lifecycle.sh
+
+  phase6-uat-runtime-correction-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: deployment/phase6-uat-runtime-correction/scripts/validate-package.sh
+      - run: deployment/phase6-uat-runtime-correction/scripts/test-disposable-n8n-runtime.sh

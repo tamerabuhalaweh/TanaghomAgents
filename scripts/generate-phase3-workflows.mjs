@@ -28,7 +28,10 @@ function guidedDecodingSchema(value) {
 function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, outputSchemaPath, outputSchemaName, persistFunction }) {
   const prompt = readFileSync(join(root, promptPath), "utf8").replace(/\r\n/g, "\n").trim();
   const outputSchema = guidedDecodingSchema(JSON.parse(readFileSync(join(root, outputSchemaPath), "utf8")));
-  const responseFormat = { type: "json_schema", json_schema: { name: outputSchemaName, schema: outputSchema } };
+  const responseFormat = {
+    type: "json_schema",
+    json_schema: { name: outputSchemaName, strict: true, schema: outputSchema },
+  };
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
   const parseCode = `const claimed = $('Claim Job').first().json;
 const response = $json;
