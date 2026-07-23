@@ -181,6 +181,23 @@ leads, or advertising spend.
 **Gate:** provide a working HTTPS product link only after security, recovery,
 approval enforcement, and staging acceptance all pass.
 
+## Phase 7A — Tenant-governed agent capabilities
+
+- Immutable, tenant-aware Skill Registry
+- Strict versioned input/output contracts and permission manifests
+- Pinned executor, instruction-package, and tool-schema checksums
+- One-to-one reconciliation of the eight existing specialized workers
+- Safe instructions-only Agent Skills exports
+- Read-only authenticated API discovery
+
+The first slice is repository-only. It does not add customer agent creation,
+generic skill execution, workflow activation, provider calls, or a production
+migration.
+
+**Gate:** disposable migration and rollback pass; invalid schemas, wildcard
+permissions, unknown executors, cross-tenant bindings, and published-version
+mutation are rejected; all existing runtime and approval behavior is unchanged.
+
 ## External inputs requested only when their phase needs them
 
 - Product name, logo, colors, and tone before final Phase 2 visual polish

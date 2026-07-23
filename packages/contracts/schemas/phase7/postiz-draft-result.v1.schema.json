@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase7/postiz-draft-result.v1.schema.json",
+  "title": "Governed Postiz draft result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "job_id",
+    "organization_id",
+    "content_item_id",
+    "outcome",
+    "provider_operation_id"
+  ],
+  "properties": {
+    "contract_version": { "const": "tanaghom.postiz-draft-result.v1" },
+    "job_id": { "type": "string", "format": "uuid" },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "content_item_id": { "type": "string", "format": "uuid" },
+    "outcome": {
+      "type": "string",
+      "enum": ["draft_created", "rejected", "indeterminate"]
+    },
+    "provider_operation_id": {
+      "type": ["string", "null"],
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": true
+    }
+  }
+}

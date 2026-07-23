@@ -1,0 +1,389 @@
+{
+  "contract_version": "tanaghom.skill-registry.v1",
+  "export_policy": {
+    "format": "agent-skills-compatible",
+    "instructions_and_references_only": true,
+    "customer_executable_scripts_allowed": false,
+    "credentials_allowed": false,
+    "runtime_authority": false
+  },
+  "skills": [
+    {
+      "id": "71000000-0000-4000-8000-000000000001",
+      "code": "create_campaign_strategy",
+      "name": "Create Campaign Strategy",
+      "description": "Create a structured campaign strategy from an approved brief without taking an external action.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "proposal",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000001",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Produce a contract-valid strategy proposal grounded in the approved brief and stop before content generation.",
+        "input_schema_ref": "packages/contracts/schemas/phase3/strategist-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase3/strategist-output.v1.schema.json",
+        "risk_class": "medium",
+        "side_effect_class": "proposal_only",
+        "permission_manifest": {
+          "data_domains": ["campaign_brief", "campaign_strategy"],
+          "integrations": ["gemma_private_api"],
+          "channels": [],
+          "operations": ["campaign.strategy.propose"]
+        },
+        "integration_requirements": ["gemma_private_api"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "campaign_strategy_generator",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/create-campaign-strategy/SKILL.md",
+        "content_hash": "6fc30a74e8ab9672d96b329491f3a08b59c40f693874399a3811c0a8dc89a2b7",
+        "tool_schema_hash": "a373a8cf4f6cd188e4ec7a95c9b995c642a36970ecdb0c4ad830cf287efbef78",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "campaign_strategy_generator"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "campaign_strategist",
+          "worker_code": "campaign_strategy_generator"
+        }
+      ]
+    },
+    {
+      "id": "71000000-0000-4000-8000-000000000002",
+      "code": "generate_content_drafts",
+      "name": "Generate Content Drafts",
+      "description": "Create channel-specific content drafts and stop at the existing human approval gate.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "proposal",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000002",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Produce only contract-valid draft content from an approved strategy and never approve or publish it.",
+        "input_schema_ref": "packages/contracts/schemas/phase3/content-producer-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json",
+        "risk_class": "medium",
+        "side_effect_class": "proposal_only",
+        "permission_manifest": {
+          "data_domains": ["campaign_strategy", "content_item"],
+          "integrations": ["gemma_private_api"],
+          "channels": ["email", "facebook", "instagram", "linkedin", "tiktok", "x", "youtube"],
+          "operations": ["campaign.content.propose"]
+        },
+        "integration_requirements": ["gemma_private_api"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "campaign_content_generator",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/generate-content-drafts/SKILL.md",
+        "content_hash": "80b06ef7be51c32c1889ac56cb03736ac3e88460a368558b67b50b1abbd65907",
+        "tool_schema_hash": "09a7ff6bb9fdadc55456ce087bee6adafe8afea24b32f27cc8cd6e4177b5513e",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "campaign_content_generator"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "content_producer",
+          "worker_code": "campaign_content_generator"
+        }
+      ]
+    },
+    {
+      "id": "71000000-0000-4000-8000-000000000003",
+      "code": "create_postiz_draft",
+      "name": "Create Postiz Draft",
+      "description": "Create one Postiz draft after server-side approval and policy checks; automatic publishing is unavailable.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "action",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000003",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Create one approved Postiz draft through the private gateway and stop on an indeterminate outcome.",
+        "input_schema_ref": "packages/contracts/schemas/phase7/postiz-draft-command.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase7/postiz-draft-result.v1.schema.json",
+        "risk_class": "high",
+        "side_effect_class": "external_write",
+        "permission_manifest": {
+          "data_domains": ["approval_evidence", "content_item", "publishing_channel"],
+          "integrations": ["postiz_private_gateway"],
+          "channels": ["facebook", "instagram", "linkedin", "tiktok", "x", "youtube"],
+          "operations": ["postiz.draft.create"]
+        },
+        "integration_requirements": ["postiz_private_gateway"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "postiz_draft_publisher",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/create-postiz-draft/SKILL.md",
+        "content_hash": "0f14d2470e1197a2122e778ecaffd0ed3d08a4e13f4d7732ef874236e272c696",
+        "tool_schema_hash": "1fa8b5181def098f65e879a37fdfe3b206fd47ec63b142429d09156fd5282832",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "postiz_draft_publisher"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "publisher_monitor",
+          "worker_code": "postiz_draft_publisher"
+        }
+      ]
+    },
+    {
+      "id": "71000000-0000-4000-8000-000000000004",
+      "code": "read_postiz_performance",
+      "name": "Read Postiz Performance",
+      "description": "Read and normalize authorized Postiz metrics without modifying provider content.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "read",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000004",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Read only authorized Postiz metrics and return normalized, attributable, and truthful observations.",
+        "input_schema_ref": "packages/contracts/schemas/phase4/postiz-performance-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase4/postiz-performance-result.v1.schema.json",
+        "risk_class": "low",
+        "side_effect_class": "read_only",
+        "permission_manifest": {
+          "data_domains": ["post_record", "postiz_analytics", "lead_attribution"],
+          "integrations": ["postiz_private_gateway"],
+          "channels": ["facebook", "instagram", "linkedin", "tiktok", "x", "youtube"],
+          "operations": ["postiz.performance.read"]
+        },
+        "integration_requirements": ["postiz_private_gateway"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "postiz_performance_monitor",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/read-postiz-performance/SKILL.md",
+        "content_hash": "0d3110cd85d4a3c93d9bde6a6f2cdd56bf879414ef841497c51826cd22dad549",
+        "tool_schema_hash": "e716b86de3cff8666cd7ec443c3ab7dcaa348664ccdfe4cca6f424355a223e43",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "postiz_performance_monitor"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "publisher_monitor",
+          "worker_code": "postiz_performance_monitor"
+        }
+      ]
+    },
+    {
+      "id": "71000000-0000-4000-8000-000000000005",
+      "code": "upsert_ghl_contact",
+      "name": "Upsert GHL Contact",
+      "description": "Synchronize one explicitly queued contact to the organization's configured GHL location.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "action",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000005",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Upsert only the server-prepared contact through the private gateway and preserve duplicate and idempotency policy.",
+        "input_schema_ref": "packages/contracts/schemas/phase5/ghl-contact-upsert-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase5/ghl-contact-upsert-result.v1.schema.json",
+        "risk_class": "high",
+        "side_effect_class": "external_write",
+        "permission_manifest": {
+          "data_domains": ["lead_contact", "crm_sync_state"],
+          "integrations": ["ghl_private_gateway"],
+          "channels": [],
+          "operations": ["ghl.contact.upsert"]
+        },
+        "integration_requirements": ["ghl_private_gateway"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "ghl_contact_sync",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/upsert-ghl-contact/SKILL.md",
+        "content_hash": "af85685adf443e6ab7027e4cb7fe0837cbb6fe358c7f63e7975e700770da6401",
+        "tool_schema_hash": "8edfadcf0f1be1fcde8822114a1108eb20eb0dfc44619ca82c89bd7774c61531",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "ghl_contact_sync"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "sales_crm",
+          "worker_code": "ghl_contact_sync"
+        }
+      ]
+    },
+    {
+      "id": "71000000-0000-4000-8000-000000000006",
+      "code": "propose_conversation_reply",
+      "name": "Propose Conversation Reply",
+      "description": "Create a grounded and cited reply proposal for an accepted inbound conversation without sending it.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "proposal",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000006",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Return a grounded cited reply proposal with escalation signals and never send a provider message.",
+        "input_schema_ref": "packages/contracts/schemas/phase5/conversation-intelligence-request.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase5/conversation-intelligence-output.v1.schema.json",
+        "risk_class": "high",
+        "side_effect_class": "proposal_only",
+        "permission_manifest": {
+          "data_domains": ["conversation_context", "knowledge_base", "conversation_policy"],
+          "integrations": ["gemma_private_api"],
+          "channels": ["email", "facebook", "instagram", "live_chat", "sms", "whatsapp"],
+          "operations": ["conversation.reply.propose"]
+        },
+        "integration_requirements": ["gemma_private_api"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "conversation_intelligence_worker",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/propose-conversation-reply/SKILL.md",
+        "content_hash": "2fef589ae17a755e2e1c93e66568eaac825ec4c12e7d9a2f6f328192dee5793e",
+        "tool_schema_hash": "d1b44e976bbf33d6071c42876eca0842f4dbd0b3b6724d888ac72fd1c35a23c5",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "conversation_intelligence_worker"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "sales_crm",
+          "worker_code": "conversation_intelligence_worker"
+        }
+      ]
+    },
+    {
+      "id": "71000000-0000-4000-8000-000000000007",
+      "code": "execute_governed_ghl_action",
+      "name": "Execute Governed GHL Action",
+      "description": "Execute one server-authorized GHL action after all policy, approval, consent, and emergency checks.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "action",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000007",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Execute one prepared and authorized GHL action through the private gateway; stop on any indeterminate outcome.",
+        "input_schema_ref": "packages/contracts/schemas/phase5/ghl-action-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase5/ghl-action-result.v1.schema.json",
+        "risk_class": "critical",
+        "side_effect_class": "external_write",
+        "permission_manifest": {
+          "data_domains": ["action_authorization", "conversation_context", "lead_contact", "crm_state"],
+          "integrations": ["ghl_private_gateway"],
+          "channels": ["email", "facebook", "instagram", "live_chat", "sms", "system", "whatsapp"],
+          "operations": [
+            "ghl.appointment.execute",
+            "ghl.assignment.execute",
+            "ghl.message.execute",
+            "ghl.nurture.execute",
+            "ghl.opportunity.execute",
+            "ghl.qualification.execute",
+            "ghl.status.execute",
+            "ghl.tag.execute"
+          ]
+        },
+        "integration_requirements": ["ghl_private_gateway"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "governed_ghl_actions",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/execute-governed-ghl-action/SKILL.md",
+        "content_hash": "f89bdc5b0241f30523b01aab53481be2f8e399630eff2f4a0301cd7326869733",
+        "tool_schema_hash": "9c2f7f7b275c8972f51869d0659227a0a152601c20b456d6bfe73e3b7039542a",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "governed_ghl_actions"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "sales_crm",
+          "worker_code": "governed_ghl_actions"
+        }
+      ]
+    },
+    {
+      "id": "71000000-0000-4000-8000-000000000008",
+      "code": "evaluate_reply_quality",
+      "name": "Evaluate Reply Quality",
+      "description": "Compare a proposal with approved de-identified human evidence without changing rollout policy or taking an external action.",
+      "owner_scope": "platform",
+      "organization_id": null,
+      "skill_class": "read",
+      "version": {
+        "id": "72000000-0000-4000-8000-000000000008",
+        "number": 1,
+        "lifecycle_state": "published",
+        "instructions": "Evaluate a proposal against the pinned baseline and rubric and return evidence without advancing rollout.",
+        "input_schema_ref": "packages/contracts/schemas/phase5g/quality-shadow-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase5g/quality-shadow-result.v1.schema.json",
+        "risk_class": "medium",
+        "side_effect_class": "read_only",
+        "permission_manifest": {
+          "data_domains": ["deidentified_baseline", "quality_evaluation", "rollout_policy"],
+          "integrations": ["gemma_private_api"],
+          "channels": [],
+          "operations": ["quality.reply.evaluate"]
+        },
+        "integration_requirements": ["gemma_private_api"],
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "quality_shadow_evaluator",
+          "version": "v1"
+        },
+        "package_path": "skills/platform/evaluate-reply-quality/SKILL.md",
+        "content_hash": "8bddf4a27186e327b58030882017faa248fd85ad109e48c57ec17c42784ed444",
+        "tool_schema_hash": "2285c2822b04e2bc0db4c07e92294a8aa51488231112c058abf3b875e76eec26",
+        "published_at": "2026-07-23T00:00:00Z",
+        "audit_provenance": {
+          "source": "phase7a-reconciliation",
+          "issue": 132,
+          "worker_code": "quality_shadow_evaluator"
+        }
+      },
+      "bindings": [
+        {
+          "role_code": "sales_crm",
+          "worker_code": "quality_shadow_evaluator"
+        }
+      ]
+    }
+  ]
+}
