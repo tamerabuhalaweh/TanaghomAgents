@@ -1,0 +1,80 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase7/organization-skill-draft.v1.schema.json",
+  "title": "Governed organization skill draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "code",
+    "skill_class",
+    "display_name",
+    "description",
+    "activation_guidance",
+    "instructions",
+    "examples",
+    "expected_inputs",
+    "expected_outputs",
+    "escalation_conditions",
+    "languages",
+    "references"
+  ],
+  "properties": {
+    "code": { "type": "string", "pattern": "^[a-z][a-z0-9_]{2,79}$" },
+    "skill_class": { "enum": ["knowledge", "proposal_instruction"] },
+    "display_name": { "type": "string", "minLength": 3, "maxLength": 120 },
+    "description": { "type": "string", "minLength": 20, "maxLength": 1000 },
+    "activation_guidance": { "type": "string", "minLength": 20, "maxLength": 2000 },
+    "instructions": { "type": "string", "minLength": 20, "maxLength": 12000 },
+    "examples": {
+      "type": "array",
+      "maxItems": 10,
+      "items": { "type": "string", "minLength": 1, "maxLength": 1000 }
+    },
+    "expected_inputs": { "$ref": "#/$defs/contractTokens" },
+    "expected_outputs": { "$ref": "#/$defs/contractTokens" },
+    "escalation_conditions": { "type": "string", "minLength": 10, "maxLength": 3000 },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": { "enum": ["en", "ar"] }
+    },
+    "references": {
+      "type": "array",
+      "maxItems": 10,
+      "items": { "$ref": "#/$defs/reference" }
+    },
+    "clone_source_version_id": {
+      "type": ["string", "null"],
+      "format": "uuid"
+    }
+  },
+  "$defs": {
+    "contractTokens": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": { "type": "string", "pattern": "^[a-z][a-z0-9._-]{1,79}$" }
+    },
+    "reference": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["reference_type", "reference_key", "title", "language", "provenance"],
+      "properties": {
+        "reference_type": {
+          "enum": ["knowledge_collection", "approved_document", "approved_asset"]
+        },
+        "reference_key": {
+          "type": "string",
+          "pattern": "^(knowledge|document|asset)/[a-z0-9][a-z0-9_./-]{2,199}$"
+        },
+        "title": { "type": "string", "minLength": 3, "maxLength": 200 },
+        "language": { "enum": ["en", "ar", "und"] },
+        "provenance": { "type": "string", "minLength": 3, "maxLength": 500 },
+        "expires_at": { "type": ["string", "null"], "format": "date-time" }
+      }
+    }
+  }
+}
