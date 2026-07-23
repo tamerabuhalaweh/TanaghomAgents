@@ -21,7 +21,7 @@ function guidedDecodingSchema(value) {
   if (Array.isArray(value)) return value.map(guidedDecodingSchema);
   if (!value || typeof value !== "object") return value;
   return Object.fromEntries(Object.entries(value)
-    .filter(([key]) => !["$schema", "$id", "title", "uniqueItems", "format"].includes(key))
+    .filter(([key]) => !["$schema", "$id", "title", "uniqueItems", "format", "minProperties"].includes(key))
     .map(([key, entry]) => [key, guidedDecodingSchema(entry)]));
 }
 

@@ -11,7 +11,7 @@ const schemaPaths = [
   "packages/contracts/schemas/phase5g/quality-shadow-result.v1.schema.json",
 ];
 
-const removedBeforeVllm = new Set(["$schema", "$id", "title", "uniqueItems", "format"]);
+const removedBeforeVllm = new Set(["$schema", "$id", "title", "uniqueItems", "format", "minProperties"]);
 
 function guidedSchema(value) {
   if (Array.isArray(value)) return value.map(guidedSchema);
@@ -72,7 +72,7 @@ const cadence = strategist.oneOf[0].properties.posting_cadence;
 const allowedChannels = ["instagram", "tiktok", "facebook", "linkedin", "youtube", "email", "whatsapp_status"];
 assert.deepEqual(Object.keys(cadence.properties), allowedChannels);
 assert.equal(cadence.additionalProperties, false);
-assert.equal(cadence.minProperties, 1);
+assert.equal("minProperties" in cadence, false);
 for (const channel of allowedChannels) {
   assert.deepEqual(cadence.properties[channel].required, ["posts_per_week"]);
   assert.equal(cadence.properties[channel].properties.posts_per_week.minimum, 1);
