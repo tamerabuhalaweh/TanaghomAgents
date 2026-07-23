@@ -50,7 +50,7 @@ test("bilingual UAT completion remains fail-closed and provider-free", async () 
   assert.match(rollback, /DROP TABLE tanaghom\.strategy_cadence_0028_legacy_backup/);
   assert.match(legacyTest, /posts_per_week":5/);
   assert.match(legacyTest, /rollback did not restore the exact legacy cadence/);
-  assert.match(runbook, /bounded to 2,048 output tokens/);
+  assert.match(runbook, /bounded to 4,096 output tokens/);
   assert.match(runbook, /single-source v2 model contract/);
   assert.match(runbook, /Missing customer inputs must not be bypassed/);
 });

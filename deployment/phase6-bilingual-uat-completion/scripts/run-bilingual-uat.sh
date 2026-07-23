@@ -11,9 +11,32 @@ grep -q '^COMMITTED_AT=' "$evidence/release.env" ||
   die 'cadence correction did not commit'
 test ! -e "$evidence/uat-result.env" || die 'bilingual UAT already completed'
 "$SCRIPT_DIR/validate-correction.sh"
-assert_bilingual_jobs_quarantined
+continue_only=${TANAGHOM_BILINGUAL_CONTINUE_ONLY:-false}
+if test "$continue_only" = true; then
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.agent_jobs job
+    JOIN tanaghom.campaigns campaign ON campaign.id=job.campaign_id
+    WHERE campaign.name IN ($UAT_CAMPAIGNS)
+      AND job.job_type='campaign.strategy.generate'
+      AND (
+        (campaign.name='.test English Core-Agent UAT 2026-07-23'
+          AND job.status='succeeded')
+        OR
+        (campaign.name='.test Arabic Core-Agent UAT 2026-07-23'
+          AND job.status='queued' AND job.attempt=0)
+      );
+  ")" = 2 || die 'bilingual continuation state is not exact'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.campaign_strategies strategy
+    JOIN tanaghom.campaigns campaign ON campaign.id=strategy.campaign_id
+    WHERE campaign.name='.test English Core-Agent UAT 2026-07-23';
+  ")" = 1 || die 'the successful English strategy was not preserved'
+else
+  assert_bilingual_jobs_quarantined
 
-cat >"$evidence/requeue.sql" <<SQL
+  cat >"$evidence/requeue.sql" <<SQL
 BEGIN;
 DO \$\$
 DECLARE
@@ -69,10 +92,11 @@ END
 \$\$;
 COMMIT;
 SQL
-chmod 0600 "$evidence/requeue.sql"
-db_file "$evidence/requeue.sql"
-requeued_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
-printf 'REQUEUED_AT=%s\n' "$requeued_at" >>"$evidence/release.env"
+  chmod 0600 "$evidence/requeue.sql"
+  db_file "$evidence/requeue.sql"
+  requeued_at=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+  printf 'REQUEUED_AT=%s\n' "$requeued_at" >>"$evidence/release.env"
+fi
 
 attempt=0
 while :; do

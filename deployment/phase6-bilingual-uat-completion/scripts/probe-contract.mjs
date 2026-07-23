@@ -11,7 +11,7 @@ if (command === "build") {
   const request = new Function("$json", node.parameters.jsCode)(claimed)?.[0]?.json?.request;
   assert.equal(request?.model, "gemma4-26b-a4b-canary");
   assert.equal(request?.temperature, 0);
-  assert.equal(request?.max_tokens, 2048);
+  assert.equal(request?.max_tokens, 4096);
   assert.equal(request?.response_format?.type, "json_schema");
   assert.equal(request?.response_format?.json_schema?.strict, true);
   function hasUnsupported(value) {

@@ -36,6 +36,7 @@ jobs:
       - run: deployment/phase6-existing-campaign-canary/scripts/validate-package.sh
       - run: deployment/phase6-existing-campaign-canary/scripts/test-refusal-paths.sh
       - run: deployment/phase6-content-job-reconciliation/scripts/validate-package.sh
+      - run: deployment/phase6-bilingual-uat-resume/scripts/validate-package.sh
       - run: deployment/phase7b-skill-library/scripts/validate-package.sh
       - run: deployment/phase7ab-skill-library-production-update/scripts/validate-package.sh
 
