@@ -20,6 +20,8 @@ grep -q 'assert_business_locks' "$package/scripts/preflight.sh"
 grep -q 'assert_zero_provider_activity' "$package/scripts/preflight.sh"
 grep -q 'assert_bilingual_jobs_quarantined' "$package/scripts/preflight.sh"
 grep -q 'n8n audit' "$package/scripts/deploy-correction.sh"
+grep -q 'tanaghom-\$TANAGHOM_UAT_CORRECTION_ID-\$id-before.json' "$package/scripts/common.sh"
+grep -q 'tanaghom-\$TANAGHOM_UAT_CORRECTION_ID-\$label-restore.json' "$package/scripts/common.sh"
 
 runtime_scripts="$package/scripts/common.sh $package/scripts/preflight.sh $package/scripts/deploy-correction.sh $package/scripts/validate-release.sh $package/scripts/rollback-correction.sh"
 if grep -E 'iptables|nft|nginx|systemctl|/opt/(smartlabs|smartcc)|/data/' $runtime_scripts; then

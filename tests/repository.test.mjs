@@ -1712,6 +1712,8 @@ test('Phase 6 UAT runtime correction fixes vLLM schemas and starts eight policy-
   assert.match(common, /PREVIOUS_ACTIVATION_ID=uatactivation-20260723T041842Z/);
   assert.match(common, /assert_bilingual_jobs_quarantined/);
   assert.match(common, /assert_no_tanaghom_activation_errors_since/);
+  assert.match(common, /tanaghom-\$TANAGHOM_UAT_CORRECTION_ID-\$id-before\.json/);
+  assert.match(common, /tanaghom-\$TANAGHOM_UAT_CORRECTION_ID-\$label-restore\.json/);
   assert.match(prepare, /tanaghomRuntimeProfile: "uat-policy-gated-polling-v1"/);
   assert.match(prepare, /schedules\[0\]\.disabled = false/);
   assert.match(preflight, /validate-vllm-structured-output-schemas\.mjs/);

@@ -104,6 +104,31 @@ prepare_runtime_workflows() {
   chmod 0600 "$destination"/*.json
 }
 
+export_workflow() {
+  id=$1
+  destination=$2
+  remote="/home/node/tanaghom-$TANAGHOM_UAT_CORRECTION_ID-$id-before.json"
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" >/dev/null 2>&1 || true
+  docker exec -u node "$N8N_MAIN_CONTAINER" \
+    n8n export:workflow --id="$id" --pretty --output="$remote" >/dev/null
+  docker exec -u node "$N8N_MAIN_CONTAINER" test -s "$remote"
+  docker cp "$N8N_MAIN_CONTAINER:$remote" "$destination" >/dev/null
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote"
+  chmod 0600 "$destination"
+}
+
+import_export_inactive() {
+  source=$1
+  label=$2
+  remote="/home/node/tanaghom-$TANAGHOM_UAT_CORRECTION_ID-$label-restore.json"
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" >/dev/null 2>&1 || true
+  docker exec -i -u node "$N8N_MAIN_CONTAINER" sh -ec \
+    'umask 077; cat > "$1"' sh "$remote" <"$source"
+  docker exec -u node "$N8N_MAIN_CONTAINER" \
+    n8n import:workflow --input="$remote" --activeState=false >/dev/null
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote"
+}
+
 assert_all_schedules_enabled() {
   for id in $ALL_IDS; do
     test "$(workflow_schedule_count "$id")" = 1 || die "runtime schedule missing: $id"
