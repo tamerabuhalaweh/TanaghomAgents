@@ -830,3 +830,14 @@ jobs:
       - run: sh -n deployment/dashboard-canary/entrypoint.sh deployment/dashboard-canary/scripts/*.sh
       - run: docker compose -f deployment/dashboard-canary/docker-compose.yml config --quiet
       - run: docker build --pull -f deployment/dashboard-canary/Dockerfile -t tanaghom-dashboard-canary:test .
+
+  phase6-uat-activation-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: deployment/phase6-uat-activation/scripts/validate-package.sh
+      - run: deployment/phase6-uat-activation/scripts/test-disposable-n8n-lifecycle.sh
