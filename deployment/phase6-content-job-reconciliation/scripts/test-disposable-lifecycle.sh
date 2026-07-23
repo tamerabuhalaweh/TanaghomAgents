@@ -14,7 +14,10 @@ content_two='93000000-0000-4000-8000-000000000012'
 psql_file() { psql "$url" -X -v ON_ERROR_STOP=1 -f "$1" >/dev/null; }
 scalar() { psql "$url" -X -v ON_ERROR_STOP=1 -At -c "$1"; }
 
-for file in "$root"/packages/database/migrations/*.up.sql; do psql_file "$file"; done
+for file in "$root"/packages/database/migrations/*.up.sql; do
+  psql_file "$file"
+  test "$(basename "$file")" = 0025_runtime_agent_reconciliation.up.sql && break
+done
 psql_file "$root/packages/database/seeds/staging.sql"
 test "$(scalar 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = 0025_runtime_agent_reconciliation
 
