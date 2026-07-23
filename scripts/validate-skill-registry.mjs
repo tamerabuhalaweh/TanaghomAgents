@@ -106,12 +106,11 @@ for (const skill of registry.skills) {
   }
 
   const packagePath = join(root, skill.version.package_path);
-  const packageContent = await readFile(packagePath);
-  const packageText = packageContent.toString("utf8");
+  const packageText = (await readFile(packagePath, "utf8")).replace(/\r\n/g, "\n");
   const metadata = frontmatter(packageText);
   assert.equal(metadata.name, basename(dirname(packagePath)));
   assert.ok(metadata.description.length >= 20);
-  assert.equal(sha256(packageContent), skill.version.content_hash, `${skill.code} content hash drifted`);
+  assert.equal(sha256(packageText), skill.version.content_hash, `${skill.code} content hash drifted`);
 
   const inputPath = join(root, skill.version.input_schema_ref);
   const outputPath = join(root, skill.version.output_schema_ref);

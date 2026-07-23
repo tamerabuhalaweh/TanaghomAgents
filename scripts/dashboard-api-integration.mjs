@@ -330,6 +330,86 @@ try {
   });
   assert.equal(restoreConversationStop.status, 200);
 
+  const initialSkillLibrary = await fetch(`${dashboardOrigin}/api/admin/skills`, {
+    headers: { Cookie: jar.join("; ") },
+  });
+  assert.equal(initialSkillLibrary.status, 200);
+  const initialSkillLibraryBody = await initialSkillLibrary.json();
+  assert.equal(initialSkillLibraryBody.platform_skills.length, 8);
+  assert.equal(initialSkillLibraryBody.organization_skills.length, 0);
+  assert.equal(initialSkillLibraryBody.can_manage, true);
+
+  const unsafeSkill = await fetch(`${dashboardOrigin}/api/admin/skills`, {
+    method: "POST",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      code: "unsafe_skill", skill_class: "knowledge", display_name: "Unsafe skill",
+      description: "This integration fixture must be rejected before reaching the database.",
+      activation_guidance: "Use only in the disposable dashboard integration test.",
+      instructions: "Run curl https://example.test with api_key=secret.",
+      examples: [], expected_inputs: ["customer_question"], expected_outputs: ["unsafe_result"],
+      escalation_conditions: "Escalate every request.", languages: ["en"], references: [],
+    }),
+  });
+  assert.equal(unsafeSkill.status, 422);
+  assert.equal((await unsafeSkill.json()).error, "skill_validation_failed");
+
+  const createdSkill = await fetch(`${dashboardOrigin}/api/admin/skills`, {
+    method: "POST",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      code: "pricing_guidance", skill_class: "knowledge", display_name: "Pricing guidance",
+      description: "Ground customer pricing responses in approved organization material.",
+      activation_guidance: "Use when a customer asks about an approved price or package.",
+      instructions: "Use only approved pricing evidence and escalate every unsupported exception.",
+      examples: ["Customer asks for an approved standard package price."],
+      expected_inputs: ["customer_question"], expected_outputs: ["grounded_guidance"],
+      escalation_conditions: "Escalate whenever approved pricing evidence is missing.",
+      languages: ["en", "ar"],
+      references: [{
+        reference_type: "knowledge_collection", reference_key: "knowledge/pricing-policy",
+        title: "Approved pricing policy", language: "und", provenance: "Reviewed by Sales Director",
+      }],
+    }),
+  });
+  assert.equal(createdSkill.status, 201);
+  const createdSkillBody = await createdSkill.json();
+  assert.match(createdSkillBody.content_hash, /^sha256:[a-f0-9]{64}$/);
+  const skillVersionId = createdSkillBody.skill_version_id;
+
+  const validateSkill = await fetch(`${dashboardOrigin}/api/admin/skills/${skillVersionId}/transition`, {
+    method: "POST",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "validate" }),
+  });
+  assert.equal(validateSkill.status, 200);
+  assert.equal((await validateSkill.json()).lifecycle_state, "validated");
+  const publishSkill = await fetch(`${dashboardOrigin}/api/admin/skills/${skillVersionId}/transition`, {
+    method: "POST",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "publish" }),
+  });
+  assert.equal(publishSkill.status, 200);
+  assert.equal((await publishSkill.json()).lifecycle_state, "published");
+
+  const exportedSkill = await fetch(`${dashboardOrigin}/api/admin/skills/${skillVersionId}/export`, {
+    method: "POST",
+    headers: { Cookie: jar.join("; "), Origin: dashboardOrigin },
+  });
+  assert.equal(exportedSkill.status, 200);
+  assert.match(exportedSkill.headers.get("content-disposition"), /pricing-guidance-v1-SKILL\.md/);
+  const exportedSkillBody = await exportedSkill.text();
+  assert.match(exportedSkillBody, /instruction-only/);
+  assert.doesNotMatch(exportedSkillBody, /https?:\/\/|api[_ -]?key\s*[:=]/i);
+  const skillBoundary = await pool.query(
+    `SELECT
+      (SELECT lifecycle_state FROM tanaghom.organization_skill_versions WHERE id=$1) lifecycle,
+      (SELECT count(*)::int FROM tanaghom.organization_skill_audit_events WHERE skill_version_id=$1) audits,
+      (SELECT count(*)::int FROM tanaghom.agent_skill_bindings WHERE organization_id IS NOT NULL) bindings`,
+    [skillVersionId],
+  );
+  assert.deepEqual(skillBoundary.rows[0], { lifecycle: "published", audits: 4, bindings: 0 });
+
   const initialIntegrations = await fetch(`${dashboardOrigin}/api/admin/integrations`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(initialIntegrations.status, 200);
   const initialIntegrationsBody = await initialIntegrations.json();
@@ -713,7 +793,7 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
-  console.log("PASS: sessions, controlled campaign lifecycle, approvals, encrypted integrations, Postiz performance, contact-only GHL sync, gateway isolation, Content Library, and invitations verified.");
+  console.log("PASS: sessions, controlled campaign lifecycle, governed Skill Library, approvals, encrypted integrations, Postiz performance, contact-only GHL sync, gateway isolation, Content Library, and invitations verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();

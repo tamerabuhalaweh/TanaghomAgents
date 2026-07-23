@@ -198,6 +198,26 @@ migration.
 permissions, unknown executors, cross-tenant bindings, and published-version
 mutation are rejected; all existing runtime and approval behavior is unchanged.
 
+## Phase 7B — Governed customer Skill Library
+
+- Owner-managed organization knowledge and proposal-instruction skills
+- Immutable draft, validation, publication, supersession, and retirement lifecycle
+- Server-side rejection of secrets, executable content, arbitrary URLs, paths,
+  SQL, packages, MCP runtime references, and n8n identifiers
+- English and Arabic authoring with approved organization-local references
+- Portable Agent Skills-compatible exports with immutable audit evidence
+- Plain-language permissions, version comparison evidence, assignment status,
+  blockers, lifecycle history, and complete responsive states
+
+Publishing a customer skill creates guidance only. It cannot bind or modify an
+agent, call a provider, expose a credential, activate n8n, or obtain a worker
+database privilege. Agent assignment remains an exact-version operation in the
+separately reviewed Agent Studio phase.
+
+**Gate:** disposable database and authenticated API tests prove tenant
+isolation, owner-only mutation, safe parsing, immutable publication, export
+audit, clean empty rollback, and zero agent binding or provider operations.
+
 ## External inputs requested only when their phase needs them
 
 - Product name, logo, colors, and tone before final Phase 2 visual polish

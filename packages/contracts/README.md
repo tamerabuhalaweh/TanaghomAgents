@@ -64,3 +64,9 @@ Redis and PostgreSQL loss, exit 137, AOF/WAL recovery, accepted-state
 preservation, native n8n readiness behavior, and exactly-once synthetic logical
 correlations. It requires zero provider/model/external actions and explicitly
 prohibits production, GPU-server, or SmartLabs contact.
+
+Phase 7 adds closed contracts for the platform Skill Registry, guarded Postiz
+draft operations, and customer-authored organization skill drafts. The
+organization draft contract permits only knowledge and proposal-instruction
+classes; executable content is rejected by the application and database safety
+validators before persistence.

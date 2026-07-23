@@ -59,6 +59,7 @@ const agentRegistryAssertions = join(root, 'packages', 'database', 'tests', 'age
 const campaignLifecycleAssertions = join(root, 'packages', 'database', 'tests', 'campaign_lifecycle.sql');
 const runtimeAgentAssertions = join(root, 'packages', 'database', 'tests', 'runtime_agent_reconciliation.sql');
 const skillRegistryAssertions = join(root, 'packages', 'database', 'tests', 'skill_registry.sql');
+const skillLibraryAssertions = join(root, 'packages', 'database', 'tests', 'governed_skill_library.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -85,6 +86,7 @@ psql('-f', agentRegistryAssertions);
 psql('-f', campaignLifecycleAssertions);
 psql('-f', runtimeAgentAssertions);
 psql('-f', skillRegistryAssertions);
+psql('-f', skillLibraryAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -92,6 +94,8 @@ psql('-f', skillRegistryAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.organization_skill_definitions') IS NOT NULL OR to_regclass('tanaghom.organization_skill_versions') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0027_governed_skill_library') THEN RAISE EXCEPTION '0027 rollback left governed Skill Library state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0026_skill_registry') THEN RAISE EXCEPTION '0027 rollback crossed the 0026 boundary'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.skill_definitions') IS NOT NULL OR to_regclass('tanaghom.skill_versions') IS NOT NULL OR to_regclass('tanaghom.agent_skill_bindings') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0026_skill_registry') THEN RAISE EXCEPTION '0026 rollback left Skill Registry state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0025_runtime_agent_reconciliation') THEN RAISE EXCEPTION '0026 rollback crossed the 0025 boundary'; END IF; END $$;");
 database('rollback');
