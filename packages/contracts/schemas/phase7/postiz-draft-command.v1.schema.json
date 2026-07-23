@@ -1,0 +1,38 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/contracts/phase7/postiz-draft-command.v1.schema.json",
+  "title": "Governed Postiz draft command v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "job_id",
+    "organization_id",
+    "content_item_id",
+    "provider_integration_id",
+    "channel",
+    "copy",
+    "idempotency_key"
+  ],
+  "properties": {
+    "contract_version": { "const": "tanaghom.postiz-draft-command.v1" },
+    "job_id": { "type": "string", "format": "uuid" },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "content_item_id": { "type": "string", "format": "uuid" },
+    "provider_integration_id": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "channel": {
+      "type": "string",
+      "enum": ["facebook", "instagram", "linkedin", "tiktok", "youtube", "x"]
+    },
+    "copy": { "type": "string", "minLength": 1, "maxLength": 20000 },
+    "media_url": {
+      "type": ["string", "null"],
+      "format": "uri",
+      "maxLength": 2000
+    },
+    "idempotency_key": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9._:-]{8,200}$"
+    }
+  }
+}

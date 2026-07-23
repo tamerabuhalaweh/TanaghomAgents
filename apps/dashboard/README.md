@@ -21,7 +21,10 @@ The initial server-only API exposes:
 - `GET /api/approvals` for authenticated active application users;
 - `GET /api/audit` for authenticated active application users.
 - `GET /api/operations` for a consistent read-only snapshot used by overview,
-  campaign, agent, lead, report, notification, and health surfaces.
+  campaign, agent, lead, report, notification, and health surfaces. Its
+  `skill_registry` field lists tenant-visible published skill versions,
+  server-enforced permission manifests, checksums, and pinned worker bindings;
+  it never exposes provider credentials or grants runtime authority.
 - `GET /api/quality` for the authenticated quality evidence and controlled
   rollout snapshot; `PUT /api/quality` records sequential owner decisions only.
 - `POST /api/approvals/:id/decision` for owner/reviewer decisions with an

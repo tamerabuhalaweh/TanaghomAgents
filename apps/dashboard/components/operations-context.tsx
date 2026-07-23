@@ -110,6 +110,60 @@ export interface AgentRegistrySnapshot {
   roles: AgentRegistryRole[];
 }
 
+export interface SkillRegistryBinding {
+  id: string;
+  organization_id: string | null;
+  role_code: string;
+  worker_code: string;
+  binding_state: "active" | "retired";
+}
+
+export interface SkillRegistryEntry {
+  id: string;
+  organization_id: string | null;
+  owner_scope: "platform" | "organization";
+  code: string;
+  name: string;
+  description: string;
+  skill_class: "knowledge" | "read" | "proposal" | "action";
+  version_id: string;
+  version_number: number;
+  lifecycle_state: "published" | "deprecated";
+  instructions: string;
+  input_schema_ref: string;
+  output_schema_ref: string;
+  risk_class: "low" | "medium" | "high" | "critical";
+  side_effect_class: "none" | "read_only" | "proposal_only" | "internal_write" | "external_write";
+  permission_manifest: {
+    data_domains: string[];
+    integrations: string[];
+    channels: string[];
+    operations: string[];
+  };
+  integration_requirements: string[];
+  executor_type: "controlled_database_function" | "private_gateway_operation" | "pinned_n8n_workflow";
+  executor_ref: string;
+  executor_version: string;
+  package_path: string;
+  content_hash: string;
+  tool_schema_hash: string;
+  published_at: string;
+  deprecated_at: string | null;
+  bindings: SkillRegistryBinding[];
+}
+
+export interface SkillRegistrySnapshot {
+  contract_version: "tanaghom.skill-registry.v1";
+  generated_at: string;
+  summary: {
+    total: number;
+    platform: number;
+    organization: number;
+    published: number;
+  };
+  skills: SkillRegistryEntry[];
+}
+
 export interface OperationsLead {
   id: string;
   campaign_id: string;
@@ -193,6 +247,7 @@ export interface OperationsSnapshot {
   campaigns: OperationsCampaign[];
   agents: OperationsAgent[];
   agent_registry: AgentRegistrySnapshot;
+  skill_registry: SkillRegistrySnapshot;
   leads: OperationsLead[];
   performance: {
     impressions: string;

@@ -603,6 +603,21 @@ try {
   assert.ok(operationsBody.agent_registry.roles.flatMap((role) => role.workers)
     .every((worker) => worker.blockers.some((condition) =>
       condition.code === "workflow_inactive" || condition.code === "workflow_not_imported")));
+  assert.deepEqual(
+    operationsBody.skill_registry.summary,
+    { total: 8, platform: 8, organization: 0, published: 8 },
+  );
+  assert.equal(operationsBody.skill_registry.contract_version, "tanaghom.skill-registry.v1");
+  assert.equal(new Set(operationsBody.skill_registry.skills.map((skill) => skill.code)).size, 8);
+  assert.equal(
+    operationsBody.skill_registry.skills.flatMap((skill) => skill.bindings).length,
+    8,
+  );
+  assert.ok(operationsBody.skill_registry.skills.every((skill) =>
+    skill.organization_id === null
+    && skill.lifecycle_state === "published"
+    && skill.permission_manifest.operations.length > 0
+    && !JSON.stringify(skill.permission_manifest).includes("*")));
 
   const pauseMode = await fetch(`${dashboardOrigin}/api/admin/automation/postiz`, {
     method: "PUT",

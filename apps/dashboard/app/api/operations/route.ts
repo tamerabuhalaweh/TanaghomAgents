@@ -74,6 +74,34 @@ export async function GET(request: NextRequest) {
            FROM tanaghom.agent_workflow_registry
           ORDER BY display_order`,
       );
+      const skillRegistry = await client.query(
+        `SELECT definition.id,definition.organization_id,definition.owner_scope,
+                definition.code,definition.name,definition.description,definition.skill_class,
+                version.id AS version_id,version.version_number,version.lifecycle_state,
+                version.instructions,version.input_schema_ref,version.output_schema_ref,
+                version.risk_class,version.side_effect_class,version.permission_manifest,
+                version.integration_requirements,version.executor_type,version.executor_ref,
+                version.executor_version,version.package_path,version.content_hash,
+                version.tool_schema_hash,version.published_at,version.deprecated_at,
+                coalesce((
+                  SELECT jsonb_agg(jsonb_build_object(
+                    'id',binding.id,
+                    'organization_id',binding.organization_id,
+                    'role_code',binding.role_code,
+                    'worker_code',binding.worker_code,
+                    'binding_state',binding.binding_state
+                  ) ORDER BY binding.worker_code)
+                    FROM tanaghom.agent_skill_bindings binding
+                   WHERE binding.skill_version_id=version.id
+                     AND (binding.organization_id IS NULL OR binding.organization_id=$1)
+                ),'[]'::jsonb) AS bindings
+           FROM tanaghom.skill_definitions definition
+           JOIN tanaghom.skill_versions version ON version.skill_id=definition.id
+          WHERE (definition.organization_id IS NULL OR definition.organization_id=$1)
+            AND version.lifecycle_state IN ('published','deprecated')
+          ORDER BY definition.owner_scope,definition.code,version.version_number DESC`,
+        [user.organizationId],
+      );
       const agentJobs = await client.query(
         `WITH scoped AS (
            SELECT job.id,role.code AS role_code,worker.code AS worker_code,job.job_type,job.status,
@@ -359,6 +387,17 @@ export async function GET(request: NextRequest) {
           current_job_started_at: role.current_job?.started_at || null,
         })),
         agent_registry: agentRegistry,
+        skill_registry: {
+          contract_version: "tanaghom.skill-registry.v1",
+          generated_at: new Date().toISOString(),
+          summary: {
+            total: skillRegistry.rows.length,
+            platform: skillRegistry.rows.filter((skill) => skill.owner_scope === "platform").length,
+            organization: skillRegistry.rows.filter((skill) => skill.owner_scope === "organization").length,
+            published: skillRegistry.rows.filter((skill) => skill.lifecycle_state === "published").length,
+          },
+          skills: skillRegistry.rows,
+        },
         leads: leads.rows,
         performance: performance.rows[0],
         campaign_performance: campaignPerformance.rows,

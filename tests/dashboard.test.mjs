@@ -162,7 +162,10 @@ test("operations API reads every remaining dashboard domain in one protected sna
   const operations = await readFile(new URL("app/api/operations/route.ts", dashboard), "utf8");
   assert.match(operations, /authorize/);
   assert.match(operations, /BEGIN TRANSACTION READ ONLY/);
-  for (const domain of ["campaigns", "agent_jobs", "leads", "posts", "notifications"]) {
+  for (const domain of [
+    "campaigns", "agent_jobs", "leads", "posts", "notifications",
+    "skill_definitions", "skill_versions", "agent_skill_bindings",
+  ]) {
     assert.match(operations, new RegExp(`tanaghom\\.${domain}`));
   }
   assert.doesNotMatch(operations, /INSERT|UPDATE|DELETE/);
