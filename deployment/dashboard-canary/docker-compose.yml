@@ -13,12 +13,13 @@ services:
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       INTEGRATION_CREDENTIAL_KEY_VERSION: "1"
-      POSTIZ_AUTOMATION_RUNTIME_READY: "false"
+      POSTIZ_AUTOMATION_RUNTIME_READY: "true"
       GHL_WEBHOOK_INGRESS_ENABLED: "false"
+      GHL_CONTACT_SYNC_ENABLED: "false"
       GHL_ACTION_RUNTIME_ENABLED: "false"
-      GHL_ACTION_RUNTIME_READY: "false"
+      GHL_ACTION_RUNTIME_READY: "true"
       POSTIZ_ALLOWED_BASE_URLS: https://postiz.163-123-180-104.sslip.io/api/public/v1
-      TANAGHOM_INTEGRATION_GATEWAY_URL: ""
+      TANAGHOM_INTEGRATION_GATEWAY_URL: https://tanaghom.38-247-187-232.sslip.io
       NODE_EXTRA_CA_CERTS: /etc/tanaghom/certificates/supabase-root-2021-ca.pem
     secrets:
       - database_url
