@@ -41,6 +41,7 @@ test("Gemma workflows use vLLM-compatible strict structured-output schemas", asy
   const request = workflow.nodes.find((node) => node.name === "Build Gemma Request");
   assert.doesNotMatch(request.parameters.jsCode, /"minProperties"/);
   assert.match(request.parameters.jsCode, /temperature: 0,/);
+  assert.match(request.parameters.jsCode, /max_tokens: 2048,/);
   assert.match(
     request.parameters.jsCode,
     /`posting_cadence` must exactly equal the set of values in `channels`/,

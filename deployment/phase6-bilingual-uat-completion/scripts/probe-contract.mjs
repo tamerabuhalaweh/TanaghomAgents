@@ -11,6 +11,7 @@ if (command === "build") {
   const request = new Function("$json", node.parameters.jsCode)(claimed)?.[0]?.json?.request;
   assert.equal(request?.model, "gemma4-26b-a4b-canary");
   assert.equal(request?.temperature, 0);
+  assert.equal(request?.max_tokens, 2048);
   assert.equal(request?.response_format?.type, "json_schema");
   assert.equal(request?.response_format?.json_schema?.strict, true);
   function hasUnsupported(value) {
@@ -24,6 +25,7 @@ if (command === "build") {
   console.log("PASS: built exact corrected Strategist probe request.");
 } else if (command === "validate") {
   const body = JSON.parse(await readFile(first, "utf8"));
+  assert.notEqual(body?.choices?.[0]?.finish_reason, "length");
   const raw = body?.choices?.[0]?.message?.content;
   assert.equal(typeof raw, "string");
   const output = JSON.parse(raw);
