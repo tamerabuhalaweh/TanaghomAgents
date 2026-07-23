@@ -1612,3 +1612,61 @@ test('Phase 6 content-job reconciliation is exact, least-privileged, idempotent,
   assert.doesNotMatch(runtimeScope, /api\.postiz|services\.leadconnectorhq|^\s*Authorization:|Bearer /m);
   assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
+
+test('Phase 6 all-agent UAT activation publishes every reviewed worker with core-only polling and exact rollback', async () => {
+  const root = new URL('../deployment/phase6-uat-activation/', import.meta.url);
+  const read = (path) => readFile(new URL(path, root), 'utf8');
+  const [common, contract, preflight, deploy, validate, rollback, lifecycle, packageValidation, runbook] =
+    await Promise.all([
+      read('scripts/common.sh'),
+      read('scripts/workflow-contract.mjs'),
+      read('scripts/preflight.sh'),
+      read('scripts/deploy-activation.sh'),
+      read('scripts/validate-release.sh'),
+      read('scripts/rollback-activation.sh'),
+      read('scripts/test-disposable-n8n-lifecycle.sh'),
+      read('scripts/validate-package.sh'),
+      read('RUNBOOK.md'),
+    ]);
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(common, /EXPECTED_MIGRATION=0025_runtime_agent_reconciliation/);
+  assert.match(common, /N8N_EXPECTED_VERSION=2\.26\.8/);
+  assert.match(common, /ACTIVATE-REVIEWED-TANAGHOM-UAT-WORKERS/);
+  assert.match(common, /CORE_IDS='phase3StrategistV1 phase3ContentProducerV1'/);
+  assert.match(common, /NEW_IDS='phase4PostizPerformanceV1 phase5GhlContactUpsertV1 phase5GovernedGhlActionsV1'/);
+  assert.match(common, /delete_new_workflows/);
+  assert.match(common, /workflow_execution_count/);
+  assert.match(contract, /assert\.equal\(ids\.size, 8\)/);
+  assert.match(contract, /public webhook is forbidden/);
+  assert.match(contract, /unreviewed outbound URL/);
+  assert.match(preflight, /assert_business_locks/);
+  assert.match(preflight, /assert_zero_provider_activity/);
+  assert.match(preflight, /assert_no_claimable_core_backlog/);
+  assert.match(preflight, /required encrypted n8n credentials are missing/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(deploy, /for id in \$ALL_IDS; do import_workflow_inactive "\$id"; done/);
+  assert.match(deploy, /for id in \$ALL_IDS; do publish_workflow "\$id"; done/);
+  assert.match(deploy, /runtime_state='active',trigger_state='enabled'/);
+  assert.match(deploy, /runtime_state='active',trigger_state='disabled'/);
+  assert.match(deploy, /n8n audit/);
+  assert.match(validate, /for id in \$CORE_IDS/);
+  assert.match(validate, /for id in \$CONTROLLED_IDS/);
+  assert.match(validate, /new controlled workflow executed unexpectedly/);
+  assert.match(rollback, /ROLLBACK-AUTHORIZED-TANAGHOM-UAT-ACTIVATION/);
+  assert.match(rollback, /new agent work exists after activation; automatic rollback is unsafe/);
+  assert.match(rollback, /registry\.before\.tsv/);
+  assert.match(lifecycle, /five baseline workflows, three imports, eight publications, core-only schedules/);
+  assert.match(packageValidation, /Tanaghom-only, fail-closed, and exactly reversible/);
+  assert.match(runbook, /Postiz requires a mapped supported business staging channel/);
+  assert.match(runbook, /GHL requires a customer staging connection/);
+  assert.match(runbook, /Quality requires a reviewed de-identified English\/Arabic baseline/);
+  assert.match(quality, /phase6-uat-activation-contract/);
+  assert.match(quality, /phase6-uat-activation\/scripts\/test-disposable-n8n-lifecycle\.sh/);
+
+  const runtimeScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.match(runtimeScope, /docker restart "\$N8N_MAIN_CONTAINER" "\$N8N_WORKER_CONTAINER"/);
+  assert.doesNotMatch(runtimeScope, /systemctl (?:stop|restart|reload)|iptables|nft|docker compose|\/opt\/(?:smartlabs|smartcc)|\/data\//i);
+  assert.doesNotMatch(runtimeScope, /UPDATE tanaghom\.(?:automation_platform_controls|organization_automation_policies|organization_crm_policies|quality_rollout_policies)/i);
+  assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});
