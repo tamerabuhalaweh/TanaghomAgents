@@ -35,9 +35,13 @@ test("Arabic bilingual resume is exact, bounded, provider-free, and forward-only
   assert.match(validate, /assert_zero_provider_activity/);
   assert.match(resume, /expected exactly one terminal Arabic strategy job/);
   assert.match(resume, /TANAGHOM_BILINGUAL_CONTINUE_ONLY=true/);
-  assert.match(resume, /reviewed_4096_token_ceiling/);
+  assert.match(
+    resume,
+    /corrected_input_field_mapping_and_reviewed_ceiling/,
+  );
   assert.match(rollback, /Arabic job was requeued; use forward correction/);
   assert.match(runbook, /preserves the successful English strategy/);
+  assert.match(runbook, /campaign\.target_audience\.audience/);
   assert.match(runbook, /four pending human-review drafts/);
 
   const runtime = `${common}\n${probe}\n${preflight}\n${deploy}\n${validate}\n${resume}\n${rollback}`;

@@ -5,21 +5,29 @@
 The English Strategist job completed under the single-source v2 contract. The
 Arabic job safely exhausted retries because all three responses reached the
 reviewed 2,048-token ceiling (`finish_reason: length`) and were rejected as
-invalid JSON. No Arabic strategy, content, or provider operation was persisted.
+invalid JSON. A subsequent zero-action 4,096-token probe exposed the precise
+cause: the model incorrectly looked for `campaign.raw_offer_brief` and
+`campaign.age_range`, although the versioned job supplies the offer at
+`campaign.brief` and a complete audience description at
+`campaign.target_audience.audience`. The model then emitted an incomplete
+`blocked_missing_info` object followed by whitespace. No Arabic strategy,
+content, or provider operation was persisted.
 
 This forward-only package:
 
 1. preserves the successful English strategy;
-2. raises only the Strategist output ceiling to 4,096 tokens;
-3. classifies `finish_reason: length` explicitly as
+2. aligns the Strategist prompt with the exact versioned input paths and makes
+   the required blocked response explicit;
+3. retains the reviewed Strategist output ceiling of 4,096 tokens;
+4. classifies `finish_reason: length` explicitly as
    `gemma_output_truncated`;
-4. runs one zero-action probe using the exact Arabic synthetic job before any
+5. runs one zero-action probe using the exact Arabic synthetic job before any
    workflow write;
-5. imports and republishes only the reviewed Strategist workflow;
-6. restarts only the existing n8n main and worker containers without
+6. imports and republishes only the reviewed Strategist workflow;
+7. restarts only the existing n8n main and worker containers without
    recreation;
-7. requeues exactly one terminal Arabic strategy job; and
-8. continues the original bilingual UAT to two strategies, two content jobs,
+8. requeues exactly one terminal Arabic strategy job; and
+9. continues the original bilingual UAT to two strategies, two content jobs,
    and four pending human-review drafts.
 
 It does not start, stop, restart, edit, or delete Gemma, SmartLabs, SmartCC,

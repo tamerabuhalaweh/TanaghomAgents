@@ -67,4 +67,4 @@ printf 'COMMITTED_AT=%s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" \
 find "$evidence" -type f -exec chmod 0600 {} \;
 committed=true
 trap - EXIT HUP INT TERM
-echo "PASS: Arabic token correction committed. Evidence: $evidence"
+echo "PASS: Arabic Strategist correction committed. Evidence: $evidence"
