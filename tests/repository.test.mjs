@@ -1683,3 +1683,52 @@ test('Phase 6 all-agent UAT activation publishes every reviewed worker with core
   assert.doesNotMatch(runtimeScope, /UPDATE tanaghom\.(?:automation_platform_controls|organization_automation_policies|organization_crm_policies|quality_rollout_policies)/i);
   assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
+
+test('Phase 6 UAT runtime correction fixes vLLM schemas and starts eight policy-gated schedules safely', async () => {
+  const root = new URL('../deployment/phase6-uat-runtime-correction/', import.meta.url);
+  const read = (path) => readFile(new URL(path, root), 'utf8');
+  const [common, prepare, preflight, deploy, validate, rollback, lifecycle, packageValidation, runbook] =
+    await Promise.all([
+      read('scripts/common.sh'),
+      read('scripts/prepare-runtime-workflows.mjs'),
+      read('scripts/preflight.sh'),
+      read('scripts/deploy-correction.sh'),
+      read('scripts/validate-release.sh'),
+      read('scripts/rollback-correction.sh'),
+      read('scripts/test-disposable-n8n-runtime.sh'),
+      read('scripts/validate-package.sh'),
+      read('RUNBOOK.md'),
+    ]);
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+  const schema = JSON.parse(await readFile(
+    new URL('../packages/contracts/schemas/phase3/strategist-output.v1.schema.json', import.meta.url),
+    'utf8',
+  ));
+
+  const cadence = schema.oneOf[0].properties.posting_cadence;
+  assert.equal(cadence.additionalProperties, false);
+  assert.equal(cadence.minProperties, 1);
+  assert.equal(Object.keys(cadence.properties).length, 7);
+  assert.match(common, /PREVIOUS_ACTIVATION_ID=uatactivation-20260723T041842Z/);
+  assert.match(common, /assert_bilingual_jobs_quarantined/);
+  assert.match(common, /assert_no_tanaghom_activation_errors_since/);
+  assert.match(prepare, /tanaghomRuntimeProfile: "uat-policy-gated-polling-v1"/);
+  assert.match(prepare, /schedules\[0\]\.disabled = false/);
+  assert.match(preflight, /validate-vllm-structured-output-schemas\.mjs/);
+  assert.match(preflight, /assert_current_runtime_baseline/);
+  assert.match(deploy, /for id in \$ALL_IDS; do publish_workflow "\$id"; done/);
+  assert.match(deploy, /assert_all_schedules_enabled/);
+  assert.match(deploy, /n8n audit/);
+  assert.match(validate, /policy-gated-polling/);
+  assert.match(rollback, /SAFE-ROLLBACK-TANAGHOM-UAT-RUNTIME-CORRECTION/);
+  assert.match(rollback, /assert_workflow_inactive/);
+  assert.match(lifecycle, /started all eight policy-gated schedules without activation retries/);
+  assert.match(packageValidation, /policy-gated, and safely reversible/);
+  assert.match(runbook, /SmartLabs owner must restore the existing Gemma canary/);
+  assert.match(quality, /phase6-uat-runtime-correction-contract/);
+
+  const runtimeScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(runtimeScope, /systemctl|iptables|nft|nginx|\/opt\/(?:smartlabs|smartcc)|\/data\//i);
+  assert.doesNotMatch(runtimeScope, /UPDATE tanaghom\.(?:automation_platform_controls|organization_automation_policies|organization_crm_policies|quality_rollout_policies)/i);
+  assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
+});

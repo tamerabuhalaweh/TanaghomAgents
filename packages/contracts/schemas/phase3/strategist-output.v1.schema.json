@@ -13,7 +13,48 @@
         "positioning": { "type": "string", "minLength": 1, "maxLength": 2000 },
         "key_messages": { "type": "array", "minItems": 3, "maxItems": 5, "uniqueItems": true, "items": { "type": "string", "minLength": 1, "maxLength": 500 } },
         "channels": { "type": "array", "minItems": 1, "uniqueItems": true, "items": { "enum": ["instagram", "tiktok", "facebook", "linkedin", "youtube", "email", "whatsapp_status"] } },
-        "posting_cadence": { "type": "object", "minProperties": 1 },
+        "posting_cadence": {
+          "type": "object",
+          "additionalProperties": false,
+          "minProperties": 1,
+          "properties": {
+            "instagram": {
+              "type": "object", "additionalProperties": false,
+              "required": ["posts_per_week"],
+              "properties": { "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14 } }
+            },
+            "tiktok": {
+              "type": "object", "additionalProperties": false,
+              "required": ["posts_per_week"],
+              "properties": { "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14 } }
+            },
+            "facebook": {
+              "type": "object", "additionalProperties": false,
+              "required": ["posts_per_week"],
+              "properties": { "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14 } }
+            },
+            "linkedin": {
+              "type": "object", "additionalProperties": false,
+              "required": ["posts_per_week"],
+              "properties": { "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14 } }
+            },
+            "youtube": {
+              "type": "object", "additionalProperties": false,
+              "required": ["posts_per_week"],
+              "properties": { "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14 } }
+            },
+            "email": {
+              "type": "object", "additionalProperties": false,
+              "required": ["posts_per_week"],
+              "properties": { "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14 } }
+            },
+            "whatsapp_status": {
+              "type": "object", "additionalProperties": false,
+              "required": ["posts_per_week"],
+              "properties": { "posts_per_week": { "type": "integer", "minimum": 1, "maximum": 14 } }
+            }
+          }
+        },
         "content_pillars": {
           "type": "array", "minItems": 4, "maxItems": 8,
           "items": {
