@@ -189,7 +189,7 @@ async function encryptedBacklogRestore(prefix) {
   restorePool = createPool(restoreUrl);
   const restoredFingerprint = await fingerprint(prefix, restorePool);
   assert.deepEqual(restoredFingerprint, sourceFingerprint);
-  assert.equal((await restorePool.query("SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1")).rows[0].version, "0027_governed_skill_library");
+  assert.equal((await restorePool.query("SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1")).rows[0].version, "0028_strategy_cadence_integrity");
 
   await restorePool.query(
     `UPDATE tanaghom.agent_jobs SET started_at=statement_timestamp()-interval '120 seconds'

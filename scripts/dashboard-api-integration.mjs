@@ -511,7 +511,7 @@ try {
   const strategy = await pool.query(
     `INSERT INTO tanaghom.campaign_strategies
        (campaign_id, version, positioning, key_messages, channels, posting_cadence, content_pillars, model_name, prompt_version)
-     VALUES ($1, 90, 'Integration strategy', '["safe"]', '["test"]', '{"daily":0}', '["proof"]', 'fake-model', 'integration-v1')
+     VALUES ($1, 90, 'Integration strategy', '["safe"]', '["instagram"]', '{"instagram":{"posts_per_week":1}}', '["proof"]', 'fake-model', 'integration-v1')
      RETURNING id`,
     [campaignId],
   );

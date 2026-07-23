@@ -65,7 +65,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run test:database
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0027_governed_skill_library
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0028_strategy_cadence_integrity
 
   phase7b-skill-library-contract:
     runs-on: ubuntu-latest
