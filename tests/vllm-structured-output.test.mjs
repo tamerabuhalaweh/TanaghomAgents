@@ -40,4 +40,47 @@ test("Gemma workflows use vLLM-compatible strict structured-output schemas", asy
   ));
   const request = workflow.nodes.find((node) => node.name === "Build Gemma Request");
   assert.doesNotMatch(request.parameters.jsCode, /"minProperties"/);
+  assert.match(request.parameters.jsCode, /temperature: 0,/);
+  assert.match(
+    request.parameters.jsCode,
+    /`posting_cadence` must exactly equal the set of values in `channels`/,
+  );
+
+  const parser = workflow.nodes.find((node) => node.name === "Parse and Check Contract");
+  assert.ok(parser);
+  const runParser = (output) => new Function("$", "$json", parser.parameters.jsCode)(
+    () => ({ first: () => ({ json: { job_id: "test-job", input: {} } }) }),
+    { choices: [{ message: { content: JSON.stringify(output) } }] },
+  )[0].json;
+  const base = {
+    contract_version: "phase3.strategist-output.v1",
+    status: "ok",
+    positioning: "Test",
+    key_messages: ["One", "Two", "Three"],
+    channels: ["linkedin", "instagram"],
+    content_pillars: [
+      { name: "A", description: "A", example_angles: ["A"] },
+      { name: "B", description: "B", example_angles: ["B"] },
+      { name: "C", description: "C", example_angles: ["C"] },
+      { name: "D", description: "D", example_angles: ["D"] },
+    ],
+  };
+  const mismatch = runParser({
+    ...base,
+    posting_cadence: {
+      linkedin: { posts_per_week: 3 },
+      whatsapp_status: { posts_per_week: 2 },
+    },
+  });
+  assert.equal(mismatch.ok, false);
+  assert.equal(mismatch.error_code, "gemma_contract_mismatch");
+
+  const valid = runParser({
+    ...base,
+    posting_cadence: {
+      instagram: { posts_per_week: 2 },
+      linkedin: { posts_per_week: 3 },
+    },
+  });
+  assert.equal(valid.ok, true);
 });

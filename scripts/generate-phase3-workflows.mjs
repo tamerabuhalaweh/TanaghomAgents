@@ -33,6 +33,32 @@ function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersi
     json_schema: { name: outputSchemaName, strict: true, schema: outputSchema },
   };
   const prefix = agent === "campaign_strategist" ? "strategist" : "producer";
+  const temperature = agent === "campaign_strategist" ? 0 : 0.2;
+  const semanticValidation = agent === "campaign_strategist"
+    ? `if (data?.status === 'ok') {
+  const allowedChannels = new Set(['instagram','tiktok','facebook','linkedin','youtube','email','whatsapp_status']);
+  const channels = Array.isArray(data.channels) ? data.channels : [];
+  const cadence = data.posting_cadence && typeof data.posting_cadence === 'object' && !Array.isArray(data.posting_cadence)
+    ? data.posting_cadence : {};
+  const channelKeys = [...new Set(channels)].sort();
+  const cadenceKeys = Object.keys(cadence).sort();
+  const keysMatch = channelKeys.length === channels.length
+    && channelKeys.length === cadenceKeys.length
+    && channelKeys.every((channel, index) => channel === cadenceKeys[index] && allowedChannels.has(channel));
+  const cadenceValuesValid = cadenceKeys.every((channel) => {
+    const value = cadence[channel];
+    return value && typeof value === 'object' && !Array.isArray(value)
+      && Object.keys(value).length === 1
+      && Number.isInteger(value.posts_per_week)
+      && value.posts_per_week >= 1
+      && value.posts_per_week <= 14;
+  });
+  if (!keysMatch || !cadenceValuesValid) {
+    return [{ json: { ...claimed, ok: false, error_code: 'gemma_contract_mismatch', error_message: 'Strategist channels and posting cadence must have identical valid channel keys' } }];
+  }
+}
+`
+    : "";
   const parseCode = `const claimed = $('Claim Job').first().json;
 const response = $json;
 if (response?.error) return [{ json: { ...claimed, ok: false, error_code: 'gemma_request_error', error_message: String(response.error.message ?? response.error).slice(0, 1000) } }];
@@ -47,7 +73,7 @@ if (text.charCodeAt(0) === 96) text = text.replace(/^.{3}(?:json)?\\s*/i, '').re
 try { data = JSON.parse(text); }
 catch (error) { return [{ json: { ...claimed, ok: false, error_code: 'gemma_invalid_json', error_message: String(error.message).slice(0, 1000) } }]; }
 if (data?.contract_version !== '${outputVersion}') return [{ json: { ...claimed, ok: false, error_code: 'gemma_contract_mismatch', error_message: 'Unexpected output contract version' } }];
-return [{ json: { ...claimed, ok: true, output: data } }];`;
+${semanticValidation}return [{ json: { ...claimed, ok: true, output: data } }];`;
 
   const nodes = [
     node(`${prefix}-manual`, "Manual Test Trigger", "n8n-nodes-base.manualTrigger", 1, [0, 180], {}),
@@ -62,7 +88,7 @@ return [{ json: { ...claimed, ok: true, output: data } }];`;
     node(`${prefix}-request`, "Build Gemma Request", "n8n-nodes-base.code", 2, [480, 270], {
       jsCode: `const claimed = $json;
 if (!claimed.job_id || !claimed.input) throw new Error('Claimed job payload is missing');
-return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: 0.2, response_format: ${JSON.stringify(responseFormat)}, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
+return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', temperature: ${temperature}, response_format: ${JSON.stringify(responseFormat)}, messages: [ { role: 'system', content: ${JSON.stringify(prompt)} }, { role: 'user', content: JSON.stringify(claimed.input) } ] } } }];`,
     }),
     node(`${prefix}-gemma`, "Call Gemma", "n8n-nodes-base.httpRequest", 4.2, [720, 270], {
       method: "POST",
