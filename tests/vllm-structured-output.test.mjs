@@ -49,6 +49,26 @@ test("Gemma workflows use vLLM-compatible strict structured-output schemas", asy
   );
   assert.match(request.parameters.jsCode, /phase3\.strategist-output\.v2/);
   assert.doesNotMatch(request.parameters.jsCode, /"channels":\{"type":"array"/);
+  assert.match(
+    request.parameters.jsCode,
+    /campaign\.brief` for the raw offer brief/,
+  );
+  assert.match(
+    request.parameters.jsCode,
+    /campaign\.target_audience\.audience` for the clear audience description/,
+  );
+  assert.match(
+    request.parameters.jsCode,
+    /do not additionally require(?:\\n|\s)+`campaign\.age_range`/,
+  );
+  assert.match(
+    request.parameters.jsCode,
+    /Do not look for `campaign\.raw_offer_brief`/,
+  );
+  assert.match(
+    request.parameters.jsCode,
+    /include the required `message`/,
+  );
 
   const parser = workflow.nodes.find((node) => node.name === "Parse and Check Contract");
   assert.ok(parser);

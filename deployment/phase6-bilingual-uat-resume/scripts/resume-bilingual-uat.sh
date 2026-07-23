@@ -50,7 +50,7 @@ BEGIN
          jsonb_build_object(
            'resume_id','$TANAGHOM_BILINGUAL_RESUME_ID',
            'prior_attempt',3,
-           'reason','reviewed_4096_token_ceiling'
+           'reason','corrected_input_field_mapping_and_reviewed_ceiling'
          ),
          'success'
   FROM tanaghom.agent_jobs job
