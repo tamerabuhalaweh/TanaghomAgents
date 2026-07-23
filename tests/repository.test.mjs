@@ -1737,3 +1737,56 @@ test('Phase 6 UAT runtime correction fixes vLLM schemas and starts eight policy-
   assert.doesNotMatch(runtimeScope, /UPDATE tanaghom\.(?:automation_platform_controls|organization_automation_policies|organization_crm_policies|quality_rollout_policies)/i);
   assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@(?:38\.|aws-)/);
 });
+
+test('Phase 6 provider runtime readiness removes only proven infrastructure blockers', async () => {
+  const root = new URL('../deployment/phase6-provider-runtime-readiness/', import.meta.url);
+  const read = (path) => readFile(new URL(path, root), 'utf8');
+  const [common, boundary, preflight, deploy, validate, rollback, packageValidation, runbook] =
+    await Promise.all([
+      read('scripts/common.sh'),
+      read('scripts/validate-gateway-boundary.sh'),
+      read('scripts/preflight.sh'),
+      read('scripts/deploy-update.sh'),
+      read('scripts/validate-release.sh'),
+      read('scripts/rollback-update.sh'),
+      read('scripts/validate-package.sh'),
+      read('RUNBOOK.md'),
+    ]);
+  const compose = await readFile(
+    new URL('../deployment/dashboard-canary/docker-compose.yml', import.meta.url),
+    'utf8',
+  );
+  const quality = await readFile(new URL('../.github/workflows/quality.yml', import.meta.url), 'utf8');
+
+  assert.match(compose, /POSTIZ_AUTOMATION_RUNTIME_READY: "true"/);
+  assert.match(compose, /GHL_ACTION_RUNTIME_READY: "true"/);
+  assert.match(compose, /GHL_ACTION_RUNTIME_ENABLED: "false"/);
+  assert.match(compose, /GHL_CONTACT_SYNC_ENABLED: "false"/);
+  assert.match(compose, /GHL_WEBHOOK_INGRESS_ENABLED: "false"/);
+  assert.match(compose, /TANAGHOM_INTEGRATION_GATEWAY_URL: https:\/\/tanaghom\.38-247-187-232\.sslip\.io/);
+  assert.match(common, /EXPECTED_MIGRATION=0028_strategy_cadence_integrity/);
+  assert.match(common, /GO-ENABLE-PROVEN-PROVIDER-RUNTIME-BOUNDARY/);
+  assert.match(common, /assert_safety_locks/);
+  assert.match(common, /assert_no_reconciliation_blocker/);
+  assert.match(common, /Tanaghom Integration Gateway\|httpHeaderAuth/);
+  assert.match(boundary, /gateway unauthorized HTTP/);
+  assert.match(boundary, /gateway authenticated-invalid HTTP/);
+  assert.match(boundary, /proxy denied example\.com:443/);
+  assert.match(preflight, /assert_current_runtime_locked/);
+  assert.match(preflight, /validate_gateway_boundary/);
+  assert.match(deploy, /trap automatic_rollback EXIT/);
+  assert.match(deploy, /compose up -d --no-deps dashboard/);
+  assert.match(validate, /assert_target_runtime_ready/);
+  assert.match(validate, /assert_n8n_ids_unchanged/);
+  assert.match(validate, /n8n audit/);
+  assert.match(rollback, /ROLLBACK-PROVEN-PROVIDER-RUNTIME-BOUNDARY/);
+  assert.match(rollback, /rollback refused after provider activity/);
+  assert.match(packageValidation, /dashboard-only, evidence-backed, fail-closed, and reversible/);
+  assert.match(runbook, /does not remove the genuine customer\/UAT blockers/i);
+  assert.match(quality, /phase6-provider-runtime-readiness-contract/);
+
+  const runtimeScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
+  assert.doesNotMatch(runtimeScope, /systemctl (?:stop|restart|reload)|iptables (?:-A|-I|-D|-N|-F|-X)|nft |docker (?:stop|restart|rm)/i);
+  assert.doesNotMatch(runtimeScope, /UPDATE tanaghom\.(?:automation_platform_controls|organization_automation_policies|organization_crm_policies)/i);
+  assert.doesNotMatch(`${runtimeScope}\n${runbook}`, /Bearer\s+[A-Za-z0-9_-]{20,}|postgresql:\/\/[^\s:]+:[^\s@]+@/);
+});

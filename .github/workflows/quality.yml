@@ -903,3 +903,10 @@ jobs:
           node-version: 22
       - run: deployment/phase6-uat-runtime-correction/scripts/validate-package.sh
       - run: deployment/phase6-uat-runtime-correction/scripts/test-disposable-n8n-runtime.sh
+
+  phase6-provider-runtime-readiness-contract:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - run: deployment/phase6-provider-runtime-readiness/scripts/validate-package.sh
