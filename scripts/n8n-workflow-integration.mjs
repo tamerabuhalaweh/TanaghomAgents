@@ -9,6 +9,7 @@ import pg from "pg";
 
 const databaseUrl = process.env.DATABASE_TEST_URL;
 if (!databaseUrl) throw new Error("DATABASE_TEST_URL is required");
+const databasePort = Number(new URL(databaseUrl).port || 5432);
 const image = "docker.n8n.io/n8nio/n8n:2.26.8@sha256:0afb71a39e51637b4d5b4010d90e68bc502d3ca1d2a4d953eb5fcd7d86330ccd";
 const root = process.cwd();
 const temporary = await mkdtemp(join(tmpdir(), "tanaghom-n8n-"));
@@ -38,9 +39,9 @@ const server = createServer(async (request, response) => {
     content = "not-json";
   } else if (system.includes("Campaign Strategist")) {
     content = JSON.stringify({
-      contract_version: "phase3.strategist-output.v1", status: "ok",
+      contract_version: "phase3.strategist-output.v2", status: "ok",
       positioning: "Integration-only positioning", key_messages: ["one", "two", "three"],
-      channels: ["instagram"], posting_cadence: { instagram: { posts_per_week: 1 } },
+      posting_cadence: { instagram: { posts_per_week: 1 } },
       content_pillars: [
         { name: "Proof", description: "Evidence", example_angles: ["A"] },
         { name: "People", description: "Audience", example_angles: ["B"] },
@@ -65,7 +66,7 @@ try {
   await pool.query("ALTER ROLE tanaghom_n8n_worker LOGIN PASSWORD 'integration-only'");
 
   const credentials = [
-    { id: "62000000-0000-4000-8000-000000000001", name: "Tanaghom Worker PostgreSQL", type: "postgres", data: { host: dockerHost, database: "tanaghom_agents_workflow_test", user: "tanaghom_n8n_worker", password: "integration-only", port: 5432, ssl: "disable" } },
+    { id: "62000000-0000-4000-8000-000000000001", name: "Tanaghom Worker PostgreSQL", type: "postgres", data: { host: dockerHost, database: "tanaghom_agents_workflow_test", user: "tanaghom_n8n_worker", password: "integration-only", port: databasePort, ssl: "disable" } },
     { id: "62000000-0000-4000-8000-000000000002", name: "Tanaghom Gemma API", type: "httpHeaderAuth", data: { name: "Authorization", value: "Bearer integration-only" } },
   ];
   await writeFile(join(temporary, "credentials.json"), JSON.stringify(credentials));

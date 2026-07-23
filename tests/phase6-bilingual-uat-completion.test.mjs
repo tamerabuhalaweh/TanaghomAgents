@@ -37,5 +37,6 @@ test("bilingual UAT completion remains fail-closed and provider-free", async () 
   assert.match(migration, /FROM jsonb_object_keys\(p_posting_cadence\)/);
   assert.match(migration, /v_cadence_count <> v_channel_count/);
   assert.match(runbook, /bounded to 2,048 output tokens/);
+  assert.match(runbook, /single-source v2 model contract/);
   assert.match(runbook, /Missing customer inputs must not be bypassed/);
 });

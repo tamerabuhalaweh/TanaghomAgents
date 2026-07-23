@@ -3,16 +3,19 @@
 ## Purpose
 
 The corrected PR #138 structured-output schema was accepted by the protected
-Gemma canary without an engine restart, but the first live probe exposed a
-second fail-closed correctness gap: `channels` and `posting_cadence` could
-contain different channel sets while both remained structurally valid.
+Gemma canary without an engine restart, but live probes exposed a second
+fail-closed correctness gap: independently generated `channels` and
+`posting_cadence` fields could disagree while both remained structurally valid.
+The corrected model-output v2 contract removes that redundant representation.
+Gemma returns cadence keys once; the reviewed parser deterministically derives
+the canonical stored v1 `channels` array before the database boundary.
 
 This package:
 
 1. requires the live Strategist request to match the reviewed PR #138
    baseline before change;
-2. sends one corrected zero-action probe with temperature zero and a stronger
-   exact-key prompt, bounded to 2,048 output tokens;
+2. sends one corrected zero-action probe with temperature zero and the
+   single-source v2 model contract, bounded to 2,048 output tokens;
 3. adds migration `0028_strategy_cadence_integrity`, enforcing the same
    channel/cadence equality at PostgreSQL;
 4. imports and republishes only the reviewed Strategist workflow;

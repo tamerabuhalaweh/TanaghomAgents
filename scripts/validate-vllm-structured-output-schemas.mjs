@@ -6,6 +6,7 @@ import { fileURLToPath } from "node:url";
 const root = dirname(dirname(fileURLToPath(import.meta.url)));
 const schemaPaths = [
   "packages/contracts/schemas/phase3/strategist-output.v1.schema.json",
+  "packages/contracts/schemas/phase3/strategist-output.v2.schema.json",
   "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json",
   "packages/contracts/schemas/phase5/conversation-intelligence-output.v1.schema.json",
   "packages/contracts/schemas/phase5g/quality-shadow-result.v1.schema.json",
@@ -67,7 +68,7 @@ for (const relativePath of schemaPaths) {
   validateSchema(guidedSchema(source), relativePath);
 }
 
-const strategist = guidedSchema(JSON.parse(await readFile(join(root, schemaPaths[0]), "utf8")));
+const strategist = guidedSchema(JSON.parse(await readFile(join(root, schemaPaths[1]), "utf8")));
 const cadence = strategist.oneOf[0].properties.posting_cadence;
 const allowedChannels = ["instagram", "tiktok", "facebook", "linkedin", "youtube", "email", "whatsapp_status"];
 assert.deepEqual(Object.keys(cadence.properties), allowedChannels);

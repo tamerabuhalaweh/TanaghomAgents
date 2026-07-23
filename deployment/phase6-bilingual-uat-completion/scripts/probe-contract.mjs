@@ -29,29 +29,33 @@ if (command === "build") {
   const raw = body?.choices?.[0]?.message?.content;
   assert.equal(typeof raw, "string");
   const output = JSON.parse(raw);
-  assert.equal(output.contract_version, "phase3.strategist-output.v1");
+  assert.equal(output.contract_version, "phase3.strategist-output.v2");
   assert.equal(output.status, "ok");
   assert.equal(typeof output.positioning, "string");
   assert.ok(output.positioning.trim());
   assert.ok(Array.isArray(output.key_messages));
   assert.ok(output.key_messages.length >= 3 && output.key_messages.length <= 5);
-  assert.ok(Array.isArray(output.channels) && output.channels.length > 0);
-  assert.equal(new Set(output.channels).size, output.channels.length);
+  assert.equal(Object.hasOwn(output, "channels"), false);
   assert.ok(output.posting_cadence && typeof output.posting_cadence === "object");
-  assert.deepEqual(
-    Object.keys(output.posting_cadence).sort(),
-    [...output.channels].sort(),
-  );
-  for (const channel of output.channels) {
+  const channels = Object.keys(output.posting_cadence).sort();
+  assert.ok(channels.length > 0);
+  for (const channel of channels) {
     assert.deepEqual(Object.keys(output.posting_cadence[channel]), ["posts_per_week"]);
     const value = output.posting_cadence[channel].posts_per_week;
     assert.ok(Number.isInteger(value) && value >= 1 && value <= 14);
   }
   assert.ok(Array.isArray(output.content_pillars));
   assert.ok(output.content_pillars.length >= 4 && output.content_pillars.length <= 8);
-  console.log(`PROBE_CHANNELS=${output.channels.length}`);
+  const canonical = {
+    ...output,
+    contract_version: "phase3.strategist-output.v1",
+    channels,
+  };
+  assert.equal(canonical.contract_version, "phase3.strategist-output.v1");
+  assert.deepEqual(canonical.channels, Object.keys(canonical.posting_cadence).sort());
+  console.log(`PROBE_CHANNELS=${channels.length}`);
   console.log(`PROBE_PILLARS=${output.content_pillars.length}`);
-  console.log("PASS: Gemma probe output satisfies exact channel/cadence equality.");
+  console.log("PASS: Gemma probe output has one channel source and normalizes deterministically.");
 } else {
   console.error("usage: probe-contract.mjs build WORKFLOW CLAIMED OUTPUT | validate RESPONSE");
   process.exit(2);

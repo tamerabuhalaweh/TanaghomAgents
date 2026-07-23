@@ -25,7 +25,18 @@ function guidedDecodingSchema(value) {
     .map(([key, entry]) => [key, guidedDecodingSchema(entry)]));
 }
 
-function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersion, outputSchemaPath, outputSchemaName, persistFunction }) {
+function workflow({
+  name,
+  agent,
+  jobType,
+  promptPath,
+  promptVersion,
+  outputVersion,
+  persistedOutputVersion = outputVersion,
+  outputSchemaPath,
+  outputSchemaName,
+  persistFunction,
+}) {
   const prompt = readFileSync(join(root, promptPath), "utf8").replace(/\r\n/g, "\n").trim();
   const outputSchema = guidedDecodingSchema(JSON.parse(readFileSync(join(root, outputSchemaPath), "utf8")));
   const responseFormat = {
@@ -38,14 +49,11 @@ function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersi
   const semanticValidation = agent === "campaign_strategist"
     ? `if (data?.status === 'ok') {
   const allowedChannels = new Set(['instagram','tiktok','facebook','linkedin','youtube','email','whatsapp_status']);
-  const channels = Array.isArray(data.channels) ? data.channels : [];
   const cadence = data.posting_cadence && typeof data.posting_cadence === 'object' && !Array.isArray(data.posting_cadence)
     ? data.posting_cadence : {};
-  const channelKeys = [...new Set(channels)].sort();
   const cadenceKeys = Object.keys(cadence).sort();
-  const keysMatch = channelKeys.length === channels.length
-    && channelKeys.length === cadenceKeys.length
-    && channelKeys.every((channel, index) => channel === cadenceKeys[index] && allowedChannels.has(channel));
+  const keysValid = cadenceKeys.length > 0
+    && cadenceKeys.every((channel) => allowedChannels.has(channel));
   const cadenceValuesValid = cadenceKeys.every((channel) => {
     const value = cadence[channel];
     return value && typeof value === 'object' && !Array.isArray(value)
@@ -54,9 +62,12 @@ function workflow({ name, agent, jobType, promptPath, promptVersion, outputVersi
       && value.posts_per_week >= 1
       && value.posts_per_week <= 14;
   });
-  if (!keysMatch || !cadenceValuesValid) {
-    return [{ json: { ...claimed, ok: false, error_code: 'gemma_contract_mismatch', error_message: 'Strategist channels and posting cadence must have identical valid channel keys' } }];
+  if (!keysValid || !cadenceValuesValid) {
+    return [{ json: { ...claimed, ok: false, error_code: 'gemma_contract_mismatch', error_message: 'Strategist posting cadence must contain one or more valid channel entries' } }];
   }
+  data = { ...data, contract_version: '${persistedOutputVersion}', channels: cadenceKeys };
+} else if (data?.status === 'blocked_missing_info') {
+  data = { ...data, contract_version: '${persistedOutputVersion}' };
 }
 `
     : "";
@@ -137,7 +148,7 @@ return [{ json: { ...claimed, request: { model: 'gemma4-26b-a4b-canary', tempera
 }
 
 const definitions = [
-  ["campaign-strategist.v1.json", workflow({ name: "Tanaghom — Campaign Strategist v1", agent: "campaign_strategist", jobType: "campaign.strategy.generate", promptPath: "prompts/campaign-strategist/v1.md", promptVersion: "campaign-strategist/v1", outputVersion: "phase3.strategist-output.v1", outputSchemaPath: "packages/contracts/schemas/phase3/strategist-output.v1.schema.json", outputSchemaName: "tanaghom_strategist_output_v1", persistFunction: "persist_strategy_result" })],
+  ["campaign-strategist.v1.json", workflow({ name: "Tanaghom — Campaign Strategist v1", agent: "campaign_strategist", jobType: "campaign.strategy.generate", promptPath: "prompts/campaign-strategist/v2.md", promptVersion: "campaign-strategist/v2", outputVersion: "phase3.strategist-output.v2", persistedOutputVersion: "phase3.strategist-output.v1", outputSchemaPath: "packages/contracts/schemas/phase3/strategist-output.v2.schema.json", outputSchemaName: "tanaghom_strategist_output_v2", persistFunction: "persist_strategy_result" })],
   ["content-producer.v1.json", workflow({ name: "Tanaghom — Content Producer v1", agent: "content_producer", jobType: "campaign.content.generate", promptPath: "prompts/content-producer/v1.md", promptVersion: "content-producer/v1", outputVersion: "phase3.content-producer-output.v1", outputSchemaPath: "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json", outputSchemaName: "tanaghom_content_producer_output_v1", persistFunction: "persist_content_result" })],
 ];
 for (const [file, definition] of definitions) writeFileSync(join(outputDir, file), `${JSON.stringify(definition, null, 2)}\n`);
