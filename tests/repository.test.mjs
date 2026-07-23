@@ -1643,6 +1643,12 @@ test('Phase 6 all-agent UAT activation publishes every reviewed worker with core
   assert.match(common, /NEW_IDS='phase4PostizPerformanceV1 phase5GhlContactUpsertV1 phase5GovernedGhlActionsV1'/);
   assert.match(common, /delete_new_workflows/);
   assert.match(common, /workflow_execution_count/);
+  assert.match(common, /organization\.slug ~ '\^conversation-canary-\[0-9\]\{8\}t\[0-9\]\{6\}z\$'/);
+  assert.match(common, /connection\.base_url='https:\/\/ghl-shadow-canary\.invalid\.test'/);
+  assert.match(common, /connection\.status='disconnected'/);
+  assert.match(common, /event\.status IN \('succeeded','dead_letter'\)/);
+  assert.match(common, /job\.status IN \('queued','running','waiting_approval'\)/);
+  assert.match(common, /live, customer, or incompletely finalized GHL inbound events exist/);
   assert.match(contract, /assert\.equal\(ids\.size, 8\)/);
   assert.match(contract, /public webhook is forbidden/);
   assert.match(contract, /unreviewed outbound URL/);
@@ -1667,6 +1673,7 @@ test('Phase 6 all-agent UAT activation publishes every reviewed worker with core
   assert.match(runbook, /Postiz requires a mapped supported business staging channel/);
   assert.match(runbook, /GHL requires a customer staging connection/);
   assert.match(runbook, /Quality requires a reviewed de-identified English\/Arabic baseline/);
+  assert.match(runbook, /terminal evidence retained by the controlled\s+conversation-shadow canary/);
   assert.match(quality, /phase6-uat-activation-contract/);
   assert.match(quality, /phase6-uat-activation\/scripts\/test-disposable-n8n-lifecycle\.sh/);
 

@@ -47,8 +47,11 @@ The deployment refuses unless:
 - all provider emergency stops are active;
 - Postiz remains manual, GHL remains paused/manual with proactive messaging
   disabled, and quality rollout remains at baseline;
-- no Tanaghom provider job, inbound event, external operation, quality job, or
-  GHL action job exists;
+- no live/customer provider job, inbound event, external operation, quality
+  job, or GHL action job exists; terminal evidence retained by the controlled
+  conversation-shadow canary is accepted only when its organization and owner
+  are inactive, its sole fake `.invalid.test` connection is disconnected and
+  erased, and its event and worker job are terminal;
 - no core generation job is claimable; and
 - the workflow contracts and credential references match the reviewed exports.
 
