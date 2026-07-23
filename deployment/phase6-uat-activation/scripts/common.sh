@@ -281,8 +281,47 @@ assert_zero_provider_activity() {
     die 'GHL action jobs exist'
   test "$(db_scalar "SELECT count(*) FROM tanaghom.quality_shadow_jobs;")" = 0 ||
     die 'quality shadow jobs exist'
-  test "$(db_scalar "SELECT count(*) FROM tanaghom.ghl_inbound_events;")" = 0 ||
-    die 'GHL inbound events exist'
+  test "$(db_scalar "
+    SELECT count(*)
+    FROM tanaghom.ghl_inbound_events event
+    JOIN tanaghom.organizations organization
+      ON organization.id=event.organization_id
+    JOIN tanaghom.integration_connections connection
+      ON connection.id=event.integration_connection_id
+    WHERE NOT (
+      organization.is_active IS FALSE
+      AND organization.slug ~ '^conversation-canary-[0-9]{8}t[0-9]{6}z$'
+      AND connection.provider='ghl'
+      AND connection.status='disconnected'
+      AND connection.base_url='https://ghl-shadow-canary.invalid.test'
+      AND connection.credential_ciphertext IS NULL
+      AND connection.credential_nonce IS NULL
+      AND connection.credential_auth_tag IS NULL
+      AND connection.credential_key_version IS NULL
+      AND connection.secret_last_four IS NULL
+      AND event.provider_event_id ~ '^event_[0-9]{8}t[0-9]{6}z$'
+      AND event.status IN ('succeeded','dead_letter')
+      AND (
+        SELECT count(*)
+        FROM tanaghom.integration_connections candidate
+        WHERE candidate.organization_id=organization.id
+      )=1
+      AND NOT EXISTS (
+        SELECT 1
+        FROM tanaghom.app_users app
+        WHERE app.organization_id=organization.id
+          AND app.is_active
+      )
+      AND NOT EXISTS (
+        SELECT 1
+        FROM tanaghom.agent_jobs job
+        WHERE job.job_type='conversation.ghl.inbound_event'
+          AND job.input->>'organization_id'=organization.id::text
+          AND job.status IN ('queued','running','waiting_approval')
+      )
+    );
+  ")" = 0 ||
+    die 'live, customer, or incompletely finalized GHL inbound events exist'
   test "$(db_scalar "SELECT count(*) FROM tanaghom.agent_jobs WHERE job_type IN ('content.postiz.draft','postiz.performance.sync','lead.ghl.contact_upsert','ghl.action.execute') AND status IN ('queued','running','waiting_approval');")" = 0 ||
     die 'open provider jobs exist'
 }

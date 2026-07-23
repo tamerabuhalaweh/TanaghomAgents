@@ -23,6 +23,9 @@ grep -q "runtime_state='active',trigger_state='disabled'" "$package/scripts/depl
 grep -q 'n8n audit' "$package/scripts/deploy-activation.sh"
 grep -q 'delete_new_workflows' "$package/scripts/rollback-activation.sh"
 grep -q 'assert_zero_provider_activity' "$package/scripts/preflight.sh"
+grep -Fq "organization.slug ~ '^conversation-canary-[0-9]{8}t[0-9]{6}z$'" "$package/scripts/common.sh"
+grep -Fq "connection.base_url='https://ghl-shadow-canary.invalid.test'" "$package/scripts/common.sh"
+grep -Fq "job.status IN ('queued','running','waiting_approval')" "$package/scripts/common.sh"
 grep -q 'assert_business_locks' "$package/scripts/preflight.sh"
 
 runtime_scripts="$package/scripts/common.sh $package/scripts/preflight.sh $package/scripts/deploy-activation.sh $package/scripts/validate-release.sh $package/scripts/rollback-activation.sh"
