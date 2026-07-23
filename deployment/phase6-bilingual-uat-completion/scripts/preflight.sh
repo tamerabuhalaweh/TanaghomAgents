@@ -15,6 +15,7 @@ test "$(docker exec "$N8N_MAIN_CONTAINER" n8n --version)" = "$N8N_EXPECTED_VERSI
 assert_previous_correction
 assert_all_workflows_running
 assert_bilingual_jobs_quarantined
+assert_legacy_cadence_backfill_reviewed
 assert_business_locks
 assert_zero_provider_activity
 assert_gemma_ready
