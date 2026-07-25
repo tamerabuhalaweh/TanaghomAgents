@@ -12,6 +12,9 @@ tmp/
 *.local
 .DS_Store
 Thumbs.db
+playwright-report/
+test-results/
+playwright/.auth/
 
 # Workflow exports and fixtures must remain secret-free.
 n8n/credentials/
