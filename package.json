@@ -45,6 +45,7 @@
     "test:phase5g-quality": "node scripts/quality-shadow-workflow-integration.mjs",
     "test:phase6-agentic": "node scripts/phase6-agentic-simulation.mjs",
     "test:skill-registry": "node scripts/validate-skill-registry.mjs",
+    "generate:phase7d-workflows": "node scripts/generate-phase7d-workflows.mjs",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",

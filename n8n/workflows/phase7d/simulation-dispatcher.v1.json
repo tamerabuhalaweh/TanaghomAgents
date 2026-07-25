@@ -1,0 +1,129 @@
+{
+  "id": "phase7dSimulationDispatcherV1",
+  "name": "Tanaghom — Agent Simulation Dispatcher v1",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {
+        "workflowInputs": {
+          "values": []
+        }
+      },
+      "id": "phase7d-simulation-input",
+      "name": "Called by Fixed Runtime Workflow",
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        0,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tanaghom.claim_agent_simulation_invocation($1::text);",
+        "options": {
+          "queryReplacement": "={{ ['simulation-dispatcher-v1'] }}"
+        }
+      },
+      "id": "phase7d-simulation-claim",
+      "name": "Claim Authorized Simulation Invocation",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        280,
+        220
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "7d000000-0000-4000-8000-000000000102",
+          "name": "Tanaghom Simulation Executor PostgreSQL"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const claimed = $json;\nif (!claimed.invocation_id || !claimed.run_id || !claimed.expected_behavior) throw new Error('No authorized simulation invocation was claimed');\nreturn [{ json: {\n  ...claimed,\n  outcome: 'succeeded',\n  result: {\n    contract_version: 'phase7.agent-runtime-result.v1',\n    invocation_id: claimed.invocation_id,\n    outcome: 'succeeded',\n    output_json: JSON.stringify({\n      skill_code: claimed.skill_code,\n      operation: claimed.operation,\n      expected_behavior: claimed.expected_behavior,\n      parameter_hash: claimed.parameter_hash,\n      external_action_count: 0\n    }),\n    provider_reference: null,\n    prompt_tokens: 0,\n    completion_tokens: 0,\n    actual_cost: 0,\n    error_code: null\n  }\n} }];"
+      },
+      "id": "phase7d-simulation-build",
+      "name": "Build Zero-Action Simulation Result",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT tanaghom.complete_agent_simulation_invocation($1::uuid,$2::text,$3::jsonb,$4::integer,$5::integer) AS status;",
+        "options": {
+          "queryReplacement": "={{ [$json.invocation_id, $json.outcome, JSON.stringify($json.result), 0, 0] }}"
+        }
+      },
+      "id": "phase7d-simulation-complete",
+      "name": "Record Simulation Evidence",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        840,
+        220
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "7d000000-0000-4000-8000-000000000102",
+          "name": "Tanaghom Simulation Executor PostgreSQL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Called by Fixed Runtime Workflow": {
+      "main": [
+        [
+          {
+            "node": "Claim Authorized Simulation Invocation",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Authorized Simulation Invocation": {
+      "main": [
+        [
+          {
+            "node": "Build Zero-Action Simulation Result",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build Zero-Action Simulation Result": {
+      "main": [
+        [
+          {
+            "node": "Record Simulation Evidence",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 60
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [],
+  "pinData": {},
+  "versionId": "7d000000-0000-4000-8000-000000000202"
+}
