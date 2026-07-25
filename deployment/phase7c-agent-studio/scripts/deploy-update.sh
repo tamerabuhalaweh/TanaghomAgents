@@ -17,7 +17,7 @@ test ! -e "$evidence" || die 'release evidence directory already exists'
 install -d -o root -g root -m 0700 "$evidence"
 capture_n8n_ids "$evidence/n8n-ids.before"
 sha256sum /etc/nginx/conf.d/tanaghom-public.conf > "$evidence/nginx.before.sha256"
-iptables-save | sha256sum | awk '{print $1}' > "$evidence/firewall.before.sha256"
+capture_firewall_boundary "$evidence/firewall.before"
 sha256sum "$PRODUCTION_ROOT/packages/database/migrations/$TARGET_MIGRATION.up.sql" > "$evidence/migration-up.sha256"
 sha256sum "$PRODUCTION_ROOT/packages/database/migrations/$TARGET_MIGRATION.down.sql" > "$evidence/migration-down.sha256"
 chmod 0600 "$evidence"/*

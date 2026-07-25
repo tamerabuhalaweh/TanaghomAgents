@@ -139,6 +139,7 @@ jobs:
       - uses: actions/checkout@v4
       - run: deployment/phase7c-agent-studio/scripts/validate-package.sh
       - run: deployment/phase7c-agent-studio/scripts/test-preflight-http-boundary.sh
+      - run: deployment/phase7c-agent-studio/scripts/test-firewall-boundary.sh
       - run: deployment/phase7c-agent-studio/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
 
   phase5f-database-bridge-contract:

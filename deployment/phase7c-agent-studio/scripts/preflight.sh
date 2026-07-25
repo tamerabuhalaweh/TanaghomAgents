@@ -19,6 +19,7 @@ test "$(db_scalar "SELECT version FROM public.schema_migrations ORDER BY version
 test "$(db_scalar "SELECT to_regclass('tanaghom.organization_agent_versions') IS NULL;")" = t ||
   die 'Agent Studio tables already exist'
 assert_policy_locked
+assert_firewall_boundary
 docker info >/dev/null
 compose config --quiet
 for unit in $PROTECTED_UNITS; do

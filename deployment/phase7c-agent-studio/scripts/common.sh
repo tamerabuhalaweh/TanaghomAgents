@@ -29,6 +29,26 @@ assert_predeployment_agent_studio_api_status() {
   esac
 }
 
+assert_firewall_boundary() {
+  iptables -C DOCKER-USER -j TANAGHOM_N8N_DB_EGRESS >/dev/null 2>&1 ||
+    die 'approved Tanaghom n8n database firewall hook is absent'
+  iptables -C INPUT -j TANAGHOM_N8N_DB_INPUT >/dev/null 2>&1 ||
+    die 'approved Tanaghom n8n database input hook is absent'
+  ! iptables -S DOCKER-USER | grep -q TANAGHOM_N8N_GATEWAY_EGRESS ||
+    die 'rolled-back Phase 4F gateway firewall hook is unexpectedly present'
+}
+
+capture_firewall_boundary() {
+  destination=$1
+  {
+    iptables -S TANAGHOM_N8N_DB_EGRESS
+    iptables -S TANAGHOM_N8N_DB_INPUT
+    iptables -S DOCKER-USER | grep TANAGHOM_N8N_DB_EGRESS
+    iptables -S INPUT | grep TANAGHOM_N8N_DB_INPUT
+  } > "$destination"
+  chmod 0600 "$destination"
+}
+
 assert_agent_studio_target() {
   test "$(db_scalar "SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;")" = "$TARGET_MIGRATION" ||
     die 'Agent Studio target migration is not applied'

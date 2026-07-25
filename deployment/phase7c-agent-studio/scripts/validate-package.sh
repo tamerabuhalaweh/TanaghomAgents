@@ -15,6 +15,9 @@ grep -q 'No deployment is authorized by this document' "$package/RUNBOOK.md"
 grep -q 'shared Phase 7B protected-service' "$package/RUNBOOK.md"
 grep -q 'assert_predeployment_agent_studio_api_status' "$package/scripts/preflight.sh"
 grep -q 'Post-deployment validation requires exactly' "$package/RUNBOOK.md"
+grep -q 'capture_firewall_boundary "\$evidence/firewall.before"' "$package/scripts/deploy-update.sh"
+grep -q 'package-owned firewall state changed' "$package/scripts/validate-release.sh"
+! grep -q 'iptables-save' "$package/scripts/deploy-update.sh"
 
 for file in "$package"/scripts/*.sh; do
   test -x "$file" || {

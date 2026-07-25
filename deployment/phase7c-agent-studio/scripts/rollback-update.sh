@@ -22,6 +22,14 @@ compose up -d --no-deps --force-recreate --no-build dashboard
 test "$(db_scalar "SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;")" = "$EXPECTED_START_MIGRATION" ||
   die 'rollback did not restore migration 0028'
 assert_n8n_ids_unchanged "$evidence/n8n-ids.before"
+current_firewall=$(mktemp)
+trap 'rm -f "$current_firewall"' EXIT
+capture_firewall_boundary "$current_firewall"
+cmp -s "$evidence/firewall.before" "$current_firewall" ||
+  die 'package-owned firewall state changed during rollback'
+assert_firewall_boundary
+rm -f "$current_firewall"
+trap - EXIT
 date -u +%Y-%m-%dT%H:%M:%SZ > "$evidence/ROLLED_BACK_AT"
 chmod 0600 "$evidence/ROLLED_BACK_AT"
 echo 'PASS: Phase 7C Agent Studio empty-schema rollback completed.'

@@ -65,16 +65,18 @@ Preflight is read-only. If any check fails, stop and do not bypass it.
 /opt/tanaghom-dashboard/deployment/phase7c-agent-studio/scripts/deploy-update.sh
 ```
 
-The script records root-only checksums and protected n8n identities, pins the
-current dashboard image for rollback, applies exactly one transaction-scoped
-migration, rebuilds/recreates only the dashboard, and validates:
+The script records root-only checksums, protected n8n identities, and the exact
+package-owned firewall chains/hooks, pins the current dashboard image for
+rollback, applies exactly one transaction-scoped migration, rebuilds/recreates
+only the dashboard, and validates:
 
 - migration `0029` and all eight Agent Studio tables;
 - exactly three reviewed templates and zero organization-agent records;
 - dashboard API read/function access with no direct table DML;
 - no n8n Agent Studio read or mutation privilege;
 - provider safety locks and zero external operations;
-- unchanged n8n container identities, Nginx configuration, and firewall state;
+- unchanged n8n container identities, Nginx configuration, and package-owned
+  firewall chains/hooks, while excluding expected Docker-managed rule ordering;
 - dashboard health plus closed page/API authentication boundaries.
 
 Any failure before commit attempts automatic dashboard-image and empty-schema
