@@ -1,0 +1,373 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/schemas/phase7/organization-agent-draft.v1.schema.json",
+  "title": "Tanaghom organization agent draft",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "code",
+    "template_code",
+    "display_name",
+    "description",
+    "objective",
+    "responsibility",
+    "tone",
+    "brand_profile_key",
+    "languages",
+    "knowledge_keys",
+    "skills",
+    "integrations",
+    "policy"
+  ],
+  "properties": {
+    "code": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,79}$"
+    },
+    "template_code": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{2,79}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "display_name": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "description": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1000
+    },
+    "objective": {
+      "type": "string",
+      "minLength": 10,
+      "maxLength": 500
+    },
+    "responsibility": {
+      "type": "string",
+      "minLength": 20,
+      "maxLength": 1000
+    },
+    "tone": {
+      "type": "string",
+      "minLength": 3,
+      "maxLength": 120
+    },
+    "brand_profile_key": {
+      "anyOf": [
+        {
+          "type": "string",
+          "pattern": "^brand/[a-z0-9][a-z0-9_./-]{2,199}$"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    },
+    "languages": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 2,
+      "uniqueItems": true,
+      "items": {
+        "enum": ["en", "ar"]
+      }
+    },
+    "knowledge_keys": {
+      "type": "array",
+      "maxItems": 20,
+      "uniqueItems": true,
+      "items": {
+        "type": "string",
+        "pattern": "^knowledge/[a-z0-9][a-z0-9_-]{2,79}/v[1-9][0-9]*$"
+      }
+    },
+    "skills": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 20,
+      "items": {
+        "$ref": "#/$defs/skillBinding"
+      }
+    },
+    "integrations": {
+      "type": "array",
+      "maxItems": 8,
+      "items": {
+        "$ref": "#/$defs/integrationBinding"
+      }
+    },
+    "policy": {
+      "$ref": "#/$defs/policy"
+    },
+    "clone_source_version_id": {
+      "anyOf": [
+        {
+          "type": "string",
+          "format": "uuid"
+        },
+        {
+          "type": "null"
+        }
+      ]
+    }
+  },
+  "$defs": {
+    "channel": {
+      "enum": [
+        "email",
+        "facebook",
+        "instagram",
+        "linkedin",
+        "live_chat",
+        "sms",
+        "tiktok",
+        "whatsapp",
+        "x",
+        "youtube"
+      ]
+    },
+    "skillBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "skill_source",
+        "skill_version_id",
+        "operating_mode",
+        "approval_required",
+        "constraints"
+      ],
+      "properties": {
+        "skill_source": {
+          "enum": ["platform", "organization"]
+        },
+        "skill_version_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "operating_mode": {
+          "enum": ["disabled", "manual", "shadow", "assisted"]
+        },
+        "approval_required": {
+          "type": "boolean"
+        },
+        "constraints": {
+          "type": "object",
+          "maxProperties": 0,
+          "additionalProperties": false
+        }
+      }
+    },
+    "integrationBinding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["connection_id", "provider", "purpose", "channels"],
+      "properties": {
+        "connection_id": {
+          "type": "string",
+          "format": "uuid"
+        },
+        "provider": {
+          "enum": ["postiz", "ghl"]
+        },
+        "purpose": {
+          "type": "string",
+          "minLength": 3,
+          "maxLength": 200
+        },
+        "channels": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/channel"
+          }
+        }
+      }
+    },
+    "businessHour": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["day", "start", "end"],
+      "properties": {
+        "day": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 6
+        },
+        "start": {
+          "type": "string",
+          "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$"
+        },
+        "end": {
+          "type": "string",
+          "pattern": "^(?:[01][0-9]|2[0-3]):[0-5][0-9]$"
+        }
+      }
+    },
+    "policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "business_timezone",
+        "business_hours",
+        "allowed_channels",
+        "consent_required",
+        "max_steps",
+        "max_tool_calls",
+        "max_retries",
+        "max_concurrency",
+        "max_runtime_seconds",
+        "max_tokens",
+        "max_daily_actions",
+        "max_actions_per_minute",
+        "max_follow_ups_per_contact",
+        "monthly_budget",
+        "allowed_record_types",
+        "allowed_action_types",
+        "approval_actions",
+        "approval_roles",
+        "approval_expiry_minutes",
+        "parameter_bound_approval",
+        "escalation_conditions"
+      ],
+      "properties": {
+        "business_timezone": {
+          "type": "string",
+          "pattern": "^[A-Za-z_]+(?:/[A-Za-z0-9_+.-]+)+$",
+          "maxLength": 80
+        },
+        "business_hours": {
+          "type": "array",
+          "maxItems": 14,
+          "items": {
+            "$ref": "#/$defs/businessHour"
+          }
+        },
+        "allowed_channels": {
+          "type": "array",
+          "maxItems": 12,
+          "uniqueItems": true,
+          "items": {
+            "$ref": "#/$defs/channel"
+          }
+        },
+        "consent_required": {
+          "type": "boolean"
+        },
+        "max_steps": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "max_tool_calls": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "max_retries": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 5
+        },
+        "max_concurrency": {
+          "type": "integer",
+          "minimum": 1,
+          "maximum": 20
+        },
+        "max_runtime_seconds": {
+          "type": "integer",
+          "minimum": 30,
+          "maximum": 1800
+        },
+        "max_tokens": {
+          "type": "integer",
+          "minimum": 100,
+          "maximum": 32000
+        },
+        "max_daily_actions": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 1000
+        },
+        "max_actions_per_minute": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 100
+        },
+        "max_follow_ups_per_contact": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 20
+        },
+        "monthly_budget": {
+          "type": "number",
+          "minimum": 0,
+          "maximum": 1000000
+        },
+        "approval_actions": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._-]{1,79}$"
+          }
+        },
+        "allowed_record_types": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._-]{1,79}$"
+          }
+        },
+        "allowed_action_types": {
+          "type": "array",
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9._-]{1,79}$"
+          }
+        },
+        "approval_roles": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 2,
+          "uniqueItems": true,
+          "items": {
+            "enum": ["owner", "reviewer"]
+          }
+        },
+        "approval_expiry_minutes": {
+          "type": "integer",
+          "minimum": 5,
+          "maximum": 10080
+        },
+        "parameter_bound_approval": {
+          "const": true
+        },
+        "escalation_conditions": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "uniqueItems": true,
+          "items": {
+            "type": "string",
+            "minLength": 10,
+            "maxLength": 500
+          }
+        }
+      }
+    }
+  }
+}

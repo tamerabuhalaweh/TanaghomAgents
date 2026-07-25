@@ -1,12 +1,13 @@
 "use client";
 
-import { BellRing, LibraryBig, PlugZap } from "lucide-react";
+import { BellRing, Bot, LibraryBig, PlugZap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/settings/integrations", label: "Integrations", icon: PlugZap },
   { href: "/settings/skills", label: "Skill Library", icon: LibraryBig },
+  { href: "/settings/agents", label: "Agent Studio", icon: Bot },
   { href: "/settings/notifications", label: "Notifications", icon: BellRing },
 ];
 

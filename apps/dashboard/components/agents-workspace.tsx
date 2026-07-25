@@ -4,6 +4,7 @@ import {
   Activity, AlertTriangle, ArchiveRestore, Bot, CheckCircle2, Clock3,
   PackageCheck, PauseCircle, ShieldAlert, Workflow,
 } from "lucide-react";
+import Link from "next/link";
 
 import type {
   AgentRegistryBlocker, AgentRegistryJob, AgentRegistryRole, AgentRegistryWorker,
@@ -149,7 +150,11 @@ export function AgentsWorkspace() {
   const registry = operations.data.agent_registry;
   return (
     <div className="page-stack">
-      <PageHeading title="Agents" description="See each business responsibility, the specialized workers behind it, what is running now, and the exact gate preventing activation." />
+      <PageHeading
+        title="Agents"
+        description="See each business responsibility, the specialized workers behind it, what is running now, and the exact gate preventing activation."
+        actions={<Link className="secondary-button" href="/settings/agents"><Bot size={16} /> Open Agent Studio</Link>}
+      />
       <section className="agent-registry-summary" aria-label="Agent registry summary">
         <div className="agent-registry-intro"><PackageCheck size={20} aria-hidden="true" /><div><strong>Release inventory reconciled</strong><p>PostgreSQL is the customer-facing source of truth. n8n remains private and cannot be controlled from this page.</p></div></div>
         <dl>
