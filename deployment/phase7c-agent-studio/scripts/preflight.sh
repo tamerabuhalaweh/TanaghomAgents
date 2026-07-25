@@ -30,7 +30,10 @@ for container in $PROTECTED_N8N_CONTAINERS; do
 done
 test "$(container_health tanaghom-dashboard-canary-dashboard-1)" = healthy ||
   die 'Tanaghom dashboard is unhealthy'
-test "$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$PUBLIC_HOST/api/admin/agents")" = 401 ||
-  die 'Agent Studio API authentication boundary is not closed'
+agent_studio_api_status=$(
+  curl -sS -o /dev/null -w '%{http_code}' --max-time 15 \
+    "https://$PUBLIC_HOST/api/admin/agents"
+)
+assert_predeployment_agent_studio_api_status "$agent_studio_api_status"
 
 echo "PASS: Phase 7C Agent Studio read-only preflight passed for $TANAGHOM_RELEASE_ID."

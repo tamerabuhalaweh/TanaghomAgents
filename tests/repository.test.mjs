@@ -33,11 +33,11 @@ test('security overrides keep audited URI and image dependencies on patched rele
   assert.equal(manifest.overrides.postcss, '$postcss');
   assert.equal(manifest.overrides.sharp, '$sharp');
   assert.equal(manifest.devDependencies.next, '16.2.11');
-  assert.equal(manifest.devDependencies.postcss, '8.5.17');
+  assert.equal(manifest.devDependencies.postcss, '8.5.18');
   assert.equal(manifest.devDependencies.sharp, '0.35.3');
   assert.equal(lock.packages['node_modules/fast-uri'].version, '3.1.4');
   assert.equal(lock.packages['node_modules/next'].version, '16.2.11');
-  assert.equal(lock.packages['node_modules/postcss'].version, '8.5.17');
+  assert.equal(lock.packages['node_modules/postcss'].version, '8.5.18');
   assert.equal(lock.packages['node_modules/sharp'].version, '0.35.3');
 });
 

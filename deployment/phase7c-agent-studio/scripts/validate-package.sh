@@ -13,8 +13,14 @@ grep -q 'rollback refused because organization Agent Studio data exists' "$packa
 grep -q '0029 rollback unexpectedly deleted organization agent data' "$package/scripts/test-disposable-lifecycle.sh"
 grep -q 'No deployment is authorized by this document' "$package/RUNBOOK.md"
 grep -q 'shared Phase 7B protected-service' "$package/RUNBOOK.md"
+grep -q 'assert_predeployment_agent_studio_api_status' "$package/scripts/preflight.sh"
+grep -q 'Post-deployment validation requires exactly' "$package/RUNBOOK.md"
 
 for file in "$package"/scripts/*.sh; do
+  test -x "$file" || {
+    echo "ERROR: Phase 7C script is not executable: $file" >&2
+    exit 1
+  }
   ! grep -Eq 'docker (stop|restart|rm|compose .+ (stop|restart|rm)).*(smartlabs|n8n|gemma|voice)' "$file"
   ! grep -Eq 'systemctl (stop|restart|reload).*(smartlabs|convai|gemma|smartcc)' "$file"
   ! grep -Eq '(/opt/(smartlabs|n8n-smartlabs)|/data/)' "$file"

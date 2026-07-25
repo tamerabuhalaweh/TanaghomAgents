@@ -22,6 +22,13 @@ require_release_environment() {
   esac
 }
 
+assert_predeployment_agent_studio_api_status() {
+  case "${1:-}" in
+    401|404) return 0 ;;
+    *) die 'Agent Studio API is neither absent nor authentication-closed before deployment' ;;
+  esac
+}
+
 assert_agent_studio_target() {
   test "$(db_scalar "SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;")" = "$TARGET_MIGRATION" ||
     die 'Agent Studio target migration is not applied'
