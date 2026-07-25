@@ -1,4 +1,5 @@
 import assert from "node:assert/strict";
+import { execFileSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
 import test from "node:test";
 
@@ -15,8 +16,10 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
     rollback,
     release,
     packageValidation,
+    preflightBoundary,
     lifecycle,
     sharedCommon,
+    quality,
   ] = await Promise.all([
     read("RUNBOOK.md"),
     read("scripts/common.sh"),
@@ -25,8 +28,10 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
     read("scripts/rollback-update.sh"),
     read("scripts/validate-release.sh"),
     read("scripts/validate-package.sh"),
+    read("scripts/test-preflight-http-boundary.sh"),
     read("scripts/test-disposable-lifecycle.sh"),
     readFile(new URL("deployment/phase7b-skill-library/scripts/common.sh", root), "utf8"),
+    readFile(new URL(".github/workflows/quality.yml", root), "utf8"),
   ]);
 
   assert.match(runbook, /No deployment is authorized by this document/);
@@ -37,8 +42,10 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
   assert.match(common, /phase7b-skill-library\/scripts\/common\.sh/);
   assert.match(sharedCommon, /PROTECTED_N8N_CONTAINERS/);
   assert.match(common, /has_table_privilege\('tanaghom_n8n_worker'/);
+  assert.match(common, /assert_predeployment_agent_studio_api_status/);
+  assert.match(common, /401\|404/);
   assert.match(preflight, /database is not at migration 0028/);
-  assert.match(preflight, /api\/admin\/agents/);
+  assert.match(preflight, /assert_predeployment_agent_studio_api_status/);
   assert.match(deploy, /compose up -d --no-deps dashboard/);
   assert.match(deploy, /automatic_rollback/);
   assert.doesNotMatch(deploy, /n8n.*(?:up|restart|stop|rm)/i);
@@ -47,8 +54,31 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
   assert.match(release, /assert_agent_studio_empty/);
   assert.match(release, /firewall state changed/);
   assert.match(release, /settings\/agents/);
+  assert.match(release, /api\/admin\/agents[\s\S]{0,200}= 401/);
   assert.match(packageValidation, /sh -n/);
+  assert.match(packageValidation, /test -x/);
+  assert.match(preflightBoundary, /for denied in 000 200 302 500/);
   assert.match(lifecycle, /0029 rollback unexpectedly deleted organization agent data/);
   assert.match(lifecycle, /TRUNCATE tanaghom\.organization_agent_audit_events/);
   assert.match(lifecycle, /0028_strategy_cadence_integrity/);
+  assert.match(quality, /phase7c-agent-studio-production-update-contract:/);
+  assert.match(quality, /phase7c-agent-studio\/scripts\/validate-package\.sh/);
+  assert.match(quality, /phase7c-agent-studio\/scripts\/test-preflight-http-boundary\.sh/);
+  assert.match(quality, /phase7c-agent-studio\/scripts\/test-disposable-lifecycle\.sh/);
+
+  for (const path of [
+    "scripts/common.sh",
+    "scripts/deploy-update.sh",
+    "scripts/preflight.sh",
+    "scripts/rollback-update.sh",
+    "scripts/test-disposable-lifecycle.sh",
+    "scripts/test-preflight-http-boundary.sh",
+    "scripts/validate-package.sh",
+    "scripts/validate-release.sh",
+  ]) {
+    const output = execFileSync("git", ["ls-files", "--stage", `deployment/phase7c-agent-studio/${path}`], {
+      encoding: "utf8",
+    });
+    assert.match(output, /^100755 /, `${path} must be executable in Git`);
+  }
 });

@@ -27,11 +27,16 @@ release-specific migration and release-identifier boundary in its own
 - The dashboard and every protected service/container are healthy.
 - At least 20 GiB remains on `/`.
 - No external provider operation exists.
+- Before deployment, `/api/admin/agents` may return `404` because the running
+  dashboard predates Agent Studio, or `401` when the route already exists. Any
+  other status fails preflight. Post-deployment validation requires exactly
+  `401`.
 
 ## Review-only validation
 
 ```sh
 deployment/phase7c-agent-studio/scripts/validate-package.sh
+deployment/phase7c-agent-studio/scripts/test-preflight-http-boundary.sh
 deployment/phase7c-agent-studio/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
 ```
 
