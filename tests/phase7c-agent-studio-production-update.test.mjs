@@ -17,6 +17,7 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
     release,
     packageValidation,
     preflightBoundary,
+    firewallBoundary,
     lifecycle,
     sharedCommon,
     quality,
@@ -29,6 +30,7 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
     read("scripts/validate-release.sh"),
     read("scripts/validate-package.sh"),
     read("scripts/test-preflight-http-boundary.sh"),
+    read("scripts/test-firewall-boundary.sh"),
     read("scripts/test-disposable-lifecycle.sh"),
     readFile(new URL("deployment/phase7b-skill-library/scripts/common.sh", root), "utf8"),
     readFile(new URL(".github/workflows/quality.yml", root), "utf8"),
@@ -44,20 +46,30 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
   assert.match(common, /has_table_privilege\('tanaghom_n8n_worker'/);
   assert.match(common, /assert_predeployment_agent_studio_api_status/);
   assert.match(common, /401\|404/);
+  assert.match(common, /capture_firewall_boundary/);
+  assert.match(common, /iptables -S TANAGHOM_N8N_DB_EGRESS/);
+  assert.match(common, /iptables -S TANAGHOM_N8N_DB_INPUT/);
   assert.match(preflight, /database is not at migration 0028/);
   assert.match(preflight, /assert_predeployment_agent_studio_api_status/);
+  assert.match(preflight, /assert_firewall_boundary/);
   assert.match(deploy, /compose up -d --no-deps dashboard/);
   assert.match(deploy, /automatic_rollback/);
+  assert.match(deploy, /capture_firewall_boundary "\$evidence\/firewall\.before"/);
+  assert.doesNotMatch(deploy, /iptables-save/);
   assert.doesNotMatch(deploy, /n8n.*(?:up|restart|stop|rm)/i);
   assert.match(rollback, /rollback refused because organization Agent Studio data exists/);
   assert.match(rollback, /force-recreate --no-build dashboard/);
+  assert.match(rollback, /package-owned firewall state changed during rollback/);
   assert.match(release, /assert_agent_studio_empty/);
-  assert.match(release, /firewall state changed/);
+  assert.match(release, /package-owned firewall state changed/);
+  assert.match(release, /assert_firewall_boundary/);
   assert.match(release, /settings\/agents/);
   assert.match(release, /api\/admin\/agents[\s\S]{0,200}= 401/);
   assert.match(packageValidation, /sh -n/);
   assert.match(packageValidation, /test -x/);
   assert.match(preflightBoundary, /for denied in 000 200 302 500/);
+  assert.match(firewallBoundary, /package-owned firewall drift was not detected/);
+  assert.match(firewallBoundary, /missing firewall hook was not detected/);
   assert.match(lifecycle, /0029 rollback unexpectedly deleted organization agent data/);
   assert.match(lifecycle, /TRUNCATE tanaghom\.organization_agent_audit_events/);
   assert.match(lifecycle, /0028_strategy_cadence_integrity/);
@@ -72,6 +84,7 @@ test("Phase 7C Agent Studio production update is exact, empty-data reversible, d
     "scripts/preflight.sh",
     "scripts/rollback-update.sh",
     "scripts/test-disposable-lifecycle.sh",
+    "scripts/test-firewall-boundary.sh",
     "scripts/test-preflight-http-boundary.sh",
     "scripts/validate-package.sh",
     "scripts/validate-release.sh",

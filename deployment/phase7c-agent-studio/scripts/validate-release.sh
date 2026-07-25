@@ -14,8 +14,14 @@ assert_policy_locked
 assert_n8n_ids_unchanged "$evidence/n8n-ids.before"
 sha256sum -c "$evidence/nginx.before.sha256" >/dev/null ||
   die 'Nginx configuration changed'
-test "$(iptables-save | sha256sum | awk '{print $1}')" = "$(cat "$evidence/firewall.before.sha256")" ||
-  die 'firewall state changed'
+current_firewall=$(mktemp)
+trap 'rm -f "$current_firewall"' EXIT
+capture_firewall_boundary "$current_firewall"
+cmp -s "$evidence/firewall.before" "$current_firewall" ||
+  die 'package-owned firewall state changed'
+assert_firewall_boundary
+rm -f "$current_firewall"
+trap - EXIT
 test "$(container_health tanaghom-dashboard-canary-dashboard-1)" = healthy ||
   die 'dashboard is unhealthy'
 test "$(curl -sS -o /dev/null -w '%{http_code}' --max-time 15 "https://$PUBLIC_HOST/settings/agents")" = 307 ||
