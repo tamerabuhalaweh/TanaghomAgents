@@ -50,6 +50,28 @@ The authenticated dashboard canary is available at
 The public virtual host proxies only the dashboard; n8n and webhook ingress
 remain private.
 
+## Browser testing
+
+Playwright and its Chromium browser are installed locally with pinned repository
+versions. The default suite is credential-free and verifies the login, health,
+redirect, and protected Agent Studio API boundaries.
+
+```bash
+npm run test:e2e:install
+PLAYWRIGHT_BASE_URL=https://tanaghom.38-247-187-232.sslip.io npm run test:e2e
+```
+
+In PowerShell, set the URL for the current process before running the suite:
+
+```powershell
+$env:PLAYWRIGHT_BASE_URL = "https://tanaghom.38-247-187-232.sslip.io"
+npm run test:e2e
+```
+
+Future authenticated tests may use `PLAYWRIGHT_STORAGE_STATE` pointing to a
+local state file under `playwright/.auth/`. That directory is ignored by Git;
+browser session cookies and credentials must never be committed.
+
 ## Reconciliation status
 
 The original local Groky implementation was audited before Phase 2 integration.

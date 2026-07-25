@@ -20,6 +20,7 @@ jobs:
       - run: npm ci
       - run: npm run check
       - run: npm test
+      - run: npx playwright test --list
       - run: deployment/phase5d-production-update/scripts/validate-package.sh
       - run: deployment/phase5f-database-bridge/scripts/validate-package.sh
       - run: deployment/phase5f-production-update/scripts/validate-package.sh
