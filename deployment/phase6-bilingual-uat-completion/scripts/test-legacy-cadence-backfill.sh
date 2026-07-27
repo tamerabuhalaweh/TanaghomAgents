@@ -9,25 +9,58 @@ test -n "$DATABASE_TEST_URL" || {
   exit 2
 }
 export DATABASE_URL=$DATABASE_TEST_URL
+if command -v psql >/dev/null 2>&1; then
+  psql_command=psql
+elif command -v psql.exe >/dev/null 2>&1; then
+  psql_command=psql.exe
+else
+  echo 'psql is required' >&2
+  exit 2
+fi
+node_command=node
+if echo "$psql_command" | grep -q '\.exe$' &&
+  command -v node.exe >/dev/null 2>&1
+then
+  node_command=node.exe
+  case ":${WSLENV:-}:" in
+    *:DATABASE_URL:*) ;;
+    *) WSLENV="${WSLENV:+$WSLENV:}DATABASE_URL"; export WSLENV ;;
+  esac
+fi
+database_script="$ROOT/scripts/database.mjs"
+if echo "$node_command" | grep -q '\.exe$' &&
+  command -v wslpath >/dev/null 2>&1
+then
+  database_script=$(wslpath -w "$database_script")
+fi
+seed_path="$ROOT/packages/database/seeds/staging.sql"
+if echo "$psql_command" | grep -q '\.exe$' &&
+  command -v wslpath >/dev/null 2>&1
+then
+  seed_path=$(wslpath -w "$seed_path")
+fi
 
 latest() {
-  psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 -At -c \
-    'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;'
+  "$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 -At -c \
+    'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;' |
+    tr -d '\r'
 }
 
+test "$(latest)" = 0032_gemma_served_model_profile
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0031_policy_runtime_executors_certification
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0030_policy_resolved_agent_runtime
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0029_organization_agent_studio
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0028_strategy_cadence_integrity
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0027_governed_skill_library
-psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 \
-  -f "$ROOT/packages/database/seeds/staging.sql" >/dev/null
+"$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 \
+  -f "$seed_path" >/dev/null
 
-psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+"$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 INSERT INTO tanaghom.campaign_strategies(
   id,campaign_id,version,positioning,key_messages,channels,posting_cadence,
   content_pillars,model_name,prompt_version
@@ -54,9 +87,9 @@ INSERT INTO tanaghom.campaign_strategies(
 );
 SQL
 
-node "$ROOT/scripts/database.mjs" migrate >/dev/null
-test "$(latest)" = 0031_policy_runtime_executors_certification
-psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+"$node_command" "$database_script" migrate >/dev/null
+test "$(latest)" = 0032_gemma_served_model_profile
+"$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DO $$
 DECLARE
   v_cadence jsonb;
@@ -88,15 +121,17 @@ END
 $$;
 SQL
 
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
+test "$(latest)" = 0031_policy_runtime_executors_certification
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0030_policy_resolved_agent_runtime
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0029_organization_agent_studio
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0028_strategy_cadence_integrity
-node "$ROOT/scripts/database.mjs" rollback >/dev/null
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0027_governed_skill_library
-psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+"$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DO $$
 DECLARE v_cadence jsonb;
 BEGIN
@@ -114,9 +149,9 @@ END
 $$;
 SQL
 
-node "$ROOT/scripts/database.mjs" migrate >/dev/null
-test "$(latest)" = 0031_policy_runtime_executors_certification
-psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
+"$node_command" "$database_script" migrate >/dev/null
+test "$(latest)" = 0032_gemma_served_model_profile
+"$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DELETE FROM tanaghom.strategy_cadence_0028_legacy_backup
 WHERE strategy_id='78000000-0000-4000-8000-000000000028';
 DELETE FROM tanaghom.campaign_strategies
