@@ -145,3 +145,18 @@ certification, job, run, invocation, approval, dependency block, or event
 evidence exists. Once evidence exists, rollback deliberately refuses. Recovery
 must use a reviewed forward migration so customer work and audit history are
 never erased to force a downgrade.
+
+## Controlled installation boundary
+
+The production installation package starts only from
+`0029_organization_agent_studio`, applies `0030` and `0031` in order,
+provisions four mutually isolated generated login roles, and imports the
+runner, simulation dispatcher, read/proposal/action executors, and finalizer
+inactive. The simulation dispatcher shares the runtime credential because its
+only database authority is already part of the runtime capability role.
+Gemma and the private integration gateway reuse their existing encrypted
+credential identities.
+
+Installation explicitly keeps all schedules, executor adapters, runtime
+claims, and provider execution disabled. Activation and provider UAT remain
+separate rollout decisions.

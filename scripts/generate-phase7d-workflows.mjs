@@ -50,8 +50,8 @@ const runtimePostgres = {
 };
 const simulationPostgres = {
   postgres: {
-    id: "7d000000-0000-4000-8000-000000000102",
-    name: "Tanaghom Simulation Executor PostgreSQL",
+    id: "7d000000-0000-4000-8000-000000000101",
+    name: "Tanaghom Agent Runtime PostgreSQL",
   },
 };
 const gemma = {

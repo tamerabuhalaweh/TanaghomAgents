@@ -47,7 +47,7 @@ INSERT INTO tanaghom.agent_runtime_executor_adapters (
 ) VALUES
 (
   'phase7d_read_executor_v1','read','phase7dReadExecutorV1','v1',
-  '524d2af3ed8be536cb9587c293c8f09db7a9e83fd895a3acf25a5e9ec886306d',
+  'fa59952fcb99468a26b03c951dc8c6123527835fcc75fe555ab9b31e86b886f2',
   ARRAY['postiz_performance_monitor','quality_shadow_evaluator'],
   ARRAY['postiz.performance.read','quality.reply.evaluate'],
   ARRAY['agent_runtime_database','gemma_private_api','integration_gateway'],
@@ -55,7 +55,7 @@ INSERT INTO tanaghom.agent_runtime_executor_adapters (
 ),
 (
   'phase7d_proposal_executor_v1','proposal','phase7dProposalExecutorV1','v1',
-  '628770e4d4ca4e8b09f61592f617df2539caf59defc07d12a717c5651c3a6a59',
+  '00e231e1c6ea263855e81d57ec484d9caf8da8632c9e3c3c871e31461edba797',
   ARRAY['campaign_strategy_generator','campaign_content_generator','conversation_intelligence_worker'],
   ARRAY['campaign.strategy.propose','campaign.content.propose','conversation.reply.propose'],
   ARRAY['agent_runtime_database','gemma_private_api'],
@@ -63,7 +63,7 @@ INSERT INTO tanaghom.agent_runtime_executor_adapters (
 ),
 (
   'phase7d_action_executor_v1','action','phase7dActionExecutorV1','v1',
-  'f6e7c1a9ee61dc941141f1c35b8fabe8dcffe94600e268d298811bc425f456b8',
+  '027d588f8268ee72a87183cfff13dedc9fdd77e40af432136853d9f56698b19b',
   ARRAY['postiz_draft_publisher','ghl_contact_sync','governed_ghl_actions'],
   ARRAY[
     'postiz.draft.create','ghl.contact.upsert','ghl.appointment.execute',

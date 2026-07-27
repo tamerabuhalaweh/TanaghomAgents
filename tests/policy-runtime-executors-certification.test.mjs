@@ -99,6 +99,10 @@ test("Phase 7D executor exports are fixed, inactive, and credential-separated", 
   assert.match(generator, /TANAGHOM_INTEGRATION_GATEWAY_URL/);
   assert.match(generator, /phase7\.agent-provider-dispatch\.v1/);
   assert.match(generator, /credential-shaped/i);
+  assert.match(generator, /7d000000-0000-4000-8000-000000000101/);
+  assert.match(generator, /62000000-0000-4000-8000-000000000002/);
+  assert.match(generator, /62000000-0000-4000-8000-000000000004/);
+  assert.doesNotMatch(generator, /000000000304|000000000305|000000000306/);
   assert.doesNotMatch(generator, /arbitrary_url|tool_url/i);
 });
 

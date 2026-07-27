@@ -53,7 +53,7 @@
       ],
       "credentials": {
         "postgres": {
-          "id": "7d100000-0000-4000-8000-000000000304",
+          "id": "7d000000-0000-4000-8000-000000000101",
           "name": "Tanaghom Agent Runtime PostgreSQL"
         }
       }
