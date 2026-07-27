@@ -295,7 +295,6 @@ jobs:
           --health-retries 10
     env:
       DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5g_shadow_update_test
-      N8N_SHADOW_TEST_POSTGRES_PORT: 55444
     steps:
       - uses: actions/checkout@v4
       - run: deployment/phase5g-shadow-production-update/scripts/validate-package.sh
