@@ -63,9 +63,30 @@ Four NOLOGIN roles divide authority:
   only after all authorization and approval checks.
 
 None receives direct table DML. The legacy `tanaghom_n8n_worker` receives no
-shared-runtime access. The current Phase 7D n8n exports use only the runtime
-and simulation identities; provider executor adapters remain inactive and
-require their own reviewed deployment and provider UAT.
+shared-runtime access.
+
+Migration `0031_policy_runtime_executors_certification` adds three immutable
+adapter records. Each pins one workflow ID, workflow SHA-256, executor class,
+exact executor references, exact operations, and complete credential scope.
+An adapter defaults disabled and may claim only work matching all of those
+fields. Its reviewed identity and authority cannot be changed in place.
+
+Four additional inactive, schedule-disabled exports implement the fixed read,
+proposal, action, and run-finalizer paths. The proposal adapter receives only
+its proposal database identity and Gemma credential. The action adapter
+receives only its action database identity and private integration-gateway
+credential. The read adapter receives its read database identity and the two
+reviewed read transports. The finalizer receives only the runtime database
+identity.
+
+The generic private provider gateway authenticates the platform worker,
+defaults disabled, and accepts only an invocation ID, database-computed
+parameter hash, and idempotency key. PostgreSQL rechecks the exact enabled
+adapter, tenant, integration binding, provider readiness, and emergency stops,
+then records an immutable dispatch ID before any external request. A started
+operation whose result is uncertain is returned as indeterminate rather than
+blindly retried. The gateway has fixed Postiz and GHL operation mappings and
+cannot accept a caller-selected URL.
 
 ## Evidence, failure, and recovery
 
@@ -99,15 +120,27 @@ prompt-injection, provider-failure, duplicate-retry, and emergency-stop
 scenarios. Passing evidence is stored on runtime jobs; Agent Studio scenario
 definitions remain immutable.
 
-An exact validated runtime profile and complete passing scenario evidence are
-required to create an immutable certification. An owner may then promote the
-exact agent version only into `simulation`. Shadow, assisted, active, provider
-activation, and scheduled polling still require separately reviewed rollout
-gates.
+An exact validated runtime profile and canonical complete passing scenario
+evidence are required to create an immutable certification. Every declared
+language must have exactly one passing job and successful run for all seven
+scenario classes. All certified invocations must be simulations with zero
+cost, provider reference, provider dispatch, and external action. PostgreSQL
+rebuilds and hashes the evidence; caller-supplied or tampered evidence is
+rejected.
+
+An owner may then promote the exact agent version only into `simulation`.
+Shadow, assisted, active, adapter enablement, provider activation, and
+scheduled polling still require separately reviewed rollout gates.
 
 ## Rollback
 
-Migration `0030_policy_resolved_agent_runtime` rolls back only while no
+Migration `0031_policy_runtime_executors_certification` rolls back to `0030`
+only while no provider-dispatch or v2 certification evidence exists. It
+removes only the fixed adapter registry, provider-dispatch columns/functions,
+run finalizer, and canonical certification functions, and restores the
+original Phase 7D claim and certification functions.
+
+Migration `0030_policy_resolved_agent_runtime` then rolls back only while no
 certification, job, run, invocation, approval, dependency block, or event
 evidence exists. Once evidence exists, rollback deliberately refuses. Recovery
 must use a reviewed forward migration so customer work and audit history are

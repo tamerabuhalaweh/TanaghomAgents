@@ -473,6 +473,35 @@ try {
   const claimedGhl = await pool.query("SELECT * FROM tanaghom.claim_ghl_contact_job()");
   assert.equal(claimedGhl.rows[0].job_id, ghlHandoffBody.job_id);
   const preparedGhl = await pool.query("SELECT * FROM tanaghom.prepare_ghl_contact_upsert($1::uuid)", [ghlHandoffBody.job_id]);
+  const agentRuntimeUnauthorized = await fetch(
+    `${dashboardOrigin}/api/internal/agent-runtime/provider`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: "{}",
+    },
+  );
+  assert.equal(agentRuntimeUnauthorized.status, 401);
+  assert.deepEqual(await agentRuntimeUnauthorized.json(), {
+    error: "worker_authentication_required",
+    dispatch_started: false,
+  });
+  const agentRuntimeDisabled = await fetch(
+    `${dashboardOrigin}/api/internal/agent-runtime/provider`,
+    {
+      method: "POST",
+      headers: {
+        Authorization: "Bearer integration-worker-token-at-least-32-characters",
+        "Content-Type": "application/json",
+      },
+      body: "{}",
+    },
+  );
+  assert.equal(agentRuntimeDisabled.status, 503);
+  assert.deepEqual(await agentRuntimeDisabled.json(), {
+    error: "agent_runtime_provider_execution_disabled",
+    dispatch_started: false,
+  });
   const ghlGateway = await fetch(`${dashboardOrigin}/api/internal/integrations/ghl/contact`, {
     method: "POST",
     headers: { Authorization: "Bearer integration-worker-token-at-least-32-characters", "Content-Type": "application/json" },
