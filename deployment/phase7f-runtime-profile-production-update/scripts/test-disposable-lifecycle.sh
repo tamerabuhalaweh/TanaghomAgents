@@ -37,7 +37,7 @@ test "$(scalar "SELECT to_regclass('public.schema_migrations') IS NULL;")" = t |
   { echo 'disposable database must start empty' >&2; exit 3; }
 for migration in "$root"/packages/database/migrations/*.up.sql; do
   case "$migration" in
-    *0032_gemma_served_model_profile.up.sql) continue ;;
+    *0032_gemma_served_model_profile.up.sql|*0033_agent_runtime_certification_evidence.up.sql) continue ;;
   esac
   apply "$migration"
 done

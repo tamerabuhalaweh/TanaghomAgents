@@ -65,6 +65,7 @@ const agentStudioAssertions = join(root, 'packages', 'database', 'tests', 'organ
 const policyResolvedRuntimeAssertions = join(root, 'packages', 'database', 'tests', 'policy_resolved_agent_runtime.sql');
 const policyRuntimeExecutorAssertions = join(root, 'packages', 'database', 'tests', 'policy_runtime_executors_certification.sql');
 const gemmaServedModelProfileAssertions = join(root, 'packages', 'database', 'tests', 'gemma_served_model_profile.sql');
+const agentRuntimeCertificationEvidenceAssertions = join(root, 'packages', 'database', 'tests', 'agent_runtime_certification_evidence.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -97,6 +98,7 @@ psql('-f', agentStudioAssertions);
 psql('-f', policyResolvedRuntimeAssertions);
 psql('-f', policyRuntimeExecutorAssertions);
 psql('-f', gemmaServedModelProfileAssertions);
+psql('-f', agentRuntimeCertificationEvidenceAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -104,6 +106,8 @@ psql('-f', gemmaServedModelProfileAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0033_agent_runtime_certification_evidence') THEN RAISE EXCEPTION '0033 rollback left migration state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0032_gemma_served_model_profile') THEN RAISE EXCEPTION '0033 rollback crossed the 0032 boundary'; END IF; IF position('invocation_summary.external_action_count' IN pg_get_functiondef('tanaghom.build_agent_runtime_certification_evidence(uuid,uuid,uuid)'::regprocedure))>0 THEN RAISE EXCEPTION '0033 rollback left corrected aggregation definition behind'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM tanaghom.agent_runtime_profiles WHERE id='7d000000-0000-4000-8000-000000000002') OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0032_gemma_served_model_profile') THEN RAISE EXCEPTION '0032 rollback left served-model profile state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0031_policy_runtime_executors_certification') THEN RAISE EXCEPTION '0032 rollback crossed the 0031 boundary'; END IF; END $$;");
 database('rollback');

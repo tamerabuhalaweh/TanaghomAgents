@@ -45,6 +45,9 @@ test "$(scalar "SELECT to_regclass('public.schema_migrations') IS NULL;")" = t |
 }
 
 for migration in "$root"/packages/database/migrations/*.up.sql; do
+  case "$migration" in
+    *0033_agent_runtime_certification_evidence.up.sql) continue ;;
+  esac
   "$psql_command" "$url" -X -v ON_ERROR_STOP=1 \
     -f "$(native_path "$migration" "$psql_command")" >/dev/null
 done

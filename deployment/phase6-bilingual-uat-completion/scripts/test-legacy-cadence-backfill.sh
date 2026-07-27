@@ -46,6 +46,8 @@ latest() {
     tr -d '\r'
 }
 
+test "$(latest)" = 0033_agent_runtime_certification_evidence
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0032_gemma_served_model_profile
 "$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0031_policy_runtime_executors_certification
@@ -88,7 +90,7 @@ INSERT INTO tanaghom.campaign_strategies(
 SQL
 
 "$node_command" "$database_script" migrate >/dev/null
-test "$(latest)" = 0032_gemma_served_model_profile
+test "$(latest)" = 0033_agent_runtime_certification_evidence
 "$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DO $$
 DECLARE
@@ -122,6 +124,8 @@ $$;
 SQL
 
 "$node_command" "$database_script" rollback >/dev/null
+test "$(latest)" = 0032_gemma_served_model_profile
+"$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0031_policy_runtime_executors_certification
 "$node_command" "$database_script" rollback >/dev/null
 test "$(latest)" = 0030_policy_resolved_agent_runtime
@@ -150,7 +154,7 @@ $$;
 SQL
 
 "$node_command" "$database_script" migrate >/dev/null
-test "$(latest)" = 0032_gemma_served_model_profile
+test "$(latest)" = 0033_agent_runtime_certification_evidence
 "$psql_command" "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DELETE FROM tanaghom.strategy_cadence_0028_legacy_backup
 WHERE strategy_id='78000000-0000-4000-8000-000000000028';
