@@ -209,6 +209,7 @@ jobs:
       - run: deployment/phase7d-runtime-production-update/scripts/validate-package.sh
       - run: deployment/phase7d-runtime-production-update/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
       - run: deployment/phase7d-runtime-production-update/scripts/test-disposable-n8n-lifecycle.sh
+      - run: deployment/phase7f-agent-studio-canary/scripts/test-disposable-dispatch-window.sh
 
   phase5f-database-bridge-contract:
     runs-on: ubuntu-latest

@@ -20,8 +20,16 @@ promotion can occur.
 
 ## Immutable safety boundary
 
-- The two n8n workflows remain inactive.
-- Their schedule triggers remain disabled.
+- The parent runner remains inactive.
+- The transaction replaces only the inactive Simulation Dispatcher when its
+  installed trigger still uses n8n's rejected legacy empty-input shape.
+- The corrected dispatcher accepts parent data through the supported
+  `inputSource: passthrough` contract.
+- The endpoint-free, schedule-free Simulation Dispatcher is published only
+  around each parent CLI call and is immediately unpublished afterward.
+- This n8n workflow publication makes the fixed child callable; it does not
+  publish content or enable a social/CRM provider.
+- Every schedule trigger remains disabled.
 - Each runner execution uses the documented one-off
   `n8n execute --id phase7dPolicyResolvedAgentRunnerV1` command.
 - The shared runtime emergency stop opens for only one queued job at a time
@@ -35,7 +43,11 @@ promotion can occur.
   that internal ID; preflight independently proves every installed binding
   resolves to the reviewed credential name and type.
 - A failure trap restores the original runtime stop and quarantines only this
-  canary's unfinished jobs. Completed evidence is never deleted.
+  canary's unfinished jobs. It also unpublishes the Simulation Dispatcher
+  whenever a failure interrupts the bounded call window. If this run installed
+  the corrected dispatcher, the same trap restores the exact original export
+  and verifies the complete operational workflow inventory. Completed
+  evidence is never deleted.
 - No service, container, firewall, Nginx configuration or protected project
   file is restarted, recreated or edited.
 
@@ -57,7 +69,7 @@ runtime work exists, and the canary ID has never been used.
 Run from a clean checkout at the approved merged commit:
 
 ```sh
-export TANAGHOM_PHASE7F_CANARY_AUTHORIZATION='GO-RUN-SIMULATION-ONLY-AGENT-CANARY'
+export TANAGHOM_PHASE7F_CANARY_AUTHORIZATION='GO-INSTALL-DISPATCHER-AND-RUN-SIMULATION-ONLY-CANARY'
 export TANAGHOM_PHASE7F_CANARY_ID='phase7f-canary-YYYYMMDDTHHMMSSZ'
 export TANAGHOM_EXPECTED_PRODUCTION_COMMIT='<40-character deployed SHA>'
 export TANAGHOM_PHASE7F_SOURCE_COMMIT='<40-character approved merged SHA>'
@@ -87,19 +99,23 @@ The script:
 
 1. captures the original runtime-stop reason, protected identities, firewall,
    worktree, workflow definitions and side-effect counts;
-2. queues only the exact English and Arabic success scenarios;
-3. proves those are the only claimable shared-runtime jobs;
-4. opens the runtime stop, executes the inactive runner once, and restores the
-   stop;
-5. verifies the terminal simulation invocation and finalizes its scenario
+2. if required, transactionally imports only the reviewed passthrough
+   Simulation Dispatcher inactive and proves every other workflow unchanged;
+3. queues only the exact English and Arabic success scenarios;
+4. proves those are the only claimable shared-runtime jobs;
+5. temporarily publishes only the Simulation Dispatcher, opens the runtime
+   stop, executes the inactive runner once, restores the stop, and immediately
+   unpublishes the dispatcher;
+6. verifies both workflows returned inactive, verifies the terminal
+   simulation invocation, and finalizes its scenario
    evidence;
-6. repeats steps 3–5 for the second language;
-7. proves both jobs passed with zero provider dispatches, provider references,
+7. repeats the bounded execution for the second language;
+8. proves both jobs passed with zero provider dispatches, provider references,
    external actions and cost;
-8. proves the Agent Studio version remains `validated` and no certification
+9. proves the Agent Studio version remains `validated` and no certification
    was forged from this partial canary;
-9. runs `n8n audit`; and
-10. rechecks all protected health, workflow, firewall, worktree and public
+10. runs `n8n audit`; and
+11. rechecks all protected health, workflow, firewall, worktree and public
     boundaries.
 
 Root-only evidence is retained under:
@@ -112,8 +128,12 @@ Root-only evidence is retained under:
 
 The run installs its restoration trap before queueing work. If any command
 fails, it restores the original shared-runtime emergency-stop reason and marks
-only this canary's unfinished invocations, runs and jobs terminal. It does not
-delete evidence or affect another job.
+only this canary's unfinished invocations, runs and jobs terminal. It also
+unpublishes the Simulation Dispatcher if the failure interrupted its bounded
+call window. If the transaction installed the corrected dispatcher, it imports
+the exact captured original inactive export and proves every workflow's
+operational state was restored. It does not delete evidence or affect another
+job.
 
 The exact idempotent manual restoration is:
 

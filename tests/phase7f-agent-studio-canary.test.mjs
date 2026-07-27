@@ -10,7 +10,7 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
 test("Phase 7F canary is exact, bilingual, simulation-only and independently restorable", async () => {
-  const [common, preflight, run, restore, operator, workflow, runbook, stateVerification] = await Promise.all([
+  const [common, preflight, run, restore, operator, workflow, runbook, stateVerification, dispatchWindow] = await Promise.all([
     read("deployment/phase7f-agent-studio-canary/scripts/common.sh"),
     read("deployment/phase7f-agent-studio-canary/scripts/preflight.sh"),
     read("deployment/phase7f-agent-studio-canary/scripts/run-canary.sh"),
@@ -19,25 +19,40 @@ test("Phase 7F canary is exact, bilingual, simulation-only and independently res
     read("deployment/phase7f-agent-studio-canary/scripts/workflow-contract.mjs"),
     read("deployment/phase7f-agent-studio-canary/RUNBOOK.md"),
     read("deployment/phase7f-agent-studio-canary/scripts/test-state-verification.sh"),
+    read("deployment/phase7f-agent-studio-canary/scripts/test-disposable-dispatch-window.sh"),
   ]);
 
   assert.match(common, /0032_gemma_served_model_profile/);
   assert.match(common, /TANAGHOM_CANARY_RUNTIME_PROFILE_ID/);
-  assert.match(common, /GO-RUN-SIMULATION-ONLY-AGENT-CANARY/);
+  assert.match(common, /GO-INSTALL-DISPATCHER-AND-RUN-SIMULATION-ONLY-CANARY/);
   assert.match(common, /n8n execute --id="\$RUNNER_ID"/);
   assert.match(common, /assert_canary_credential_bindings/);
   assert.match(common, /stored\.name=bindings\.binding_name/);
   assert.match(common, /stored\.type=bindings\.credential_type/);
-  assert.doesNotMatch(common, /publish:workflow|unpublish:workflow/);
+  assert.match(common, /n8n publish:workflow --id="\$SIMULATION_ID"/);
+  assert.match(common, /n8n unpublish:workflow --id="\$SIMULATION_ID"/);
+  assert.match(common, /n8n import:workflow --input="\$remote" --activeState=false/);
+  assert.match(common, /the parent runner became active/);
+  assert.match(common, /simulation dispatcher gained an enabled schedule/);
   assert.match(preflight, /operator check-database/);
+  assert.match(preflight, /prepare-transition/);
   assert.match(preflight, /workflow-contract\.mjs" prepare/);
   assert.match(run, /trap cleanup EXIT HUP INT TERM/);
   assert.match(run, /operator unlock/);
   assert.match(run, /operator lock "\$reason"/);
   assert.equal((run.match(/execute_runner_once/g) || []).length, 1);
   assert.match(run, /for sequence in 1 2/);
+  assert.match(
+    run,
+    /for sequence in 1 2; do[\s\S]*publish_simulation_dispatcher[\s\S]*operator unlock[\s\S]*execute_runner_once[\s\S]*operator lock "\$reason"[\s\S]*unpublish_simulation_dispatcher[\s\S]*assert_canary_workflows_inactive/,
+  );
   assert.match(run, /operator finalize-next/);
   assert.match(run, /operator verify/);
+  assert.match(run, /workflow-transition-manifest\.json/);
+  assert.match(run, /legacy_empty_inputs/);
+  assert.match(run, /import_simulation_dispatcher_inactive/);
+  assert.match(run, /compare-all-operational/);
+  assert.match(run, /compare-except-dispatcher/);
   assert.match(run, /n8n audit/);
   assert.match(restore, /operator quarantine/);
 
@@ -63,6 +78,11 @@ test("Phase 7F canary is exact, bilingual, simulation-only and independently res
   assert.match(workflow, /normalizedNodes/);
   assert.match(workflow, /workflow\.active !== false/);
   assert.match(workflow, /has an enabled schedule/);
+  assert.match(workflow, /passthrough internal workflow trigger/);
+  assert.match(workflow, /n8n-nodes-base\.executeWorkflowTrigger/);
+  assert.match(workflow, /prepare-transition/);
+  assert.match(workflow, /legacy_empty_inputs/);
+  assert.match(workflow, /compare-all-operational/);
   assert.match(workflow, /postiz/);
   assert.match(workflow, /gohighlevel/);
   assert.match(runbook, /one English and one Arabic/);
@@ -70,19 +90,30 @@ test("Phase 7F canary is exact, bilingual, simulation-only and independently res
   assert.match(runbook, /other twelve mandatory adversarial\s+scenarios/i);
   assert.match(runbook, /No service, container, firewall, Nginx configuration or protected project\s+file is restarted, recreated or edited/);
   assert.match(stateVerification, /compares current evidence with the original reviewed snapshot/);
+  assert.match(dispatchWindow, /docker\.n8n\.io\/n8nio\/n8n:2\.26\.8@sha256:/);
+  assert.match(dispatchWindow, /postgres:17\.6-alpine3\.22@sha256:/);
+  assert.match(dispatchWindow, /Workflow is not active and cannot be executed/);
+  assert.match(dispatchWindow, /"inputSource": "passthrough"/);
+  assert.match(dispatchWindow, /n8n publish:workflow --id="\$dispatcher_id"/);
+  assert.match(dispatchWindow, /n8n unpublish:workflow --id="\$dispatcher_id"/);
+  assert.match(dispatchWindow, /id='\$parent_id' AND active IS FALSE/);
+  assert.match(dispatchWindow, /bounded_dispatch/);
 });
 
-test("Phase 7F package validation rejects activation, protected-service and secret-shaped operations", async () => {
+test("Phase 7F package validation permits only the bounded dispatcher window", async () => {
   const validation = await read(
     "deployment/phase7f-agent-studio-canary/scripts/validate-package.sh",
   );
-  assert.match(validation, /n8n \(publish\|unpublish\):workflow/);
+  assert.match(validation, /only the reviewed dispatcher helpers may change n8n publication state/);
+  assert.match(validation, /n8n publish:workflow --id="\$SIMULATION_ID"/);
+  assert.match(validation, /n8n unpublish:workflow --id="\$SIMULATION_ID"/);
   assert.match(validation, /systemctl \(stop\|restart\|reload\)/);
   assert.match(validation, /iptables \(-A\|-I\|-D\|-N\|-F\|-X\)/);
   assert.match(validation, /Bearer/);
   assert.match(validation, /postgresql:\/\//);
   assert.match(validation, /test-refusal-paths\.sh/);
   assert.match(validation, /test-disposable-lifecycle\.sh/);
+  assert.match(validation, /test-disposable-dispatch-window\.sh/);
   assert.match(validation, /test-state-verification\.sh/);
 });
 
@@ -130,6 +161,82 @@ test("Phase 7F workflow contract accepts import-resolved credential IDs but reje
     );
     assert.notEqual(rejected.status, 0);
     assert.match(rejected.stderr, /differs from the reviewed repository export/);
+  } finally {
+    await rm(temporary, { recursive: true, force: true });
+  }
+});
+
+test("Phase 7F dispatcher transition accepts only the exact legacy state and proves rollback scope", async () => {
+  const repository = fileURLToPath(root);
+  const sourceDirectory = join(repository, "n8n", "workflows", "phase7d");
+  const script = join(
+    repository,
+    "deployment",
+    "phase7f-agent-studio-canary",
+    "scripts",
+    "workflow-contract.mjs",
+  );
+  const temporary = await mkdtemp(join(tmpdir(), "tanaghom-phase7f-transition-"));
+  try {
+    const runner = JSON.parse(await readFile(
+      join(sourceDirectory, "policy-resolved-agent-runner.v1.json"),
+      "utf8",
+    ));
+    const corrected = JSON.parse(await readFile(
+      join(sourceDirectory, "simulation-dispatcher.v1.json"),
+      "utf8",
+    ));
+    const legacy = structuredClone(corrected);
+    legacy.nodes.find(
+      (node) => node.type === "n8n-nodes-base.executeWorkflowTrigger",
+    ).parameters = { workflowInputs: { values: [] } };
+    const beforePath = join(temporary, "before.json");
+    const correctedPath = join(temporary, "corrected.json");
+    const restoredPath = join(temporary, "restored.json");
+    await writeFile(beforePath, JSON.stringify([runner, legacy]));
+    await writeFile(correctedPath, JSON.stringify([runner, corrected]));
+
+    const accepted = spawnSync(
+      process.execPath,
+      [script, "prepare-transition", beforePath, sourceDirectory, temporary],
+      { encoding: "utf8" },
+    );
+    assert.equal(accepted.status, 0, accepted.stderr);
+    const manifest = JSON.parse(await readFile(
+      join(temporary, "workflow-transition-manifest.json"),
+      "utf8",
+    ));
+    assert.equal(manifest.dispatcher_state, "legacy_empty_inputs");
+
+    const scoped = spawnSync(
+      process.execPath,
+      [script, "compare-except-dispatcher", beforePath, correctedPath],
+      { encoding: "utf8" },
+    );
+    assert.equal(scoped.status, 0, scoped.stderr);
+
+    const restored = structuredClone(legacy);
+    restored.updatedAt = "2099-01-01T00:00:00.000Z";
+    await writeFile(restoredPath, JSON.stringify([runner, restored]));
+    const rollback = spawnSync(
+      process.execPath,
+      [script, "compare-all-operational", beforePath, restoredPath],
+      { encoding: "utf8" },
+    );
+    assert.equal(rollback.status, 0, rollback.stderr);
+
+    const unsafe = structuredClone(corrected);
+    unsafe.nodes.find(
+      (node) => node.type === "n8n-nodes-base.executeWorkflowTrigger",
+    ).parameters = { inputSource: "jsonExample", jsonExample: "{}" };
+    await writeFile(beforePath, JSON.stringify([runner, unsafe]));
+    const rejected = spawnSync(
+      process.execPath,
+      [script, "prepare-transition", beforePath, sourceDirectory, temporary],
+      { encoding: "utf8" },
+    );
+    assert.notEqual(rejected.status, 0);
+    assert.match(rejected.stderr, /neither the reviewed legacy nor corrected export/);
   } finally {
     await rm(temporary, { recursive: true, force: true });
   }

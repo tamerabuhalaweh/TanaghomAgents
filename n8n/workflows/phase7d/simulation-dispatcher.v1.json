@@ -5,9 +5,7 @@
   "nodes": [
     {
       "parameters": {
-        "workflowInputs": {
-          "values": []
-        }
+        "inputSource": "passthrough"
       },
       "id": "phase7d-simulation-input",
       "name": "Called by Fixed Runtime Workflow",

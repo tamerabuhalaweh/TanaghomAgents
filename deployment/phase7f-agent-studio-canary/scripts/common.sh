@@ -17,7 +17,7 @@ DATABASE_CA_CERT=${TANAGHOM_DATABASE_CA_CERT:-$RELEASE_SOURCE_ROOT/deployment/ph
 
 require_canary_environment() {
   test "${TANAGHOM_PHASE7F_CANARY_AUTHORIZATION:-}" = \
-    'GO-RUN-SIMULATION-ONLY-AGENT-CANARY' ||
+    'GO-INSTALL-DISPATCHER-AND-RUN-SIMULATION-ONLY-CANARY' ||
     die 'explicit Phase 7F simulation-only canary authorization is absent'
   case "${TANAGHOM_PHASE7F_CANARY_ID:-}" in
     phase7f-canary-[0-9][0-9][0-9][0-9][0-9][0-9][0-9][0-9]T[0-9][0-9][0-9][0-9][0-9][0-9]Z) ;;
@@ -92,6 +92,63 @@ assert_canary_credential_bindings() {
 execute_runner_once() {
   docker exec -u node "$N8N_MAIN_CONTAINER" \
     n8n execute --id="$RUNNER_ID" --rawOutput
+}
+
+publish_simulation_dispatcher() {
+  docker exec -u node "$N8N_MAIN_CONTAINER" \
+    n8n publish:workflow --id="$SIMULATION_ID"
+}
+
+unpublish_simulation_dispatcher() {
+  docker exec -u node "$N8N_MAIN_CONTAINER" \
+    n8n unpublish:workflow --id="$SIMULATION_ID"
+}
+
+export_simulation_dispatcher() {
+  destination=$1
+  remote="/home/node/tanaghom-$TANAGHOM_PHASE7F_CANARY_ID-dispatcher-export.json"
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" \
+    >/dev/null 2>&1 || true
+  docker exec -u node "$N8N_MAIN_CONTAINER" \
+    n8n export:workflow --id="$SIMULATION_ID" \
+    --pretty --output="$remote" >/dev/null
+  docker exec -u node "$N8N_MAIN_CONTAINER" test -s "$remote"
+  docker cp "$N8N_MAIN_CONTAINER:$remote" "$destination" >/dev/null
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote"
+  chmod 0600 "$destination"
+}
+
+import_simulation_dispatcher_inactive() {
+  source=$1
+  label=$2
+  remote="/home/node/tanaghom-$TANAGHOM_PHASE7F_CANARY_ID-dispatcher-$label.json"
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote" \
+    >/dev/null 2>&1 || true
+  docker exec -i -u node "$N8N_MAIN_CONTAINER" sh -ec \
+    'umask 077; cat > "$1"' sh "$remote" < "$source"
+  docker exec -u node "$N8N_MAIN_CONTAINER" \
+    n8n import:workflow --input="$remote" --activeState=false >/dev/null
+  docker exec -u node "$N8N_MAIN_CONTAINER" rm -f "$remote"
+  assert_canary_workflows_inactive
+}
+
+assert_simulation_dispatch_window() {
+  test "$(n8n_db_scalar "
+    SELECT count(*) FROM workflow_entity
+     WHERE id='$RUNNER_ID' AND active IS FALSE AND \"isArchived\" IS FALSE;
+  ")" = 1 || die 'the parent runner became active'
+  test "$(n8n_db_scalar "
+    SELECT count(*) FROM workflow_entity
+     WHERE id='$SIMULATION_ID' AND active IS TRUE AND \"isArchived\" IS FALSE;
+  ")" = 1 || die 'the fixed simulation dispatcher is not temporarily published'
+  test "$(n8n_db_scalar "
+    SELECT count(*)
+      FROM workflow_entity workflow
+      CROSS JOIN LATERAL jsonb_array_elements(workflow.nodes::jsonb) node
+     WHERE workflow.id='$SIMULATION_ID'
+       AND node->>'type'='n8n-nodes-base.scheduleTrigger'
+       AND coalesce((node->>'disabled')::boolean,false)=false;
+  ")" = 0 || die 'the simulation dispatcher gained an enabled schedule'
 }
 
 operator() {
