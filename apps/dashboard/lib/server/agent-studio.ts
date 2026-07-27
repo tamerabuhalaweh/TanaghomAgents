@@ -64,6 +64,10 @@ export async function listAgentStudio(request: NextRequest) {
     policies,
     scenarios,
     audits,
+    runtimeProfiles,
+    runtimeControls,
+    runtimeActivity,
+    runtimeCertifications,
   ] = await Promise.all([
     database().query(
       `SELECT code,name,description,responsibility,objective,recommended_skill_codes,maximum_mode
@@ -156,9 +160,31 @@ export async function listAgentStudio(request: NextRequest) {
       [user.organizationId],
     ),
     database().query(
-      `SELECT id,agent_version_id,code,language,scenario_kind,expected_behavior,result_state
-       FROM tanaghom.organization_agent_test_scenarios
-       WHERE organization_id=$1 ORDER BY language,scenario_kind`,
+      `SELECT scenario.id,scenario.agent_version_id,scenario.code,scenario.language,
+         scenario.scenario_kind,scenario.expected_behavior,
+         CASE
+           WHEN latest.status='succeeded' AND latest.scenario_result='passed' THEN 'passed'
+           WHEN latest.status IN ('failed','refused','cancelled','indeterminate')
+             OR latest.scenario_result='failed' THEN 'failed'
+           ELSE 'pending'
+         END AS result_state,
+         latest.id AS job_id,latest.status AS job_status,
+         latest.scenario_result,latest.finished_at
+       FROM tanaghom.organization_agent_test_scenarios scenario
+       LEFT JOIN LATERAL (
+         SELECT candidate.id,candidate.status,candidate.scenario_result,
+           candidate.finished_at,candidate.created_at
+         FROM tanaghom.organization_agent_jobs candidate
+         WHERE candidate.organization_id=scenario.organization_id
+           AND candidate.agent_version_id=scenario.agent_version_id
+           AND candidate.scenario_id=scenario.id
+         ORDER BY
+           (candidate.status='succeeded' AND candidate.scenario_result='passed') DESC,
+           candidate.created_at DESC,candidate.id
+         LIMIT 1
+       ) latest ON true
+       WHERE scenario.organization_id=$1
+       ORDER BY scenario.language,scenario.scenario_kind`,
       [user.organizationId],
     ),
     database().query(
@@ -169,6 +195,78 @@ export async function listAgentStudio(request: NextRequest) {
        WHERE audit.organization_id=$1 ORDER BY audit.occurred_at DESC`,
       [user.organizationId],
     ),
+    database().query(
+      `SELECT id,code,model_name,planner_contract_version,prompt_version,
+         parser_version,lifecycle_state
+       FROM tanaghom.agent_runtime_profiles
+       WHERE lifecycle_state='validated'
+       ORDER BY created_at DESC,id
+       LIMIT 1`,
+    ),
+    database().query(
+      `SELECT emergency_stop,reason,max_global_concurrency,updated_at
+       FROM tanaghom.agent_runtime_controls
+       WHERE singleton`,
+    ),
+    database().query(
+      `SELECT version.id AS agent_version_id,
+         (SELECT count(*)::integer
+            FROM tanaghom.organization_agent_jobs job
+           WHERE job.organization_id=version.organization_id
+             AND job.agent_version_id=version.id) AS jobs_total,
+         (SELECT count(*)::integer
+            FROM tanaghom.organization_agent_jobs job
+           WHERE job.organization_id=version.organization_id
+             AND job.agent_version_id=version.id
+             AND job.status IN ('queued','running','waiting_approval')) AS open_jobs,
+         (SELECT count(*)::integer
+            FROM tanaghom.organization_agent_invocations invocation
+           WHERE invocation.organization_id=version.organization_id
+             AND invocation.job_id IN (
+               SELECT job.id FROM tanaghom.organization_agent_jobs job
+                WHERE job.organization_id=version.organization_id
+                  AND job.agent_version_id=version.id
+             )) AS invocations_total,
+         (SELECT count(*)::integer
+            FROM tanaghom.organization_agent_invocations invocation
+           WHERE invocation.organization_id=version.organization_id
+             AND invocation.status='waiting_approval'
+             AND invocation.job_id IN (
+               SELECT job.id FROM tanaghom.organization_agent_jobs job
+                WHERE job.organization_id=version.organization_id
+                  AND job.agent_version_id=version.id
+             )) AS open_approvals,
+         (SELECT count(*)::integer
+            FROM tanaghom.organization_agent_invocations invocation
+           WHERE invocation.organization_id=version.organization_id
+             AND (invocation.provider_reference IS NOT NULL
+               OR invocation.provider_dispatch_id IS NOT NULL)
+             AND invocation.job_id IN (
+               SELECT job.id FROM tanaghom.organization_agent_jobs job
+                WHERE job.organization_id=version.organization_id
+                  AND job.agent_version_id=version.id
+             )) AS external_actions,
+         (SELECT max(job.updated_at)
+            FROM tanaghom.organization_agent_jobs job
+           WHERE job.organization_id=version.organization_id
+             AND job.agent_version_id=version.id) AS latest_activity_at
+       FROM tanaghom.organization_agent_versions version
+       WHERE version.organization_id=$1`,
+      [user.organizationId],
+    ),
+    database().query(
+      `SELECT DISTINCT ON (certification.agent_version_id)
+         certification.id,certification.agent_version_id,
+         certification.runtime_profile_id,certification.evidence_hash,
+         certification.certified_by,certification.certified_at,
+         (certification.evidence->>'scenario_count')::integer AS scenario_count,
+         (certification.evidence->>'external_action_count')::integer AS external_action_count
+       FROM tanaghom.organization_agent_runtime_certifications certification
+       WHERE certification.organization_id=$1
+       ORDER BY certification.agent_version_id,certification.certified_at DESC,
+         certification.id`,
+      [user.organizationId],
+    ),
   ]);
 
   const versionRows = versions.rows as Array<Record<string, unknown>>;
@@ -177,6 +275,10 @@ export async function listAgentStudio(request: NextRequest) {
   const policyRows = policies.rows as Array<Record<string, unknown>>;
   const scenarioRows = scenarios.rows as Array<Record<string, unknown>>;
   const auditRows = audits.rows as Array<Record<string, unknown>>;
+  const activityRows = runtimeActivity.rows as Array<Record<string, unknown>>;
+  const certificationRows = runtimeCertifications.rows as Array<Record<string, unknown>>;
+  const runtimeProfile = runtimeProfiles.rows[0] as Record<string, unknown> | undefined;
+  const runtimeControl = runtimeControls.rows[0] as Record<string, unknown> | undefined;
   const hydrated: Array<Record<string, unknown>> = versionRows.map((version) => ({
     ...version,
     skills: bindingRows.filter((binding) => binding.agent_version_id === version.agent_version_id),
@@ -184,6 +286,17 @@ export async function listAgentStudio(request: NextRequest) {
     policy: policyRows.find((policy) => policy.agent_version_id === version.agent_version_id) || null,
     scenarios: scenarioRows.filter((scenario) => scenario.agent_version_id === version.agent_version_id),
     audit_events: auditRows.filter((audit) => audit.agent_version_id === version.agent_version_id),
+    runtime: activityRows.find((activity) =>
+      activity.agent_version_id === version.agent_version_id) || {
+      jobs_total: 0,
+      open_jobs: 0,
+      invocations_total: 0,
+      open_approvals: 0,
+      external_actions: 0,
+      latest_activity_at: null,
+    },
+    certification: certificationRows.find((certification) =>
+      certification.agent_version_id === version.agent_version_id) || null,
   }));
   const agents = hydrated.map((version) => {
     const previous = hydrated.find((candidate) =>
@@ -192,7 +305,7 @@ export async function listAgentStudio(request: NextRequest) {
     return { ...version, changed_fields: changedFields(version, previous) };
   });
   return {
-    contract_version: "tanaghom.agent-studio.v1",
+    contract_version: "tanaghom.agent-studio.v2",
     can_manage: user.role === "owner",
     templates: templates.rows,
     available_skills: [
@@ -210,11 +323,18 @@ export async function listAgentStudio(request: NextRequest) {
     },
     safety: {
       automatic_mode_available: false,
-      runtime_executor_available: false,
+      runtime_executor_available: Boolean(runtimeProfile && runtimeControl),
+      runtime_profile: runtimeProfile || null,
+      runtime_claims_paused: runtimeControl?.emergency_stop !== false,
+      runtime_stop_reason: runtimeControl?.reason || "Shared runtime control is unavailable",
+      runtime_control_updated_at: runtimeControl?.updated_at || null,
       provider_calls_from_studio: false,
+      provider_execution_enabled: process.env.AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED === "true",
       credentials_exposed_to_browser: false,
       mandatory_scenarios_per_language: 7,
-      next_gate: "Phase 7D runtime and Phase 7F certification",
+      next_gate: runtimeProfile && runtimeControl
+        ? "Complete bilingual zero-action certification before simulation promotion"
+        : "Install the reviewed shared runtime before certification",
     },
   };
 }

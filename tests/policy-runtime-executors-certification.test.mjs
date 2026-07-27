@@ -5,7 +5,9 @@ import test from "node:test";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
-const sha256 = (content) => createHash("sha256").update(content).digest("hex");
+const sha256 = (content) => createHash("sha256")
+  .update(content.replaceAll("\r\n", "\n"))
+  .digest("hex");
 
 const workflows = [
   {

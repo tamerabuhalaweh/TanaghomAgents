@@ -120,7 +120,7 @@ test("Agent Studio migration is tenant-bound, immutable, least privilege, and ru
   assert.match(rollback, /cannot roll back 0029 while organization Agent Studio data exists/);
 });
 
-test("Agent Studio API/UI exposes honest lifecycle, capability, error, mobile, and RTL states without credentials or runtime mutation", async () => {
+test("Agent Studio API/UI exposes honest lifecycle, live certification evidence, error, mobile, and RTL states without credentials or runtime mutation", async () => {
   const service = await readFile(new URL("apps/dashboard/lib/server/agent-studio.ts", root), "utf8");
   const component = await readFile(new URL("apps/dashboard/components/agent-studio.tsx", root), "utf8");
   const route = await readFile(new URL("apps/dashboard/app/api/admin/agents/route.ts", root), "utf8");
@@ -131,6 +131,11 @@ test("Agent Studio API/UI exposes honest lifecycle, capability, error, mobile, a
   assert.match(service, /authorize\(request, \["owner"\]\)/);
   assert.match(service, /definition\.organization_id=\$1/);
   assert.match(service, /integration_connection_status/);
+  assert.match(service, /organization_agent_jobs/);
+  assert.match(service, /organization_agent_runtime_certifications/);
+  assert.match(service, /runtime_claims_paused/);
+  assert.match(service, /AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED/);
+  assert.doesNotMatch(service, /runtime_executor_available:\s*false/);
   assert.doesNotMatch(service, /credential_ciphertext|credential_nonce|credential_auth_tag|decryptCredential|base_url|configuration|fetch\(/);
   assert.match(route, /status: 201/);
   assert.match(component, /Automatic mode is intentionally unavailable/);
@@ -142,6 +147,9 @@ test("Agent Studio API/UI exposes honest lifecycle, capability, error, mobile, a
   assert.match(component, /bound to the exact proposed parameters/);
   assert.match(component, /A newer agent version now exists/);
   assert.match(component, /mandatory tests/);
+  assert.match(component, /Shared certification runtime installed/);
+  assert.match(component, /immutable runtime jobs/);
+  assert.match(component, /External actions/);
   assert.doesNotMatch(component, /SUPABASE_SECRET|POSTIZ_API|GHL_API|credential_ciphertext|https?:\/\//);
   assert.match(navigation, /\/settings\/agents/);
   assert.match(agents, /Open Agent Studio/);
