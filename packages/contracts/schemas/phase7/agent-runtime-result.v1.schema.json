@@ -1,0 +1,58 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.local/schemas/phase7/agent-runtime-result.v1.schema.json",
+  "title": "Tanaghom policy-resolved skill result v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "invocation_id",
+    "outcome",
+    "output_json",
+    "provider_reference",
+    "prompt_tokens",
+    "completion_tokens",
+    "actual_cost",
+    "error_code"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "phase7.agent-runtime-result.v1"
+    },
+    "invocation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "outcome": {
+      "enum": ["succeeded", "refused", "failed", "indeterminate"]
+    },
+    "output_json": {
+      "type": "string",
+      "minLength": 2,
+      "maxLength": 30000
+    },
+    "provider_reference": {
+      "type": ["string", "null"],
+      "maxLength": 500
+    },
+    "prompt_tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 32000
+    },
+    "completion_tokens": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 32000
+    },
+    "actual_cost": {
+      "type": "number",
+      "minimum": 0,
+      "maximum": 1000000
+    },
+    "error_code": {
+      "type": ["string", "null"],
+      "pattern": "^[a-z][a-z0-9._-]{1,79}$"
+    }
+  }
+}

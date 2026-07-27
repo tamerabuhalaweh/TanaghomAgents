@@ -238,6 +238,31 @@ rejection, compatibility validation, least privilege, append-only audit,
 empty-data rollback/reapply, dashboard tests, TypeScript, and production build
 all pass before a deployment package is authorized.
 
+## Phase 7D — Shared policy-resolved agent and Skill runtime
+
+- One reviewed multi-tenant runner for organization-created agents
+- Durable tenant-bound jobs, immutable runtime profiles, and signed/versioned
+  agent handoffs
+- Progressive Skill disclosure and strict Gemma planner contracts
+- Server-side authorization of every proposed invocation
+- Parameter-bound approvals, idempotency, budget/rate/consent/channel checks,
+  emergency stops, and indeterminate-provider blocking
+- Separate runtime, read, proposal, and action executor identities with no
+  direct table writes
+- Append-only invocation, approval, certification, and runtime evidence
+- Inactive fixed-target n8n runner and simulation dispatcher
+
+Model output is a proposal, never authority. Organization-created instruction
+Skills cannot become executable tools, and no arbitrary code, SQL, shell,
+filesystem, URL, dynamic n8n workflow, or unreviewed MCP server can enter the
+runtime.
+
+**Gate:** two tenants and both supported languages pass disposable shared-runner
+tests; cross-tenant access, unassigned Skills, wrong channels, missing consent,
+emergency stops, duplicates, excess limits, and cross-role executor claims are
+rejected; migration rollback refuses durable evidence and otherwise stops at
+Phase 7C. Production migration and activation remain separately authorized.
+
 ## External inputs requested only when their phase needs them
 
 - Product name, logo, colors, and tone before final Phase 2 visual polish

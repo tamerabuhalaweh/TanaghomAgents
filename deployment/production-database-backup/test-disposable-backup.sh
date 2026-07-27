@@ -33,7 +33,12 @@ cmp -s "$raw" "$decrypted"
 
 docker run -d --network none --name "$container" -e POSTGRES_PASSWORD=restore-only -e POSTGRES_DB=restore_test "$POSTGRES_IMAGE" >/dev/null
 i=0
-until docker exec "$container" pg_isready -U postgres -d restore_test >/dev/null 2>&1; do i=$((i+1)); test "$i" -lt 30; sleep 2; done
+until docker exec "$container" sh -ec \
+  'test "$(cat /proc/1/comm)" = postgres && pg_isready -U postgres -d restore_test >/dev/null'; do
+  i=$((i+1))
+  test "$i" -lt 30
+  sleep 2
+done
 docker cp "$decrypted" "$container:/tmp/tanaghom.dump" >/dev/null
 docker exec "$container" pg_restore -U postgres -d restore_test --no-owner --no-acl --clean --if-exists --exit-on-error /tmp/tanaghom.dump
 test "$(docker exec "$container" psql -U postgres -d restore_test -X -v ON_ERROR_STOP=1 -At -c 'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;')" = "$expected_migration"

@@ -10,6 +10,7 @@ const schemaPaths = [
   "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json",
   "packages/contracts/schemas/phase5/conversation-intelligence-output.v1.schema.json",
   "packages/contracts/schemas/phase5g/quality-shadow-result.v1.schema.json",
+  "packages/contracts/schemas/phase7/agent-runtime-plan.v1.schema.json",
 ];
 
 const removedBeforeVllm = new Set(["$schema", "$id", "title", "uniqueItems", "format", "minProperties"]);

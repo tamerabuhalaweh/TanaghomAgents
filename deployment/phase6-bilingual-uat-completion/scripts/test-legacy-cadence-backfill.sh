@@ -15,6 +15,8 @@ latest() {
     'SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;'
 }
 
+test "$(latest)" = 0030_policy_resolved_agent_runtime
+node "$ROOT/scripts/database.mjs" rollback >/dev/null
 test "$(latest)" = 0029_organization_agent_studio
 node "$ROOT/scripts/database.mjs" rollback >/dev/null
 test "$(latest)" = 0028_strategy_cadence_integrity
@@ -51,7 +53,7 @@ INSERT INTO tanaghom.campaign_strategies(
 SQL
 
 node "$ROOT/scripts/database.mjs" migrate >/dev/null
-test "$(latest)" = 0029_organization_agent_studio
+test "$(latest)" = 0030_policy_resolved_agent_runtime
 psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DO $$
 DECLARE
@@ -85,6 +87,8 @@ $$;
 SQL
 
 node "$ROOT/scripts/database.mjs" rollback >/dev/null
+test "$(latest)" = 0029_organization_agent_studio
+node "$ROOT/scripts/database.mjs" rollback >/dev/null
 test "$(latest)" = 0028_strategy_cadence_integrity
 node "$ROOT/scripts/database.mjs" rollback >/dev/null
 test "$(latest)" = 0027_governed_skill_library
@@ -107,7 +111,7 @@ $$;
 SQL
 
 node "$ROOT/scripts/database.mjs" migrate >/dev/null
-test "$(latest)" = 0029_organization_agent_studio
+test "$(latest)" = 0030_policy_resolved_agent_runtime
 psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 >/dev/null <<'SQL'
 DELETE FROM tanaghom.strategy_cadence_0028_legacy_backup
 WHERE strategy_id='78000000-0000-4000-8000-000000000028';
