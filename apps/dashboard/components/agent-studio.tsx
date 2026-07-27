@@ -144,8 +144,34 @@ interface AgentVersion {
   skills: AgentSkill[];
   integrations: AgentIntegration[];
   policy: AgentPolicy;
-  scenarios: Array<{ code: string; language: Language; scenario_kind: string; result_state: string }>;
+  scenarios: Array<{
+    code: string;
+    language: Language;
+    scenario_kind: string;
+    result_state: "pending" | "passed" | "failed";
+    job_id: string | null;
+    job_status: string | null;
+    scenario_result: "passed" | "failed" | null;
+    finished_at: string | null;
+  }>;
   audit_events: Array<{ event_type: string; actor_name: string; occurred_at: string }>;
+  runtime: {
+    jobs_total: number;
+    open_jobs: number;
+    invocations_total: number;
+    open_approvals: number;
+    external_actions: number;
+    latest_activity_at: string | null;
+  };
+  certification: {
+    id: string;
+    runtime_profile_id: string;
+    evidence_hash: string;
+    certified_by: string;
+    certified_at: string;
+    scenario_count: number;
+    external_action_count: number;
+  } | null;
   changed_fields: string[];
 }
 
@@ -160,7 +186,20 @@ interface AgentStudioPayload {
   safety: {
     automatic_mode_available: boolean;
     runtime_executor_available: boolean;
+    runtime_profile: {
+      id: string;
+      code: string;
+      model_name: string;
+      planner_contract_version: string;
+      prompt_version: string;
+      parser_version: string;
+      lifecycle_state: string;
+    } | null;
+    runtime_claims_paused: boolean;
+    runtime_stop_reason: string;
+    runtime_control_updated_at: string | null;
     provider_calls_from_studio: boolean;
+    provider_execution_enabled: boolean;
     credentials_exposed_to_browser: boolean;
     mandatory_scenarios_per_language: number;
     next_gate: string;
@@ -384,10 +423,16 @@ export function AgentStudio() {
       <section className="studio-safety" aria-label="Agent Studio safety boundary">
         <ShieldCheck size={20} aria-hidden="true" />
         <div>
-          <strong>Configuration, not uncontrolled automation</strong>
-          <p>Studio can create and validate immutable agent versions. It cannot expose credentials, edit n8n, call a provider, or activate a runtime. Simulation and rollout remain blocked until the shared executor and certification gates pass.</p>
+          <strong>{payload.safety.runtime_executor_available ? "Shared certification runtime installed" : "Configuration, not uncontrolled automation"}</strong>
+          <p>{payload.safety.runtime_executor_available
+            ? "Agent Studio now reports real runtime evidence. Certification remains simulation-only, credentials stay private, provider adapters stay disabled, and only a reviewed operator window may release queued test work."
+            : "Studio can create and validate immutable agent versions. It cannot expose credentials, edit n8n, call a provider, or activate a runtime."}</p>
         </div>
-        <StatusPill tone="attention">Runtime gated</StatusPill>
+        <StatusPill tone={payload.safety.runtime_executor_available ? "working" : "attention"}>
+          {payload.safety.runtime_executor_available
+            ? payload.safety.runtime_claims_paused ? "Claims safely paused" : "Canary window open"
+            : "Runtime unavailable"}
+        </StatusPill>
       </section>
 
       <section className="studio-summary" aria-label="Organization agent summary">
@@ -694,6 +739,7 @@ function AgentVersionRow({ version, canManage, onRevise, onChanged }: {
   const [busy, setBusy] = useState("");
   const [error, setError] = useState("");
   const scenarioPassed = version.scenarios.filter((scenario) => scenario.result_state === "passed").length;
+  const scenarioFailed = version.scenarios.filter((scenario) => scenario.result_state === "failed").length;
   const canRead = version.skills.flatMap((skill) => skill.skill_name).length > 0;
   const canExecute = version.skills.some((skill) => ["internal_write", "external_write"].includes(skill.side_effect_class));
 
@@ -756,10 +802,18 @@ function AgentVersionRow({ version, canManage, onRevise, onChanged }: {
         <section><h4>Integrations and channels</h4>{version.integrations.length ? <ul>{version.integrations.map((integration) => <li key={integration.connection_id}><strong>{integration.provider === "ghl" ? "GoHighLevel" : "Postiz"}</strong><small>{readable(integration.status)} · {integration.channels.map(readable).join(", ") || "no channel"}</small></li>)}</ul> : <p>No provider connection is bound to this version.</p>}</section>
         <section><h4>Hard limits</h4><dl><div><dt>Steps / tools</dt><dd>{version.policy.max_steps} / {version.policy.max_tool_calls}</dd></div><div><dt>Retries / concurrency</dt><dd>{version.policy.max_retries} / {version.policy.max_concurrency}</dd></div><div><dt>Runtime / tokens</dt><dd>{version.policy.max_runtime_seconds}s / {version.policy.max_tokens}</dd></div><div><dt>Daily / per minute</dt><dd>{version.policy.max_daily_actions} / {version.policy.max_actions_per_minute}</dd></div><div><dt>Follow-ups</dt><dd>{version.policy.max_follow_ups_per_contact} per contact</dd></div></dl></section>
         <section><h4>Approval matrix</h4><p><strong>Actions:</strong> {version.policy.approval_actions.map(readable).join(", ") || "None"}</p><p><strong>Eligible:</strong> {version.policy.approval_roles.map(readable).join(", ")}</p><p><strong>Expiry:</strong> {version.policy.approval_expiry_minutes} minutes</p><p>Review is bound to exact proposed parameters: {version.policy.parameter_bound_approval ? "required" : "not configured"}.</p></section>
-        <section><h4>Runtime activity</h4><p>Current jobs: 0. Skill invocations: 0. Open approvals: 0. Runtime metrics are unavailable because this version has no certified executor.</p></section>
-        <section><h4>Mandatory certification</h4><p>{scenarioPassed} of {version.scenarios.length} scenarios passed. Structural definitions exist; execution evidence is owned by Phase 7F.</p><ul>{version.languages.map((language) => <li key={language}><strong>{language === "ar" ? "Arabic" : "English"}</strong><small>{version.scenarios.filter((scenario) => scenario.language === language).length} prepared · {version.scenarios.filter((scenario) => scenario.language === language && scenario.result_state === "passed").length} passed</small></li>)}</ul></section>
+        <section><h4>Runtime activity</h4><dl><div><dt>Jobs</dt><dd>{version.runtime.jobs_total} total · {version.runtime.open_jobs} open</dd></div><div><dt>Skill invocations</dt><dd>{version.runtime.invocations_total}</dd></div><div><dt>Open approvals</dt><dd>{version.runtime.open_approvals}</dd></div><div><dt>External actions</dt><dd>{version.runtime.external_actions}</dd></div><div><dt>Latest activity</dt><dd>{formatted(version.runtime.latest_activity_at)}</dd></div></dl></section>
+        <section><h4>Mandatory certification</h4><p>{scenarioPassed} of {version.scenarios.length} scenarios passed{scenarioFailed ? `; ${scenarioFailed} require review` : ""}. These values come from immutable runtime jobs, not editable checklist fields.</p><ul>{version.languages.map((language) => <li key={language}><strong>{language === "ar" ? "Arabic" : "English"}</strong><small>{version.scenarios.filter((scenario) => scenario.language === language).length} prepared · {version.scenarios.filter((scenario) => scenario.language === language && scenario.result_state === "passed").length} passed</small></li>)}</ul>{version.certification ? <p><strong>Certified:</strong> {formatted(version.certification.certified_at)} · {version.certification.scenario_count} scenarios · {version.certification.external_action_count} external actions.</p> : <p>No complete certification has been recorded yet.</p>}</section>
         <section><h4>Immutable evidence</h4><dl><div><dt>Content hash</dt><dd><code>{version.content_hash}</code></dd></div><div><dt>Created</dt><dd>{formatted(version.created_at)} by {version.created_by_name}</dd></div><div><dt>Validated</dt><dd>{formatted(version.validated_at)}</dd></div><div><dt>Changed from prior version</dt><dd>{version.changed_fields.map(readable).join(", ")}</dd></div></dl></section>
-        <section><h4>Rollout blocker</h4><p>{version.lifecycle_state === "draft" ? "Owner validation is the next available transition." : version.lifecycle_state === "validated" ? "The shared policy-resolved runtime and mandatory simulation evidence are not yet certified." : "This state remains governed by platform readiness, emergency stops, and evidence expiry."}</p></section>
+        <section><h4>Rollout blocker</h4><p>{version.lifecycle_state === "draft"
+          ? "Owner validation is the next available transition."
+          : version.lifecycle_state === "validated" && version.certification
+            ? "Certification passed. Simulation promotion still requires an explicit owner action."
+            : version.lifecycle_state === "validated" && scenarioPassed > 0
+              ? `${version.scenarios.length - scenarioPassed} mandatory scenarios remain before certification.`
+              : version.lifecycle_state === "validated"
+                ? "The shared runtime is installed; the controlled bilingual zero-action certification is next."
+                : "This state remains governed by platform readiness, emergency stops, and evidence expiry."}</p></section>
         <section><h4>Audit history</h4>{version.audit_events.length ? <ul>{version.audit_events.map((event, index) => <li key={`${event.occurred_at}-${index}`}><strong>{readable(event.event_type)}</strong><small>{event.actor_name} · {formatted(event.occurred_at)}</small></li>)}</ul> : <p>No audit event was returned.</p>}</section>
       </div>
     </details>

@@ -1,0 +1,138 @@
+# Controlled Phase 7F Agent Studio bilingual canary
+
+## Purpose
+
+This canary is the first production-shaped gate for Issue #137. It takes one
+exact, already validated bilingual Agent Studio version and runs:
+
+1. its English `success` scenario; and
+2. its Arabic `success` scenario.
+
+Both jobs use the reviewed Policy-Resolved Agent Runner and fixed Simulation
+Dispatcher. The runner may call the reviewed private Gemma planner. Every
+skill invocation remains `simulation_only=true`; the dispatcher records
+`external_action_count=0`; all provider adapters remain disabled; and the
+dashboard's provider gateway remains locked.
+
+This is not full certification. The other twelve mandatory adversarial
+scenarios remain required before a certification record or lifecycle
+promotion can occur.
+
+## Immutable safety boundary
+
+- The two n8n workflows remain inactive.
+- Their schedule triggers remain disabled.
+- Each runner execution uses the documented one-off
+  `n8n execute --id phase7dPolicyResolvedAgentRunnerV1` command.
+- The shared runtime emergency stop opens for only one queued job at a time
+  and is restored immediately after the CLI process exits.
+- Postiz, GHL and every provider emergency stop remain active.
+- Read, proposal and action provider adapters remain disabled.
+- No direct table write is granted to n8n or the dashboard API.
+- No credential, secret or provider payload is written to Git.
+- A failure trap restores the original runtime stop and quarantines only this
+  canary's unfinished jobs. Completed evidence is never deleted.
+- No service, container, firewall, Nginx configuration or protected project
+  file is restarted, recreated or edited.
+
+## Required identifiers
+
+The operator supplies exact UUIDs already present in production:
+
+- organization;
+- accepted active owner; and
+- validated bilingual Agent Studio version.
+
+The preflight proves the three identities belong together, the version has
+exactly one English and one Arabic `success` scenario, no conflicting open
+runtime work exists, and the canary ID has never been used.
+
+## Read-only preflight
+
+Run from a clean checkout at the approved merged commit:
+
+```sh
+export TANAGHOM_PHASE7F_CANARY_AUTHORIZATION='GO-RUN-SIMULATION-ONLY-AGENT-CANARY'
+export TANAGHOM_PHASE7F_CANARY_ID='phase7f-canary-YYYYMMDDTHHMMSSZ'
+export TANAGHOM_EXPECTED_PRODUCTION_COMMIT='<40-character deployed SHA>'
+export TANAGHOM_PHASE7F_SOURCE_COMMIT='<40-character approved merged SHA>'
+export TANAGHOM_CANARY_ORGANIZATION_ID='<organization UUID>'
+export TANAGHOM_CANARY_OWNER_ID='<accepted owner UUID>'
+export TANAGHOM_CANARY_AGENT_VERSION_ID='<validated bilingual version UUID>'
+export TANAGHOM_PRODUCTION_ROOT='/opt/tanaghom-dashboard'
+export TANAGHOM_RELEASE_SOURCE_ROOT='/opt/tanaghom-release-phase7f'
+
+sudo -E \
+  deployment/phase7f-agent-studio-canary/scripts/preflight.sh
+```
+
+Preflight is read-only and must print `PASS`.
+
+## Controlled execution
+
+After reviewing the preflight evidence:
+
+```sh
+sudo -E \
+  deployment/phase7f-agent-studio-canary/scripts/run-canary.sh
+```
+
+The script:
+
+1. captures the original runtime-stop reason, protected identities, firewall,
+   worktree, workflow definitions and side-effect counts;
+2. queues only the exact English and Arabic success scenarios;
+3. proves those are the only claimable shared-runtime jobs;
+4. opens the runtime stop, executes the inactive runner once, and restores the
+   stop;
+5. verifies the terminal simulation invocation and finalizes its scenario
+   evidence;
+6. repeats steps 3–5 for the second language;
+7. proves both jobs passed with zero provider dispatches, provider references,
+   external actions and cost;
+8. proves the Agent Studio version remains `validated` and no certification
+   was forged from this partial canary;
+9. runs `n8n audit`; and
+10. rechecks all protected health, workflow, firewall, worktree and public
+    boundaries.
+
+Root-only evidence is retained under:
+
+```text
+/var/backups/tanaghom-phase7f-canary-YYYYMMDDTHHMMSSZ
+```
+
+## Failure restoration
+
+The run installs its restoration trap before queueing work. If any command
+fails, it restores the original shared-runtime emergency-stop reason and marks
+only this canary's unfinished invocations, runs and jobs terminal. It does not
+delete evidence or affect another job.
+
+The exact idempotent manual restoration is:
+
+```sh
+sudo -E \
+  deployment/phase7f-agent-studio-canary/scripts/restore-locks.sh \
+  "/var/backups/tanaghom-$TANAGHOM_PHASE7F_CANARY_ID"
+```
+
+## Pass gate
+
+Success requires:
+
+- one passed English scenario and one passed Arabic scenario;
+- exactly two succeeded scenario jobs and runs;
+- only simulation invocations;
+- zero provider dispatches, provider references, cost and external actions;
+- no certification or lifecycle promotion;
+- the original runtime stop restored;
+- every provider stop and adapter still locked;
+- both reviewed workflows still inactive and byte-equivalent operationally;
+- no non-canary workflow change;
+- no protected container/service identity, firewall, Nginx or worktree change;
+  and
+- a passing `n8n audit`.
+
+After this two-scenario canary, Issue #137 remains open for the complete
+fourteen-scenario bilingual certification, Shadow and Assisted UAT.
