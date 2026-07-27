@@ -50,6 +50,7 @@ node "$SCRIPT_DIR/workflow-contract.mjs" prepare \
   echo "ORGANIZATION_ID=$TANAGHOM_CANARY_ORGANIZATION_ID"
   echo "OWNER_ID=$TANAGHOM_CANARY_OWNER_ID"
   echo "AGENT_VERSION_ID=$TANAGHOM_CANARY_AGENT_VERSION_ID"
+  echo "RUNTIME_PROFILE_ID=$TANAGHOM_CANARY_RUNTIME_PROFILE_ID"
   echo "STARTED_AT=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 } > "$evidence/canary.env"
 chmod 0600 "$evidence"/*

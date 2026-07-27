@@ -64,6 +64,7 @@ const strategyCadenceAssertions = join(root, 'packages', 'database', 'tests', 's
 const agentStudioAssertions = join(root, 'packages', 'database', 'tests', 'organization_agent_studio.sql');
 const policyResolvedRuntimeAssertions = join(root, 'packages', 'database', 'tests', 'policy_resolved_agent_runtime.sql');
 const policyRuntimeExecutorAssertions = join(root, 'packages', 'database', 'tests', 'policy_runtime_executors_certification.sql');
+const gemmaServedModelProfileAssertions = join(root, 'packages', 'database', 'tests', 'gemma_served_model_profile.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -95,6 +96,7 @@ psql('-f', strategyCadenceAssertions);
 psql('-f', agentStudioAssertions);
 psql('-f', policyResolvedRuntimeAssertions);
 psql('-f', policyRuntimeExecutorAssertions);
+psql('-f', gemmaServedModelProfileAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -102,6 +104,8 @@ psql('-f', policyRuntimeExecutorAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF EXISTS (SELECT 1 FROM tanaghom.agent_runtime_profiles WHERE id='7d000000-0000-4000-8000-000000000002') OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0032_gemma_served_model_profile') THEN RAISE EXCEPTION '0032 rollback left served-model profile state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0031_policy_runtime_executors_certification') THEN RAISE EXCEPTION '0032 rollback crossed the 0031 boundary'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.agent_runtime_executor_adapters') IS NOT NULL OR to_regclass('tanaghom.agent_runtime_executor_adapter_events') IS NOT NULL OR to_regprocedure('tanaghom.begin_agent_runtime_provider_dispatch(uuid,text,text)') IS NOT NULL OR EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='tanaghom' AND table_name='organization_agent_invocations' AND column_name='provider_dispatch_id') OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0031_policy_runtime_executors_certification') THEN RAISE EXCEPTION '0031 rollback left executor or certification state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0030_policy_resolved_agent_runtime') THEN RAISE EXCEPTION '0031 rollback crossed the 0030 boundary'; END IF; END $$;");
 database('rollback');

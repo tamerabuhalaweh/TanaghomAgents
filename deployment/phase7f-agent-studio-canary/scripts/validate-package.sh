@@ -9,7 +9,8 @@ for file in \
   scripts/common.sh scripts/preflight.sh scripts/run-canary.sh \
   scripts/restore-locks.sh scripts/canary-operator.mjs \
   scripts/workflow-contract.mjs scripts/test-refusal-paths.sh \
-  scripts/test-disposable-lifecycle.sh scripts/validate-package.sh
+  scripts/test-disposable-lifecycle.sh scripts/test-quarantine-lifecycle.mjs \
+  scripts/validate-package.sh
 do
   test -s "$package/$file" || {
     echo "missing package file: $file" >&2
@@ -20,9 +21,10 @@ done
 sh -n "$package"/scripts/*.sh
 node --check "$package/scripts/canary-operator.mjs"
 node --check "$package/scripts/workflow-contract.mjs"
+node --check "$package/scripts/test-quarantine-lifecycle.mjs"
 "$package/scripts/test-refusal-paths.sh"
 
-grep -q "EXPECTED_MIGRATION=0031_policy_runtime_executors_certification" \
+grep -q "EXPECTED_MIGRATION=0032_gemma_served_model_profile" \
   "$package/scripts/common.sh"
 grep -q "GO-RUN-SIMULATION-ONLY-AGENT-CANARY" \
   "$package/scripts/common.sh"
@@ -37,6 +39,7 @@ grep -q 'operator quarantine "\$reason"' "$package/scripts/run-canary.sh"
 grep -q 'n8n audit' "$package/scripts/run-canary.sh"
 grep -q 'trap cleanup EXIT HUP INT TERM' "$package/scripts/run-canary.sh"
 grep -q 'simulation_only=false' "$package/scripts/canary-operator.mjs"
+test "$(grep -Fc '$1::text' "$package/scripts/canary-operator.mjs")" -ge 2
 grep -q 'provider_dispatch_id IS NOT NULL' "$package/scripts/canary-operator.mjs"
 grep -q 'organization_agent_runtime_certifications' \
   "$package/scripts/canary-operator.mjs"
