@@ -619,12 +619,39 @@ async function runDirectNext() {
       if (failed.rows[0]?.status !== "queued") {
         throw new Error("provider-failure scenario was not durably requeued");
       }
-      await client.query(
-        `UPDATE tanaghom.organization_agent_jobs
-            SET available_at=statement_timestamp()-interval '1 second'
-          WHERE id=$1::uuid AND status='queued'`,
+      const reprioritized = await client.query(
+        `WITH queued_peer AS (
+           SELECT min(peer.available_at) AS earliest_available_at
+             FROM tanaghom.organization_agent_jobs peer
+            WHERE peer.status='queued' AND peer.id<>$1::uuid
+         )
+         UPDATE tanaghom.organization_agent_jobs target
+            SET available_at=coalesce(
+              queued_peer.earliest_available_at-interval '1 second',
+              statement_timestamp()-interval '1 second'
+            )
+           FROM queued_peer
+          WHERE target.id=$1::uuid AND target.status='queued'
+          RETURNING target.id`,
         [jobId],
       );
+      if (reprioritized.rowCount !== 1) {
+        throw new Error("requeued provider-failure job could not be reprioritized");
+      }
+      const precedence = await client.query(
+        `SELECT count(*)::int AS earlier_jobs
+           FROM tanaghom.organization_agent_jobs peer
+          WHERE peer.status='queued' AND peer.id<>$1::uuid
+            AND peer.available_at<=(
+              SELECT target.available_at
+                FROM tanaghom.organization_agent_jobs target
+               WHERE target.id=$1::uuid
+            )`,
+        [jobId],
+      );
+      if (precedence.rows[0]?.earlier_jobs !== 0) {
+        throw new Error("requeued provider-failure job did not gain deterministic claim precedence");
+      }
       const recovered = await client.query(
         "SELECT * FROM tanaghom.claim_organization_agent_job($1::text)",
         ["phase7f_certification_recovery"],
@@ -703,6 +730,8 @@ async function runDirectNext() {
     }
     await finalizePassed(runId, scenario, {
       recovery_attempts: recoveryAttempts,
+      recovery_queue_precedence_verified:
+        scenario.scenario_kind === "provider_failure",
       idempotent_reuse: idempotentReuse,
       denial_reason: denialReason,
     });
@@ -718,6 +747,8 @@ async function runDirectNext() {
       language: scenario.language,
       scenario_kind: scenario.scenario_kind,
       recovery_attempts: recoveryAttempts,
+      recovery_queue_precedence_verified:
+        scenario.scenario_kind === "provider_failure",
       idempotent_reuse: idempotentReuse,
       denial_reason: denialReason,
       runtime_stop_never_opened_outside_transaction: true,

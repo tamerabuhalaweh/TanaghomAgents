@@ -51,6 +51,14 @@ test("full Agent Studio certification covers twelve bilingual adversarial scenar
   assert.match(operator, /untrusted model output crossed the server authority boundary/);
   assert.match(operator, /prompt_injection_granted_authority: false/);
   assert.match(operator, /fail_agent_runtime_run/);
+  assert.match(operator, /min\(peer\.available_at\) AS earliest_available_at/);
+  assert.match(operator, /earliest_available_at-interval '1 second'/);
+  assert.match(operator, /requeued provider-failure job did not gain deterministic claim precedence/);
+  assert.match(operator, /recovery_queue_precedence_verified/);
+  assert.doesNotMatch(
+    operator,
+    /SET available_at=statement_timestamp\(\)-interval '1 second'\s+WHERE id=\$1::uuid/,
+  );
   assert.match(operator, /recoveryAttempts = 2/);
   assert.match(operator, /duplicate delivery created a second logical invocation/);
   assert.match(operator, /denialReason !== "runtime_emergency_stop"/);
@@ -107,4 +115,14 @@ test("certification keeps n8n publication bounded to the fixed simulation dispat
     (inherited.match(/n8n unpublish:workflow --id="\$SIMULATION_ID"/g) ?? []).length,
     1,
   );
+});
+
+test("disposable certification reproduces and prevents aged-queue recovery theft", async () => {
+  const integration = await read("scripts/phase7d-runtime-certification-integration.mjs");
+  assert.match(integration, /queue_precedence_decoy: true/);
+  assert.match(integration, /interval '10 minutes'/);
+  assert.match(integration, /min\(peer\.available_at\) AS earliest_available_at/);
+  assert.match(integration, /assert\.equal\(recovered\.rows\[0\]\.job_id, jobId\)/);
+  assert.match(integration, /assert\.equal\(attempt\.rows\[0\]\.attempt, 2\)/);
+  assert.match(integration, /recovery_queue_precedence_verified/);
 });

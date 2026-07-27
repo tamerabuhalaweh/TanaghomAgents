@@ -55,6 +55,13 @@ selected run so every scenario is counted exactly once.
 
 Each row is executed once in English and once in Arabic.
 
+The provider-failure proof may run after other certification jobs have waited
+in the queue for several minutes. Before the generic worker claim is retried,
+the failed job is therefore moved exactly one second ahead of the earliest
+queued peer and that precedence is independently asserted. This guarantees the
+second claim recovers the same durably accepted job instead of consuming an
+older, unrelated certification scenario.
+
 ## Required reviewed inputs
 
 The operator supplies:
