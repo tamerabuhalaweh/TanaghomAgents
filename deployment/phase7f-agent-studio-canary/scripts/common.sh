@@ -143,25 +143,25 @@ assert_side_effect_counts_unchanged() {
 }
 
 capture_production_state() {
-  prefix=$1
-  capture_production_worktree "$prefix"
-  capture_n8n_ids "$prefix.n8n-containers"
-  capture_firewall_boundary "$prefix.firewall"
+  canary_capture_prefix=$1
+  capture_production_worktree "$canary_capture_prefix"
+  capture_n8n_ids "$canary_capture_prefix.n8n-containers"
+  capture_firewall_boundary "$canary_capture_prefix.firewall"
 }
 
 assert_production_state_unchanged() {
-  prefix=$1
-  current=$(mktemp -d)
-  capture_production_worktree "$current/worktree"
-  cmp -s "$prefix.status" "$current/worktree.status" ||
+  canary_expected_prefix=$1
+  canary_current_state=$(mktemp -d)
+  capture_production_worktree "$canary_current_state/worktree"
+  cmp -s "$canary_expected_prefix.status" "$canary_current_state/worktree.status" ||
     die 'production worktree status changed'
-  cmp -s "$prefix.diff" "$current/worktree.diff" ||
+  cmp -s "$canary_expected_prefix.diff" "$canary_current_state/worktree.diff" ||
     die 'production worktree diff changed'
-  assert_n8n_ids_unchanged "$prefix.n8n-containers"
-  capture_firewall_boundary "$current/firewall"
-  cmp -s "$prefix.firewall" "$current/firewall" ||
+  assert_n8n_ids_unchanged "$canary_expected_prefix.n8n-containers"
+  capture_firewall_boundary "$canary_current_state/firewall"
+  cmp -s "$canary_expected_prefix.firewall" "$canary_current_state/firewall" ||
     die 'host firewall boundary changed'
-  rm -rf -- "$current"
+  rm -rf -- "$canary_current_state"
 }
 
 assert_phase7f_baseline() {

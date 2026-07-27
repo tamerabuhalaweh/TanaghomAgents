@@ -10,7 +10,7 @@ for file in \
   scripts/restore-locks.sh scripts/canary-operator.mjs \
   scripts/workflow-contract.mjs scripts/test-refusal-paths.sh \
   scripts/test-disposable-lifecycle.sh scripts/test-quarantine-lifecycle.mjs \
-  scripts/validate-package.sh
+  scripts/test-state-verification.sh scripts/validate-package.sh
 do
   test -s "$package/$file" || {
     echo "missing package file: $file" >&2
@@ -19,6 +19,7 @@ do
 done
 
 sh -n "$package"/scripts/*.sh
+"$package/scripts/test-state-verification.sh"
 node --check "$package/scripts/canary-operator.mjs"
 node --check "$package/scripts/workflow-contract.mjs"
 node --check "$package/scripts/test-quarantine-lifecycle.mjs"
