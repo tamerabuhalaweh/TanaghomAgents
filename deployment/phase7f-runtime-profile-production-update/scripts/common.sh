@@ -79,30 +79,30 @@ assert_runtime_quiescent() {
 }
 
 capture_profile_release_state() {
-  prefix=$1
-  capture_production_worktree "$prefix.worktree"
-  capture_n8n_ids "$prefix.n8n-containers"
-  capture_firewall_boundary "$prefix.firewall"
-  sha256sum /etc/nginx/conf.d/tanaghom-public.conf > "$prefix.nginx.sha256"
-  sha256sum "$ALLOWED_PRODUCTION_FILE" > "$prefix.squid.sha256"
-  chmod 0600 "$prefix".*
+  profile_release_capture_prefix=$1
+  capture_production_worktree "$profile_release_capture_prefix.worktree"
+  capture_n8n_ids "$profile_release_capture_prefix.n8n-containers"
+  capture_firewall_boundary "$profile_release_capture_prefix.firewall"
+  sha256sum /etc/nginx/conf.d/tanaghom-public.conf > "$profile_release_capture_prefix.nginx.sha256"
+  sha256sum "$ALLOWED_PRODUCTION_FILE" > "$profile_release_capture_prefix.squid.sha256"
+  chmod 0600 "$profile_release_capture_prefix".*
 }
 
 assert_profile_release_state_unchanged() {
-  prefix=$1
-  current=$(mktemp -d)
-  capture_production_worktree "$current/worktree"
-  cmp -s "$prefix.worktree.status" "$current/worktree.status" ||
+  profile_release_expected_prefix=$1
+  profile_release_current=$(mktemp -d)
+  capture_production_worktree "$profile_release_current/worktree"
+  cmp -s "$profile_release_expected_prefix.worktree.status" "$profile_release_current/worktree.status" ||
     die 'production worktree status changed'
-  cmp -s "$prefix.worktree.diff" "$current/worktree.diff" ||
+  cmp -s "$profile_release_expected_prefix.worktree.diff" "$profile_release_current/worktree.diff" ||
     die 'production worktree diff changed'
-  assert_n8n_ids_unchanged "$prefix.n8n-containers"
-  capture_firewall_boundary "$current/firewall"
-  cmp -s "$prefix.firewall" "$current/firewall" ||
+  assert_n8n_ids_unchanged "$profile_release_expected_prefix.n8n-containers"
+  capture_firewall_boundary "$profile_release_current/firewall"
+  cmp -s "$profile_release_expected_prefix.firewall" "$profile_release_current/firewall" ||
     die 'firewall boundary changed'
-  sha256sum -c "$prefix.nginx.sha256" >/dev/null ||
+  sha256sum -c "$profile_release_expected_prefix.nginx.sha256" >/dev/null ||
     die 'Nginx configuration changed'
-  sha256sum -c "$prefix.squid.sha256" >/dev/null ||
+  sha256sum -c "$profile_release_expected_prefix.squid.sha256" >/dev/null ||
     die 'reviewed Squid configuration changed'
-  rm -rf -- "$current"
+  rm -rf -- "$profile_release_current"
 }
