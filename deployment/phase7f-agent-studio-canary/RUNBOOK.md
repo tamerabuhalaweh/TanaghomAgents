@@ -30,6 +30,10 @@ promotion can occur.
 - Read, proposal and action provider adapters remain disabled.
 - No direct table write is granted to n8n or the dashboard API.
 - No credential, secret or provider payload is written to Git.
+- n8n may replace a repository credential placeholder ID with an existing
+  encrypted credential ID during import. Operational hashes normalize only
+  that internal ID; preflight independently proves every installed binding
+  resolves to the reviewed credential name and type.
 - A failure trap restores the original runtime stop and quarantines only this
   canary's unfinished jobs. Completed evidence is never deleted.
 - No service, container, firewall, Nginx configuration or protected project

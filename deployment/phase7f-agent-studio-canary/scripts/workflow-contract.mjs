@@ -19,12 +19,28 @@ function stable(value) {
   return value;
 }
 
+function normalizedNodes(nodes) {
+  return nodes.map((node) => ({
+    ...node,
+    ...(node.credentials ? {
+      credentials: Object.fromEntries(
+        Object.entries(node.credentials).map(([type, binding]) => [
+          type,
+          binding && typeof binding === "object"
+            ? { ...binding, id: "<resolved-by-reviewed-name-and-type>" }
+            : binding,
+        ]),
+      ),
+    } : {}),
+  }));
+}
+
 function operational(workflow) {
   return stable({
     id: workflow.id,
     name: workflow.name,
     active: workflow.active,
-    nodes: workflow.nodes,
+    nodes: normalizedNodes(workflow.nodes),
     connections: workflow.connections,
     settings: workflow.settings ?? {},
     staticData: workflow.staticData ?? null,
