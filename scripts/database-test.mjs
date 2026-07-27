@@ -63,6 +63,7 @@ const skillLibraryAssertions = join(root, 'packages', 'database', 'tests', 'gove
 const strategyCadenceAssertions = join(root, 'packages', 'database', 'tests', 'strategy_cadence_integrity.sql');
 const agentStudioAssertions = join(root, 'packages', 'database', 'tests', 'organization_agent_studio.sql');
 const policyResolvedRuntimeAssertions = join(root, 'packages', 'database', 'tests', 'policy_resolved_agent_runtime.sql');
+const policyRuntimeExecutorAssertions = join(root, 'packages', 'database', 'tests', 'policy_runtime_executors_certification.sql');
 const ownershipConcurrency = join(root, 'scripts', 'conversation-ownership-concurrency-test.mjs');
 
 database('migrate');
@@ -93,6 +94,7 @@ psql('-f', skillLibraryAssertions);
 psql('-f', strategyCadenceAssertions);
 psql('-f', agentStudioAssertions);
 psql('-f', policyResolvedRuntimeAssertions);
+psql('-f', policyRuntimeExecutorAssertions);
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',
@@ -100,6 +102,8 @@ psql('-f', policyResolvedRuntimeAssertions);
   if (result.error) throw result.error;
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.agent_runtime_executor_adapters') IS NOT NULL OR to_regclass('tanaghom.agent_runtime_executor_adapter_events') IS NOT NULL OR to_regprocedure('tanaghom.begin_agent_runtime_provider_dispatch(uuid,text,text)') IS NOT NULL OR EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='tanaghom' AND table_name='organization_agent_invocations' AND column_name='provider_dispatch_id') OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0031_policy_runtime_executors_certification') THEN RAISE EXCEPTION '0031 rollback left executor or certification state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0030_policy_resolved_agent_runtime') THEN RAISE EXCEPTION '0031 rollback crossed the 0030 boundary'; END IF; END $$;");
 database('rollback');
 psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.organization_agent_jobs') IS NOT NULL OR to_regclass('tanaghom.organization_agent_invocations') IS NOT NULL OR to_regprocedure('tanaghom.claim_organization_agent_job(text)') IS NOT NULL OR EXISTS (SELECT 1 FROM pg_roles WHERE rolname IN ('tanaghom_agent_runtime','tanaghom_skill_read_executor','tanaghom_skill_proposal_executor','tanaghom_skill_action_executor')) OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0030_policy_resolved_agent_runtime') THEN RAISE EXCEPTION '0030 rollback left shared runtime state behind'; END IF; IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0029_organization_agent_studio') THEN RAISE EXCEPTION '0030 rollback crossed the 0029 boundary'; END IF; END $$;");
 database('rollback');

@@ -251,6 +251,11 @@ all pass before a deployment package is authorized.
   direct table writes
 - Append-only invocation, approval, certification, and runtime evidence
 - Inactive fixed-target n8n runner and simulation dispatcher
+- Inactive fixed read, proposal, action, and run-finalizer adapters whose
+  workflow hashes, exact executor references, operations, and credential
+  scopes are pinned in PostgreSQL
+- Canonical bilingual certification requiring seven scenario classes per
+  language, zero provider dispatches, zero external actions, and zero cost
 
 Model output is a proposal, never authority. Organization-created instruction
 Skills cannot become executable tools, and no arbitrary code, SQL, shell,
@@ -258,10 +263,14 @@ filesystem, URL, dynamic n8n workflow, or unreviewed MCP server can enter the
 runtime.
 
 **Gate:** two tenants and both supported languages pass disposable shared-runner
-tests; cross-tenant access, unassigned Skills, wrong channels, missing consent,
-emergency stops, duplicates, excess limits, and cross-role executor claims are
-rejected; migration rollback refuses durable evidence and otherwise stops at
-Phase 7C. Production migration and activation remain separately authorized.
+tests; two bilingual agents pass all 28 canonical zero-action certification
+scenarios; cross-tenant access, unassigned Skills, wrong channels, missing
+consent, emergency stops, duplicates, excess limits, arbitrary executor
+identities, tampered evidence, and cross-role executor claims are rejected.
+Migration rollback refuses durable evidence and otherwise stops exactly at the
+preceding Phase 7D baseline. Production migration, credentials, workflow
+import/activation, Gemma traffic, and provider traffic remain separately
+authorized.
 
 ## External inputs requested only when their phase needs them
 

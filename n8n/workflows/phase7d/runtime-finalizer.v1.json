@@ -1,0 +1,99 @@
+{
+  "id": "phase7dRuntimeFinalizerV1",
+  "name": "Tanaghom — Policy Runtime Finalizer v1",
+  "active": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "phase7d-finalizer-manual",
+      "name": "Manual Controlled Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        140
+      ]
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "id": "phase7d-finalizer-schedule",
+      "name": "Polling Disabled Pending Runtime Finalizer Approval",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        320
+      ],
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "operation": "executeQuery",
+        "query": "SELECT * FROM tanaghom.settle_next_agent_runtime_run($1::text);",
+        "options": {
+          "queryReplacement": "={{ ['phase7d_runtime_finalizer_v1'] }}"
+        }
+      },
+      "id": "phase7d-finalizer-settle",
+      "name": "Settle One Terminal Non-Certification Run",
+      "type": "n8n-nodes-base.postgres",
+      "typeVersion": 2.6,
+      "position": [
+        320,
+        230
+      ],
+      "credentials": {
+        "postgres": {
+          "id": "7d100000-0000-4000-8000-000000000304",
+          "name": "Tanaghom Agent Runtime PostgreSQL"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Controlled Trigger": {
+      "main": [
+        [
+          {
+            "node": "Settle One Terminal Non-Certification Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Polling Disabled Pending Runtime Finalizer Approval": {
+      "main": [
+        [
+          {
+            "node": "Settle One Terminal Non-Certification Run",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "saveDataErrorExecution": "none",
+    "saveDataSuccessExecution": "none",
+    "saveManualExecutions": false,
+    "executionTimeout": 60
+  },
+  "meta": {
+    "templateCredsSetupCompleted": false
+  },
+  "tags": [],
+  "pinData": {},
+  "versionId": "7d100000-0000-4000-8000-000000000404"
+}

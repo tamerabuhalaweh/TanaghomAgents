@@ -9,7 +9,7 @@ mkdirSync(outputDir, { recursive: true });
 const prompt = readFileSync(
   join(root, "prompts", "policy-resolved-agent", "v1.md"),
   "utf8",
-);
+).replaceAll("\r\n", "\n");
 const rawPlanSchema = JSON.parse(
   readFileSync(
     join(

@@ -70,7 +70,7 @@ jobs:
       - run: npm ci
       - run: npm run test:database
       - run: deployment/phase6-bilingual-uat-completion/scripts/test-legacy-cadence-backfill.sh "$DATABASE_TEST_URL"
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0030_policy_resolved_agent_runtime
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0031_policy_runtime_executors_certification
 
   phase7b-skill-library-contract:
     runs-on: ubuntu-latest
@@ -142,6 +142,48 @@ jobs:
       - run: deployment/phase7c-agent-studio/scripts/test-preflight-http-boundary.sh
       - run: deployment/phase7c-agent-studio/scripts/test-firewall-boundary.sh
       - run: deployment/phase7c-agent-studio/scripts/test-disposable-lifecycle.sh "$DATABASE_TEST_URL"
+
+  phase7d-runtime-executor-certification:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+        env:
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: tanaghom_agents_phase7d_certification_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d tanaghom_agents_phase7d_certification_test"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase7d_certification_test
+      DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase7d_certification_test
+      PHASE7D_CERTIFICATION_EVIDENCE_PATH: tmp/phase7d-runtime-certification-evidence.json
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run db:migrate
+      - run: psql "$DATABASE_TEST_URL" -X -v ON_ERROR_STOP=1 -f packages/database/seeds/staging.sql
+      - run: npm run generate:phase7d-workflows
+      - run: npm run generate:phase7d-executors
+      - run: git diff --exit-code -- n8n/workflows/phase7d
+      - run: npm run test:phase7d-executor-import
+      - run: npm run test:phase7d-certification
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: phase7d-runtime-certification-evidence
+          path: tmp/phase7d-runtime-certification-evidence.json
+          if-no-files-found: error
+          retention-days: 30
 
   phase5f-database-bridge-contract:
     runs-on: ubuntu-latest
