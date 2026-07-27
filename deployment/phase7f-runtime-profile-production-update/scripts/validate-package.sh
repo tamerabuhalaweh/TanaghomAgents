@@ -6,7 +6,7 @@ package="$root/deployment/phase7f-runtime-profile-production-update"
 for file in \
   RUNBOOK.md scripts/common.sh scripts/preflight.sh scripts/deploy-update.sh \
   scripts/rollback-update.sh scripts/test-disposable-lifecycle.sh \
-  scripts/validate-package.sh
+  scripts/test-state-capture.sh scripts/validate-package.sh
 do
   test -s "$package/$file" || {
     echo "missing package file: $file" >&2
@@ -15,6 +15,7 @@ do
 done
 
 sh -n "$package"/scripts/*.sh
+"$package/scripts/test-state-capture.sh"
 grep -q '0032_gemma_served_model_profile' "$package/scripts/common.sh"
 grep -q 'GO-INSTALL-IMMUTABLE-GEMMA-PROFILE' "$package/scripts/common.sh"
 grep -q 'ROLLBACK-UNUSED-GEMMA-PROFILE' "$package/scripts/rollback-update.sh"

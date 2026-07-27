@@ -6,13 +6,14 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
 test("Phase 7F served-model update is database-only, transactional and fail-closed", async () => {
-  const [common, preflight, deploy, rollback, runbook, validate] = await Promise.all([
+  const [common, preflight, deploy, rollback, runbook, validate, stateCapture] = await Promise.all([
     read("deployment/phase7f-runtime-profile-production-update/scripts/common.sh"),
     read("deployment/phase7f-runtime-profile-production-update/scripts/preflight.sh"),
     read("deployment/phase7f-runtime-profile-production-update/scripts/deploy-update.sh"),
     read("deployment/phase7f-runtime-profile-production-update/scripts/rollback-update.sh"),
     read("deployment/phase7f-runtime-profile-production-update/RUNBOOK.md"),
     read("deployment/phase7f-runtime-profile-production-update/scripts/validate-package.sh"),
+    read("deployment/phase7f-runtime-profile-production-update/scripts/test-state-capture.sh"),
   ]);
 
   assert.match(common, /0031_policy_runtime_executors_certification/);
@@ -29,6 +30,8 @@ test("Phase 7F served-model update is database-only, transactional and fail-clos
   assert.match(runbook, /phase7f-canary-20260727T090404Z/);
   assert.match(runbook, /provider adapters remain disabled/);
   assert.match(validate, /database-only package contains a service, workflow or image mutation/);
+  assert.match(validate, /test-state-capture\.sh/);
+  assert.match(stateCapture, /nested state-capture helpers preserve the caller evidence prefix/);
   for (const source of [deploy, rollback]) {
     assert.doesNotMatch(source, /compose (?:build|up|down)/);
     assert.doesNotMatch(source, /systemctl (?:stop|restart|reload)/);
