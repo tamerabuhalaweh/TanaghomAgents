@@ -179,6 +179,8 @@ test("Phase 7D n8n exports are inactive, fixed-target, parameterized, and retent
   assert.ok(postgresQueries.every((query) => /\$1/.test(query)));
   assert.match(generator, /Server-Authorize Every Invocation/);
   assert.match(generator, /Planner attempted to emit credential-shaped content/);
+  assert.doesNotMatch(generator, /Tanaghom Simulation Executor PostgreSQL/);
+  assert.doesNotMatch(generator, /7d000000-0000-4000-8000-000000000102/);
   assert.match(generator, /unsupportedGuidedKeywords/);
   const requestBuilder = runner.nodes.find(
     (node) => node.name === "Build Policy-Resolved Planner Request",

@@ -100,8 +100,8 @@
       ],
       "credentials": {
         "httpHeaderAuth": {
-          "id": "7d100000-0000-4000-8000-000000000306",
-          "name": "Tanaghom Private Integration Gateway"
+          "id": "62000000-0000-4000-8000-000000000004",
+          "name": "Tanaghom Integration Gateway"
         }
       },
       "onError": "continueRegularOutput"

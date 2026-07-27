@@ -268,8 +268,11 @@ scenarios; cross-tenant access, unassigned Skills, wrong channels, missing
 consent, emergency stops, duplicates, excess limits, arbitrary executor
 identities, tampered evidence, and cross-role executor claims are rejected.
 Migration rollback refuses durable evidence and otherwise stops exactly at the
-preceding Phase 7D baseline. Production migration, credentials, workflow
-import/activation, Gemma traffic, and provider traffic remain separately
+preceding Agent Studio baseline. A controlled installation package now covers
+the exact `0029` to `0030`/`0031` migration, four isolated encrypted database
+credentials, six inactive workflows, an explicitly disabled provider gateway,
+validation, and empty-evidence rollback. Production deployment, workflow or
+adapter activation, Gemma traffic, and provider traffic remain separately
 authorized.
 
 ## External inputs requested only when their phase needs them

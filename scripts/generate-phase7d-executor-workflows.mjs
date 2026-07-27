@@ -84,20 +84,20 @@ const credentials = {
   },
   runtimePostgres: {
     postgres: {
-      id: "7d100000-0000-4000-8000-000000000304",
+      id: "7d000000-0000-4000-8000-000000000101",
       name: "Tanaghom Agent Runtime PostgreSQL",
     },
   },
   gemma: {
     httpHeaderAuth: {
-      id: "7d100000-0000-4000-8000-000000000305",
+      id: "62000000-0000-4000-8000-000000000002",
       name: "Tanaghom Gemma API",
     },
   },
   gateway: {
     httpHeaderAuth: {
-      id: "7d100000-0000-4000-8000-000000000306",
-      name: "Tanaghom Private Integration Gateway",
+      id: "62000000-0000-4000-8000-000000000004",
+      name: "Tanaghom Integration Gateway",
     },
   },
 };

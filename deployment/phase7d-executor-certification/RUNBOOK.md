@@ -50,21 +50,24 @@ Required certification evidence:
 - adapter registry disabled;
 - zero provider dispatches, provider references, external actions, and cost.
 
-## Future controlled deployment order
+## Prepared controlled deployment order
 
-A separate reviewed production package must:
+The separately reviewed
+`deployment/phase7d-runtime-production-update` package must:
 
-1. verify the exact approved commit and current migration `0030`;
+1. verify the exact approved commit and current migration `0029`;
 2. verify runtime, Postiz, and GHL emergency stops are active;
-3. verify no conflicting workflow IDs or credential names exist;
-4. apply only migration `0031`;
+3. verify no conflicting Phase 7D workflow or credential IDs exist;
+4. apply only migrations `0030` and `0031`, in that order;
 5. verify the three exact adapter hashes and disabled state;
 6. build/recreate only the Tanaghom dashboard with
    `AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED=false`;
-7. import all four executor exports inactive and keep schedules disabled;
-8. verify authentication, least-privilege database roles, private routing, and
-   protected services;
-9. run the credential-free certification proof;
+7. provision four mutually isolated database logins and import their encrypted
+   n8n credentials;
+8. import the runner, simulation dispatcher, three executors, and finalizer
+   inactive with all schedules disabled;
+9. verify authentication, least-privilege roles, private routing, zero
+   executions, n8n audit, and protected services;
 10. stop and roll back automatically on any pre-commit failure.
 
 Adapter enablement, runtime provider execution, polling, and live credentials
@@ -72,9 +75,9 @@ remain later, explicit UAT decisions.
 
 ## Empty-evidence rollback
 
-Rollback is permitted only before provider-dispatch or v2 certification
-evidence exists and while all four workflows remain inactive with zero
-executions:
+Rollback is permitted only before runtime, provider-dispatch or v2
+certification evidence exists and while all six workflows remain inactive
+with zero executions:
 
 ```sh
 export DATABASE_URL='postgresql://...'
