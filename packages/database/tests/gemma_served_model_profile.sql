@@ -5,8 +5,11 @@ BEGIN
       FROM public.schema_migrations
      ORDER BY version DESC
      LIMIT 1
-  ) <> '0032_gemma_served_model_profile' THEN
-    RAISE EXCEPTION '0032 is not the latest migration';
+  ) NOT IN (
+    '0032_gemma_served_model_profile',
+    '0033_agent_runtime_certification_evidence'
+  ) THEN
+    RAISE EXCEPTION '0032 profile is not present on an approved migration baseline';
   END IF;
   IF (
     SELECT count(*)

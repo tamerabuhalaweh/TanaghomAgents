@@ -23,6 +23,7 @@ const expectedMigration = process.env.TANAGHOM_EXPECTED_MIGRATION
 if (!new Set([
   "0031_policy_runtime_executors_certification",
   "0032_gemma_served_model_profile",
+  "0033_agent_runtime_certification_evidence",
 ]).has(expectedMigration)) {
   throw new Error("TANAGHOM_EXPECTED_MIGRATION is not an approved certification baseline");
 }
@@ -222,13 +223,29 @@ async function executeScenario(agent, versionId, scenario, ordinal) {
     idempotency_key: `phase7d:${agent.code}:${scenario.code}:step:1`,
     rationale: "Exercise the exact assigned skill or a deliberate server-side refusal boundary.",
   };
+  const steps = [step];
+  if (agent.code === "certified_campaign_planner"
+    && scenario.scenario_kind === "success"
+    && scenario.language === "en") {
+    const secondParameters = {
+      ...parameters,
+      evidence_variant: "multi_step_scenario_aggregation",
+    };
+    steps.push({
+      ...step,
+      sequence: 2,
+      arguments_json: JSON.stringify(secondParameters),
+      idempotency_key: `phase7d:${agent.code}:${scenario.code}:step:2`,
+      rationale: "Prove one canonical scenario may contain multiple bounded invocations.",
+    });
+  }
   const plan = {
     contract_version: "phase7.agent-runtime-plan.v1",
     agent_version_id: versionId,
     agent_content_hash: context.agent.content_hash,
     language: scenario.language,
     intent_summary: `Run ${scenario.scenario_kind} certification behavior in ${scenario.language}.`,
-    steps: [step],
+    steps,
     final_response_mode: isPolicyRefusal ? "human_escalation" : "result_summary",
   };
   await query(
@@ -236,76 +253,79 @@ async function executeScenario(agent, versionId, scenario, ordinal) {
     [runId, plan, hash(plan)],
   );
 
-  if (scenario.scenario_kind === "emergency_stop") {
-    await query(
-      `UPDATE tanaghom.agent_runtime_controls
-          SET emergency_stop=true,reason='Disposable certification emergency-stop scenario',
-              updated_at=statement_timestamp()
-        WHERE singleton`,
-    );
-  }
-  const authorized = await query(
-    "SELECT * FROM tanaghom.authorize_agent_skill_invocation($1::uuid,$2::jsonb,$3::text)",
-    [runId, step, hash(parameters)],
-  );
-  if (scenario.scenario_kind === "emergency_stop") {
-    await query(
-      `UPDATE tanaghom.agent_runtime_controls
-          SET emergency_stop=false,reason='Resume disposable certification scenarios',
-              updated_at=statement_timestamp()
-        WHERE singleton`,
-    );
-    assert.equal(authorized.rows[0].denial_reason, "runtime_emergency_stop");
-  } else if (isPolicyRefusal) {
-    assert.equal(
-      authorized.rows[0].denial_reason,
-      "skill_not_assigned_or_not_executable",
-    );
-  } else {
-    assert.equal(authorized.rows[0].status, "simulation_ready");
-    if (scenario.scenario_kind === "duplicate_retry") {
-      const duplicate = await query(
-        "SELECT * FROM tanaghom.authorize_agent_skill_invocation($1::uuid,$2::jsonb,$3::text)",
-        [runId, step, hash(parameters)],
+  for (const currentStep of steps) {
+    const currentParameters = JSON.parse(currentStep.arguments_json);
+    if (scenario.scenario_kind === "emergency_stop") {
+      await query(
+        `UPDATE tanaghom.agent_runtime_controls
+            SET emergency_stop=true,reason='Disposable certification emergency-stop scenario',
+                updated_at=statement_timestamp()
+          WHERE singleton`,
       );
-      assert.equal(duplicate.rows[0].invocation_id, authorized.rows[0].invocation_id);
-      const count = await query(
-        "SELECT count(*)::int AS count FROM tanaghom.organization_agent_invocations WHERE run_id=$1",
-        [runId],
-      );
-      assert.equal(count.rows[0].count, 1);
     }
-    const invocation = await query(
-      "SELECT * FROM tanaghom.claim_agent_simulation_invocation($1::text)",
-      ["phase7d_certification_simulator"],
+    const authorized = await query(
+      "SELECT * FROM tanaghom.authorize_agent_skill_invocation($1::uuid,$2::jsonb,$3::text)",
+      [runId, currentStep, hash(currentParameters)],
     );
-    assert.equal(invocation.rows.length, 1);
-    assert.equal(invocation.rows[0].invocation_id, authorized.rows[0].invocation_id);
-    const output = {
-      simulation: true,
-      external_action_count: 0,
-      behavior: scenario.scenario_kind === "provider_failure"
-        ? "dependency_failure_safely_contained"
-        : scenario.scenario_kind,
-      language: scenario.language,
-    };
-    const result = {
-      contract_version: "phase7.agent-runtime-result.v1",
-      invocation_id: invocation.rows[0].invocation_id,
-      outcome: "succeeded",
-      output_json: JSON.stringify(output),
-      provider_reference: null,
-      prompt_tokens: 20,
-      completion_tokens: 10,
-      actual_cost: 0,
-      error_code: null,
-    };
-    await query(
-      `SELECT tanaghom.complete_agent_simulation_invocation(
-         $1::uuid,'succeeded',$2::jsonb,20,10
-       )`,
-      [invocation.rows[0].invocation_id, result],
-    );
+    if (scenario.scenario_kind === "emergency_stop") {
+      await query(
+        `UPDATE tanaghom.agent_runtime_controls
+            SET emergency_stop=false,reason='Resume disposable certification scenarios',
+                updated_at=statement_timestamp()
+          WHERE singleton`,
+      );
+      assert.equal(authorized.rows[0].denial_reason, "runtime_emergency_stop");
+    } else if (isPolicyRefusal) {
+      assert.equal(
+        authorized.rows[0].denial_reason,
+        "skill_not_assigned_or_not_executable",
+      );
+    } else {
+      assert.equal(authorized.rows[0].status, "simulation_ready");
+      if (scenario.scenario_kind === "duplicate_retry") {
+        const duplicate = await query(
+          "SELECT * FROM tanaghom.authorize_agent_skill_invocation($1::uuid,$2::jsonb,$3::text)",
+          [runId, currentStep, hash(currentParameters)],
+        );
+        assert.equal(duplicate.rows[0].invocation_id, authorized.rows[0].invocation_id);
+        const count = await query(
+          "SELECT count(*)::int AS count FROM tanaghom.organization_agent_invocations WHERE run_id=$1",
+          [runId],
+        );
+        assert.equal(count.rows[0].count, 1);
+      }
+      const invocation = await query(
+        "SELECT * FROM tanaghom.claim_agent_simulation_invocation($1::text)",
+        ["phase7d_certification_simulator"],
+      );
+      assert.equal(invocation.rows.length, 1);
+      assert.equal(invocation.rows[0].invocation_id, authorized.rows[0].invocation_id);
+      const output = {
+        simulation: true,
+        external_action_count: 0,
+        behavior: scenario.scenario_kind === "provider_failure"
+          ? "dependency_failure_safely_contained"
+          : scenario.scenario_kind,
+        language: scenario.language,
+      };
+      const result = {
+        contract_version: "phase7.agent-runtime-result.v1",
+        invocation_id: invocation.rows[0].invocation_id,
+        outcome: "succeeded",
+        output_json: JSON.stringify(output),
+        provider_reference: null,
+        prompt_tokens: 20,
+        completion_tokens: 10,
+        actual_cost: 0,
+        error_code: null,
+      };
+      await query(
+        `SELECT tanaghom.complete_agent_simulation_invocation(
+           $1::uuid,'succeeded',$2::jsonb,20,10
+         )`,
+        [invocation.rows[0].invocation_id, result],
+      );
+    }
   }
 
   const final = await query(
@@ -330,6 +350,7 @@ async function executeScenario(agent, versionId, scenario, ordinal) {
     kind: scenario.scenario_kind,
     outcome: "passed",
     external_actions: 0,
+    invocation_count: steps.length,
   };
 }
 
@@ -399,6 +420,14 @@ try {
     const canonical = evidence.rows[0].evidence;
     assert.equal(canonical.scenario_count, 14);
     assert.equal(canonical.external_action_count, 0);
+    assert.equal(canonical.scenarios.length, 14);
+    if (agent.code === "certified_campaign_planner") {
+      assert.equal(
+        canonical.scenarios.find((scenario) => scenario.code === "en_success")
+          ?.invocation_count,
+        2,
+      );
+    }
     const evidenceHash = await query(
       "SELECT tanaghom.agent_runtime_sha256($1::jsonb) AS hash",
       [canonical],

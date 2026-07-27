@@ -42,6 +42,7 @@ jobs:
       - run: deployment/phase7ab-skill-library-production-update/scripts/validate-package.sh
       - run: deployment/phase7c-agent-studio/scripts/validate-package.sh
       - run: deployment/phase7c-agent-studio/scripts/test-preflight-http-boundary.sh
+      - run: deployment/phase7f-agent-studio-certification/scripts/validate-package.sh
 
   database-contract:
     runs-on: ubuntu-latest
@@ -70,7 +71,7 @@ jobs:
       - run: npm ci
       - run: npm run test:database
       - run: deployment/phase6-bilingual-uat-completion/scripts/test-legacy-cadence-backfill.sh "$DATABASE_TEST_URL"
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0032_gemma_served_model_profile
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0033_agent_runtime_certification_evidence
 
   phase7b-skill-library-contract:
     runs-on: ubuntu-latest
@@ -163,7 +164,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase7d_certification_test
       DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase7d_certification_test
       PHASE7D_CERTIFICATION_EVIDENCE_PATH: tmp/phase7d-runtime-certification-evidence.json
-      TANAGHOM_EXPECTED_MIGRATION: 0032_gemma_served_model_profile
+      TANAGHOM_EXPECTED_MIGRATION: 0033_agent_runtime_certification_evidence
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -178,6 +179,7 @@ jobs:
       - run: git diff --exit-code -- n8n/workflows/phase7d
       - run: npm run test:phase7d-executor-import
       - run: npm run test:phase7d-certification
+      - run: deployment/phase7f-agent-studio-certification/scripts/validate-package.sh
       - uses: actions/upload-artifact@v4
         if: always()
         with:
