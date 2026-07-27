@@ -10,7 +10,7 @@ const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
 test("Phase 7F canary is exact, bilingual, simulation-only and independently restorable", async () => {
-  const [common, preflight, run, restore, operator, workflow, runbook] = await Promise.all([
+  const [common, preflight, run, restore, operator, workflow, runbook, stateVerification] = await Promise.all([
     read("deployment/phase7f-agent-studio-canary/scripts/common.sh"),
     read("deployment/phase7f-agent-studio-canary/scripts/preflight.sh"),
     read("deployment/phase7f-agent-studio-canary/scripts/run-canary.sh"),
@@ -18,6 +18,7 @@ test("Phase 7F canary is exact, bilingual, simulation-only and independently res
     read("deployment/phase7f-agent-studio-canary/scripts/canary-operator.mjs"),
     read("deployment/phase7f-agent-studio-canary/scripts/workflow-contract.mjs"),
     read("deployment/phase7f-agent-studio-canary/RUNBOOK.md"),
+    read("deployment/phase7f-agent-studio-canary/scripts/test-state-verification.sh"),
   ]);
 
   assert.match(common, /0032_gemma_served_model_profile/);
@@ -68,6 +69,7 @@ test("Phase 7F canary is exact, bilingual, simulation-only and independently res
   assert.match(runbook, /not full certification/i);
   assert.match(runbook, /other twelve mandatory adversarial\s+scenarios/i);
   assert.match(runbook, /No service, container, firewall, Nginx configuration or protected project\s+file is restarted, recreated or edited/);
+  assert.match(stateVerification, /compares current evidence with the original reviewed snapshot/);
 });
 
 test("Phase 7F package validation rejects activation, protected-service and secret-shaped operations", async () => {
@@ -81,6 +83,7 @@ test("Phase 7F package validation rejects activation, protected-service and secr
   assert.match(validation, /postgresql:\/\//);
   assert.match(validation, /test-refusal-paths\.sh/);
   assert.match(validation, /test-disposable-lifecycle\.sh/);
+  assert.match(validation, /test-state-verification\.sh/);
 });
 
 test("Phase 7F workflow contract accepts import-resolved credential IDs but rejects a changed binding name", async () => {
