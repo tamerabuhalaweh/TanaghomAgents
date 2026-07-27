@@ -27,6 +27,9 @@ grep -q "EXPECTED_MIGRATION=0031_policy_runtime_executors_certification" \
 grep -q "GO-RUN-SIMULATION-ONLY-AGENT-CANARY" \
   "$package/scripts/common.sh"
 grep -q 'n8n execute --id="\$RUNNER_ID"' "$package/scripts/common.sh"
+grep -q 'assert_canary_credential_bindings' "$package/scripts/common.sh"
+grep -q 'resolved-by-reviewed-name-and-type' \
+  "$package/scripts/workflow-contract.mjs"
 grep -q 'operator unlock' "$package/scripts/run-canary.sh"
 grep -q 'operator lock "\$reason"' "$package/scripts/run-canary.sh"
 grep -q 'operator finalize-next' "$package/scripts/run-canary.sh"

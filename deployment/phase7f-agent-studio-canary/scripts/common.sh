@@ -63,6 +63,31 @@ assert_canary_workflows_inactive() {
   ")" = 0 || die 'a canary workflow schedule trigger is enabled'
 }
 
+assert_canary_credential_bindings() {
+  ids=$(canary_workflow_sql_ids)
+  test "$(n8n_db_scalar "
+    WITH bindings AS (
+      SELECT workflow.id AS workflow_id,node->>'name' AS node_name,
+        credential.key AS credential_type,
+        credential.value->>'id' AS credential_id,
+        credential.value->>'name' AS binding_name
+      FROM workflow_entity workflow
+      CROSS JOIN LATERAL jsonb_array_elements(workflow.nodes::jsonb) node
+      CROSS JOIN LATERAL jsonb_each(
+        coalesce(node->'credentials','{}'::jsonb)
+      ) credential
+      WHERE workflow.id IN ($ids)
+    )
+    SELECT count(*)||'|'||count(stored.id)
+    FROM bindings
+    LEFT JOIN credentials_entity stored
+      ON stored.id=bindings.credential_id
+     AND stored.name=bindings.binding_name
+     AND stored.type=bindings.credential_type;
+  ")" = '6|6' ||
+    die 'a canary workflow credential binding does not resolve to its reviewed name and type'
+}
+
 execute_runner_once() {
   docker exec -u node "$N8N_MAIN_CONTAINER" \
     n8n execute --id="$RUNNER_ID" --rawOutput
@@ -144,6 +169,7 @@ assert_phase7f_baseline() {
   assert_package_credentials_encrypted
   assert_shared_credentials
   assert_canary_workflows_inactive
+  assert_canary_credential_bindings
   assert_safety_locks
   assert_running_gateway_locked
 }
