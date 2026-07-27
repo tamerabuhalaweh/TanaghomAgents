@@ -326,7 +326,7 @@ const simulation = {
       "n8n-nodes-base.executeWorkflowTrigger",
       1.1,
       [0, 220],
-      { workflowInputs: { values: [] } },
+      { inputSource: "passthrough" },
     ),
     n(
       "phase7d-simulation-claim",
