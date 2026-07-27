@@ -201,8 +201,90 @@ async function executeScenario(agent, versionId, scenario, ordinal) {
   );
   assert.equal(claimed.rows.length, 1);
   assert.equal(claimed.rows[0].job_id, jobId);
-  const runId = claimed.rows[0].run_id;
-  const context = claimed.rows[0].planner_context;
+  let runId = claimed.rows[0].run_id;
+  let context = claimed.rows[0].planner_context;
+  let recoveryAttempts = 1;
+
+  if (scenario.scenario_kind === "provider_failure") {
+    const competingInput = {
+      ...input,
+      queue_precedence_decoy: true,
+    };
+    const competing = await query(
+      `SELECT * FROM tanaghom.queue_organization_agent_job(
+         $1::uuid,$2::uuid,$3::uuid,$4::uuid,$5::uuid,NULL,
+         $6::uuid,$7::text,$8::text,'scenario',$9::text,$10::boolean,$11::text,$12::jsonb
+       )`,
+      [
+        organizationId,
+        ownerId,
+        versionId,
+        runtimeProfileId,
+        scenario.id,
+        randomUUID(),
+        `phase7d:cert:aged-peer:${agent.code}:${scenario.code}:${randomUUID()}`,
+        hash(competingInput),
+        agent.channel,
+        agent.consentRequired,
+        scenario.language,
+        competingInput,
+      ],
+    );
+    const competingJobId = competing.rows[0].job_id;
+    await query(
+      `UPDATE tanaghom.organization_agent_jobs
+          SET available_at=statement_timestamp()-interval '10 minutes'
+        WHERE id=$1::uuid AND status='queued'`,
+      [competingJobId],
+    );
+    const failed = await query(
+      `SELECT tanaghom.fail_agent_runtime_run(
+         $1::uuid,'dependency.unavailable',
+         'Disposable aged-queue recovery regression.',
+         true
+       ) AS status`,
+      [runId],
+    );
+    assert.equal(failed.rows[0].status, "queued");
+    const reprioritized = await query(
+      `WITH queued_peer AS (
+         SELECT min(peer.available_at) AS earliest_available_at
+           FROM tanaghom.organization_agent_jobs peer
+          WHERE peer.status='queued' AND peer.id<>$1::uuid
+       )
+       UPDATE tanaghom.organization_agent_jobs target
+          SET available_at=coalesce(
+            queued_peer.earliest_available_at-interval '1 second',
+            statement_timestamp()-interval '1 second'
+          )
+         FROM queued_peer
+        WHERE target.id=$1::uuid AND target.status='queued'
+        RETURNING target.id`,
+      [jobId],
+    );
+    assert.equal(reprioritized.rowCount, 1);
+    const recovered = await query(
+      "SELECT * FROM tanaghom.claim_organization_agent_job($1::text)",
+      [`phase7d_cert_recovery_${ordinal}`],
+    );
+    assert.equal(recovered.rowCount, 1);
+    assert.equal(recovered.rows[0].job_id, jobId);
+    const attempt = await query(
+      "SELECT attempt FROM tanaghom.organization_agent_jobs WHERE id=$1::uuid",
+      [jobId],
+    );
+    assert.equal(attempt.rows[0].attempt, 2);
+    await query(
+      `UPDATE tanaghom.organization_agent_jobs
+          SET status='cancelled',finished_at=statement_timestamp(),
+              updated_at=statement_timestamp()
+        WHERE id=$1::uuid AND status='queued'`,
+      [competingJobId],
+    );
+    runId = recovered.rows[0].run_id;
+    context = recovered.rows[0].planner_context;
+    recoveryAttempts = 2;
+  }
 
   const isPolicyRefusal = new Set(["refusal", "escalation"]).has(scenario.scenario_kind);
   const skillCode = isPolicyRefusal ? "unassigned_skill" : agent.skillCode;
@@ -340,6 +422,9 @@ async function executeScenario(agent, versionId, scenario, ordinal) {
         external_action_count: 0,
         scenario_kind: scenario.scenario_kind,
         language: scenario.language,
+        recovery_attempts: recoveryAttempts,
+        recovery_queue_precedence_verified:
+          scenario.scenario_kind === "provider_failure",
       },
     ],
   );
@@ -351,6 +436,9 @@ async function executeScenario(agent, versionId, scenario, ordinal) {
     outcome: "passed",
     external_actions: 0,
     invocation_count: steps.length,
+    recovery_attempts: recoveryAttempts,
+    recovery_queue_precedence_verified:
+      scenario.scenario_kind === "provider_failure",
   };
 }
 
