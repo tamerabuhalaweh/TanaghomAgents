@@ -70,7 +70,7 @@ jobs:
       - run: npm ci
       - run: npm run test:database
       - run: deployment/phase6-bilingual-uat-completion/scripts/test-legacy-cadence-backfill.sh "$DATABASE_TEST_URL"
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0031_policy_runtime_executors_certification
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0032_gemma_served_model_profile
 
   phase7b-skill-library-contract:
     runs-on: ubuntu-latest
@@ -163,6 +163,7 @@ jobs:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase7d_certification_test
       DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase7d_certification_test
       PHASE7D_CERTIFICATION_EVIDENCE_PATH: tmp/phase7d-runtime-certification-evidence.json
+      TANAGHOM_EXPECTED_MIGRATION: 0032_gemma_served_model_profile
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -294,7 +295,6 @@ jobs:
           --health-retries 10
     env:
       DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_phase5g_shadow_update_test
-      N8N_SHADOW_TEST_POSTGRES_PORT: 55444
     steps:
       - uses: actions/checkout@v4
       - run: deployment/phase5g-shadow-production-update/scripts/validate-package.sh

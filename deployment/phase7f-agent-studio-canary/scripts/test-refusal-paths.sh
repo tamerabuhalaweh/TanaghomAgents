@@ -13,6 +13,7 @@ if env \
   TANAGHOM_CANARY_ORGANIZATION_ID=$uuid \
   TANAGHOM_CANARY_OWNER_ID=$uuid \
   TANAGHOM_CANARY_AGENT_VERSION_ID=$uuid \
+  TANAGHOM_CANARY_RUNTIME_PROFILE_ID=$uuid \
   sh -c '. "$1"; require_canary_environment' sh "$script" >/dev/null 2>&1
 then
   echo 'invalid authorization was accepted' >&2
@@ -27,6 +28,7 @@ if env \
   TANAGHOM_CANARY_ORGANIZATION_ID=$uuid \
   TANAGHOM_CANARY_OWNER_ID=$uuid \
   TANAGHOM_CANARY_AGENT_VERSION_ID=$uuid \
+  TANAGHOM_CANARY_RUNTIME_PROFILE_ID=$uuid \
   sh -c '. "$1"; require_canary_environment' sh "$script" >/dev/null 2>&1
 then
   echo 'invalid canary identity was accepted' >&2

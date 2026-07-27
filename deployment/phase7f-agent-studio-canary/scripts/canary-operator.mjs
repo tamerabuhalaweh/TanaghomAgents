@@ -23,7 +23,7 @@ const ids = {
   organization: process.env.TANAGHOM_CANARY_ORGANIZATION_ID,
   owner: process.env.TANAGHOM_CANARY_OWNER_ID,
   version: process.env.TANAGHOM_CANARY_AGENT_VERSION_ID,
-  profile: "7d000000-0000-4000-8000-000000000001",
+  profile: process.env.TANAGHOM_CANARY_RUNTIME_PROFILE_ID,
 };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 if (!Object.values(ids).every((value) => uuid.test(value ?? ""))) {
@@ -61,8 +61,25 @@ async function checkDatabase() {
     const migration = (await client.query(
       "SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1",
     )).rows[0]?.version;
-    if (migration !== "0031_policy_runtime_executors_certification") {
+    if (migration !== "0032_gemma_served_model_profile") {
       throw new Error("unexpected database migration");
+    }
+    const profile = await client.query(`
+      SELECT code,model_name,planner_contract_version,planner_schema_ref,
+        prompt_version,parser_version,lifecycle_state
+      FROM tanaghom.agent_runtime_profiles
+      WHERE id=$1::uuid`,
+    [ids.profile]);
+    if (profile.rowCount !== 1
+      || profile.rows[0].code !== "gemma4_26b_a4b_canary_strict_v1"
+      || profile.rows[0].model_name !== "gemma4-26b-a4b-canary"
+      || profile.rows[0].planner_contract_version !== "phase7.agent-runtime-plan.v1"
+      || profile.rows[0].planner_schema_ref
+        !== "packages/contracts/schemas/phase7/agent-runtime-plan.v1.schema.json"
+      || profile.rows[0].prompt_version !== "policy-resolved-agent.v1"
+      || profile.rows[0].parser_version !== "tanaghom.strict-json.v1"
+      || profile.rows[0].lifecycle_state !== "validated") {
+      throw new Error("exact validated Gemma served-model runtime profile is required");
     }
     const identity = await client.query(`
       SELECT version.id,version.lifecycle_state,version.languages,
@@ -122,6 +139,8 @@ async function checkDatabase() {
       database_tls: "verified",
       transaction: "read_only",
       migration,
+      runtime_profile_id: ids.profile,
+      model_name: profile.rows[0].model_name,
       agent_version_id: ids.version,
       languages: ["en", "ar"],
       scenarios: 2,
@@ -447,7 +466,7 @@ async function quarantine() {
         'platform_operator','phase7f-canary-restore',
         jsonb_build_object(
           'error_code','phase7f_canary_quarantined',
-          'canary_id',$1,
+          'canary_id',$1::text,
           'external_action_count',0
         )
       FROM tanaghom.organization_agent_jobs job
@@ -458,7 +477,7 @@ async function quarantine() {
         ORDER BY candidate.started_at DESC,candidate.id
         LIMIT 1
       ) run ON true
-      WHERE job.input->>'canary_id'=$1
+      WHERE job.input->>'canary_id'=$1::text
         AND job.status='cancelled'
         AND job.error_code='phase7f_canary_quarantined'
         AND NOT EXISTS (

@@ -20,7 +20,8 @@ test("Phase 7F canary is exact, bilingual, simulation-only and independently res
     read("deployment/phase7f-agent-studio-canary/RUNBOOK.md"),
   ]);
 
-  assert.match(common, /0031_policy_runtime_executors_certification/);
+  assert.match(common, /0032_gemma_served_model_profile/);
+  assert.match(common, /TANAGHOM_CANARY_RUNTIME_PROFILE_ID/);
   assert.match(common, /GO-RUN-SIMULATION-ONLY-AGENT-CANARY/);
   assert.match(common, /n8n execute --id="\$RUNNER_ID"/);
   assert.match(common, /assert_canary_credential_bindings/);
@@ -51,6 +52,9 @@ test("Phase 7F canary is exact, bilingual, simulation-only and independently res
   assert.match(operator, /certifications !== 0/);
   assert.match(operator, /state\.lifecycle_state !== "validated"/);
   assert.match(operator, /organization_agent_runtime_certifications/);
+  assert.match(operator, /gemma4-26b-a4b-canary/);
+  assert.match(operator, /'canary_id',\$1::text/);
+  assert.match(operator, /job\.input->>'canary_id'=\$1::text/);
 
   assert.match(workflow, /phase7dPolicyResolvedAgentRunnerV1/);
   assert.match(workflow, /phase7dSimulationDispatcherV1/);

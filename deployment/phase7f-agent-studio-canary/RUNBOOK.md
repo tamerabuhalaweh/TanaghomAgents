@@ -45,7 +45,8 @@ The operator supplies exact UUIDs already present in production:
 
 - organization;
 - accepted active owner; and
-- validated bilingual Agent Studio version.
+- validated bilingual Agent Studio version; and
+- reviewed immutable Gemma served-model runtime profile.
 
 The preflight proves the three identities belong together, the version has
 exactly one English and one Arabic `success` scenario, no conflicting open
@@ -63,6 +64,7 @@ export TANAGHOM_PHASE7F_SOURCE_COMMIT='<40-character approved merged SHA>'
 export TANAGHOM_CANARY_ORGANIZATION_ID='<organization UUID>'
 export TANAGHOM_CANARY_OWNER_ID='<accepted owner UUID>'
 export TANAGHOM_CANARY_AGENT_VERSION_ID='<validated bilingual version UUID>'
+export TANAGHOM_CANARY_RUNTIME_PROFILE_ID='7d000000-0000-4000-8000-000000000002'
 export TANAGHOM_PRODUCTION_ROOT='/opt/tanaghom-dashboard'
 export TANAGHOM_RELEASE_SOURCE_ROOT='/opt/tanaghom-release-phase7f'
 

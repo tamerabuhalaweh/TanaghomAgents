@@ -52,7 +52,7 @@ done
   -f "$(native_path "$root/packages/database/seeds/staging.sql" "$psql_command")" >/dev/null
 test "$(scalar "
   SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1;
-")" = 0031_policy_runtime_executors_certification
+")" = 0032_gemma_served_model_profile
 
 script_path=$(native_path \
   "$root/scripts/phase7d-runtime-certification-integration.mjs" \
@@ -60,17 +60,20 @@ script_path=$(native_path \
 if echo "$node_command" | grep -q '\.exe$'; then
   inherited_wslenv=${WSLENV:-}
   if test -n "$inherited_wslenv"; then
-    phase7f_wslenv="$inherited_wslenv:DATABASE_TEST_URL"
+    phase7f_wslenv="$inherited_wslenv:DATABASE_TEST_URL:TANAGHOM_EXPECTED_MIGRATION"
   else
-    phase7f_wslenv=DATABASE_TEST_URL
+    phase7f_wslenv=DATABASE_TEST_URL:TANAGHOM_EXPECTED_MIGRATION
   fi
   output=$(
     WSLENV="$phase7f_wslenv" DATABASE_TEST_URL="$url" \
+      TANAGHOM_EXPECTED_MIGRATION=0032_gemma_served_model_profile \
       "$node_command" "$script_path"
   )
 else
   output=$(
-    DATABASE_TEST_URL="$url" "$node_command" "$script_path"
+    DATABASE_TEST_URL="$url" \
+      TANAGHOM_EXPECTED_MIGRATION=0032_gemma_served_model_profile \
+      "$node_command" "$script_path"
   )
 fi
 echo "$output"
@@ -87,4 +90,21 @@ test "$(scalar "
   SELECT count(*) FROM tanaghom.agent_runtime_executor_adapters WHERE enabled;
 ")" = 0
 
-echo 'PASS: disposable PostgreSQL completed the full bilingual zero-action runtime suite and retained no canary state.'
+quarantine_script=$(native_path \
+  "$root/deployment/phase7f-agent-studio-canary/scripts/test-quarantine-lifecycle.mjs" \
+  "$node_command")
+if echo "$node_command" | grep -q '\.exe$'; then
+  quarantine_output=$(
+    WSLENV="$phase7f_wslenv" DATABASE_TEST_URL="$url" \
+      "$node_command" "$quarantine_script"
+  )
+else
+  quarantine_output=$(
+    DATABASE_TEST_URL="$url" "$node_command" "$quarantine_script"
+  )
+fi
+echo "$quarantine_output"
+echo "$quarantine_output" | grep -q \
+  'a claimed canary job was transactionally quarantined'
+
+echo 'PASS: disposable PostgreSQL completed the bilingual zero-action suite and proved idempotent canary quarantine.'

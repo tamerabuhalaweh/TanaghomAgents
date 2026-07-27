@@ -9,7 +9,7 @@ export TANAGHOM_RELEASE_SOURCE_ROOT
 
 SCRIPT_DIR=$CANARY_SCRIPT_DIR
 PRODUCTION_ROOT=${TANAGHOM_PRODUCTION_ROOT:-/opt/tanaghom-dashboard}
-EXPECTED_MIGRATION=0031_policy_runtime_executors_certification
+EXPECTED_MIGRATION=0032_gemma_served_model_profile
 RUNNER_ID=phase7dPolicyResolvedAgentRunnerV1
 SIMULATION_ID=phase7dSimulationDispatcherV1
 CANARY_WORKFLOW_IDS="$RUNNER_ID $SIMULATION_ID"
@@ -35,11 +35,12 @@ require_canary_environment() {
   for value in \
     "${TANAGHOM_CANARY_ORGANIZATION_ID:-}" \
     "${TANAGHOM_CANARY_OWNER_ID:-}" \
-    "${TANAGHOM_CANARY_AGENT_VERSION_ID:-}"
+    "${TANAGHOM_CANARY_AGENT_VERSION_ID:-}" \
+    "${TANAGHOM_CANARY_RUNTIME_PROFILE_ID:-}"
   do
     echo "$value" | grep -Eqi \
       '^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$' ||
-      die 'organization, owner and agent version must be UUIDs'
+      die 'organization, owner, agent version and runtime profile must be UUIDs'
   done
 }
 
@@ -104,6 +105,7 @@ operator() {
     TANAGHOM_CANARY_ORGANIZATION_ID="$TANAGHOM_CANARY_ORGANIZATION_ID" \
     TANAGHOM_CANARY_OWNER_ID="$TANAGHOM_CANARY_OWNER_ID" \
     TANAGHOM_CANARY_AGENT_VERSION_ID="$TANAGHOM_CANARY_AGENT_VERSION_ID" \
+    TANAGHOM_CANARY_RUNTIME_PROFILE_ID="$TANAGHOM_CANARY_RUNTIME_PROFILE_ID" \
     node "$SCRIPT_DIR/canary-operator.mjs" \
       "$action" "$TANAGHOM_PHASE7F_CANARY_ID" "$@"
 }

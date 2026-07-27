@@ -18,6 +18,14 @@ const client = await pool.connect();
 const organizationId = "10000000-0000-4000-8000-000000000001";
 const ownerId = "00000000-0000-4000-8000-000000000001";
 const runtimeProfileId = "7d000000-0000-4000-8000-000000000001";
+const expectedMigration = process.env.TANAGHOM_EXPECTED_MIGRATION
+  || "0031_policy_runtime_executors_certification";
+if (!new Set([
+  "0031_policy_runtime_executors_certification",
+  "0032_gemma_served_model_profile",
+]).has(expectedMigration)) {
+  throw new Error("TANAGHOM_EXPECTED_MIGRATION is not an approved certification baseline");
+}
 const hash = (value) => `sha256:${createHash("sha256").update(
   typeof value === "string" ? value : JSON.stringify(value),
 ).digest("hex")}`;
@@ -346,7 +354,7 @@ try {
   const latest = await query(
     "SELECT version FROM public.schema_migrations ORDER BY version DESC LIMIT 1",
   );
-  assert.equal(latest.rows[0].version, "0031_policy_runtime_executors_certification");
+  assert.equal(latest.rows[0].version, expectedMigration);
   const adapters = await query(
     `SELECT code,enabled,workflow_id,workflow_sha256
        FROM tanaghom.agent_runtime_executor_adapters ORDER BY code`,
