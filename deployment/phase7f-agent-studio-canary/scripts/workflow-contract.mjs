@@ -72,6 +72,18 @@ function validateBoundary(workflow) {
   if (workflow.id === "phase7dSimulationDispatcherV1" && schedules.length !== 0) {
     throw new Error("the called simulation dispatcher may not contain a schedule");
   }
+  if (workflow.id === "phase7dSimulationDispatcherV1") {
+    const triggers = workflow.nodes.filter((node) =>
+      node.type.toLowerCase().includes("trigger"));
+    if (triggers.length !== 1
+      || triggers[0].type !== "n8n-nodes-base.executeWorkflowTrigger"
+      || triggers[0].parameters?.inputSource !== "passthrough"
+      || "workflowInputs" in (triggers[0].parameters ?? {})) {
+      throw new Error(
+        "the simulation dispatcher must expose only its passthrough internal workflow trigger",
+      );
+    }
+  }
   if (workflow.nodes.some((node) => [
     "n8n-nodes-base.executeCommand",
     "n8n-nodes-base.readWriteFile",
@@ -127,6 +139,73 @@ async function prepare(exportPath, sourceDirectory, outputDirectory) {
   console.log("PASS: the inactive runner and simulation dispatcher match reviewed operational hashes.");
 }
 
+function legacyDispatcher(reviewed) {
+  const previous = JSON.parse(JSON.stringify(reviewed));
+  const trigger = previous.nodes.find(
+    (node) => node.type === "n8n-nodes-base.executeWorkflowTrigger",
+  );
+  trigger.parameters = { workflowInputs: { values: [] } };
+  return previous;
+}
+
+async function prepareTransition(exportPath, sourceDirectory, outputDirectory) {
+  const exported = JSON.parse(await readFile(resolve(exportPath), "utf8"));
+  if (!Array.isArray(exported)) throw new Error("n8n export must be an array");
+  await mkdir(resolve(outputDirectory), { recursive: true, mode: 0o700 });
+
+  const currentRunner = exactWorkflow(
+    exported,
+    "phase7dPolicyResolvedAgentRunnerV1",
+  );
+  const currentDispatcher = exactWorkflow(
+    exported,
+    "phase7dSimulationDispatcherV1",
+  );
+  const reviewedRunner = JSON.parse(await readFile(
+    resolve(sourceDirectory, definitions.phase7dPolicyResolvedAgentRunnerV1),
+    "utf8",
+  ));
+  const reviewedDispatcher = JSON.parse(await readFile(
+    resolve(sourceDirectory, definitions.phase7dSimulationDispatcherV1),
+    "utf8",
+  ));
+  validateBoundary(currentRunner);
+  validateBoundary(reviewedRunner);
+  validateBoundary(reviewedDispatcher);
+  if (hash(operational(currentRunner)) !== hash(operational(reviewedRunner))) {
+    throw new Error("phase7dPolicyResolvedAgentRunnerV1 differs from the reviewed export");
+  }
+
+  const currentHash = hash(operational(currentDispatcher));
+  const correctedHash = hash(operational(reviewedDispatcher));
+  const legacyHash = hash(operational(legacyDispatcher(reviewedDispatcher)));
+  let dispatcherState;
+  if (currentHash === correctedHash) {
+    validateBoundary(currentDispatcher);
+    dispatcherState = "corrected_passthrough";
+  } else if (currentHash === legacyHash) {
+    dispatcherState = "legacy_empty_inputs";
+  } else {
+    throw new Error(
+      "phase7dSimulationDispatcherV1 is neither the reviewed legacy nor corrected export",
+    );
+  }
+
+  const manifest = {
+    contract_version: "tanaghom.phase7f-dispatcher-transition.v1",
+    dispatcher_state: dispatcherState,
+    legacy_operational_sha256: legacyHash,
+    corrected_operational_sha256: correctedHash,
+    runner_operational_sha256: hash(operational(reviewedRunner)),
+  };
+  await writeFile(
+    resolve(outputDirectory, "workflow-transition-manifest.json"),
+    `${JSON.stringify(manifest, null, 2)}\n`,
+    { mode: 0o600 },
+  );
+  console.log(`PASS: dispatcher transition state is ${dispatcherState}.`);
+}
+
 async function verify(exportPath, manifestPath) {
   const exported = JSON.parse(await readFile(resolve(exportPath), "utf8"));
   const manifest = JSON.parse(await readFile(resolve(manifestPath), "utf8"));
@@ -153,13 +232,47 @@ async function compareOthers(beforePath, afterPath) {
   console.log("PASS: every non-canary n8n workflow is unchanged.");
 }
 
+async function compareExceptDispatcher(beforePath, afterPath) {
+  const before = JSON.parse(await readFile(resolve(beforePath), "utf8"));
+  const after = JSON.parse(await readFile(resolve(afterPath), "utf8"));
+  const withoutDispatcher = (rows) => rows
+    .filter((row) => row.id !== "phase7dSimulationDispatcherV1")
+    .sort((left, right) => left.id.localeCompare(right.id))
+    .map(stable);
+  if (hash(withoutDispatcher(before)) !== hash(withoutDispatcher(after))) {
+    throw new Error("an n8n workflow other than the dispatcher changed");
+  }
+  console.log("PASS: every n8n workflow except the reviewed dispatcher is unchanged.");
+}
+
+async function compareAllOperational(beforePath, afterPath) {
+  const before = JSON.parse(await readFile(resolve(beforePath), "utf8"));
+  const after = JSON.parse(await readFile(resolve(afterPath), "utf8"));
+  const normalized = (rows) => rows
+    .sort((left, right) => left.id.localeCompare(right.id))
+    .map((row) => ({ id: row.id, operational: operational(row) }));
+  if (hash(normalized(before)) !== hash(normalized(after))) {
+    throw new Error("the operational n8n workflow state was not restored");
+  }
+  console.log("PASS: every n8n workflow was operationally restored.");
+}
+
 const [action, ...args] = process.argv.slice(2);
 if (action === "prepare" && args.length === 3) await prepare(...args);
+else if (action === "prepare-transition" && args.length === 3) {
+  await prepareTransition(...args);
+}
 else if (action === "verify" && args.length === 2) await verify(...args);
 else if (action === "compare-others" && args.length === 2) await compareOthers(...args);
+else if (action === "compare-except-dispatcher" && args.length === 2) {
+  await compareExceptDispatcher(...args);
+} else if (action === "compare-all-operational" && args.length === 2) {
+  await compareAllOperational(...args);
+}
 else {
   throw new Error(
-    "usage: workflow-contract.mjs prepare EXPORT SOURCE_DIR OUTPUT_DIR | "
-    + "verify EXPORT MANIFEST | compare-others BEFORE AFTER",
+    "usage: workflow-contract.mjs prepare|prepare-transition EXPORT SOURCE_DIR OUTPUT_DIR | "
+    + "verify EXPORT MANIFEST | compare-others|compare-except-dispatcher|"
+    + "compare-all-operational BEFORE AFTER",
   );
 }

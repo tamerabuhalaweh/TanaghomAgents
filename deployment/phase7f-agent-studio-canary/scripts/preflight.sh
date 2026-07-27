@@ -49,9 +49,9 @@ assert_firewall_boundary
 temporary=$(mktemp -d)
 trap 'rm -rf -- "$temporary"' EXIT HUP INT TERM
 export_all_workflows "$temporary/workflows.json"
-node "$SCRIPT_DIR/workflow-contract.mjs" prepare \
+node "$SCRIPT_DIR/workflow-contract.mjs" prepare-transition \
   "$temporary/workflows.json" \
   "$RELEASE_SOURCE_ROOT/n8n/workflows/phase7d" \
   "$temporary" >/dev/null
 
-echo 'PASS: production is ready for the inactive, two-execution English/Arabic Agent Studio canary; no state was changed.'
+echo 'PASS: production is ready for the transactional dispatcher correction and two-execution English/Arabic Agent Studio canary; no state was changed.'
