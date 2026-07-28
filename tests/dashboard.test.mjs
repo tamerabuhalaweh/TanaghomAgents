@@ -51,7 +51,7 @@ test("self-hosted Postiz uses an exact deployment allowlist and a base URL field
   assert.match(provider, /POSTIZ_ALLOWED_BASE_URLS/);
   assert.match(provider, /pathname\.endsWith\("\/is-connected"\)/);
   assert.match(settings, /Approved API base URL/);
-  assert.match(compose, /POSTIZ_ALLOWED_BASE_URLS: https:\/\/postiz\.163-123-180-104\.sslip\.io\/api\/public\/v1/);
+  assert.match(compose, /POSTIZ_ALLOWED_BASE_URLS: https:\/\/postiz\.155-117-45-45\.sslip\.io\/api\/public\/v1/);
 });
 
 test("GHL settings are customer managed and lead handoff stays explicit", async () => {
