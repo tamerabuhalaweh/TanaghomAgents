@@ -73,7 +73,7 @@ customer Admin mode cannot override the platform emergency stop.
 
 The customer integration form accepts a Postiz Public API **base URL**. For the
 approved self-hosted staging instance, use
-`https://postiz.163-123-180-104.sslip.io/api/public/v1`. Do not append
+`https://postiz.155-117-45-45.sslip.io/api/public/v1`. Do not append
 `/is-connected`, `/integrations`, or `/posts`; Tanaghom adds the reviewed route
 for each operation. The exact base must also be present in the non-secret
 `POSTIZ_ALLOWED_BASE_URLS` deployment allowlist. Postiz MCP uses a different
