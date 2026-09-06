@@ -1,6 +1,8 @@
 ## Status and authorization
 
-New release/CI blocker discovered while validating documentation PR #191 on 2026-09-06. Investigation and tracking only are complete; dependency remediation has not started and is not authorized by the planning-only #174 GO. This is a separate current-delivery gate, not a new specialist-department feature.
+Source remediation accepted on 2026-09-06 after Tamer's subsequent scoped GO. PR #193 merged as 91fa3a4411dc6e4fbcbc8f9d125f26659569ce9a after all 38 CI jobs passed. Implementation commit: 190c32e6806f465fea89d9be8477b764a4bca3d0. No production deployment or protected-service access occurred. The initial planning GO did not authorize this fix; the later explicit #192 GO did.
+
+Evidence: docs/evidence/2026-09-06-dependency-audit-remediation.md and https://github.com/tamerabuhalaweh/TanaghomAgents/actions/runs/34013675646. Clean install/audit: zero findings; 115 local tests, typecheck/build and three Chromium public-boundary tests passed. Only fast-uri 3.1.6, PostCSS 8.5.23 and Nano ID 3.3.18 changed; Next.js remains 16.2.11. This closes the source-security scope, not deployment or customer UAT.
 
 ## Problem and observed evidence
 
@@ -32,19 +34,19 @@ As a customer and release owner, I need supported, reviewed dependencies and an 
 
 ## Acceptance criteria
 
-- [ ] Exact advisory IDs, affected/fixed versions and applicability assessment are recorded from current primary sources.
-- [ ] A reviewed minimal dependency diff resolves the findings or an explicitly accepted, time-bounded risk decision documents a justified exception; no silent suppression.
-- [ ] npm ci and npm audit --audit-level=moderate pass against the reviewed lockfile (unless a separately approved exception changes the formal gate).
-- [ ] All applicable tests, typecheck/build and full PR CI pass, with new tests for any affected security boundary.
-- [ ] No credentials, model/provider action, runtime permission widening, unrelated project mutation or public customer data appears.
-- [ ] STATUS and release evidence distinguish source fix, deployment, runtime applicability and customer acceptance.
-- [ ] Any deployment uses a separate authorized package; do not claim production patched from a merged dependency PR alone.
+- [x] Exact advisory IDs, affected/fixed versions and applicability assessment are recorded from current primary sources.
+- [x] A reviewed minimal dependency diff resolves the findings; no silent suppression or exception.
+- [x] npm ci and npm audit --audit-level=moderate pass against the reviewed lockfile.
+- [x] Applicable tests, typecheck/build and all 38 PR CI jobs pass, with four new security regressions.
+- [x] No credentials, model/provider action, runtime permission widening, unrelated project mutation or public customer data appears.
+- [x] STATUS and release evidence distinguish source fix, deployment, runtime applicability and customer acceptance.
+- [x] Deployment remains a separate authorized package; production is not claimed patched.
 
 ## Ownership and dependencies
 
-Parent delivery lane: #125; related dashboard acceptance #3 and capacity/runtime safety #55. Documentation PR #191 must remain draft/not merge-ready while the audit failure is unresolved or unreviewed. This does not require implementing Epic #174 first.
+Parent delivery lane: #125; related dashboard acceptance #3 and capacity/runtime safety #55. Documentation PR #191 must incorporate the accepted fix and pass its own CI before merging. This does not require implementing Epic #174 first.
 
-Implementation owner: unassigned pending a scoped remediation GO. Reviewer: security/application maintainer designated in the PR. Tamer decides release scope and any exceptional risk acceptance.
+Implementation and source-diff review: Codex. Scope/release authorization: Tamer's explicit #192 GO. No independent reviewer or customer production acceptance is implied. No exceptional risk acceptance was needed.
 
 ## Validation and rollback
 

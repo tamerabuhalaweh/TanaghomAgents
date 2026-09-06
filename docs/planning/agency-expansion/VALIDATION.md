@@ -73,6 +73,16 @@ exploitable; exact applicability remains to be investigated.
 
 Tracked separately in [#192](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/192),
 with a [versioned issue snapshot](release-blocker-192.md). No dependency fix,
-audit bypass or production action occurred. The PR remains draft/not
-merge-ready while this gate is unresolved. The initial local test results
+audit bypass or production action occurred in that initial planning change.
+The PR remained draft/not merge-ready while that gate was unresolved. The initial local test results
 above remain valid but are not an all-CI-pass statement.
+
+## Subsequent authorized remediation
+
+Tamer authorized #192 remediation and the selected six-profile pilot source
+work. PR #193 patches three dependencies without a Next.js upgrade. Its
+[source evidence](../../evidence/2026-09-06-dependency-audit-remediation.md)
+records clean install/audit, 115 local tests, type/build and three Chromium
+boundary tests. Full PR CI/merge evidence is linked from #192. The planning
+branch incorporates that reviewed dependency source so the unchanged audit
+gate can pass. No production dependency state was checked or changed.

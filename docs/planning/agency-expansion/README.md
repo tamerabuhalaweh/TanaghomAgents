@@ -1,15 +1,17 @@
 # AI Organization Expansion Plan
 
-Status: planning and GitHub tracking authorized by Tamer on **2026-09-06**.
-Implementation, model/provider execution, installation, deployment and activation
-are **not authorized by this documentation GO**.
+Status: planning and GitHub tracking approved on **2026-09-06**. A subsequent
+Tamer GO authorizes targeted #192 remediation, planning-PR acceptance after
+passing gates, and #175's six selected reviews / #176's pilot source work.
+It does not authorize live model/provider execution, installation, deployment,
+activation, or implementation of every future department.
 
 Parent: [Epic #174](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/174).
 Read [current project status](../../STATUS.md) before starting work.
 
 Publication note: documentation PR #191 exposed an existing-dependency audit
-failure, tracked separately in #192. It remains a current release/CI gate,
-not a reason to activate or implement future agents. See [validation](VALIDATION.md).
+failure, tracked separately in #192 and remediated in source PR #193. Both PRs
+require passing CI; runtime deployment remains separate. See [validation](VALIDATION.md).
 
 ## Product decision
 

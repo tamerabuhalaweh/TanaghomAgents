@@ -1,7 +1,9 @@
 # Tanaghom status and next work
 
 **As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
-Current task authorization: planning documentation and issue creation only.
+Current task authorization: targeted #192 dependency remediation, acceptance of
+the planning PR after its gates pass, and the six-profile pilot source work.
+No production deployment, live model/provider call or activation is authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
 ## Executive state
@@ -32,12 +34,17 @@ jobs. Do not claim that it proves current Gemma capacity or new-profile quality.
 
 ## Current release blockers: existing lane
 
-**New CI gate observed 2026-09-06:** [#192](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/192)
-tracks the failed dependency audit in documentation PR #191. The job reports
-five vulnerability entries (two moderate, three high) in the existing
-dependency graph. Dependency manifests/lockfile and CI configuration are
-unchanged by this planning PR. This is an audit finding, not proof of current
-production exploitability. Remediation and deployment have not started.
+**Dependency remediation:** [#192](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/192)
+tracks the original audit failure and its patch-only source fix in PR #193.
+The original planning changes did not introduce these dependencies. The fix
+updates fast-uri, PostCSS and Nano ID without changing Next.js or the audit
+threshold. Clean local install/audit (zero findings), 115 tests, typecheck,
+root-launched production build and three Chromium access-boundary tests pass.
+See [exact remediation and CI evidence](evidence/2026-09-06-dependency-audit-remediation.md)
+and PR #193: all 38 CI jobs passed; merged as
+`91fa3a4411dc6e4fbcbc8f9d125f26659569ce9a`. #192's source scope is complete.
+Deployment remains a separate gate;
+this source fix does not establish that production is patched.
 
 Do not treat credentials as the only definition of done. Latest historical
 provider evidence still required credentials/channel/contact setup plus
@@ -70,7 +77,7 @@ Do not use this table as authority to clear stops or activate provider workers.
   Read the evidence/date and latest reconciled status; preserve historical
   comments rather than presenting them as current facts.
 
-## Expansion lane: approved plan, implementation not started
+## Expansion lane: plan approved, selected pilot source work authorized
 
 - **#174**: all-department epic.
 - **#175**: full catalog review/admission; initial metadata inventory is present.
@@ -88,10 +95,8 @@ Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
 
-Keep documentation PR #191 draft while its audit gate is unresolved. The
-immediate best move is a scoped dependency investigation/remediation under
-#192, without bypassing the audit or changing production. Once that gate and
-documentation review pass, authorize a scoped start on
+Accept #192 and documentation PR #191 only after their full CI gates pass.
+Tamer has authorized the next scoped source work on
 **#175's six selected semantic reviews and #176's pilot contracts**, with
 #177's rubric/data plan established before comparison results. Do not wait
 for all future departments. Full source review under #175 remains a longer

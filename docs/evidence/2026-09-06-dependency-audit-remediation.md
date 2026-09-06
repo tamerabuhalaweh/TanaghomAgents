@@ -1,5 +1,11 @@
 # Issue #192: patch-only dependency remediation
 
+Source acceptance update: all **38/38** jobs passed in
+[run 34013675646](https://github.com/tamerabuhalaweh/TanaghomAgents/actions/runs/34013675646).
+Implementation commit `190c32e6806f465fea89d9be8477b764a4bca3d0`; PR #193
+merged at 2026-09-06T05:24:12Z as `91fa3a4411dc6e4fbcbc8f9d125f26659569ce9a`.
+This satisfies source acceptance only; no deployment was performed.
+
 ## Scope and release state
 
 Tamer authorized targeted remediation on 2026-09-06, followed by the planning
