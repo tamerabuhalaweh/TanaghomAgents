@@ -14,7 +14,7 @@ export async function createQualityGateway({pool,token,manifestHash,onEmpty=asyn
   let busy=false;
   const server=createServer(async(req,res)=>{
     let client;
-    const send=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store'});res.end(JSON.stringify(value));};
+    const send=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','Connection':'close'});res.end(JSON.stringify(value));};
     try{
       if(req.method!=='POST'||req.url!=='/quality/worker')throw fail(404);
       const actual=Buffer.from(req.headers.authorization?.replace(/^Bearer /,'')||''),expected=Buffer.from(token);

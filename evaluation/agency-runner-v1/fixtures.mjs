@@ -87,7 +87,7 @@ export function stubResponse(request){
     output.citations=input.retrieved_knowledge.map(k=>({source_id:k.source_id,source_version_id:k.source_version_id,content_fingerprint:k.content_fingerprint}));
     output.proposed_reply=input.retrieved_knowledge[0].content;
     output.conversation_summary.input_event_ids=[input.provider_message.event_id];
-    if(/refund|أعد المبلغ|reveal|اكشف/.test(input.provider_message.body)){
+    if(/refund|أعد المبلغ|reveal|اكشف/i.test(input.provider_message.body)){
       const refund=/refund|أعد المبلغ/i.test(input.provider_message.body);
       output.intent=refund?'refund':'policy_exception';output.risk_categories=[refund?'refund':'prompt_injection'];
       output.answer_status='escalate';output.next_best_action='escalate_to_human';output.proposed_reply=null;

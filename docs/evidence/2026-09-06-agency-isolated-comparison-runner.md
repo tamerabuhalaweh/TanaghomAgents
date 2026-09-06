@@ -26,7 +26,7 @@ rollback: [runner runbook](../../evaluation/agency-runner-v1/RUNBOOK.md).
 
 ## Validation layers
 
-Local unit tests: **165 passed**. Repository check and dashboard typecheck pass.
+Local unit tests: **166 passed**. Repository check and dashboard typecheck pass.
 The original 47-file preparation lock and its prior evidence still validate.
 The new CI job executes the actual n8n/PostgreSQL comparison runner; the
 introducing PR's checks and uploaded unique artifacts are authoritative for
@@ -36,8 +36,12 @@ The local development sequence retained failures rather than erasing them:
 missing strategy linkage and duplicate trigger-created conversation fixtures
 were corrected. An initial full single-execution batch passed, but later
 long-loop CLI runs stopped at 186 and 338 queued tasks without sufficient
-diagnostics to establish their root cause. The runner now captures bounded
-stage diagnostics and limits each n8n execution to 30 attempts. Acceptance
+diagnostics to establish their root cause. A bounded run also encountered a
+completion HTTP-node failure; a subsequent bounded run and the first CI runner
+passed. The final runner retains stage/CLI diagnostics and failed attempt state,
+limits each n8n execution to 30 attempts, and closes disposable HTTP connections
+to avoid stale keep-alive reuse. The old transport failure's precise cause is
+not claimed as proven. Acceptance
 requires the final bounded runner to pass; the earlier pass is not its evidence.
 
 Each run stores `tmp/tanaghom-quality-<run>-evidence.json`; CI uploads these even

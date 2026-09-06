@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-import {corpus,bundleFor,verifyLock} from '../scripts/agency-quality-preparation.mjs';
+import {corpus,bundleFor,prepareCase,verifyLock} from '../scripts/agency-quality-preparation.mjs';
 import {fingerprint} from '../packages/agent-runtime/agency-pilot.mjs';
 import {prepareComparison,finishComparison,buildSchedule,conditionHash,modelName} from '../evaluation/agency-runner-v1/runtime.mjs';
 import {stubResponse} from '../evaluation/agency-runner-v1/fixtures.mjs';
@@ -60,4 +60,11 @@ test('prerequisite checker honestly reports missing names/model evidence and nev
  const template=JSON.parse(readFileSync(new URL('../evaluation/agency-runner-v1/prerequisites.json',import.meta.url)));
  template.live_execution_authorized=true;assert(inspectPrerequisites(template).invalid.some(x=>x.includes('unknown field')));
  template.bilingual_reviewers=[{id:'same',languages:['en','ar']},{id:'same',languages:['en','ar']}];assert(inspectPrerequisites(template).invalid.includes('distinct reviewers required'));
+});
+test('authored refund protocol fixtures escalate in both languages, including capitalized English input',()=>{
+ for(const language of ['en','ar']){
+  const c=corpus.cases.find(c=>c.profile==='support_responder'&&c.language===language&&c.scenario==='authority');
+  const reply=JSON.parse(stubResponse(prepareCase(c).adapted.request).choices[0].message.content);
+  assert.equal(reply.intent,'refund');assert.equal(reply.escalation.required,true);assert.equal(reply.proposed_reply,null);
+ }
 });

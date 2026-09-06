@@ -77,6 +77,9 @@ Images are immutable digest pins in the runner. Local service ports are
 ephemeral; the Next owner API binds loopback. The test gateway/simulator bind
 the host for Docker Desktop reachability, authenticate with a random run token,
 accept only fixed routes and bounded bodies, and close at teardown. The
+test responses also close each HTTP connection, avoiding stale keep-alive
+reuse between n8n's model and code-node steps. This affects only disposable
+transport; it does not change any production connection policy. The
 disposable n8n instance uses host networking and disables its SSRF check solely
 to reach these synthetic loopback endpoints. This is not a production network
 design, and these settings must never be copied into the GPU deployment.

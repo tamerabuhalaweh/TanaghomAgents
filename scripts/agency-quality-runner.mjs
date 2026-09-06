@@ -25,7 +25,10 @@ const images={postgres:'postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c648324
 const temporary=await mkdtemp(join(tmpdir(),'tanaghom-quality-')),token=randomBytes(32).toString('hex');
 const cleanEnv=Object.fromEntries(Object.entries(process.env).filter(([k])=>['PATH','SYSTEMROOT','WINDIR','COMSPEC','PATHEXT','TEMP','TMP','HOME','USERPROFILE','APPDATA','LOCALAPPDATA'].includes(k.toUpperCase())));
 const run=(cmd,args,opts={})=>new Promise((yes,no)=>{const p=spawn(cmd,args,{stdio:['ignore','pipe','pipe'],...opts});let out='',errors='',head='';
-  p.stdout.on('data',c=>{out=(out+c).slice(-20000);head=(head+c).slice(0,4000)});p.stderr.on('data',c=>{errors=(errors+c).slice(-4000)});p.on('error',no);p.on('close',(c,signal)=>c===0?yes(out.trim()):no(new Error(`${cmd} exit ${c}, signal ${signal}: ${errors.slice(-1500)} ${head.slice(0,2200)}`)));});
+  p.stdout.on('data',c=>{out=(out+c).slice(-20000);head=(head+c).slice(0,50000)});p.stderr.on('data',c=>{errors=(errors+c).slice(-4000)});p.on('error',no);p.on('close',(c,signal)=>{
+    const details=[...head.matchAll(/(?<!\\)"(?:message|description|httpCode|code|name)"\s*:\s*"([^"\\]*(?:\\.[^"\\]*)*)"/g)].map(m=>m[0].slice(0,220)).slice(0,12).join('\n');
+    c===0?yes(out.trim()):no(new Error(`${cmd} exit ${c}, signal ${signal}: ${errors.slice(-800)} ${details}`));
+  });});
 const docker=(...a)=>run('docker',a),delay=ms=>new Promise(r=>setTimeout(r,ms));
 const listen=async(s,host='0.0.0.0')=>{s.listen(0,host);await once(s,'listening');return s.address().port;};
 const pass=s=>{checks.push(s);console.log(`PASS: ${s}`);};
@@ -116,7 +119,7 @@ try{
     try{const chunks=[];let size=0;for await(const c of req){size+=c.length;assert(size<=200000);chunks.push(c);}
       const request=JSON.parse(Buffer.concat(chunks)),start=performance.now(),response=stubResponse(request);
       modelRecords.push({request_hash:fingerprint(request),response_hash:fingerprint(response),simulator_handler_ms:performance.now()-start});
-      res.writeHead(200,{'Content-Type':'application/json'}).end(JSON.stringify(response));
+      res.writeHead(200,{'Content-Type':'application/json','Connection':'close'}).end(JSON.stringify(response));
     }catch{res.writeHead(400).end('{}');}
   });
   const modelPort=await listen(model),host=process.platform==='win32'?'host.docker.internal':'127.0.0.1';
@@ -194,7 +197,9 @@ try{
     attempts:tasks.map(t=>({case_id:t.case_id,profile:t.profile_code,language:t.language,arm:t.arm,repetition:t.repetition,
       status:t.status,response_hash:t.response_hash,result_hash:fingerprint(t.result),gateway_roundtrip_ms:Number(t.gateway_roundtrip_ms),quality_scores:null})),
     prepared_record_hash:fingerprint(preparedRecords),simulated_response_records_hash:fingerprint(modelRecords)};
-}catch(e){console.error('Isolated comparison failed:',e.message);evidence={...evidence,checks,diagnostics:failures,attempts_queued:attemptIds.length,simulated_model_http_calls:modelRecords.length,failure:'isolated_comparison_failed'};process.exitCode=1;
+}catch(e){console.error('Isolated comparison failed:',e.message);
+  const states=pool?(await pool.query('SELECT a.case_id,a.arm,a.repetition,t.status,t.error_code FROM tanaghom_quality.attempts a JOIN tanaghom.agency_pilot_tasks t ON t.id=a.task_id WHERE a.run_id=$1 ORDER BY t.created_at',[runId]).catch(()=>({rows:[]}))).rows:[];
+  evidence={...evidence,checks,diagnostics:failures,failed_attempt_states:states,runner_error:e.message,attempts_queued:attemptIds.length,simulated_model_http_calls:modelRecords.length,failure:'isolated_comparison_failed'};process.exitCode=1;
 }finally{
   autoQueue=false;
   if(pool)await pool.query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=true,model_execution_enabled=false; UPDATE tanaghom.agent_runtime_controls SET emergency_stop=true').catch(()=>{});

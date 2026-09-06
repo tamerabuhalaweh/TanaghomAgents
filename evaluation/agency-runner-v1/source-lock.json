@@ -5,15 +5,15 @@
   "files": [
     {
       "path": "evaluation/agency-runner-v1/RUNBOOK.md",
-      "sha256": "f6f186f7b1297e93344da652078d6a77d6e464f246f759cdb4d37f86e322aebe"
+      "sha256": "ec1a8c476520dfa5b32cb59d35ee5d73bf2eec534f92b7a221c5e8149e2240fb"
     },
     {
       "path": "evaluation/agency-runner-v1/fixtures.mjs",
-      "sha256": "1a44c9c672dd39776e9d1d5ba8ca8ca33ebb79f786d8b8f1f230707a620f8617"
+      "sha256": "eee20ae759d2b03969cebb4fe606c0ea479c8f3f6e0fdfd65fc1ecdb6af975cb"
     },
     {
       "path": "evaluation/agency-runner-v1/gateway.mjs",
-      "sha256": "b65f80120cbf3b3c20567e22181cced85d88ea510febb44b50bf332b26397de8"
+      "sha256": "cc945a5ccb424d8caac7c47d0b3681889e61eea390b317060dcd82f7431d86f1"
     },
     {
       "path": "evaluation/agency-runner-v1/isolated.sql",
@@ -45,11 +45,11 @@
     },
     {
       "path": "scripts/agency-quality-runner.mjs",
-      "sha256": "eccbf3a848d9242a388dec782ef53fbcce3f15a64f4b4da8da416f87d5814625"
+      "sha256": "2c60702e11474409e96cbda42e2f058a34a13afbe837f22272d0768f078e1601"
     },
     {
       "path": "tests/agency-quality-runner.test.mjs",
-      "sha256": "f42f4ac572b34ce5e47ddcf193da7f6b6a1a17f7cd3f2d45e2a78f3b117d401b"
+      "sha256": "870cb77513699f6f7901c2b4fe156afb1324ba3f44dd89d8cc5036a98d1e129e"
     }
   ]
 }
