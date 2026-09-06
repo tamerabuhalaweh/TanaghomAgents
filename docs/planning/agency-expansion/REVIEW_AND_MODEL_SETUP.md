@@ -3,8 +3,10 @@
 As of 2026-09-06. Owner: [#177](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/177).
 Status: Tamer selected CPU VPS `155.117.45.45` for disposable test services and
 the existing shared Gemma 4 for inference. No second GPU is required. Human
-nominations, the concrete resource/transport package and execution approval
-remain pending. This document changes no frozen input.
+nominations, the concrete model-test resource/transport package and execution
+approval remain pending. A subsequent reformat and #200 approval established
+a public manual-test dashboard on this VPS, not a live evaluation runner.
+This document changes no frozen input.
 
 ## What is accepted
 
@@ -28,7 +30,7 @@ still be respected, never bypassed using administrator privileges.
 | Product scope and release decisions | Tamer | Existing product owner; no new release signoff recorded |
 | Correct offers, prices, policies and reference answers | Customer sales/support manager, or Tamer if he owns these decisions | Nomination pending |
 | Independent English/Arabic answer ratings | Tamer plus one bilingual customer representative | Proposed, not nominated or approved |
-| CPU test services, shared Gemma inventory and resource/request window | Operators designated by Tamer | CPU VPS selected and inspected read-only; model metadata and execution window pending |
+| CPU test services, shared Gemma inventory and resource/request window | Operators designated by Tamer | CPU VPS rebuilt and manual test dashboard deployed under #200; model metadata and execution window pending |
 
 The business approver can also be one of the two answer reviewers. These are
 people reading answers, not new technical accounts or API credentials. Two
@@ -119,24 +121,28 @@ the original isolated-environment approval field with this CPU host or claim
 its old model-isolation gate has passed. Selecting the topology is not
 authorization to run new structured-output schemas against shared Gemma.
 
-The [read-only VPS inventory](../../evidence/2026-09-06-cpu-vps-readonly-preflight.md)
-found 3 CPUs, 5,925 MiB RAM (3,307 MiB available in that snapshot), and about
-40 GB free root disk. It also found 21 existing containers, including four
-unhealthy/restarting containers. This is **not an empty or dedicated test host**.
-Their causes were not investigated; none was changed. The Hybrid application,
-Postiz and other existing workloads are not the certified Tanaghom environment.
-Never reuse their databases, vaults, credentials, ports or volumes.
+The [old read-only inventory](../../evidence/2026-09-06-cpu-vps-readonly-preflight.md)
+is **pre-format history**, superseded by Tamer rebuilding the VPS. #200 then
+deployed a fresh manual-test dashboard, local PostgreSQL and Caddy. Initial
+post-deployment observations: 3 CPUs, 5,925 MiB RAM (5,074 MiB available), 93 GB
+free root disk and three non-restarting services. See the
+[fresh deployment record](../../evidence/2026-09-06-fresh-test-vps-deployment.md).
+The old Hybrid/Postiz databases, credentials, ports and volumes were not reused.
+The certified 38.247 deployment and shared Gemma were not changed.
 
-Before startup, the successor package must demonstrate an aggregate CPU/RAM/
+Before model-test runtime startup, the successor package must demonstrate an aggregate CPU/RAM/
 disk budget with host headroom, bounded logs/evidence, unique resource names,
 non-conflicting ports/networks, run-owned cleanup and stop conditions. Build
 artifacts off-host where practical. The accepted CI runner's PostgreSQL and
 n8n alone allow 512 MiB + 1,536 MiB and 1 + 2 CPUs, before dashboard/gateway
-overhead; copying those limits to this shared 3-CPU VPS is not a capacity plan.
+overhead. The new manual-test stack already allows 1,984 MiB and 2 CPUs total;
+copying CI's limits alongside it on a 3-CPU VPS is not a capacity plan.
 Keep the CI simulator's host networking/disabled SSRF settings out of the shared
 VPS design. Use a reviewed isolated test network, authenticated private test
 services and a fixed TLS-verified Gemma route; no arbitrary outbound URLs,
-provider credentials or public test UI/webhooks. Host firewall changes, if
+provider credentials or public evaluator/worker UI/webhooks. The separately
+authorized owner dashboard is public, but that does not authorize exposing the
+model-test runner or enabling provider ingress. Host firewall changes, if
 needed, require a separately reviewed exact diff and rollback, not this note.
 
 No SmartLabs, SmartCC, voice or Gemma service may be reconfigured, restarted or

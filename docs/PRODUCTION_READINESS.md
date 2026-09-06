@@ -44,7 +44,11 @@ New adapter implementation gets no extra production points for passing local tes
 ## Current-release and customer evidence: 0/40 credited
 
 Zero means **not currently evidenced here**, not necessarily broken. The latest
-reviewed host record is July 28; this source-only turn made no server connection.
+reviewed certified-host record is July 28. The additional rebuilt CPU test
+deployment has [fresh evidence](evidence/2026-09-06-fresh-test-vps-deployment.md),
+but does not establish the certified runtime's health, recovery, model/provider
+acceptance or customer signoff. Its manual UI/API checks earn no extra points
+on this existing-production scorecard.
 
 | Required release gate | Remaining work | Points |
 | --- | --- | --- |

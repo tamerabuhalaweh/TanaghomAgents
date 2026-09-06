@@ -21,6 +21,10 @@ transcript to locate the current implementation or approved next step.
   `38.247.187.232` runtime. Existing Gemma is the planned shared inference source;
   test-state isolation does not isolate the model. See the reviewed successor
   setup direction in [STATUS.md](STATUS.md); no ad hoc simulator retargeting.
+  The test dashboard is now public over HTTPS with a fresh local database and
+  shared Supabase owner sign-in configuration. See [deployment evidence](evidence/2026-09-06-fresh-test-vps-deployment.md)
+  and the [manual test guide](testing/FRESH_TEST_VPS_GUIDE.md). n8n/model/provider
+  execution and invitations are not enabled on this new installation.
 
 ## Where implementation actually lives
 
@@ -32,7 +36,7 @@ transcript to locate the current implementation or approved next step.
 | Shared schemas and model/tool contracts | `packages/contracts` |
 | Eight business workflows plus six shared runtime exports | `n8n/workflows` |
 | Prompt sources and workflow generation | `prompts`, `scripts/generate-*.mjs` |
-| Authenticated Agency pilot (PR #196 accepted; not deployed) | `packages/agent-runtime/integration.mjs`, migration 0034, `n8n/workflows/agency-pilot`, [ADR 0019](architecture/0019-authenticated-agency-pilot.md) |
+| Authenticated Agency pilot (0034 now present on fresh test DB; gateway off, not certified production) | `packages/agent-runtime/integration.mjs`, migration 0034, `n8n/workflows/agency-pilot`, [ADR 0019](architecture/0019-authenticated-agency-pilot.md) |
 | Agency bilingual certification preparation (#177; no model execution) | `evaluation/agency-v1`, `scripts/agency-quality-preparation.mjs`; [runbook](../evaluation/agency-v1/RUNBOOK.md) |
 | Isolated authenticated comparison runner (#177; simulator only) | `evaluation/agency-runner-v1`, `scripts/agency-quality-runner.mjs`; [runbook and prerequisites](../evaluation/agency-runner-v1/RUNBOOK.md); not production dashboard code |
 | Platform skill metadata and instruction packages | `config/skill-registry.v1.json`, `skills/platform` |
