@@ -1,0 +1,309 @@
+{
+  "id": "agencyPilotSimulationV1",
+  "name": "Tanaghom Agency Pilot Simulation v1",
+  "active": false,
+  "nodes": [
+    {
+      "id": "ManualTest",
+      "name": "Manual Test",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ],
+      "parameters": {}
+    },
+    {
+      "id": "DisabledPolling",
+      "name": "Disabled Polling",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        220,
+        200
+      ],
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "minutes",
+              "minutesInterval": 1
+            }
+          ]
+        }
+      },
+      "disabled": true
+    },
+    {
+      "id": "ClaimPilotTask",
+      "name": "Claim Pilot Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TANAGHOM_INTEGRATION_GATEWAY_URL + \"/api/internal/agency-pilot\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={\"action\":\"claim\"}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "agencyPilotGatewayV1",
+          "name": "Tanaghom Agency Pilot Gateway"
+        }
+      }
+    },
+    {
+      "id": "HasTask",
+      "name": "Has Task",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        660,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ !!$json.task }}",
+              "value2": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "NeedsModel",
+      "name": "Needs Model",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        880,
+        0
+      ],
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ !!$json.task.request }}",
+              "value2": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "FixedGemmaRequest",
+      "name": "Fixed Gemma Request",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1100,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.thesmartlabs.net/gemma4/v1/chat/completions",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json.task.request) }}",
+        "options": {
+          "timeout": 90000,
+          "response": {
+            "response": {
+              "neverError": true,
+              "fullResponse": true,
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "62000000-0000-4000-8000-000000000002",
+          "name": "Tanaghom Gemma API"
+        }
+      },
+      "onError": "continueRegularOutput"
+    },
+    {
+      "id": "ModelCompletion",
+      "name": "Model Completion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1320,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const task=$(\"Claim Pilot Task\").first().json.task; return [{json:{action:\"complete\",task_id:task.task_id,lease_token:task.lease_token,model_response:$json.statusCode===200?$json.body:null}}];"
+      }
+    },
+    {
+      "id": "LocalCompletion",
+      "name": "Local Completion",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1540,
+        0
+      ],
+      "parameters": {
+        "jsCode": "const task=$json.task; return [{json:{action:\"complete\",task_id:task.task_id,lease_token:task.lease_token,model_response:null}}];"
+      }
+    },
+    {
+      "id": "CompletePilotTask",
+      "name": "Complete Pilot Task",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        1760,
+        0
+      ],
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $env.TANAGHOM_INTEGRATION_GATEWAY_URL + \"/api/internal/agency-pilot\" }}",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify($json) }}",
+        "options": {
+          "timeout": 20000
+        }
+      },
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "agencyPilotGatewayV1",
+          "name": "Tanaghom Agency Pilot Gateway"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Manual Test": {
+      "main": [
+        [
+          {
+            "node": "Claim Pilot Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Disabled Polling": {
+      "main": [
+        [
+          {
+            "node": "Claim Pilot Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Claim Pilot Task": {
+      "main": [
+        [
+          {
+            "node": "Has Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Has Task": {
+      "main": [
+        [
+          {
+            "node": "Needs Model",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Needs Model": {
+      "main": [
+        [
+          {
+            "node": "Fixed Gemma Request",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Local Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fixed Gemma Request": {
+      "main": [
+        [
+          {
+            "node": "Model Completion",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Model Completion": {
+      "main": [
+        [
+          {
+            "node": "Complete Pilot Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Local Completion": {
+      "main": [
+        [
+          {
+            "node": "Complete Pilot Task",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "executionTimeout": 150,
+    "saveDataSuccessExecution": "none",
+    "saveDataErrorExecution": "none",
+    "saveManualExecutions": false
+  },
+  "tags": [],
+  "meta": {
+    "contract_version": "phase7.agency-pilot-workflow.v1",
+    "mode": "simulation",
+    "provider_execution_allowed": false,
+    "installation_authorized": false,
+    "customer_certified": false
+  }
+}
