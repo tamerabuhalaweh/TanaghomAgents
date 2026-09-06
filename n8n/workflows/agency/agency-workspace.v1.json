@@ -1,0 +1,13 @@
+{
+  "id": "tanaghomAgencyWorkspaceV1",
+  "name": "Tanaghom Agency Workspace v1",
+  "active": false,
+  "nodes": [
+    {"id":"workspace-manual","name":"Operator-controlled single tick","type":"n8n-nodes-base.executeWorkflowTrigger","typeVersion":1.1,"position":[0,180],"parameters":{"inputSource":"passthrough"}},
+    {"id":"workspace-schedule","name":"Check approved workspace queue","type":"n8n-nodes-base.scheduleTrigger","typeVersion":1.2,"position":[0,0],"parameters":{"rule":{"interval":[{"field":"seconds","secondsInterval":30}]}}},
+    {"id":"workspace-tick","name":"Run one bounded specialist step","type":"n8n-nodes-base.httpRequest","typeVersion":4.2,"position":[300,0],"parameters":{"method":"POST","url":"http://dashboard:3000/api/internal/agency-workspace","authentication":"genericCredentialType","genericAuthType":"httpHeaderAuth","sendBody":true,"specifyBody":"json","jsonBody":"{\"action\":\"tick\"}","options":{"timeout":110000,"redirect":{"redirect":{"followRedirects":false}}}},"credentials":{"httpHeaderAuth":{"id":"76000000-0000-4000-8000-000000000035","name":"Tanaghom Workspace Gateway"}},"retryOnFail":false}
+  ],
+  "connections":{"Operator-controlled single tick":{"main":[[{"node":"Run one bounded specialist step","type":"main","index":0}]]},"Check approved workspace queue":{"main":[[{"node":"Run one bounded specialist step","type":"main","index":0}]]}},
+  "settings":{"executionOrder":"v1","saveDataErrorExecution":"none","saveDataSuccessExecution":"none","saveManualExecutions":false,"saveExecutionProgress":false,"executionTimeout":120},
+  "pinData":{},"tags":[]
+}

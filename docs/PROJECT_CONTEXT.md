@@ -28,6 +28,16 @@ transcript to locate the current implementation or approved next step.
 
 ## Where implementation actually lives
 
+Latest authorized slice: [customer-visible workspace delivery](planning/agency-expansion/WORKSPACE_DELIVERY.md).
+Its code is `apps/dashboard/components/agency-workspace.tsx`,
+`apps/dashboard/lib/server/agency-workspace.ts`,
+`packages/agent-runtime/workspace.mjs`, migration0035 and
+`n8n/workflows/agency/agency-workspace.v1.json`. The six-step team shares
+assignment-local context only; five draft documents use Gemma and the final
+inventory is deterministic. It cannot publish, contact leads or approve work.
+Use [its test update runbook](../deployment/agency-workspace/RUNBOOK.md); do not
+rerun the initial fresh-VPS bootstrap against this existing database.
+
 | Area | Authoritative source |
 |---|---|
 | Customer UI and real application API | `apps/dashboard/app`, including API route handlers |

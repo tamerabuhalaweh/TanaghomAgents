@@ -1,0 +1,74 @@
+services:
+  postgres:
+    secrets: [workspace_worker_password]
+  dashboard:
+    environment:
+      AGENCY_WORKSPACE_ENABLED: "true"
+    secrets: [workspace_database_url, workspace_worker_token, gemma_api_key]
+    networks: [workspace]
+  caddy:
+    volumes:
+      - ../agency-workspace/Caddyfile:/etc/caddy/Caddyfile:ro
+  workspace-n8n:
+    image: docker.n8n.io/n8nio/n8n:2.26.8@sha256:0afb71a39e51637b4d5b4010d90e68bc502d3ca1d2a4d953eb5fcd7d86330ccd
+    restart: unless-stopped
+    entrypoint: [tini, --, /workspace/n8n-entrypoint.sh]
+    command: [start]
+    environment:
+      N8N_HOST: localhost
+      N8N_PORT: "5678"
+      N8N_PROTOCOL: http
+      N8N_DIAGNOSTICS_ENABLED: "false"
+      N8N_VERSION_NOTIFICATIONS_ENABLED: "false"
+      N8N_TEMPLATES_ENABLED: "false"
+      N8N_PUBLIC_API_DISABLED: "true"
+      N8N_COMMUNITY_PACKAGES_ENABLED: "false"
+      N8N_BLOCK_ENV_ACCESS_IN_NODE: "true"
+      N8N_SSRF_PROTECTION_ENABLED: "true"
+      N8N_SSRF_ALLOWED_HOSTNAMES: dashboard
+      NODES_EXCLUDE: '["n8n-nodes-base.executeCommand","n8n-nodes-base.readWriteFile","n8n-nodes-base.ssh"]'
+      EXECUTIONS_MODE: regular
+      N8N_CONCURRENCY_PRODUCTION_LIMIT: "1"
+      EXECUTIONS_DATA_SAVE_ON_ERROR: none
+      EXECUTIONS_DATA_SAVE_ON_SUCCESS: none
+      EXECUTIONS_DATA_SAVE_ON_PROGRESS: "false"
+      EXECUTIONS_DATA_SAVE_MANUAL_EXECUTIONS: "false"
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "24"
+      EXECUTIONS_DATA_PRUNE_MAX_COUNT: "1000"
+      DB_SQLITE_POOL_SIZE: "2"
+      GENERIC_TIMEZONE: Asia/Amman
+      TZ: UTC
+    secrets: [workspace_n8n_key, workspace_worker_token]
+    volumes:
+      - workspace_n8n:/home/node/.n8n
+      - ../agency-workspace:/workspace:ro
+      - ../../n8n/workflows/agency/agency-workspace.v1.json:/workspace-workflow.json:ro
+    networks: [workspace]
+    read_only: true
+    tmpfs: ["/tmp:size=64m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 0.75
+    mem_limit: 1024m
+    pids_limit: 200
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:5678/healthz/readiness').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 60s
+    logging:
+      driver: json-file
+      options: { max-size: 5m, max-file: "2" }
+
+networks:
+  workspace: { internal: true }
+volumes:
+  workspace_n8n:
+secrets:
+  workspace_worker_password: { file: /opt/tanaghom-test/runtime/secrets/workspace_worker_password }
+  workspace_database_url: { file: /opt/tanaghom-test/runtime/secrets/workspace_database_url }
+  workspace_worker_token: { file: /opt/tanaghom-test/runtime/secrets/workspace_worker_token }
+  workspace_n8n_key: { file: /opt/tanaghom-test/runtime/secrets/workspace_n8n_key }
+  gemma_api_key: { file: /opt/tanaghom-test/runtime/secrets/gemma_api_key }

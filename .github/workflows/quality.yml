@@ -14,6 +14,26 @@ env:
   DATABASE_MIGRATION_TARGET: 0033_agent_runtime_certification_evidence
 
 jobs:
+  agency-workspace:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: node node_modules/next/dist/bin/next build apps/dashboard
+      - run: npm run test:agency-workspace
+      - run: node scripts/agency-workspace-n8n-test.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agency-workspace-browser-evidence
+          path: tmp/workspace-qa/
+          if-no-files-found: ignore
+
   repository-contract:
     runs-on: ubuntu-latest
     timeout-minutes: 5
