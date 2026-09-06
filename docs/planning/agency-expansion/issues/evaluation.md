@@ -2,7 +2,19 @@
 
 ## Authorization and status
 
-The pre-run evaluation design is drafted as part of the authorized pilot source work: docs/planning/agency-expansion/PILOT_EVALUATION.md. It proposes 24 English and 24 Arabic cases, profile-specific baselines, safety/quality gates and resource evidence. No comparison output has been generated. Customer/domain rubric acceptance, frozen corpus/model settings, actual execution and release decisions remain pending; this is not certification or permission for live model/provider calls.
+PR #196 is accepted at 3769d5ae7abe2e98d6e3d7ad612d30160f886e30 with 39/39 CI checks. The authorized #177 slice prepares, but does not execute, controlled bilingual model-quality certification. `evaluation/agency-v1/RUNBOOK.md` documents 48 core cases plus 24 public reserves, 47 pinned sources, paired requests through the actual adapter, proposed anchored rubrics/resource budgets and a NOT_RUN ledger. Public reserves are not blind holdout data. No model-quality score has been generated. Customer/domain acceptance, private heldout/reference answers, exact isolated model/compiler pins, authenticated paired runner and separately authorized execution remain pending. Studio availability and production installation are separate #176 work.
+
+### Preparation progress (not quality acceptance)
+
+- [x] Authored synthetic six-profile EN/AR corpus with honest public-reserve labeling.
+- [x] Pin source/procedure/schema/workflow/rubric inputs and reject drift.
+- [x] Generate equal-condition baseline/adapted requests for four reused skills; separate Brand/Executive human-reference baselines.
+- [x] Proposed rubrics, safety regression map, request budgets and stop/handoff procedure.
+- [x] Offline tests, pending attempt ledger and explicit no-execution authority.
+- [ ] Freeze customer/domain-approved rubric, genuine heldout cases, reference answers and reviewers.
+- [ ] Complete the isolated authenticated paired runner without accepting arbitrary prompts in protected APIs.
+- [ ] Pin actual model/weights/tokenizer/compiler environment and measure bounded schema probes.
+- [ ] Execute paired model evaluation, measure resources, adjudicate results and record #137/#56 release decision.
 
 Parent: #174.
 

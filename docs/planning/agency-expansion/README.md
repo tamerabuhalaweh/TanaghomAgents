@@ -128,6 +128,14 @@ the pilot nor deterministic team coordination requires Hermes installation.
 
 ## Proposed evaluation contract
 
+Concrete offline preparation is now in
+[evaluation/agency-v1](../../../evaluation/agency-v1/RUNBOOK.md): 48 core and 24
+public reserve EN/AR cases, pinned paired request generation, proposed rubric
+and explicit execution gates. The reserves are not a blind holdout. PR #196
+accepted the authenticated simulation lane; actual paired quality execution,
+isolated compiler/model pins, reviewer approval and production installation
+remain separate. This package does not certify new agents.
+
 Before generating comparison results, approve the task rubric, data rights,
 model/runtime and acceptance thresholds. Proposed initial set: at least
 20 English and 20 Arabic representative cases covering all six profiles.
