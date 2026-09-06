@@ -1,13 +1,17 @@
 # Tanaghom status and next work
 
-**As of 2026-09-06: new test-VPS deployment authorized; certified 38.247 unchanged.**
+**As of 2026-09-06: public test VPS is live; certified 38.247 unchanged by this work.**
 Tamer reformatted CPU VPS 155.117.45.45 and authorized a public HTTPS test
 installation under #200. He subsequently accepted pinning its replacement SSH
 key without a provider console; this is not independent identity verification.
-The host is freshly inspected, empty and healthy; old incident records are
+The rebuilt host now runs three scoped test services; old incident records are
 historical. The new package uses an isolated local business database and existing
 Supabase owner sign-in, not production data or the Supabase admin key.
-Deployment completion/evidence is pending. No model/provider execution,
+Initial public deployment passed at `380eb19`; the #205 logout update is now
+deployed at `6c8c536` with five public browser checks passed. See the [dated evidence](evidence/2026-09-06-fresh-test-vps-deployment.md)
+and [owner walkthrough](testing/FRESH_TEST_VPS_GUIDE.md).
+Test link: https://tanaghom-test.155-117-45-45.sslip.io/login.
+No model/provider execution,
 n8n activation or changes to certified 38.247/SmartLabs/SmartCC are authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
@@ -23,7 +27,9 @@ export. Twelve disposable bilingual n8n/database round trips pass. Production
 installation, Studio availability and real-model quality certification remain unfinished.
 
 The accepted source baseline is now
-`9fde3aa673f4bc634c36bab00957cbf7f84ebd91` (PR #198; 40/40 exact-head CI checks passed).
+`6c8c53673e613a29441e3aba3faef431a079ba7c` (PR #206; 40/40 exact-head CI checks passed;
+merged as `2f3ffa6a677a878c291a3ca61029be4cd09c6d7f`). The accepted model-runner slice
+remains PR #198 at `9fde3aa673f4bc634c36bab00957cbf7f84ebd91`.
 The original pre-expansion baseline was `0b5b5a7` (PR #173). Neither source merge
 nor local adapter simulation establishes what is currently deployed.
 
@@ -36,7 +42,7 @@ nor local adapter simulation establishes what is currently deployed.
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
 | Current certified server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
-| Selected CPU test host | Tamer subsequently reformatted 155.117.45.45; fresh inspection: 3 CPUs, 5,925 MiB RAM, ~96 GB free disk, no failed units or containers. #200 deployment in progress | [Fresh test package](../deployment/fresh-test-vps/RUNBOOK.md); earlier [pre-format inventory](evidence/2026-09-06-cpu-vps-readonly-preflight.md) is historical |
+| Selected CPU test host | Fresh public dashboard, local PostgreSQL and Caddy on rebuilt 155.117.45.45; 34 migrations, one owner, 93 GB free at initial validation; model/provider execution disabled | [Deployment evidence](evidence/2026-09-06-fresh-test-vps-deployment.md); [test walkthrough](testing/FRESH_TEST_VPS_GUIDE.md). Earlier pre-format inventory is historical |
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
 | Accepted preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation preparation](../evaluation/agency-v1/RUNBOOK.md) |
@@ -127,23 +133,26 @@ Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
 
-Immediate authorized work is #200: deploy and validate the public isolated test
-dashboard from [the new package](../deployment/fresh-test-vps/RUNBOOK.md), with
-all model/provider actions disabled. This supplies a test UI, not full automated
-agent UAT; invitations are unavailable without a separately scoped auth admin key.
+The #200 test deployment and #205 HTTPS logout follow-up are verified. Next
+perform the [owner's manual walkthrough](testing/FRESH_TEST_VPS_GUIDE.md)
+and prepare a separately reviewed CPU n8n/evaluation + shared-Gemma transport
+package under #177. All model/provider actions remain disabled. This supplies
+a test UI, not full automated agent UAT; invitations are unavailable without
+a separately scoped auth admin key. Actual owner password sign-in is not claimed.
 
 #192's source fix, planning PR #191, candidate PR #194, kernel PR #195 and
 authenticated integration PR #196, preparation PR #197 and simulator PR #198
 are accepted. #198 passed all 40 exact-head CI checks. Tamer delegated Tanaghom
 technical PR reviews to Codex; code review does not replace business acceptance.
-Next prepare/review the controlled CPU-VPS resource/network package and successor
-shared-Gemma transport. Use approved model records, obtain missing compiler/model
+Next prepare/review the private evaluation resource/network package and successor
+shared-Gemma transport alongside the running test UI. Use approved model records, obtain missing compiler/model
 metadata and the operator request window, and collect the business-reviewer
-nomination in parallel. The VPS was inspected only; no test services were started
-and its unrelated unhealthy/restarting containers were not investigated or changed.
+nomination in parallel. The old co-hosted VPS inventory was superseded by Tamer's
+reformat. The fresh test deployment's health does not certify shared Gemma or
+the existing 38.247 production environment.
 See the linked setup proposal for review examples, bounds and remaining decisions.
 The prerequisite checker cannot grant authority. No live model/provider call
-or remote configuration change is part of this work. Keep every candidate
+is authorized by the completed UI deployment. Keep every candidate
 unavailable until its actual installation/dependency/certification gates pass.
 Full source review of the other 267 profiles is a later roadmap task, not a
 pilot start blocker. No new customer credential is needed for this source work.
