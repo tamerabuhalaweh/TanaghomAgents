@@ -9,9 +9,15 @@ specialist/team journey on 2026-09-06. Work is tracked under #176/#177/#178/#179
 New source adds `/workspace`, migration0035, five document-generating specialists
 plus a deterministic delivery summary, shared versioned task context and exact
 human decisions. It does not make the frozen Agency simulator a live worker.
-Deployment and real-model evidence must be recorded separately below: a merged
-feature is not proof of a working live inference journey.
+The workspace update is deployed at `369525f8fdf4dcd494ad09c50bde727237e23d89`
+on the isolated test VPS, with0035 and the private n8n dispatcher imported
+inactive. Dashboard/PostgreSQL/n8n health, HTTPS, private authentication and public
+blocking checks passed; there are zero workspace assignments and zero n8n
+executions. See [deployment and rollback evidence](evidence/2026-09-06-agency-workspace.md)
+and the [new customer walkthrough](testing/AGENCY_WORKSPACE_GUIDE.md).
 The local Gemma key is missing; no new real inference has run in this work.
+The page says **Model connection pending** and lets the owner save briefs;
+generation remains unavailable. Do not claim a delivered live AI team yet.
 The bounded test inference use is authorized, but SmartLabs/SmartCC/Gemma service
 changes and provider actions remain excluded. Production score remains60/100.
 
@@ -19,11 +25,12 @@ changes and provider actions remain excluded. Production score remains60/100.
 Tamer reformatted CPU VPS 155.117.45.45 and authorized a public HTTPS test
 installation under #200. He subsequently accepted pinning its replacement SSH
 key without a provider console; this is not independent identity verification.
-The rebuilt host now runs three scoped test services; old incident records are
+The rebuilt host now runs four scoped test services; old incident records are
 historical. The new package uses an isolated local business database and existing
 Supabase owner sign-in, not production data or the Supabase admin key.
-Initial public deployment passed at `380eb19`; the #205 logout update is now
-deployed at `6c8c536` with five public browser checks passed. See the [dated evidence](evidence/2026-09-06-fresh-test-vps-deployment.md)
+Initial public deployment passed at `380eb19`; the #205 logout update at
+`6c8c536` is the retained rollback image, superseded by the workspace deployment
+above. See the [initial dated evidence](evidence/2026-09-06-fresh-test-vps-deployment.md)
 and [owner walkthrough](testing/FRESH_TEST_VPS_GUIDE.md).
 Test link: https://tanaghom-test.155-117-45-45.sslip.io/login.
 The initial deployment performed no model/provider execution or n8n activation.
@@ -42,9 +49,9 @@ owner API, canonical database resolver, durable audit and a new inactive n8n pil
 export. Twelve disposable bilingual n8n/database round trips pass. Production
 installation, Studio availability and real-model quality certification remain unfinished.
 
-The accepted source baseline is now
-`6c8c53673e613a29441e3aba3faef431a079ba7c` (PR #206; 40/40 exact-head CI checks passed;
-merged as `2f3ffa6a677a878c291a3ca61029be4cd09c6d7f`). The accepted model-runner slice
+The workspace source is PR #208 at `208f6ce6e20f4b8d4fbfd042495765efdd6b3352`
+(41/41 exact-head CI checks passed), followed by the narrowly scoped deployment
+corrections #209/#210. Exact running source is recorded above. The accepted model-runner slice
 remains PR #198 at `9fde3aa673f4bc634c36bab00957cbf7f84ebd91`.
 The original pre-expansion baseline was `0b5b5a7` (PR #173). Neither source merge
 nor local adapter simulation establishes what is currently deployed.
@@ -53,13 +60,13 @@ nor local adapter simulation establishes what is currently deployed.
 
 | Layer | Verified fact or limit | Source |
 |---|---|---|
-| Source baseline | 34 up/down migration pairs through 0034; eight business + six shared runtime exports plus the separate inactive Agency pilot export | Repository at the baseline SHA |
+| Source baseline | 35 up/down migration pairs through0035; business/shared runtime exports plus separate Agency pilot and workspace dispatchers | Exact workspace source above |
 | Foundation issue state | #132, #133, #134 and #135 are closed implementation slices | [Pre-expansion issue snapshot](evidence/2026-09-06-pre-expansion-github-issues.json) |
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
 | Current certified server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
-| Selected CPU test host | Fresh public dashboard, local PostgreSQL and Caddy on rebuilt 155.117.45.45; 34 migrations, one owner, 93 GB free at initial validation; model/provider execution disabled | [Deployment evidence](evidence/2026-09-06-fresh-test-vps-deployment.md); [test walkthrough](testing/FRESH_TEST_VPS_GUIDE.md). Earlier pre-format inventory is historical |
-| New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
+| Selected CPU test host | Public dashboard, PostgreSQL, Caddy and private n8n on155.117.45.45;0035, 90GB free; workspace dispatcher inactive, all model/provider execution stopped | [Workspace deployment](evidence/2026-09-06-agency-workspace.md); [workspace walkthrough](testing/AGENCY_WORKSPACE_GUIDE.md). Earlier inventory is historical |
+| New expansion | Six original candidates and simulation adapters retained; separate document workspace successor deployed with five model procedures plus deterministic summary; no real-model quality certification | [Workspace scope](planning/agency-expansion/WORKSPACE_DELIVERY.md), [runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
 | Accepted preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation preparation](../evaluation/agency-v1/RUNBOOK.md) |
 | Accepted runner slice (PR #198) | 360 successful simulator attempts in exact-head Linux CI; 167 local tests; verified loopback prerequisite replaces unsupported Windows fallback; no live model transport | [Accepted review and evidence](evidence/2026-09-06-agency-pr-review-and-setup.md) |

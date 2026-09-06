@@ -23,8 +23,10 @@ transcript to locate the current implementation or approved next step.
   setup direction in [STATUS.md](STATUS.md); no ad hoc simulator retargeting.
   The test dashboard is now public over HTTPS with a fresh local database and
   shared Supabase owner sign-in configuration. See [deployment evidence](evidence/2026-09-06-fresh-test-vps-deployment.md)
-  and the [manual test guide](testing/FRESH_TEST_VPS_GUIDE.md). n8n/model/provider
-  execution and invitations are not enabled on this new installation.
+  and the [manual test guide](testing/FRESH_TEST_VPS_GUIDE.md). The successor
+  [AI workspace](testing/AGENCY_WORKSPACE_GUIDE.md) and private n8n are deployed
+  at `369525f`; its dispatcher is inactive, with zero executions. The Gemma key
+  is missing. Model/provider execution and invitations remain disabled.
 
 ## Where implementation actually lives
 

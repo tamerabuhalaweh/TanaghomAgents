@@ -61,7 +61,7 @@ design/no-mock-approval instruction applies; no rebrand or generated imagery.
 - [ ] Real English and Arabic model output, exact model/request counts recorded.
 - [x] Exact-pack human approval/rejection is durable; no external action occurs (disposable test).
 - [x] Browser tests demonstrate the journey, not only a login screen (authored fixtures).
-- [ ] Reviewed code, migration, deployment/rollback and runtime evidence in GitHub.
+- [x] Reviewed code, migration, deployment/rollback and runtime evidence in GitHub (test VPS only; [observed deployment](../../evidence/2026-09-06-agency-workspace.md)).
 
 The local Gemma credential is currently absent; the public health endpoint
 returns 200 and unauthenticated model inventory returns 401. A credential was
