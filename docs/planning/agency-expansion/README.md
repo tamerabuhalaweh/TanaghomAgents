@@ -41,6 +41,12 @@ No new readiness percentage or production acceptance is claimed.
 
 ## Six-profile pilot
 
+First source slice: [six normalized candidates](../../../skills/pilots/agency-v1/README.md)
+with real Skill Library validation. Four map to existing workers; Brand Guardian
+and Executive Summary still need adapters/contracts. No candidate is installed,
+available or certified. The original full inventory remains the historical
+intake snapshot; selected review progress is in the separate candidate manifest.
+
 | Source profile | Tanaghom mapping | Canonical implementation ownership |
 |---|---|---|
 | Social Media Strategist | Improve Campaign Strategist methods, without a duplicate worker | #176 |

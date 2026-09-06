@@ -2,7 +2,7 @@
 
 ## Authorization and status
 
-Planning/backlog authorized by Tamer on 2026-09-06. Implementation has not started under this issue. This GO authorizes GitHub documentation and tracking only; implementation, deployment, real model/provider calls and activation need separately scoped approval. Future department inclusion is a product direction, not certified capability.
+Implementation started under Tamer's 2026-09-06 scoped GO. First slice: six normalized proposal-instruction drafts, source/review/procedure/contract hashes, four proposed existing-worker mappings and two explicitly missing executors. The drafts pass the existing Skill Library schema and real server validator; 120/120 local tests pass. Runtime bindings, Brand/Executive adapters, Studio availability, model compatibility and comparative evaluation remain incomplete. No database installation, model/provider call, activation or deployment. Evidence: docs/evidence/2026-09-06-agency-pilot-candidates.md.
 
 Parent: #174.
 
@@ -30,7 +30,7 @@ As an owner, I want a small coherent starter team that understands my approved o
 - #134/#135 foundation; #152/#153/#154/#155 remain the owners of overlapping implementation.
 - #177 is the release gate, #137 the existing certification framework, #125 the separate provider UAT lane.
 
-Implementation owner: unassigned until a scoped development GO. Product/scope decisions: Tamer. The implementing developer must name the reviewer and required customer/domain approver in the PR.
+Source implementation and source review for this slice: Codex. Product/scope owner: Tamer. Customer/domain approver: to be designated by Tamer before quality acceptance or rollout; no independent review or customer signoff is implied. Other future slices remain unassigned.
 
 ## Acceptance criteria
 

@@ -2,7 +2,7 @@
 
 ## Authorization and status
 
-Planning/backlog authorized by Tamer on 2026-09-06. Implementation has not started under this issue. This GO authorizes GitHub documentation and tracking only; implementation, deployment, real model/provider calls and activation need separately scoped approval. Future department inclusion is a product direction, not certified capability.
+The pre-run evaluation design is drafted as part of the authorized pilot source work: docs/planning/agency-expansion/PILOT_EVALUATION.md. It proposes 24 English and 24 Arabic cases, profile-specific baselines, safety/quality gates and resource evidence. No comparison output has been generated. Customer/domain rubric acceptance, frozen corpus/model settings, actual execution and release decisions remain pending; this is not certification or permission for live model/provider calls.
 
 Parent: #174.
 
@@ -29,7 +29,7 @@ As a release reviewer, I need reproducible evidence that adapted profiles improv
 - #176 contracts and selected source review from #175.
 - Existing #137 certification, #56 baselines and #55 capacity controls.
 
-Implementation owner: unassigned until a scoped development GO. Product/scope decisions: Tamer. The implementing developer must name the reviewer and required customer/domain approver in the PR.
+Source implementation and source review for this slice: Codex. Product/scope owner: Tamer. Customer/domain approver: to be designated by Tamer before quality acceptance or rollout; no independent review or customer signoff is implied. Other future slices remain unassigned.
 
 ## Acceptance criteria
 
