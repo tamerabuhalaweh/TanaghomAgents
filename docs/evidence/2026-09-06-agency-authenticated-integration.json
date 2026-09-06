@@ -1,0 +1,129 @@
+{
+  "contract_version": "phase7.agency-integration-evidence.v1",
+  "result": "PASS",
+  "generated_at": "2026-09-06T11:32:28.204Z",
+  "baseline": "0034_agency_pilot_integration",
+  "postgres_image": "postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94",
+  "n8n_image": "docker.n8n.io/n8nio/n8n:2.26.8@sha256:0afb71a39e51637b4d5b4010d90e68bc502d3ca1d2a4d953eb5fcd7d86330ccd",
+  "checks": [
+    "34 migrations apply; empty 0034 rollback and reapply preserve fail-closed defaults",
+    "restricted worker cannot read raw tenant tables, credentials, approvals or mutate controls/audit",
+    "real JWT/owner auth, cookie-origin guard, tenant isolation, closed commands and worker token checks",
+    "pinned n8n import inactive; disabled schedule; only disposable URLs and credentials",
+    "social_media_strategist/en: n8n → authenticated gateway → durable validated result",
+    "content_creator/en: n8n → authenticated gateway → durable validated result",
+    "brand_guardian/en: n8n → authenticated gateway → durable validated result",
+    "discovery_coach/en: n8n → authenticated gateway → durable validated result",
+    "support_responder/en: n8n → authenticated gateway → durable validated result",
+    "executive_summary/en: n8n → authenticated gateway → durable validated result",
+    "social_media_strategist/ar: n8n → authenticated gateway → durable validated result",
+    "content_creator/ar: n8n → authenticated gateway → durable validated result",
+    "brand_guardian/ar: n8n → authenticated gateway → durable validated result",
+    "discovery_coach/ar: n8n → authenticated gateway → durable validated result",
+    "support_responder/ar: n8n → authenticated gateway → durable validated result",
+    "executive_summary/ar: n8n → authenticated gateway → durable validated result",
+    "exclusive lease, wrong-lease refusal, queue/completion replay, conflict rejection, one immutable completion",
+    "campaign_edit: post-inference revalidation fails closed with retained audit",
+    "evidence_revoke: post-inference revalidation fails closed with retained audit",
+    "human_takeover: post-inference revalidation fails closed with retained audit",
+    "dnd: post-inference revalidation fails closed with retained audit",
+    "emergency_stop: post-inference revalidation fails closed with retained audit",
+    "invalid_json: post-inference revalidation fails closed with retained audit",
+    "expired-lease recovery invalidates old token; exhausted retries retain one terminal failure",
+    "actual n8n database export still inactive with polling disabled after manual executions",
+    "tenant-scoped result history, retained-state rollback refusal, zero external-action jobs and restored stops"
+  ],
+  "journeys": [
+    {
+      "code": "social_media_strategist",
+      "language": "en",
+      "result": "PASS",
+      "response_hash": "sha256:5b35a2a5d042dd1542e7b52562434d12479db8ef39081215e0463ffd9c542897",
+      "result_hash": "sha256:43406187872fde08ccdf2000d4a4c7ef3f3ca32270a3db9f5ff9e24cf54ddb47"
+    },
+    {
+      "code": "content_creator",
+      "language": "en",
+      "result": "PASS",
+      "response_hash": "sha256:6461c74d6207eef564d833297f1e0666def804060e39cb2c0040d258aa68b173",
+      "result_hash": "sha256:6ce3fe38a3a73f7fa627f827d538bea13efaa709c9e7656b563a60ab7b80b36c"
+    },
+    {
+      "code": "brand_guardian",
+      "language": "en",
+      "result": "PASS",
+      "response_hash": "sha256:b6d43e8c78b51e0675439b9c799f988a766ea1b89f9cdfcc6bd735f49d898255",
+      "result_hash": "sha256:42521954f5bd6fde9b3118a3f457c683f1814c986e05916e8ebd31c5e5cf069b"
+    },
+    {
+      "code": "discovery_coach",
+      "language": "en",
+      "result": "PASS",
+      "response_hash": "sha256:c5dc2cda21f8a25c1d1ff51a7313499265bd247e835ab702d9a5f1ac29741006",
+      "result_hash": "sha256:ccfd5be06b58a87d2e6657fb0050fa506cf1c23bb594f5fe0eaa7b866590612d"
+    },
+    {
+      "code": "support_responder",
+      "language": "en",
+      "result": "PASS",
+      "response_hash": "sha256:c5dc2cda21f8a25c1d1ff51a7313499265bd247e835ab702d9a5f1ac29741006",
+      "result_hash": "sha256:5563789d93b9c74079a0426dcfacfa4cdb38f86f0e49c8e3dbda98927661adff"
+    },
+    {
+      "code": "executive_summary",
+      "language": "en",
+      "result": "PASS",
+      "response_hash": "sha256:74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "result_hash": "sha256:ae14fcf6c258bde6971c49465d6676ed795d2dd7854a90f47be634bdae97dad7"
+    },
+    {
+      "code": "social_media_strategist",
+      "language": "ar",
+      "result": "PASS",
+      "response_hash": "sha256:a09484bb7116eefa76e60e56fd6a4942c9eabfc9be4cf2657594fcd6a2633f4a",
+      "result_hash": "sha256:b9ef9938c7a761dd1b35de6a44c84dfb82f8ba2e7ba6005deea8f50481567ebc"
+    },
+    {
+      "code": "content_creator",
+      "language": "ar",
+      "result": "PASS",
+      "response_hash": "sha256:89eaf580494695af9b091d4fbebe9bf0232ff93705981d5b358092d2ba8e92b2",
+      "result_hash": "sha256:227ccef71c9b1dc87f8f6934b161af56c0e78804f272d983bffd4643c7f87123"
+    },
+    {
+      "code": "brand_guardian",
+      "language": "ar",
+      "result": "PASS",
+      "response_hash": "sha256:894d8942784a39b639e5754a65e805be64ee2b84d01bc8d313ff8ac407e548bc",
+      "result_hash": "sha256:d8380bb4d063f048c0f5fa9ccb9e030489b490ebc833cf402e7903a7e8d00183"
+    },
+    {
+      "code": "discovery_coach",
+      "language": "ar",
+      "result": "PASS",
+      "response_hash": "sha256:42f8249c57530c97ef7d56ac34abbdab21d5bd57ed9926172e70fe7a67747bb5",
+      "result_hash": "sha256:73308945f2c8b07dd40feca07f1364b6213f055e15dddd20fc51132546706847"
+    },
+    {
+      "code": "support_responder",
+      "language": "ar",
+      "result": "PASS",
+      "response_hash": "sha256:42f8249c57530c97ef7d56ac34abbdab21d5bd57ed9926172e70fe7a67747bb5",
+      "result_hash": "sha256:e8cb3802a5e563a3dc69b01a193e1bb2fca4a60059afa5dcdcc3cdd6bb301fa1"
+    },
+    {
+      "code": "executive_summary",
+      "language": "ar",
+      "result": "PASS",
+      "response_hash": "sha256:74234e98afe7498fb5daf1f36ac2d78acc339464f950703b8c019892f982b90b",
+      "result_hash": "sha256:015dbd27967405590600931e2424c7437186d395b3f14bf5c11b454a91ef9bb8"
+    }
+  ],
+  "actual_n8n_manual_executions": 12,
+  "simulated_model_http_calls": 10,
+  "real_model_calls": 0,
+  "provider_calls": 0,
+  "production_connections": 0,
+  "quality_certified": false,
+  "production_installed": false
+}

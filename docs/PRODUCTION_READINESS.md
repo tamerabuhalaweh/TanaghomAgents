@@ -22,7 +22,7 @@ The score is **not a probability of success or feature-completion estimate**.
 
 ## Source and isolated-test evidence: 60/60
 
-Baseline: PR #194, merged as `c77e25cfc006a6efd322adb1f259fbd3d9c47c3f`,
+Baseline: PR #195, merged as `ec0058e48a3b64d3c43a94e25638b4d569d82ba8`,
 38/38 CI checks green. These points describe source/isolated test evidence only.
 New adapter implementation gets no extra production points for passing local tests.
 

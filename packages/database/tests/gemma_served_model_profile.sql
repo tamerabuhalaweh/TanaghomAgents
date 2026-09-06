@@ -7,7 +7,8 @@ BEGIN
      LIMIT 1
   ) NOT IN (
     '0032_gemma_served_model_profile',
-    '0033_agent_runtime_certification_evidence'
+    '0033_agent_runtime_certification_evidence',
+    '0034_agency_pilot_integration'
   ) THEN
     RAISE EXCEPTION '0032 profile is not present on an approved migration baseline';
   END IF;

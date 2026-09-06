@@ -16,6 +16,8 @@
     "node": ">=22"
   },
   "scripts": {
+    "test:agency-integration": "node scripts/agency-pilot-integration.mjs",
+    "generate:agency-pilot-workflow": "node scripts/generate-agency-pilot-workflow.mjs",
     "check": "node scripts/verify-repository.mjs",
     "db:migrate": "node --env-file-if-exists=.env scripts/database.mjs migrate",
     "db:rollback": "node --env-file-if-exists=.env scripts/database.mjs rollback",

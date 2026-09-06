@@ -8,6 +8,11 @@ on:
 permissions:
   contents: read
 
+# Historical controlled packages assert their exact reviewed 0033 baseline.
+# The full database contract and new Agency harness separately cover 0034.
+env:
+  DATABASE_MIGRATION_TARGET: 0033_agent_runtime_certification_evidence
+
 jobs:
   repository-contract:
     runs-on: ubuntu-latest
@@ -63,6 +68,7 @@ jobs:
           --health-timeout 5s
           --health-retries 10
     env:
+      DATABASE_MIGRATION_TARGET: 0034_agency_pilot_integration
       DATABASE_TEST_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_agents_test
     steps:
       - uses: actions/checkout@v4
@@ -73,7 +79,25 @@ jobs:
       - run: npm ci
       - run: npm run test:database
       - run: deployment/phase6-bilingual-uat-completion/scripts/test-legacy-cadence-backfill.sh "$DATABASE_TEST_URL"
-      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0033_agent_runtime_certification_evidence
+      - run: deployment/production-database-backup/test-disposable-backup.sh "$DATABASE_TEST_URL" 0034_agency_pilot_integration
+
+  agency-pilot-integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm ci
+      - run: node node_modules/next/dist/bin/next build apps/dashboard
+      - run: npm run test:agency-integration
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: agency-pilot-integration-evidence
+          path: tmp/agency-pilot-integration-evidence.json
+          if-no-files-found: ignore
 
   phase7b-skill-library-contract:
     runs-on: ubuntu-latest
@@ -980,6 +1004,7 @@ jobs:
       - run: sh -n deployment/dashboard-canary/entrypoint.sh deployment/dashboard-canary/scripts/*.sh
       - run: docker compose -f deployment/dashboard-canary/docker-compose.yml config --quiet
       - run: docker build --pull -f deployment/dashboard-canary/Dockerfile -t tanaghom-dashboard-canary:test .
+      - run: docker run --rm --network none --entrypoint node tanaghom-dashboard-canary:test -e "if(typeof require('@tanaghom/agent-runtime').prepareTask !== 'function') process.exit(1)"
 
   phase6-uat-activation-contract:
     runs-on: ubuntu-latest

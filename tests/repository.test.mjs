@@ -484,7 +484,7 @@ test('Phase 5E GHL actions are governed, inactive, replay-safe, and least privil
   assert.match(runbook, /simulated provider/i);
   assert.match(runbook, /npm run db:rollback/);
   assert.match(runbook, /pg_restore --exit-on-error/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0033_agent_runtime_certification_evidence/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0034_agency_pilot_integration/);
   assert.match(quality, /TANAGHOM_EXPECTED_MIGRATION: 0033_agent_runtime_certification_evidence/);
   assert.match(quality, /name: phase5-sales-lifecycle-evidence/);
   assert.match(integration, /phase5\.sales-lifecycle-evidence\.v1/);
@@ -1497,7 +1497,7 @@ test('Phase 6 runtime-agent reconciliation guarantees Publisher and Sales worker
   assert.match(lifecycle, /preserves prior rows and used history/);
   assert.match(runbook, /does not update the dashboard checkout|No production action is authorized/i);
   assert.match(quality, /phase6-runtime-agent-reconciliation-contract/);
-  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0033_agent_runtime_certification_evidence/);
+  assert.match(quality, /test-disposable-backup\.sh "\$DATABASE_TEST_URL" 0034_agency_pilot_integration/);
 
   const protectedScope = `${common}\n${preflight}\n${deploy}\n${validate}\n${rollback}`;
   assert.doesNotMatch(protectedScope, /systemctl (stop|restart|reload)|docker (stop|restart|rm)|docker compose|iptables (-A|-I|-D|-N|-F|-X)/i);

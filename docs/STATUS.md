@@ -1,8 +1,8 @@
 # Tanaghom status and next work
 
 **As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
-Current task authorization: review/accept PR #194 and implement the four compatible
-Agency bindings plus bounded Brand Guardian/reporting adapters under #176.
+Current task authorization: review/accept PR #195 and complete authenticated
+database/n8n pilot integration in disposable environments under #176.
 No production deployment, live model/provider call or activation is authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
@@ -12,11 +12,13 @@ Tanaghom has implemented campaign/content, approvals, customer integrations,
 conversation governance, skills, Agent Studio and the shared policy runtime.
 Its initial commercial pilot remains separate from full live-provider
 acceptance. The expansion now has six source candidates plus four callable
-simulation bindings and two bounded local adapters. Authenticated storage/runtime
-installation, Studio availability and model/quality certification remain unfinished.
+simulation bindings and two bounded local adapters, now connected to an authenticated
+owner API, canonical database resolver, durable audit and a new inactive n8n pilot
+export. Twelve disposable bilingual n8n/database round trips pass. Production
+installation, Studio availability and real-model quality certification remain unfinished.
 
 The accepted source baseline is now
-`c77e25cfc006a6efd322adb1f259fbd3d9c47c3f` (PR #194; 38/38 CI checks passed).
+`ec0058e48a3b64d3c43a94e25638b4d569d82ba8` (PR #195; 38/38 CI checks passed).
 The original pre-expansion baseline was `0b5b5a7` (PR #173). Neither source merge
 nor local adapter simulation establishes what is currently deployed.
 
@@ -30,6 +32,7 @@ nor local adapter simulation establishes what is currently deployed.
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
 | Current server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
+| Current review slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
 
 **Production-release evidence score: 60/100; NO-GO for customer production.**
 This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a
@@ -91,8 +94,10 @@ Do not use this table as authority to clear stops or activate provider workers.
 - **#174**: all-department epic.
 - **#175**: six selected source reviews complete; 267 reviews still pending.
 - **#176**: six-profile pilot (strategy, content, brand review, discovery,
-  customer care, executive reporting): executable simulation source; production
-  binding/resolver installation and acceptance remain open. [Evidence](evidence/2026-09-06-agency-runtime-adapters.md).
+  customer care, executive reporting): authenticated database/n8n integration
+  implemented and tested in disposable environments; production installation,
+  Studio availability and model/customer acceptance remain open.
+  [Integration evidence](evidence/2026-09-06-agency-authenticated-integration.md).
 - **#177**: paired bilingual evaluation and resource/safety evidence.
 - **#178**: bounded team assignments on existing runtime handoffs.
 - **#179**: team onboarding/operations UX.
@@ -105,14 +110,13 @@ Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
 
-#192's source fix, planning PR #191 and candidate PR #194 are accepted.
-New simulation runtime source: 23 new test groups, 143 total local tests, and
-12 synthetic profile/language journeys PASS. Current implementation PR still
-requires its own review and CI; it changes no live runtime.
-Next finish the authenticated tenant snapshot resolver and durable, versioned
-database/n8n binding installation package; exercise those actual boundaries in
-disposable PostgreSQL/n8n. Then run the reviewed #177 paired bilingual evaluation
-with separately authorized exact model/schema settings. Keep every candidate
+#192's source fix, planning PR #191, candidate PR #194 and kernel PR #195 are accepted.
+New authenticated integration: 148 local tests and twelve actual disposable
+profile/language n8n/database journeys PASS. Its introducing PR needs review and
+CI acceptance; it changes no live runtime. Next review this integration PR, then
+prepare #177's paired English/Arabic quality certification package using exact
+model/schema pins and customer-shaped evaluation criteria. Executing a real
+model probe requires its own bounded authorization. Keep every candidate
 unavailable until its actual installation/dependency/certification gates pass.
 Full source review of the other 267 profiles is a later roadmap task, not a
 pilot start blocker. No new customer credential is needed for this source work.
