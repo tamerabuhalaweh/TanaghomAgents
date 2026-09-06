@@ -1,0 +1,52 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase7/agency-brand-rule.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "language",
+    "check",
+    "phrase",
+    "category",
+    "severity",
+    "correction"
+  ],
+  "properties": {
+    "language": {
+      "enum": [
+        "en",
+        "ar"
+      ]
+    },
+    "check": {
+      "enum": [
+        "forbidden_phrase",
+        "required_phrase"
+      ]
+    },
+    "phrase": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "category": {
+      "enum": [
+        "tone",
+        "claim",
+        "disclaimer"
+      ]
+    },
+    "severity": {
+      "enum": [
+        "info",
+        "warning",
+        "high"
+      ]
+    },
+    "correction": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 1000
+    }
+  }
+}

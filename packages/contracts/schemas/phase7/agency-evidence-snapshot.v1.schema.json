@@ -1,0 +1,184 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase7/agency-evidence-snapshot.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "organization_id",
+    "run_id",
+    "job_id",
+    "correlation_id",
+    "mode",
+    "language",
+    "model_name",
+    "provider_execution_allowed",
+    "emergency_stop",
+    "consent_verified",
+    "dnd",
+    "human_takeover",
+    "allowed_channels",
+    "event_ids",
+    "input_hash",
+    "observed_at",
+    "expires_at",
+    "sources"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "phase7.agency-evidence-snapshot.v1"
+    },
+    "organization_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "run_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "job_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "correlation_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "mode": {
+      "const": "simulation"
+    },
+    "language": {
+      "enum": [
+        "en",
+        "ar"
+      ]
+    },
+    "model_name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 120
+    },
+    "provider_execution_allowed": {
+      "const": false
+    },
+    "emergency_stop": {
+      "type": "boolean"
+    },
+    "consent_verified": {
+      "type": "boolean"
+    },
+    "dnd": {
+      "type": "boolean"
+    },
+    "human_takeover": {
+      "type": "boolean"
+    },
+    "allowed_channels": {
+      "type": "array",
+      "items": {
+        "enum": [
+          "instagram",
+          "facebook",
+          "tiktok",
+          "linkedin",
+          "youtube",
+          "email",
+          "whatsapp_status",
+          "whatsapp",
+          "sms",
+          "live_chat"
+        ]
+      },
+      "minItems": 0,
+      "maxItems": 12,
+      "uniqueItems": true
+    },
+    "event_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 0,
+      "maxItems": 12,
+      "uniqueItems": true
+    },
+    "input_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "observed_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "expires_at": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "sources": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "version_id",
+          "organization_id",
+          "kind",
+          "content_hash",
+          "approved",
+          "approved_at",
+          "expires_at",
+          "record"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "organization_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "kind": {
+            "enum": [
+              "campaign",
+              "strategy",
+              "knowledge",
+              "conversation_policy",
+              "content",
+              "brand_rule",
+              "asset_rights",
+              "metric"
+            ]
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          },
+          "approved": {
+            "const": true
+          },
+          "approved_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "expires_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "record": {
+            "type": "object",
+            "maxProperties": 30
+          }
+        }
+      },
+      "minItems": 0,
+      "maxItems": 40
+    }
+  }
+}

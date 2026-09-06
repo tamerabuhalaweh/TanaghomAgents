@@ -1,0 +1,118 @@
+{
+  "contract_version": "phase7.agency-simulation-evidence.v1",
+  "result": "PASS",
+  "fixture_clock": "2026-09-06T13:00:00.000Z",
+  "journeys": [
+    {
+      "code": "social_media_strategist",
+      "language": "en",
+      "result": "PASS",
+      "input_hash": "sha256:b63ef68cdee7abeb9fc0a6063affba3785912a63863de347e8097dcb5b6db480",
+      "output_hash": "sha256:bf1b56859ae169f4d791ad07e51b29bc68b20240bb80c79b811a69dda25df300",
+      "worker": "campaign_strategy_generator",
+      "human_approval_granted": false
+    },
+    {
+      "code": "content_creator",
+      "language": "en",
+      "result": "PASS",
+      "input_hash": "sha256:073541cd40421871377e0707b83a854e2f20a6efdcab1459921a32c38577e8c5",
+      "output_hash": "sha256:90538819aab71f3d9efc562becf02140e93e281e46f28e9042efbff9d6a51f2c",
+      "worker": "campaign_content_generator",
+      "human_approval_granted": false
+    },
+    {
+      "code": "discovery_coach",
+      "language": "en",
+      "result": "PASS",
+      "input_hash": "sha256:30755efe5febe09e62fe82e184ff3f578eb951b41030d555b8cbc972d6fc6712",
+      "output_hash": "sha256:735489f1e9dacdcb8ae0b89787363f79b87ac109f6c980569843207afa81a617",
+      "worker": "conversation_intelligence_worker",
+      "human_approval_granted": false
+    },
+    {
+      "code": "support_responder",
+      "language": "en",
+      "result": "PASS",
+      "input_hash": "sha256:30755efe5febe09e62fe82e184ff3f578eb951b41030d555b8cbc972d6fc6712",
+      "output_hash": "sha256:735489f1e9dacdcb8ae0b89787363f79b87ac109f6c980569843207afa81a617",
+      "worker": "conversation_intelligence_worker",
+      "human_approval_granted": false
+    },
+    {
+      "code": "brand_guardian",
+      "language": "en",
+      "result": "PASS",
+      "findings": 1,
+      "semantic_status": "unaccepted_model_proposal",
+      "human_approval_granted": false
+    },
+    {
+      "code": "executive_summary",
+      "language": "en",
+      "result": "PASS",
+      "metrics": 2,
+      "data_gaps": 1,
+      "human_approval_granted": false
+    },
+    {
+      "code": "social_media_strategist",
+      "language": "ar",
+      "result": "PASS",
+      "input_hash": "sha256:a41bfe45762e8943c4a0828140eb0b706bba83db11830362d1a25c1ea757e686",
+      "output_hash": "sha256:0fb32a3a42ac5ad081e26c69c8f214b2aa80d7dad4b3e779ae49e4bd42b6e1c6",
+      "worker": "campaign_strategy_generator",
+      "human_approval_granted": false
+    },
+    {
+      "code": "content_creator",
+      "language": "ar",
+      "result": "PASS",
+      "input_hash": "sha256:96cfa209ea4c5cbf1dd13248b8c3c2dbd570c35b2682b366c2a0994e1c31dc36",
+      "output_hash": "sha256:f10a58f64b3856a452db538ded08c8c6092aa822c8e8ab3917223394274330bf",
+      "worker": "campaign_content_generator",
+      "human_approval_granted": false
+    },
+    {
+      "code": "discovery_coach",
+      "language": "ar",
+      "result": "PASS",
+      "input_hash": "sha256:dc768f827a92318f7813b1aeed8287eb42205072396b98d2f1c4fbec6366362f",
+      "output_hash": "sha256:f9a3d0c199dd156cff40b8c94b2a557a8a89fd7675afdbfd6e701bbf3bd4ad11",
+      "worker": "conversation_intelligence_worker",
+      "human_approval_granted": false
+    },
+    {
+      "code": "support_responder",
+      "language": "ar",
+      "result": "PASS",
+      "input_hash": "sha256:dc768f827a92318f7813b1aeed8287eb42205072396b98d2f1c4fbec6366362f",
+      "output_hash": "sha256:f9a3d0c199dd156cff40b8c94b2a557a8a89fd7675afdbfd6e701bbf3bd4ad11",
+      "worker": "conversation_intelligence_worker",
+      "human_approval_granted": false
+    },
+    {
+      "code": "brand_guardian",
+      "language": "ar",
+      "result": "PASS",
+      "findings": 1,
+      "semantic_status": "unaccepted_model_proposal",
+      "human_approval_granted": false
+    },
+    {
+      "code": "executive_summary",
+      "language": "ar",
+      "result": "PASS",
+      "metrics": 2,
+      "data_gaps": 1,
+      "human_approval_granted": false
+    }
+  ],
+  "actual_model_calls": 0,
+  "provider_calls": 0,
+  "database_writes": 0,
+  "n8n_service_executions": 0,
+  "n8n_code_nodes_executed_in_nodejs": 16,
+  "quality_certified": false,
+  "production_installed": false
+}

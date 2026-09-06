@@ -1,0 +1,51 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase7/agency-brand-input.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "organization_id",
+    "content_id",
+    "content_version",
+    "content_hash",
+    "text",
+    "asset_ids"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "phase7.agency-brand-input.v1"
+    },
+    "organization_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "content_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "content_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "text": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 20000
+    },
+    "asset_ids": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "format": "uuid"
+      },
+      "minItems": 0,
+      "maxItems": 20,
+      "uniqueItems": true
+    }
+  }
+}

@@ -1,0 +1,79 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase7/agency-metric-observation.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "metric_code",
+    "definition_version",
+    "window_start",
+    "window_end",
+    "unit",
+    "value",
+    "currency",
+    "numerator",
+    "denominator"
+  ],
+  "properties": {
+    "metric_code": {
+      "enum": [
+        "drafts",
+        "approved_drafts",
+        "leads",
+        "conversions",
+        "spend",
+        "revenue",
+        "conversion_rate"
+      ]
+    },
+    "definition_version": {
+      "const": "agency.metrics.v1"
+    },
+    "window_start": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "window_end": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "unit": {
+      "enum": [
+        "count",
+        "money",
+        "ratio"
+      ]
+    },
+    "value": {
+      "type": [
+        "number",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1000000000000
+    },
+    "currency": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{3}$"
+    },
+    "numerator": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1000000000000
+    },
+    "denominator": {
+      "type": [
+        "integer",
+        "null"
+      ],
+      "minimum": 0,
+      "maximum": 1000000000000
+    }
+  }
+}

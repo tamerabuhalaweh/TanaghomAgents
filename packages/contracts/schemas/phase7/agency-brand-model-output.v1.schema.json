@@ -1,0 +1,29 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase7/agency-brand-model-output.v1.schema.json",
+  "type": "object", "additionalProperties": false,
+  "required": ["language", "findings", "questions"],
+  "properties": {
+    "language": { "enum": ["en", "ar"] },
+    "findings": { "type": "array", "maxItems": 20, "items": {
+      "type": "object", "additionalProperties": false,
+      "required": ["affected_text", "category", "severity", "correction_proposal", "evidence"],
+      "properties": {
+        "affected_text": { "type": "string", "minLength": 1, "maxLength": 1000 },
+        "category": { "enum": ["tone", "claim", "disclaimer"] },
+        "severity": { "enum": ["info", "warning", "high"] },
+        "correction_proposal": { "type": "string", "minLength": 1, "maxLength": 1500 },
+        "evidence": {
+          "type": "object", "additionalProperties": false,
+          "required": ["source_id", "version_id", "content_hash"],
+          "properties": {
+            "source_id": { "type": "string", "format": "uuid" },
+            "version_id": { "type": "string", "format": "uuid" },
+            "content_hash": { "type": "string", "pattern": "^sha256:[a-f0-9]{64}$" }
+          }
+        }
+      }
+    } },
+    "questions": { "type": "array", "maxItems": 10, "items": { "type": "string", "minLength": 1, "maxLength": 1000 } }
+  }
+}
