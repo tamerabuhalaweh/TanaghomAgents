@@ -5,7 +5,8 @@ const {Client}=require('pg');
  const client=new Client({connectionString:fs.readFileSync('/run/secrets/database_url','utf8').trim()});
  await client.connect();try{
   assert.equal((await client.query('SELECT current_user AS u')).rows[0].u,'tanaghom_api');
-  assert.equal((await client.query('SELECT max(version) AS v FROM public.schema_migrations')).rows[0].v,'0035_agency_workspace');
+  // The deployment's administrator checks the migration ledger. The application
+  // role intentionally has no permission to inspect public.schema_migrations.
   for(const table of ['agency_workspaces','agency_workspace_steps','agency_workspace_events','agency_workspace_control'])await client.query(`SELECT * FROM tanaghom.${table} LIMIT 0`);
   assert.equal((await client.query("SELECT has_function_privilege(current_user,'tanaghom.decide_agency_workspace(uuid,uuid,text,text,text)','EXECUTE') AS x")).rows[0].x,true);
  }finally{await client.end();}

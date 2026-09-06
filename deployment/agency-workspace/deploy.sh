@@ -8,19 +8,34 @@ test "$TANAGHOM_RELEASE" = "${EXPECTED_WORKSPACE_RELEASE:?exact release required
 test -z "$(git status --porcelain)"
 base=(docker compose -p tanaghom-test -f deployment/fresh-test-vps/compose.yml)
 compose=("${base[@]}" -f deployment/agency-workspace/compose.yml)
-state="/opt/tanaghom-test/runtime/workspace-$(date -u +%Y%m%dT%H%M%SZ)"
-mkdir -m 700 "$state"
-old_dashboard=$(docker ps -q --filter label=com.docker.compose.project=tanaghom-test --filter label=com.docker.compose.service=dashboard)
-test -n "$old_dashboard"
-docker inspect --format '{{.Image}}' "$old_dashboard" > "$state/old-image"
-docker inspect --format '{{.Config.Image}}' "$old_dashboard" > "$state/old-tag"
+resume=false
+if [ -n "${WORKSPACE_RESUME_STATE:-}" ]; then
+ state=$(realpath -e "$WORKSPACE_RESUME_STATE")
+ case "$state" in /opt/tanaghom-test/runtime/workspace-20*) ;; *) echo 'invalid resume state' >&2; exit 1;; esac
+ test -s "$state/old-image" && test -f "$state/runtime-changed"
+ sha256sum -c "$state/backup.sha256"
+ test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT max(version) FROM public.schema_migrations')" = 0035_agency_workspace
+ test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT count(*) FROM tanaghom.agency_workspaces')" = 0
+ test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT NOT enabled AND emergency_stop FROM tanaghom.agency_workspace_control')" = t
+ test -z "$("${compose[@]}" ps -aq workspace-n8n)"
+ for secret in workspace_worker_password workspace_database_url workspace_worker_token workspace_n8n_key; do test -s "/opt/tanaghom-test/runtime/secrets/$secret"; done
+ resume=true
+else
+ state="/opt/tanaghom-test/runtime/workspace-$(date -u +%Y%m%dT%H%M%SZ)"
+ mkdir -m 700 "$state"
+ old_dashboard=$(docker ps -q --filter label=com.docker.compose.project=tanaghom-test --filter label=com.docker.compose.service=dashboard)
+ test -n "$old_dashboard"
+ docker inspect --format '{{.Image}}' "$old_dashboard" > "$state/old-image"
+ docker inspect --format '{{.Config.Image}}' "$old_dashboard" > "$state/old-tag"
+ test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT max(version) FROM public.schema_migrations')" = 0034_agency_pilot_integration
+ test ! -e /opt/tanaghom-test/runtime/secrets/workspace_worker_password
+fi
 test "$(df --output=avail -BG / | tail -1 | tr -dc '0-9')" -ge 15
-test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT max(version) FROM public.schema_migrations')" = 0034_agency_pilot_integration
-test ! -e /opt/tanaghom-test/runtime/secrets/workspace_worker_password
 committed=false
 trap 'if ! $committed; then echo "UPDATE_NOT_COMMITTED; database evidence preserved. Run documented rollback using $state" >&2; if test -f "$state/runtime-changed"; then bash deployment/agency-workspace/rollback.sh "$state"; fi; fi' EXIT
 # Build before any database or running-container change.
 "${base[@]}" build dashboard
+if ! $resume; then
 umask 077
 openssl rand -hex 32 > "$state/backup-key"
 "${base[@]}" exec -T postgres pg_dump -U postgres -d tanaghom_test -Fc --no-owner --no-acl | openssl enc -aes-256-cbc -pbkdf2 -salt -pass "file:$state/backup-key" -out "$state/0034.dump.enc"
@@ -28,9 +43,12 @@ openssl enc -d -aes-256-cbc -pbkdf2 -pass "file:$state/backup-key" -in "$state/0
 test -s "$state/backup-toc.txt"
 sha256sum "$state/0034.dump.enc" > "$state/backup.sha256"
 python3 deployment/agency-workspace/prepare-secrets.py
+fi
 "${compose[@]}" config --quiet
 "${compose[@]}" pull workspace-n8n
-"${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -v ON_ERROR_STOP=1 < packages/database/migrations/0035_agency_workspace.up.sql
+if ! $resume; then
+ "${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -v ON_ERROR_STOP=1 < packages/database/migrations/0035_agency_workspace.up.sql
+fi
 touch "$state/runtime-changed"
 # Add the worker secret mount to this test PostgreSQL only; preserve its volume.
 "${compose[@]}" up -d --no-deps postgres
