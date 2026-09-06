@@ -99,6 +99,8 @@ psql('-f', policyResolvedRuntimeAssertions);
 psql('-f', policyRuntimeExecutorAssertions);
 psql('-f', gemmaServedModelProfileAssertions);
 psql('-f', agentRuntimeCertificationEvidenceAssertions);
+database('rollback');
+psql('-c', "DO $$ BEGIN IF to_regclass('tanaghom.agency_pilot_tasks') IS NOT NULL OR EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0034_agency_pilot_integration') THEN RAISE EXCEPTION '0034 rollback left pilot state behind'; END IF; END $$;");
 {
   const result = spawnSync(process.execPath, [ownershipConcurrency], {
     env: { ...process.env, DATABASE_TEST_URL: databaseUrl }, stdio: 'inherit',

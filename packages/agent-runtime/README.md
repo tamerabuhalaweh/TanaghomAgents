@@ -84,24 +84,36 @@ executions. It does not report a successful database or hosted-service canary.
 The fixed fixture clock is not the execution timestamp. Reference digests use
 UTF-8/LF; the new manifest does not rewrite the original intake ledger.
 
-## Remaining installation and certification
+## Authenticated integration (successor to the source-only slice above)
 
-- Implement the authenticated, tenant-scoped snapshot resolver against actual
-  campaign, policy, knowledge, rights and reporting storage. The current snapshot
-  schema validates data, not who supplied it. No HTTP/API adapter was added.
-- Add immutable stored binding versions and audit lineage with least-privilege
-  claims/completion and rollback. Preserve published versions and in-flight work.
+PR #195's original kernel/manifests remain pinned and unchanged. The successor
+`integration.mjs`, migration 0034 and `n8n/workflows/agency-pilot/simulation.v1.json`
+add an ID-only owner API, server-resolved evidence, leased tasks, fresh completion
+checks, immutable audit and actual disposable n8n round trips for all six profiles.
+See [ADR 0019](../../docs/architecture/0019-authenticated-agency-pilot.md) and
+[integration evidence](../../docs/evidence/2026-09-06-agency-authenticated-integration.md).
+
+Run `npm run test:agency-integration` after a root-launched dashboard build. This
+owns its disposable PostgreSQL/n8n stack and never reads `.env` or an external
+database URL. All twelve EN/AR journeys use authored model responses; Executive
+Summary is deterministic. Owner-approved metrics are not live provider analytics.
+
+The remaining bullets below describe production/quality gates, **not missing
+source implementation of the authenticated resolver**:
+
+- Review and deploy the authenticated resolver, typed evidence, immutable binding
+  and audit tables through a separately authorized Tanaghom-only package.
 - Package reviewed n8n/database dispatch registration. Current production calls
   do not consume this module. Do not directly concatenate profiles into running
   workflows or overwrite the pinned Phase 7D v1 export.
 - Resolve the exact served model from the approved runtime profile. The legacy
   Code node's hard-coded model label is not a newly verified serving alias.
-- Run real disposable PostgreSQL/n8n round trips for the new wiring, then the
+- The actual disposable PostgreSQL/n8n round trips now pass. Run the
   separately authorized corrected-schema model probe and paired bilingual
   evaluation. Snapshot/unit checks are not tenant-isolation database proof.
 - Show truthful Studio availability; keep providers, publishing and activation
   disabled until each applicable release gate passes.
 
-Rollback for this source-only slice: revert its introducing PR through review.
-There is no migration, persisted binding, production workflow or state to undo.
-Future installation needs its own exact rollback and state-preservation tests.
+Migration 0034 can roll back only while unused and stopped; it refuses retained
+state. Used installations must retain audit and use a reviewed forward fix or
+application rollback. Nothing has been deployed by this integration task.

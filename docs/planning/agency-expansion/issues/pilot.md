@@ -2,7 +2,7 @@
 
 ## Authorization and status
 
-Implementation started under Tamer's 2026-09-06 scoped GO. PR #194 is reviewed/merged at c77e25cfc006a6efd322adb1f259fbd3d9c47c3f with 38/38 CI checks. The next source slice implements four callable simulation bindings preserving existing workers, a bounded Brand precheck/semantic-proposal adapter, and a grounded Executive reporting adapter. Local evidence: 23 new test groups, 143 total tests and 12 synthetic bilingual journeys pass. Tests execute existing n8n Code-node bodies in Node.js with authored responses, not a hosted n8n/model canary. Authenticated tenant snapshot resolution, durable database/n8n installation, Studio availability and comparative model/quality certification remain incomplete. No production database, model/provider call, activation or deployment. Evidence: docs/evidence/2026-09-06-agency-runtime-adapters.md; exact integration limitations: packages/agent-runtime/README.md.
+Implementation continued under Tamer's 2026-09-06 scoped GO. PR #195 is reviewed/merged at ec0058e48a3b64d3c43a94e25638b4d569d82ba8 with 38/38 CI checks. Its successor adds authenticated canonical tenant resolution, immutable bindings/evidence, durable tasks/audit and a new inactive n8n simulation lane under migration 0034. Local evidence: 148 tests, full database rollback/reapply, standalone build/import and 12 actual disposable n8n/DB bilingual journeys (26 check groups, 10 simulated-model HTTP requests) pass. No live model/provider call, production database connection, deployment or activation. Studio availability, deployment and paired model/quality certification remain open; no customer signoff is implied. Evidence: docs/evidence/2026-09-06-agency-authenticated-integration.md; architecture and rollback: docs/architecture/0019-authenticated-agency-pilot.md.
 
 ### Source-slice tracking (not full issue acceptance)
 
@@ -11,7 +11,7 @@ Implementation started under Tamer's 2026-09-06 scoped GO. PR #194 is reviewed/m
 - [x] Brand precheck and semantic proposal contract/validator; no approval authority.
 - [x] Cited, window/unit/denominator-bound reporting adapter; no invented ROI.
 - [x] English/Arabic contract and negative-control fixtures; zero live actions.
-- [ ] Authenticated storage resolver, durable binding/audit integration and actual disposable DB/n8n round trips.
+- [x] Authenticated storage resolver, durable binding/audit integration and actual disposable DB/n8n round trips (source review slice; not deployed).
 - [ ] Model compatibility, paired evaluation and semantic/Arabic quality acceptance.
 - [ ] Truthful Studio availability and separately reviewed installation/rollback.
 

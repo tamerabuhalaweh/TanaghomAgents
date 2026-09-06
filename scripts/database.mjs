@@ -21,6 +21,12 @@ const suffix = command === 'migrate' ? '.up.sql' : '.down.sql';
 const files = readdirSync(migrationDirectory)
   .filter((file) => file.endsWith(suffix))
   .sort();
+// CI can reproduce a historical controlled-package baseline. Default remains
+// all migrations; a target never rolls a database backward or skips intervening SQL.
+const target = process.env.DATABASE_MIGRATION_TARGET;
+if (target && !readdirSync(migrationDirectory).includes(`${target}.up.sql`)) {
+  throw new Error('Unknown DATABASE_MIGRATION_TARGET');
+}
 
 function query(sql) {
   const result = spawnSync('psql', [databaseUrl, '-X', '-v', 'ON_ERROR_STOP=1', '-At', '-c', sql], {
@@ -59,6 +65,7 @@ const applied = ledgerExists
 if (command === 'migrate') {
   for (const file of files) {
     const version = file.slice(0, -suffix.length);
+    if (target && version > target) continue;
     if (!/^\d+_[a-z0-9_]+$/.test(version)) throw new Error(`Invalid migration filename: ${file}`);
     if (applied.has(version)) {
       console.log(`SKIP: ${version} is already applied.`);

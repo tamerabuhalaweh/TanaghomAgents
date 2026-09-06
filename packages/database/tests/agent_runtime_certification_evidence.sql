@@ -5,8 +5,8 @@ BEGIN
   IF (
     SELECT version FROM public.schema_migrations
     ORDER BY version DESC LIMIT 1
-  ) <> '0033_agent_runtime_certification_evidence' THEN
-    RAISE EXCEPTION '0033 is not the latest migration';
+  ) NOT IN ('0033_agent_runtime_certification_evidence','0034_agency_pilot_integration') THEN
+    RAISE EXCEPTION '0033 evidence requires a reviewed baseline';
   END IF;
   IF position(
     'invocation_summary.external_action_count'
