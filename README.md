@@ -1,10 +1,23 @@
 # Tanaghom Agents
 
-Tanaghom Agents is an autonomous content-to-sales business operations platform.
+Tanaghom Agents is a human-governed AI organization platform. Sales, content,
+and marketing are the initial pilot, with a versioned roadmap for additional
+departments rather than a permanent limit on the product.
 
 It combines a human-facing operations dashboard with n8n workflows, PostgreSQL,
 Gemma, Postiz, and GoHighLevel. AI agents prepare and execute bounded business
 work while a human remains the required approval gate for public content.
+
+## Start here
+
+- [Current status, evidence dates, blockers and next work](docs/STATUS.md)
+- [Developer onboarding and authoritative project-context rules](docs/PROJECT_CONTEXT.md)
+- [AI organization expansion plan and issue ownership](docs/planning/agency-expansion/README.md)
+- [Complete 273-profile future agent catalog](docs/planning/agency-expansion/CATALOG.md)
+
+The expansion is planning-only. Catalogued profiles are not imported, tested,
+available or active agents. GitHub records engineering decisions and source;
+PostgreSQL remains the operational business-state authority.
 
 ## Product principles
 
@@ -16,16 +29,23 @@ work while a human remains the required approval gate for public content.
 - New integrations begin in staging and cannot spend money or contact real leads
   until explicitly enabled.
 
-## Planned agents
+## Initial business roles
 
 1. Campaign Strategist
 2. Content Producer
 3. Publisher and Performance Monitor
 4. Sales and CRM Agent
 
-The platform also includes a dedicated human approval dashboard, campaign
-workspace, agent activity view, publishing calendar, lead pipeline, reporting,
-notifications, and system-health surfaces.
+These four role groupings are not the complete worker inventory. The repository
+contains eight specialized business workflows and six shared Agent Studio
+runtime workflows, plus versioned Skills and organization-agent configuration.
+See [workflow documentation](n8n/workflows/README.md). Imported/active runtime
+state and live-provider acceptance must be verified separately from exports.
+
+Customer surfaces include campaign, approval/content, agent activity,
+supervision, lead, reporting, notification configuration and system-health
+workspaces. A configured notification destination is not proof of active
+delivery; see the limitations in the current status document.
 
 See [the delivery roadmap](docs/ROADMAP.md) for phases, acceptance gates, and
 external decisions.

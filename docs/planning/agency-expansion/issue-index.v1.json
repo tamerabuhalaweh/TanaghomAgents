@@ -1,0 +1,180 @@
+{
+  "schema_version": 1,
+  "recorded_at": "2026-09-06",
+  "authorization": "Documentation and backlog only; implementation and runtime changes are not authorized",
+  "epic": 174,
+  "issues": [
+    {
+      "number": 174,
+      "key": "epic",
+      "title": "AI Organization Expansion Epic: full Agency Agents catalog and governed departmental teams",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/174",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/epic.md"
+    },
+    {
+      "number": 175,
+      "key": "catalog",
+      "title": "Agency intake: review and version the complete 273-profile source catalog",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/175",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/catalog.md"
+    },
+    {
+      "number": 176,
+      "key": "pilot",
+      "title": "Agency pilot: adapt six governed sales, content, marketing and reporting profiles",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/176",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/pilot.md"
+    },
+    {
+      "number": 177,
+      "key": "evaluation",
+      "title": "Agency pilot: paired bilingual quality, safety, cost and latency evaluation",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/177",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/evaluation.md"
+    },
+    {
+      "number": 178,
+      "key": "teams",
+      "title": "AI teams: bounded departmental assignments and durable coordination",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/178",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/teams.md"
+    },
+    {
+      "number": 179,
+      "key": "team_ui",
+      "title": "AI teams: owner onboarding and evidence-backed organization operations view",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/179",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/team_ui.md"
+    },
+    {
+      "number": 180,
+      "key": "learning",
+      "title": "Governed learning: evidence-to-skill proposals and versioned improvement review",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/180",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/learning.md"
+    },
+    {
+      "number": 181,
+      "key": "dept_commercial",
+      "title": "Department expansion: marketing, sales and customer-support breadth",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/181",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_commercial.md"
+    },
+    {
+      "number": 182,
+      "key": "dept_engineering",
+      "title": "Department expansion: engineering, security and testing teams",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/182",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_engineering.md"
+    },
+    {
+      "number": 183,
+      "key": "dept_product",
+      "title": "Department expansion: design, product and project-management teams",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/183",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_product.md"
+    },
+    {
+      "number": 184,
+      "key": "dept_finance",
+      "title": "Department expansion: finance capabilities with human-controlled financial decisions",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/184",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_finance.md"
+    },
+    {
+      "number": 185,
+      "key": "dept_research",
+      "title": "Department expansion: academic and research teams",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/185",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_research.md"
+    },
+    {
+      "number": 186,
+      "key": "dept_health",
+      "title": "Department expansion: healthcare profiles behind restricted-domain gates",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/186",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_health.md"
+    },
+    {
+      "number": 187,
+      "key": "dept_gis",
+      "title": "Department expansion: GIS and geospatial analysis teams",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/187",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_gis.md"
+    },
+    {
+      "number": 188,
+      "key": "dept_media",
+      "title": "Department expansion: game-development and spatial-computing teams",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/188",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_media.md"
+    },
+    {
+      "number": 189,
+      "key": "dept_specialized",
+      "title": "Department expansion: specialized operations, HR, legal and cross-functional profiles",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/189",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_specialized.md"
+    },
+    {
+      "number": 190,
+      "key": "dept_paid",
+      "title": "Department expansion: paid-media planning before separately governed ad operations",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/190",
+      "state": "OPEN",
+      "implementation_status": "not_started",
+      "snapshot": "issues/dept_paid.md"
+    }
+  ],
+  "reused_issue_numbers": [
+    131,
+    136,
+    137,
+    150,
+    151,
+    152,
+    153,
+    154,
+    155,
+    156,
+    157
+  ],
+  "independent_release_gate_numbers": [
+    125,
+    45,
+    54,
+    56
+  ]
+}

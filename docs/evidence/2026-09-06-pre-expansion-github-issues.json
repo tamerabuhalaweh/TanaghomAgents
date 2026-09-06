@@ -1,0 +1,386 @@
+{
+  "captured_at": "2026-09-06",
+  "scope": "Issue metadata snapshot before this expansion's issues were created; not live status or an approval record",
+  "repository": "tamerabuhalaweh/TanaghomAgents",
+  "code_baseline": "0b5b5a761099e6eb6163efbeb00a75d891d680c7",
+  "issues": [
+    {
+      "number": 157,
+      "state": "OPEN",
+      "title": "Phase 7N: Add an optional isolated Short Video Draft worker",
+      "updatedAt": "2026-07-23T15:32:06Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/157"
+    },
+    {
+      "number": 156,
+      "state": "OPEN",
+      "title": "Phase 7M: Certify a read-only Meta Ads and Instagram MCP pilot",
+      "updatedAt": "2026-07-23T15:31:49Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/156"
+    },
+    {
+      "number": 155,
+      "state": "OPEN",
+      "title": "Phase 7L: Extend Content Producer with governed content-repurposing Skills",
+      "updatedAt": "2026-07-23T15:31:30Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/155"
+    },
+    {
+      "number": 154,
+      "state": "OPEN",
+      "title": "Phase 7K: Add governed Lifecycle Engagement Skills and an agent template",
+      "updatedAt": "2026-07-23T15:31:14Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/154"
+    },
+    {
+      "number": 153,
+      "state": "OPEN",
+      "title": "Phase 7J: Add governed Marketing Analytics, attribution, anomaly, and executive-reporting Skills",
+      "updatedAt": "2026-07-23T15:30:56Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/153"
+    },
+    {
+      "number": 152,
+      "state": "OPEN",
+      "title": "Phase 7I: Add governed Lead Operations Skills and an agent template",
+      "updatedAt": "2026-07-23T15:30:39Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/152"
+    },
+    {
+      "number": 151,
+      "state": "OPEN",
+      "title": "Phase 7H: Quarantine and evaluate the external agent-flow pack for governed Skill candidates",
+      "updatedAt": "2026-07-23T15:32:40Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/151"
+    },
+    {
+      "number": 150,
+      "state": "OPEN",
+      "title": "Phase 7G: Add an optional governed Hermes Supervisor Analyst and Skill Proposal Worker",
+      "updatedAt": "2026-07-23T15:32:50Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/150"
+    },
+    {
+      "number": 137,
+      "state": "OPEN",
+      "title": "Phase 7F: Certify agents and skills through adversarial, bilingual, and rollout UAT",
+      "updatedAt": "2026-07-28T13:12:12Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137"
+    },
+    {
+      "number": 136,
+      "state": "OPEN",
+      "title": "Phase 7E: Add governed MCP and advanced connector onboarding",
+      "updatedAt": "2026-07-23T05:42:52Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/136"
+    },
+    {
+      "number": 135,
+      "state": "CLOSED",
+      "title": "Phase 7D: Implement the shared policy-resolved agent and skill runtime",
+      "updatedAt": "2026-07-27T07:54:22Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/135"
+    },
+    {
+      "number": 134,
+      "state": "CLOSED",
+      "title": "Phase 7C: Build the no-code Agent Studio and organization agent lifecycle",
+      "updatedAt": "2026-07-25T05:41:34Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/134"
+    },
+    {
+      "number": 133,
+      "state": "CLOSED",
+      "title": "Phase 7B: Add the governed customer Skill Library",
+      "updatedAt": "2026-07-23T08:31:01Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/133"
+    },
+    {
+      "number": 132,
+      "state": "CLOSED",
+      "title": "Phase 7A: Build the versioned Skill Registry and reconcile existing workers",
+      "updatedAt": "2026-07-23T06:24:21Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/132"
+    },
+    {
+      "number": 131,
+      "state": "OPEN",
+      "title": "Phase 7 Epic: Agent Studio and governed Skill Library",
+      "updatedAt": "2026-07-25T05:42:27Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/131"
+    },
+    {
+      "number": 128,
+      "state": "CLOSED",
+      "title": "P0 UAT blocker: correct structured-output schema and n8n trigger activation",
+      "updatedAt": "2026-07-23T13:01:54Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/128"
+    },
+    {
+      "number": 125,
+      "state": "OPEN",
+      "title": "Delivery gate: 48-hour customer UAT and live-provider acceptance",
+      "updatedAt": "2026-07-28T13:12:11Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125"
+    },
+    {
+      "number": 117,
+      "state": "CLOSED",
+      "title": "Reconcile missing Publisher and Sales runtime agent rows in production",
+      "updatedAt": "2026-07-22T06:41:51Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/117"
+    },
+    {
+      "number": 108,
+      "state": "CLOSED",
+      "title": "Phase 5C runtime: deploy the governed Conversation Intelligence worker",
+      "updatedAt": "2026-07-22T19:33:28Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/108"
+    },
+    {
+      "number": 100,
+      "state": "CLOSED",
+      "title": "Complete the customer campaign lifecycle before provider handoffs",
+      "updatedAt": "2026-07-21T15:02:26Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/100"
+    },
+    {
+      "number": 98,
+      "state": "CLOSED",
+      "title": "Make the sidebar fully accessible at normal zoom and short viewport heights",
+      "updatedAt": "2026-07-21T08:35:00Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/98"
+    },
+    {
+      "number": 93,
+      "state": "CLOSED",
+      "title": "Reconcile completed content-generation jobs after human decisions",
+      "updatedAt": "2026-07-21T07:48:07Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/93"
+    },
+    {
+      "number": 89,
+      "state": "CLOSED",
+      "title": "Run controlled Strategist and Content Producer production canary",
+      "updatedAt": "2026-07-19T15:43:42Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/89"
+    },
+    {
+      "number": 87,
+      "state": "CLOSED",
+      "title": "Deploy live Agent Registry and Agents dashboard safely",
+      "updatedAt": "2026-07-19T10:16:44Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/87"
+    },
+    {
+      "number": 85,
+      "state": "CLOSED",
+      "title": "Reconcile live Agent Registry and Agents operations dashboard",
+      "updatedAt": "2026-07-19T09:17:31Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/85"
+    },
+    {
+      "number": 62,
+      "state": "CLOSED",
+      "title": "Phase 5D release: transactional existing-dashboard update and rollback package",
+      "updatedAt": "2026-07-15T06:05:20Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/62"
+    },
+    {
+      "number": 58,
+      "state": "OPEN",
+      "title": "Phase 5I: Integrate SmartLabs voice outcomes without entering the realtime audio path",
+      "updatedAt": "2026-07-13T15:52:53Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/58"
+    },
+    {
+      "number": 57,
+      "state": "OPEN",
+      "title": "Phase 5H: Add governed social inbox and public engagement channels",
+      "updatedAt": "2026-07-13T15:52:53Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/57"
+    },
+    {
+      "number": 56,
+      "state": "OPEN",
+      "title": "Phase 5G: Prove quality and conversion through shadow mode and controlled autonomy",
+      "updatedAt": "2026-07-22T19:43:23Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/56"
+    },
+    {
+      "number": 55,
+      "state": "OPEN",
+      "title": "Phase 5F: Establish measured high-volume capacity, backpressure, and recovery",
+      "updatedAt": "2026-07-22T19:43:22Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/55"
+    },
+    {
+      "number": 54,
+      "state": "OPEN",
+      "title": "Phase 5E: Implement governed GHL messaging, qualification, booking, and pipeline actions",
+      "updatedAt": "2026-07-22T19:43:21Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/54"
+    },
+    {
+      "number": 53,
+      "state": "OPEN",
+      "title": "Phase 5D: Add human takeover, supervisor inbox, and conversation ownership locks",
+      "updatedAt": "2026-07-22T19:43:19Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/53"
+    },
+    {
+      "number": 52,
+      "state": "CLOSED",
+      "title": "Phase 5C: Build versioned sales knowledge and conversation intelligence",
+      "updatedAt": "2026-07-13T18:58:22Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/52"
+    },
+    {
+      "number": 51,
+      "state": "CLOSED",
+      "title": "Phase 5B: Build signed GHL inbound conversation gateway and durable event inbox",
+      "updatedAt": "2026-07-13T18:25:44Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/51"
+    },
+    {
+      "number": 49,
+      "state": "CLOSED",
+      "title": "Phase 5A: Customer-managed GHL connection and contact sync foundation",
+      "updatedAt": "2026-07-13T15:53:55Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/49"
+    },
+    {
+      "number": 46,
+      "state": "OPEN",
+      "title": "Phase 4H: Postiz performance sync and lead attribution",
+      "updatedAt": "2026-07-22T19:43:18Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/46"
+    },
+    {
+      "number": 45,
+      "state": "OPEN",
+      "title": "Phase 4G: Customer Postiz staging draft acceptance",
+      "updatedAt": "2026-07-22T19:43:17Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/45"
+    },
+    {
+      "number": 41,
+      "state": "CLOSED",
+      "title": "Phase 4F: Controlled Postiz gateway activation",
+      "updatedAt": "2026-07-13T09:28:41Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/41"
+    },
+    {
+      "number": 39,
+      "state": "CLOSED",
+      "title": "Phase 4E: Customer-controlled Postiz draft automation",
+      "updatedAt": "2026-07-13T08:05:03Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/39"
+    },
+    {
+      "number": 37,
+      "state": "CLOSED",
+      "title": "Phase 4D: Customer-managed integrations and secure credential gateway",
+      "updatedAt": "2026-07-13T08:04:51Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/37"
+    },
+    {
+      "number": 35,
+      "state": "CLOSED",
+      "title": "Phase 4C: Human-controlled Postiz draft handoff",
+      "updatedAt": "2026-07-13T05:14:01Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/35"
+    },
+    {
+      "number": 32,
+      "state": "CLOSED",
+      "title": "Phase 4B: Approved Content Library and guarded Postiz handoff",
+      "updatedAt": "2026-07-13T03:58:28Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/32"
+    },
+    {
+      "number": 31,
+      "state": "CLOSED",
+      "title": "Phase 4A: Admin invitations and role management",
+      "updatedAt": "2026-07-13T04:26:52Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/31"
+    },
+    {
+      "number": 14,
+      "state": "OPEN",
+      "title": "Complete browser screenshots, interaction QA, Arabic, and RTL verification",
+      "updatedAt": "2026-07-22T19:43:15Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/14"
+    },
+    {
+      "number": 13,
+      "state": "CLOSED",
+      "title": "Implement the authenticated Phase 2 application API and live adapters",
+      "updatedAt": "2026-07-12T18:06:59Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/13"
+    },
+    {
+      "number": 12,
+      "state": "CLOSED",
+      "title": "Reconcile the existing Supabase catalog with the Tanaghom schema",
+      "updatedAt": "2026-07-22T19:41:08Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/12"
+    },
+    {
+      "number": 8,
+      "state": "CLOSED",
+      "title": "Phase 7: Deliver secure public product link",
+      "updatedAt": "2026-07-22T19:41:11Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/8"
+    },
+    {
+      "number": 7,
+      "state": "CLOSED",
+      "title": "Phase 6: Run end-to-end acceptance, security, and recovery validation",
+      "updatedAt": "2026-07-19T10:16:46Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/7"
+    },
+    {
+      "number": 6,
+      "state": "OPEN",
+      "title": "Phase 5: Build the governed omnichannel AI Sales and CRM workforce",
+      "updatedAt": "2026-07-22T19:43:14Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/6"
+    },
+    {
+      "number": 5,
+      "state": "OPEN",
+      "title": "Phase 4: Integrate Postiz publishing and performance monitoring",
+      "updatedAt": "2026-07-13T09:28:42Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/5"
+    },
+    {
+      "number": 4,
+      "state": "CLOSED",
+      "title": "Phase 3: Implement Campaign Strategist and Content Producer",
+      "updatedAt": "2026-07-12T20:07:14Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/4"
+    },
+    {
+      "number": 3,
+      "state": "OPEN",
+      "title": "Phase 2: Build Agent Operations Dashboard",
+      "updatedAt": "2026-07-12T12:46:12Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/3"
+    },
+    {
+      "number": 2,
+      "state": "CLOSED",
+      "title": "Phase 1: Build shared PostgreSQL data and audit foundation",
+      "updatedAt": "2026-07-12T13:05:28Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/2"
+    },
+    {
+      "number": 1,
+      "state": "CLOSED",
+      "title": "Phase 0: Bootstrap engineering foundation",
+      "updatedAt": "2026-07-12T12:51:37Z",
+      "url": "https://github.com/tamerabuhalaweh/TanaghomAgents/issues/1"
+    }
+  ]
+}

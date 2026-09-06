@@ -1,5 +1,22 @@
 # Delivery roadmap
 
+## Current status and expanded product scope
+
+Read [STATUS.md](STATUS.md) for current source, historical deployment evidence,
+remaining acceptance gates and the next authorized step. This phase document
+contains historical plans; a listed feature is not proof of deployment or
+current readiness.
+
+The long-term product is a human-governed AI organization across departments.
+Sales, content and marketing remain the initial pilot/proof of concept.
+[Epic #174](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/174) and the
+[versioned expansion plan](planning/agency-expansion/README.md) preserve all
+273 profiles across the pinned upstream catalog's 18 divisions, starting with
+a six-profile pilot. Additional departments do not block existing provider UAT.
+
+The 2026-09-06 expansion GO authorizes documentation and issue tracking only;
+it does not activate agents or authorize implementation/deployment.
+
 ## Target outcome
 
 A polished operations platform where a business owner can create campaigns,
@@ -23,8 +40,10 @@ Business owner
             -> GoHighLevel
 ```
 
-Agents communicate through durable database records and events. They do not
-depend on hidden in-memory state or direct workflow-to-workflow coupling.
+Agents communicate through durable database records and events. The shared
+runtime uses reviewed fixed child-workflow executors and a governed handoff
+contract (ADR 0017); it does not rely on hidden conversational memory or
+arbitrary customer-selected workflow targets.
 
 ## Phase 0 — Engineering foundation
 
