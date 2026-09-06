@@ -1,5 +1,20 @@
 # Tanaghom status and next work
 
+## Latest authorized delivery: cooperating specialist workspace
+
+Tamer authorized implementation and test deployment of a customer-visible
+specialist/team journey on 2026-09-06. Work is tracked under #176/#177/#178/#179:
+[delivery scope](planning/agency-expansion/WORKSPACE_DELIVERY.md),
+[update and rollback](../deployment/agency-workspace/RUNBOOK.md).
+New source adds `/workspace`, migration0035, five document-generating specialists
+plus a deterministic delivery summary, shared versioned task context and exact
+human decisions. It does not make the frozen Agency simulator a live worker.
+Deployment and real-model evidence must be recorded separately below: a merged
+feature is not proof of a working live inference journey.
+The local Gemma key is missing; no new real inference has run in this work.
+The bounded test inference use is authorized, but SmartLabs/SmartCC/Gemma service
+changes and provider actions remain excluded. Production score remains60/100.
+
 **As of 2026-09-06: public test VPS is live; certified 38.247 unchanged by this work.**
 Tamer reformatted CPU VPS 155.117.45.45 and authorized a public HTTPS test
 installation under #200. He subsequently accepted pinning its replacement SSH
@@ -11,8 +26,9 @@ Initial public deployment passed at `380eb19`; the #205 logout update is now
 deployed at `6c8c536` with five public browser checks passed. See the [dated evidence](evidence/2026-09-06-fresh-test-vps-deployment.md)
 and [owner walkthrough](testing/FRESH_TEST_VPS_GUIDE.md).
 Test link: https://tanaghom-test.155-117-45-45.sslip.io/login.
-No model/provider execution,
-n8n activation or changes to certified 38.247/SmartLabs/SmartCC are authorized.
+The initial deployment performed no model/provider execution or n8n activation.
+The latest authorization above permits a bounded workspace successor on this
+test host only, not changes to certified 38.247/SmartLabs/SmartCC services.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
 ## Executive state

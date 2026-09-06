@@ -1,0 +1,18 @@
+tanaghom-test.155-117-45-45.sslip.io {
+    encode zstd gzip
+    request_body {
+        max_size 2MB
+    }
+    header {
+        X-Content-Type-Options nosniff
+        Referrer-Policy strict-origin-when-cross-origin
+        Strict-Transport-Security "max-age=31536000"
+        -Server
+    }
+    @private path /api/internal /api/internal/*
+    respond @private 404
+    reverse_proxy dashboard:3000 {
+        header_up X-Forwarded-Host {host}
+        header_up X-Forwarded-Proto https
+    }
+}

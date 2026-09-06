@@ -27,6 +27,7 @@ import { SessionProfile } from "./session-profile";
 
 const primaryNavigation = [
   { href: "/", label: "Overview", icon: LayoutDashboard },
+  { href: "/workspace", label: "AI workspace", icon: UsersRound },
   { href: "/inbox", label: "Supervisor inbox", icon: MessagesSquare },
   { href: "/campaigns", label: "Campaigns", icon: BriefcaseBusiness },
   { href: "/approvals", label: "Approvals", icon: CheckCheck },

@@ -16,10 +16,11 @@
     "node": ">=22"
   },
   "scripts": {
-    "test:agency-quality-runner": "node scripts/agency-quality-runner.mjs",
+    "test:agency-workspace": "node scripts/agency-workspace-integration.mjs --browser",
+    "test:agency-quality-runner": "node scripts/run-historical-agency-harness.mjs quality",
     "check:agency-quality-prerequisites": "node evaluation/agency-runner-v1/prerequisites.mjs",
     "test:agency-quality-preparation": "node scripts/agency-quality-preparation.mjs",
-    "test:agency-integration": "node scripts/agency-pilot-integration.mjs",
+    "test:agency-integration": "node scripts/run-historical-agency-harness.mjs integration",
     "generate:agency-pilot-workflow": "node scripts/generate-agency-pilot-workflow.mjs",
     "check": "node scripts/verify-repository.mjs",
     "db:migrate": "node --env-file-if-exists=.env scripts/database.mjs migrate",
