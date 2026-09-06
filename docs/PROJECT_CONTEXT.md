@@ -74,6 +74,12 @@ readiness. Simulation certification is not authorization for external actions.
    blockers. Do not invent a production percentage; if one is requested,
    disclose a stable rubric, scope, evidence date and unpassed hard gates.
 
+As of 2026-09-06, Tamer delegated Tanaghom technical PR reviews to Codex. Within
+the authorized task, record the exact reviewed head, findings, checks and merge
+result; do not bypass branch protection. Self-review by the source author is
+not independent human/security review. This delegation does not approve new
+feature scope, model/provider execution, deployment, spending or customer UAT.
+
 ## Durable context and tamper evidence
 
 GitHub issues/comments and branch names are editable. They are useful current

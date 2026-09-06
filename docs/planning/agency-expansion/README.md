@@ -159,6 +159,9 @@ additional specialists must justify their latency and resource cost.
 
 ## Completion and context discipline
 
+- [Review and model setup](REVIEW_AND_MODEL_SETUP.md) records PR #198 acceptance,
+  delegated technical review, proposed human roles and the isolated-model
+  inventory/gates. Human nomination and real execution are not yet approved.
 - Versioned snapshots of every new issue live in [issues/](issues/).
 - [issue-index.v1.json](issue-index.v1.json) maps the snapshots to live issues.
 - [CATALOG.md](CATALOG.md) is the human-readable full roster.

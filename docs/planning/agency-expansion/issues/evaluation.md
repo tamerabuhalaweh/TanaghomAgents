@@ -2,12 +2,13 @@
 
 ## Authorization and status
 
-PR #196's authenticated integration and PR #197's evaluation preparation are accepted. PR #198 adds the isolated authenticated comparison runner and simulated-response testing; real-model certification is not executed. `evaluation/agency-v1/RUNBOOK.md` documents 48 core cases plus 24 public reserves, 47 pinned sources, paired requests through the actual adapter, proposed anchored rubrics/resource budgets and a NOT_RUN real-model ledger. Public reserves are not blind holdout data. No model-quality score has been generated. Customer/domain acceptance, private heldout/reference answers, exact isolated model/compiler pins, reviewed real-model transport and separately authorized execution remain pending. Studio availability and production installation are separate #176 work.
+PR #196's authenticated integration, PR #197's evaluation preparation and PR #198's isolated comparison simulator are accepted; real-model certification is not executed. `evaluation/agency-v1/RUNBOOK.md` documents 48 core cases plus 24 public reserves, 47 pinned sources, paired requests through the actual adapter, proposed anchored rubrics/resource budgets and a NOT_RUN real-model ledger. Public reserves are not blind holdout data. No model-quality score has been generated. Customer/domain acceptance, private heldout/reference answers, exact isolated model/compiler pins, reviewed real-model transport and separately authorized execution remain pending. Studio availability and production installation are separate #176 work.
 
 ### Preparation progress (not quality acceptance)
 
 PR #197 is accepted at 7317b2e085f0b80d12bc0fb2c862d247716600a9 (39/39 checks).
-The next authorized source slice implements `evaluation/agency-runner-v1`:
+PR #198 is accepted at 9fde3aa673f4bc634c36bab00957cbf7f84ebd91 (40/40 checks).
+It implements `evaluation/agency-runner-v1`:
 fixed baseline/adapted selection, actual owner-JWT queueing, restricted worker
 RPCs, immutable attempt labels, current database fact checks and a 360-attempt
 disposable n8n comparison test (324 simulated HTTP responses, 36 local reports).
@@ -37,6 +38,14 @@ The runner now requires a verified Docker host-network loopback path before
 database startup, with Linux CI as its acceptance environment. The former Windows
 hostname fallback is removed; no host settings change is performed. See the
 versioned implementation evidence and the final PR-head checks/artifacts.
+
+Tamer has delegated technical PR reviews to Codex, not customer business
+signoff. The reviewer/isolated-model setup proposal is documented at
+docs/planning/agency-expansion/REVIEW_AND_MODEL_SETUP.md, with an example review
+row, required operator inventory and compiler -> eight-request smoke -> paired
+quality gates. The customer-reviewer nomination and isolated environment/model
+facts remain missing; no authority, credentials, model calls or passing scores
+are inferred from this documentation or PR-review delegation.
 
 Parent: #174.
 
