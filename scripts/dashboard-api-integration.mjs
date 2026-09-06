@@ -829,7 +829,7 @@ try {
   ]) {
     const logout = await fetch(`${dashboardOrigin}/api/auth/logout`, { method: "POST", headers });
     assert.equal(logout.status, 200);
-    assert.equal(cookies(logout).filter((value) => /tanaghom_(access|refresh)_token=/.test(value) && /max-age=0/i.test(value)).length, 2);
+    assert.equal(logout.headers.getSetCookie().filter((value) => /tanaghom_(access|refresh)_token=/.test(value) && /max-age=0/i.test(value)).length, 2);
   }
   for (const headers of [
     {},
