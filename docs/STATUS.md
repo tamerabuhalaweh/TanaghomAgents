@@ -1,8 +1,8 @@
 # Tanaghom status and next work
 
 **As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
-Current task authorization: review/accept PR #195 and complete authenticated
-database/n8n pilot integration in disposable environments under #176.
+Current task authorization: review/accept PR #196 and prepare controlled paired
+English/Arabic quality certification under #177 (offline preparation only).
 No production deployment, live model/provider call or activation is authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
@@ -18,7 +18,7 @@ export. Twelve disposable bilingual n8n/database round trips pass. Production
 installation, Studio availability and real-model quality certification remain unfinished.
 
 The accepted source baseline is now
-`ec0058e48a3b64d3c43a94e25638b4d569d82ba8` (PR #195; 38/38 CI checks passed).
+`3769d5ae7abe2e98d6e3d7ad612d30160f886e30` (PR #196; 39/39 CI checks passed).
 The original pre-expansion baseline was `0b5b5a7` (PR #173). Neither source merge
 nor local adapter simulation establishes what is currently deployed.
 
@@ -26,13 +26,14 @@ nor local adapter simulation establishes what is currently deployed.
 
 | Layer | Verified fact or limit | Source |
 |---|---|---|
-| Source baseline | 33 up/down migration pairs through 0033; eight business + six shared runtime workflow exports | Repository at the baseline SHA |
+| Source baseline | 34 up/down migration pairs through 0034; eight business + six shared runtime exports plus the separate inactive Agency pilot export | Repository at the baseline SHA |
 | Foundation issue state | #132, #133, #134 and #135 are closed implementation slices | [Pre-expansion issue snapshot](evidence/2026-09-06-pre-expansion-github-issues.json) |
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
 | Current server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
-| Current review slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
+| Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
+| Current preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation runbook](../evaluation/agency-v1/RUNBOOK.md) |
 
 **Production-release evidence score: 60/100; NO-GO for customer production.**
 This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a
@@ -98,7 +99,10 @@ Do not use this table as authority to clear stops or activate provider workers.
   implemented and tested in disposable environments; production installation,
   Studio availability and model/customer acceptance remain open.
   [Integration evidence](evidence/2026-09-06-agency-authenticated-integration.md).
-- **#177**: paired bilingual evaluation and resource/safety evidence.
+- **#177**: paired bilingual evaluation preparation implemented: 72 synthetic
+  cases, 47 source pins, proposed rubric and non-executable attempt ledger.
+  Actual quality runner, isolated model/compiler evidence, reference answers,
+  blind holdout and reviewer acceptance remain pending. Not certified.
 - **#178**: bounded team assignments on existing runtime handoffs.
 - **#179**: team onboarding/operations UX.
 - **#180**: governed improvement proposals.
@@ -110,13 +114,13 @@ Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
 
-#192's source fix, planning PR #191, candidate PR #194 and kernel PR #195 are accepted.
-New authenticated integration: 148 local tests and twelve actual disposable
-profile/language n8n/database journeys PASS. Its introducing PR needs review and
-CI acceptance; it changes no live runtime. Next review this integration PR, then
-prepare #177's paired English/Arabic quality certification package using exact
-model/schema pins and customer-shaped evaluation criteria. Executing a real
-model probe requires its own bounded authorization. Keep every candidate
+#192's source fix, planning PR #191, candidate PR #194, kernel PR #195 and
+authenticated integration PR #196 are accepted. #196 passed all 39 CI checks.
+#177's new offline certification-preparation package now needs source review.
+Next review that package, then complete its isolated authenticated paired
+runner and freeze the approved rubric, reference answers and exact model
+environment before a separately authorized compiler/probe gate. No live
+model/server/provider call is part of preparation. Keep every candidate
 unavailable until its actual installation/dependency/certification gates pass.
 Full source review of the other 267 profiles is a later roadmap task, not a
 pilot start blocker. No new customer credential is needed for this source work.

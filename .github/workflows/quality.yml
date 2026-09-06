@@ -27,6 +27,7 @@ jobs:
       - run: npm test
       - run: node scripts/validate-agency-runtime.mjs
       - run: node scripts/agency-pilot-runtime-simulation.mjs --verify-evidence
+      - run: npm run test:agency-quality-preparation
       - run: npx playwright test --list
       - run: deployment/phase5d-production-update/scripts/validate-package.sh
       - run: deployment/phase5f-database-bridge/scripts/validate-package.sh

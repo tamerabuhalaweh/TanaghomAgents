@@ -16,6 +16,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "test:agency-quality-preparation": "node scripts/agency-quality-preparation.mjs",
     "test:agency-integration": "node scripts/agency-pilot-integration.mjs",
     "generate:agency-pilot-workflow": "node scripts/generate-agency-pilot-workflow.mjs",
     "check": "node scripts/verify-repository.mjs",

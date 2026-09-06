@@ -1,0 +1,40 @@
+{
+  "version": "agency.quality-preparation-evidence.v1",
+  "date": "2026-09-06",
+  "kind": "OFFLINE_PREPARATION_NOT_MODEL_CERTIFICATION",
+  "source_baseline": "3769d5ae7abe2e98d6e3d7ad612d30160f886e30",
+  "source_lock_hash": "sha256:07e5edf2614e9af59d85e91742b22d99c2995f51a5161d365cd31df8a05f01ba",
+  "corpus_hash": "sha256:959278a69de1e853221d8b10ca6aa7199fbffd29a3f0da24994e8e4abe263f95",
+  "rubric_hash": "sha256:eb993edfd23571314bd34d09ee8ee1fa2fca1e6d3e9c94e471078fb9b08a84f9",
+  "packet_hash": "sha256:8c80d2282b5cbc78d038d28ad8cba20c194433b8b2b194ba515f07fe8bb79332",
+  "summary": {
+    "cases": 72,
+    "development_cases": 48,
+    "public_reserve_cases": 24,
+    "true_blind_holdout_cases": 0,
+    "english_cases": 36,
+    "arabic_cases": 36,
+    "unique_guided_schemas": 4,
+    "planned_model_attempts": 324,
+    "planned_deterministic_attempts": 36,
+    "actual_model_calls": 0,
+    "provider_calls": 0,
+    "database_writes": 0,
+    "quality_certified": false,
+    "execution_ready": false
+  },
+  "unresolved_gates": [
+    "Customer/domain rubric and budget acceptance",
+    "Two bilingual reviewers and blind label escrow",
+    "Private held-out corpus and reference answers frozen before outputs",
+    "Exact model weights/tokenizer revision and isolated runtime/compiler image digests",
+    "Isolated schema compilation and bounded probe approval",
+    "Authenticated runtime evaluation runner and gate evidence"
+  ],
+  "quality_scores": null,
+  "isolated_compiler_test": "NOT_RUN",
+  "live_model_probe": "NOT_RUN",
+  "protected_api_pair_runner": "NOT_IMPLEMENTED",
+  "human_review": "NOT_APPROVED",
+  "production_changes": 0
+}
