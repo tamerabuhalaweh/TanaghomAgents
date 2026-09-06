@@ -1,11 +1,14 @@
 # Tanaghom status and next work
 
-**As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
-Current task authorization: delegated Tanaghom technical PR reviews and #177
-reviewer/model setup preparation, plus a read-only inventory of Tamer's selected
-CPU test VPS. PR #198's simulator slice is accepted. Tests will use that CPU VPS
-and existing shared Gemma; no second GPU is required.
-No production deployment, live model/provider call or activation is authorized.
+**As of 2026-09-06: new test-VPS deployment authorized; certified 38.247 unchanged.**
+Tamer reformatted CPU VPS 155.117.45.45 and authorized a public HTTPS test
+installation under #200. He subsequently accepted pinning its replacement SSH
+key without a provider console; this is not independent identity verification.
+The host is freshly inspected, empty and healthy; old incident records are
+historical. The new package uses an isolated local business database and existing
+Supabase owner sign-in, not production data or the Supabase admin key.
+Deployment completion/evidence is pending. No model/provider execution,
+n8n activation or changes to certified 38.247/SmartLabs/SmartCC are authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
 ## Executive state
@@ -33,7 +36,7 @@ nor local adapter simulation establishes what is currently deployed.
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
 | Current certified server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
-| Selected CPU test host | 155.117.45.45 inspected read-only: 3 CPUs, 5,925 MiB RAM, about 40 GB free disk; co-hosted, not empty or model-isolated | [VPS inventory and limitations](evidence/2026-09-06-cpu-vps-readonly-preflight.md) |
+| Selected CPU test host | Tamer subsequently reformatted 155.117.45.45; fresh inspection: 3 CPUs, 5,925 MiB RAM, ~96 GB free disk, no failed units or containers. #200 deployment in progress | [Fresh test package](../deployment/fresh-test-vps/RUNBOOK.md); earlier [pre-format inventory](evidence/2026-09-06-cpu-vps-readonly-preflight.md) is historical |
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
 | Accepted preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation preparation](../evaluation/agency-v1/RUNBOOK.md) |
@@ -123,6 +126,11 @@ tracks, #136/#156 MCP, and #157 video retain their ownership. No duplicate
 Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
+
+Immediate authorized work is #200: deploy and validate the public isolated test
+dashboard from [the new package](../deployment/fresh-test-vps/RUNBOOK.md), with
+all model/provider actions disabled. This supplies a test UI, not full automated
+agent UAT; invitations are unavailable without a separately scoped auth admin key.
 
 #192's source fix, planning PR #191, candidate PR #194, kernel PR #195 and
 authenticated integration PR #196, preparation PR #197 and simulator PR #198
