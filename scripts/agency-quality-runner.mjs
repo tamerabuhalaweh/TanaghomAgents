@@ -16,6 +16,7 @@ import {createQualityGateway} from '../evaluation/agency-runner-v1/gateway.mjs';
 import {seedQuality,importCase,stubResponse,ownerId,organizationId,codes} from '../evaluation/agency-runner-v1/fixtures.mjs';
 import {buildWorkflow} from '../evaluation/agency-runner-v1/workflow.mjs';
 import {verifyRunnerLock} from '../evaluation/agency-runner-v1/manifest.mjs';
+import {verifyLoopbackTransport} from '../evaluation/agency-runner-v1/transport.mjs';
 
 assert.equal(process.argv.length,2,'No live flags or external connection configuration accepted');verifyLock();
 const sourceLock=verifyRunnerLock();
@@ -30,7 +31,7 @@ const run=(cmd,args,opts={})=>new Promise((yes,no)=>{const p=spawn(cmd,args,{std
     c===0?yes(out.trim()):no(new Error(`${cmd} exit ${c}, signal ${signal}: ${errors.slice(-800)} ${details}`));
   });});
 const docker=(...a)=>run('docker',a),delay=ms=>new Promise(r=>setTimeout(r,ms));
-const listen=async(s,host='0.0.0.0')=>{s.listen(0,host);await once(s,'listening');return s.address().port;};
+const listen=async(s,host='127.0.0.1')=>{s.listen(0,host);await once(s,'listening');return s.address().port;};
 const pass=s=>{checks.push(s);console.log(`PASS: ${s}`);};
 let pool,restricted,dashboard,gateway,auth,model,output='',fixtures,admin,worker,autoQueue=false,position=0,batchEnd=0,lastTask=null,workflowExecutions=0;
 const checks=[],attemptIds=[],conditions=new Map(),preparedRecords=[],modelRecords=[],failures=[],transport=[];
@@ -41,6 +42,8 @@ const manifestHash=fingerprint(manifest);
 let evidence={version:'agency.isolated-comparison-evidence.v1',generated_at:new Date().toISOString(),run_id:runId,manifest_hash:manifestHash,
   result:'FAIL',quality_certified:false,review_scores:null,real_model_calls:0,provider_calls:0,production_connections:0};
 try{
+  await verifyLoopbackTransport(docker,images.n8n,name);
+  pass('Docker host-network loopback proven before any database startup; no alternate host route');
   await docker('volume','create','--label',`tanaghom.disposable=${nonce}`,`${name}-pgdata`);
   await docker('run','-d','--name',name,'--label',`tanaghom.disposable=${nonce}`,'--cpus','1','--memory','512m',
     '-p','127.0.0.1::5432','-v',`${name}-pgdata:/var/lib/postgresql/data`,'-e','POSTGRES_PASSWORD=disposable-only','-e',`POSTGRES_DB=${dbName}`,images.postgres);
@@ -122,7 +125,7 @@ try{
       res.writeHead(200,{'Content-Type':'application/json','Connection':'close'}).end(JSON.stringify(response));
     }catch{res.writeHead(400).end('{}');}
   });
-  const modelPort=await listen(model),host=process.platform==='win32'?'host.docker.internal':'127.0.0.1';
+  const modelPort=await listen(model),host='127.0.0.1';
   const workflow=buildWorkflow(`http://${host}:${gatewayPort}/quality/worker`,`http://${host}:${modelPort}/v1/chat/completions`);
   const credentials=[{id:'agencyPilotGatewayV1',name:'Tanaghom Agency Pilot Gateway',type:'httpHeaderAuth',data:{name:'Authorization',value:`Bearer ${token}`}},
     {id:'62000000-0000-4000-8000-000000000002',name:'Tanaghom Gemma API',type:'httpHeaderAuth',data:{name:'Authorization',value:`Bearer ${token}`}}];

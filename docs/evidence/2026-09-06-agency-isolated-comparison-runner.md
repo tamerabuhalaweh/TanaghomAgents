@@ -26,7 +26,7 @@ rollback: [runner runbook](../../evaluation/agency-runner-v1/RUNBOOK.md).
 
 ## Validation layers
 
-Local unit tests: **166 passed**. Repository check and dashboard typecheck pass.
+Local unit tests: **167 passed**. Repository check and dashboard typecheck pass.
 The original 47-file preparation lock and its prior evidence still validate.
 The new CI job executes the actual n8n/PostgreSQL comparison runner; the
 introducing PR's checks and uploaded unique artifacts are authoritative for
@@ -51,6 +51,17 @@ or counted as successful.
 The final runner retains stage/CLI diagnostics, failed attempt state and bounded
 request-receipt/response-close diagnostics; each manual n8n batch is limited to
 30. Only the final source head's CI evidence can establish its acceptance.
+
+A further instrumented run `80eb4d966ec6` failed after 63 successful tasks: the
+last completion returned 200 in 82 ms, and no subsequent claim arrived at the
+gateway before n8n's `ECONNABORTED`. A standalone probe completed 1,000 Node HTTP
+and 1,000 Axios requests through `host.docker.internal`, so its exact intermittent
+failure mechanism is still not proven. Container-to-host loopback was refused.
+The runner now requires the documented Docker host-network loopback path and
+verifies its own ephemeral marker before creating database volumes. It removes
+the Windows hostname fallback, binds services only to loopback and fails safely
+if the required path is absent. No Docker settings or shared services are changed.
+Linux CI is the acceptance environment; Windows runtime support is not certified.
 
 Each run stores `tmp/tanaghom-quality-<run>-evidence.json`; CI uploads these even
 on failure. The latest-result pointer is replaceable; the unique history is

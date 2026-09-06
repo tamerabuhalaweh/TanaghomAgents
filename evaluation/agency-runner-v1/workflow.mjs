@@ -1,7 +1,7 @@
 // Disposable-only derivative; the frozen committed production export is unchanged.
 import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
-function local(value){const u=new URL(value);assert(u.protocol==='http:'&&['127.0.0.1','host.docker.internal'].includes(u.hostname)&&!u.username&&!u.password);return value;}
+function local(value){const u=new URL(value);assert(u.protocol==='http:'&&u.hostname==='127.0.0.1'&&!u.username&&!u.password);return value;}
 export function buildWorkflow(gateway,model){
   local(gateway);local(model);
   const w=JSON.parse(readFileSync(new URL('../../n8n/workflows/agency-pilot/simulation.v1.json',import.meta.url)));

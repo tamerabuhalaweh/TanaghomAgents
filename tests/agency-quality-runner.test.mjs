@@ -8,6 +8,9 @@ import {stubResponse} from '../evaluation/agency-runner-v1/fixtures.mjs';
 import {buildWorkflow} from '../evaluation/agency-runner-v1/workflow.mjs';
 import {inspectPrerequisites} from '../evaluation/agency-runner-v1/prerequisites.mjs';
 import {verifyRunnerLock,runnerLock} from '../evaluation/agency-runner-v1/manifest.mjs';
+import {verifyLoopbackTransport} from '../evaluation/agency-runner-v1/transport.mjs';
+import {execFile} from 'node:child_process';
+import {promisify} from 'node:util';
 const hash='sha256:'+'1'.repeat(64);
 function fixture(arm='baseline',profile='social_media_strategist'){
  const c=corpus.cases.find(c=>c.profile===profile&&c.language==='en'),b=bundleFor(c);
@@ -52,7 +55,7 @@ test('disposable workflow accepts loopback endpoints only, remains inactive, has
  const w=buildWorkflow('http://127.0.0.1:3001/quality/worker','http://127.0.0.1:3002/v1/chat/completions');
  assert.equal(w.active,false);assert(!w.nodes.some(n=>n.type.includes('schedule')));
  assert(w.nodes.find(n=>n.name==='Model Completion').parameters.jsCode.includes('itemMatching(0)'));
- for(const u of ['https://api.thesmartlabs.net','http://38.247.187.232','http://127.0.0.1.evil.test','http://user:pass@127.0.0.1'])assert.throws(()=>buildWorkflow(u,'http://127.0.0.1:3002'));
+ for(const u of ['https://api.thesmartlabs.net','http://38.247.187.232','http://127.0.0.1.evil.test','http://user:pass@127.0.0.1','http://host.docker.internal:3001'])assert.throws(()=>buildWorkflow(u,'http://127.0.0.1:3002'));
 });
 test('prerequisite checker honestly reports missing names/model evidence and never grants execution authority',()=>{
  const state=inspectPrerequisites();assert.equal(state.complete,false);assert.equal(state.live_execution_authorized,false);
@@ -67,4 +70,20 @@ test('authored refund protocol fixtures escalate in both languages, including ca
   const reply=JSON.parse(stubResponse(prepareCase(c).adapted.request).choices[0].message.content);
   assert.equal(reply.intent,'refund');assert.equal(reply.escalation.required,true);assert.equal(reply.proposed_reply,null);
  }
+});
+
+test('host-network preflight proves its own loopback marker and fails closed without changing Docker settings',async()=>{
+ const calls=[],name='tanaghom-quality-123456abcdef';
+ await verifyLoopbackTransport(async(...args)=>{
+  calls.push(args);if(args[0]==='rm')return '';
+  assert.equal(args[args.indexOf('--network')+1],'host');
+  assert.equal(args[args.indexOf('--name')+1],name+'-transport');
+  await promisify(execFile)(process.execPath,['-e',args.at(-1)]);
+ },'pinned-test-image',name);
+ assert.deepEqual(calls.at(-1),['rm','-f',name+'-transport']);
+ const failed=[];await assert.rejects(()=>verifyLoopbackTransport(async(...args)=>{
+  failed.push(args);if(args[0]==='run')throw new Error('unavailable');
+ },'pinned-test-image',name),/No alternate host route/);
+ assert.deepEqual(failed.at(-1),['rm','-f',name+'-transport']);
+ assert.equal(failed.length,2);await assert.rejects(()=>verifyLoopbackTransport(async()=>{},'image','unowned'),/Owned disposable/);
 });

@@ -55,7 +55,13 @@ comparison limitation remains as documented in the preparation package.
 
 ## Run locally or in CI
 
-Requirements: Docker, existing locked Node dependencies and the dashboard build.
+Requirements: Docker with verified host-network loopback, existing locked Node
+dependencies and the dashboard build. Linux CI is the acceptance environment.
+The runner first verifies a uniquely marked loopback response through the pinned
+container; an unavailable path fails before database/volume creation. Docker
+Desktop requires its opt-in host-network feature; this runner never enables it
+or restarts Docker. See [Docker's host-network documentation](https://docs.docker.com/engine/network/drivers/host/).
+Do not change shared workstation settings just to run this test: use CI instead.
 From the repository root, without loading `.env`:
 
 ```powershell
@@ -74,8 +80,8 @@ are not used. Its model adapter is deliberately restricted to
 filling a checklist cannot enable real model transport.
 
 Images are immutable digest pins in the runner. Local service ports are
-ephemeral; the Next owner API binds loopback. The test gateway/simulator bind
-the host for Docker Desktop reachability, authenticate with a random run token,
+ephemeral; the Next owner API, test gateway and simulator bind loopback,
+authenticate with a random run token,
 accept only fixed routes and bounded bodies, and close at teardown. The
 test responses also close each HTTP connection, avoiding stale keep-alive
 reuse between n8n's model and code-node steps. This affects only disposable
@@ -108,8 +114,11 @@ request duration; failures retain the last 20 transport events without bodies
 or credentials. A missing gateway receipt distinguishes that observation from
 a request handled slowly, but alone does not identify an operating-system or
 network root cause. Intermittent Windows HTTP aborts were observed during
-development; connection closing is hardening, not a demonstrated fix. Retain
-failures and require exact-head CI evidence rather than silently retrying them.
+development on the former `host.docker.internal` fallback; that route has now
+been removed. Connection closing is hardening, not a demonstrated root-cause
+fix. The current Windows host fails the new loopback prerequisite safely;
+Windows execution is not certified. Retain failures and require exact-head
+Linux CI evidence rather than silently retrying them or changing shared settings.
 
 The full public corpus passes transport/contracts if the 360 attempts complete,
 but that says nothing about whether a real model can answer those cases well.

@@ -30,10 +30,12 @@ accuracy and English/Arabic usefulness, not technical accounts or API keys.
 Tamer has not yet nominated the reviewers; no customer signoff is recorded.
 The proposed two-person rubric remains unapproved. `prerequisites.json` names
 each missing decision/model identity and its checker never authorizes execution.
-Runner implementation is in PR #198. Local unit tests: 166 passed; complete
+Runner implementation is in PR #198. Local unit tests: 167 passed; complete
 Linux comparison CI and a diagnostic Windows run each completed 360 attempts.
-Intermittent local HTTP aborts are retained as a known reproducibility limitation,
-not represented as model-quality failures or a proven transport fix. See the
+Intermittent local HTTP aborts are retained as a known reproducibility limitation.
+The runner now requires a verified Docker host-network loopback path before
+database startup, with Linux CI as its acceptance environment. The former Windows
+hostname fallback is removed; no host settings change is performed. See the
 versioned implementation evidence and the final PR-head checks/artifacts.
 
 Parent: #174.

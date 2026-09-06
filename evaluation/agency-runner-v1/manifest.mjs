@@ -8,7 +8,7 @@ const read=p=>readFileSync(new URL(p,root),'utf8').replaceAll('\r\n','\n');
 export function runnerLock(){
  const files=['evaluation/agency-v1/source-lock.json','evaluation/agency-runner-v1/isolated.sql',
   'evaluation/agency-runner-v1/runtime.mjs','evaluation/agency-runner-v1/gateway.mjs','evaluation/agency-runner-v1/fixtures.mjs',
-  'evaluation/agency-runner-v1/workflow.mjs','evaluation/agency-runner-v1/prerequisites.mjs','evaluation/agency-runner-v1/prerequisites.json',
+  'evaluation/agency-runner-v1/workflow.mjs','evaluation/agency-runner-v1/transport.mjs','evaluation/agency-runner-v1/prerequisites.mjs','evaluation/agency-runner-v1/prerequisites.json',
   'evaluation/agency-runner-v1/RUNBOOK.md','evaluation/agency-runner-v1/manifest.mjs',
   'scripts/agency-quality-runner.mjs','tests/agency-quality-runner.test.mjs'];
  return {version:'agency.isolated-runner-source-lock.v1',accepted_preparation_commit:'7317b2e085f0b80d12bc0fb2c862d247716600a9',
