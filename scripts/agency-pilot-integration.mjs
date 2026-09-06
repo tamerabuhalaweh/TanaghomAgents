@@ -56,8 +56,9 @@ const gemma=createServer(async(req,res)=>{
   }catch {res.writeHead(400).end('{}');}
 });
 try {
+  await docker('volume','create','--label',`tanaghom.disposable=${suffix}`,`${name}-pgdata`);
   await docker('run','-d','--name',name,'--label',`tanaghom.disposable=${suffix}`,'--memory','512m','--cpus','1',
-    '-p','127.0.0.1::5432','-e','POSTGRES_PASSWORD=disposable-only',postgresImage);
+    '-p','127.0.0.1::5432','-v',`${name}-pgdata:/var/lib/postgresql/data`,'-e','POSTGRES_PASSWORD=disposable-only',postgresImage);
   const port=(await docker('port',name,'5432/tcp')).split(':').at(-1);
   const databaseUrl=`postgresql://postgres:disposable-only@127.0.0.1:${port}/postgres`;
   pool=new pg.Pool({connectionString:databaseUrl,max:4});
@@ -235,6 +236,7 @@ try {
   if(pool)await pool.end();
   await docker('rm','-f',`${name}-worker`).catch(()=>{});await docker('rm','-f',name).catch(()=>{});
   await docker('volume','rm',name).catch(()=>{});
+  await docker('volume','rm',`${name}-pgdata`).catch(()=>{});
   const target=resolve(temporary);assert(target.startsWith(resolve(tmpdir())+sep)&&target.split(sep).at(-1).startsWith('tanaghom-agency-'));
   await rm(target,{recursive:true,force:true});
 }
