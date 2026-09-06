@@ -103,6 +103,13 @@ status and safety check outcomes. Real-model tokens, cost, memory and human
 scores remain null, with a reason. The simulator returns authored usage fields
 only to exercise the protocol validator; they are **not measured model usage**.
 Gateway timings measure this disposable simulator, not Gemma performance.
+Pass artifacts include observed gateway request/response counts and maximum
+request duration; failures retain the last 20 transport events without bodies
+or credentials. A missing gateway receipt distinguishes that observation from
+a request handled slowly, but alone does not identify an operating-system or
+network root cause. Intermittent Windows HTTP aborts were observed during
+development; connection closing is hardening, not a demonstrated fix. Retain
+failures and require exact-head CI evidence rather than silently retrying them.
 
 The full public corpus passes transport/contracts if the 360 attempts complete,
 but that says nothing about whether a real model can answer those cases well.

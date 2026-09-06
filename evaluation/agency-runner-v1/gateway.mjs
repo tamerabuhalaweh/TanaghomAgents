@@ -6,14 +6,16 @@ import {fingerprint} from '../../packages/agent-runtime/agency-pilot.mjs';
 import {prepareComparison,finishComparison,conditionHash} from './runtime.mjs';
 const uuid=/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/i;
 const fail=(status)=>Object.assign(new Error('isolated_request_rejected'),{status});
-export async function createQualityGateway({pool,token,manifestHash,onEmpty=async()=>{},onPrepared=()=>{},onFailure=()=>{}}){
+export async function createQualityGateway({pool,token,manifestHash,onEmpty=async()=>{},onPrepared=()=>{},onFailure=()=>{},onTransport=()=>{}}){
   const db=(await pool.query('SELECT current_database() AS db')).rows[0].db;
   assert(/^tanaghom_quality_[a-f0-9]{12}$/.test(db),'Disposable database required');
   assert((await pool.query("SELECT has_table_privilege(current_user,'tanaghom.app_users','SELECT') AS raw")).rows[0].raw===false,'Restricted worker role required');
   assert(Buffer.byteLength(token)>=32);
   let busy=false;
   const server=createServer(async(req,res)=>{
-    let client;
+    let client,action=null;const started=performance.now();
+    onTransport({event:'received'});
+    res.on('close',()=>onTransport({event:res.writableFinished?'finished':'aborted',action,status:res.statusCode,elapsed_ms:performance.now()-started}));
     const send=(status,value)=>{res.writeHead(status,{'Content-Type':'application/json','Cache-Control':'no-store','Connection':'close'});res.end(JSON.stringify(value));};
     try{
       if(req.method!=='POST'||req.url!=='/quality/worker')throw fail(404);
@@ -26,6 +28,7 @@ export async function createQualityGateway({pool,token,manifestHash,onEmpty=asyn
       const claim=command.action==='claim'&&keys==='action';
       const complete=command.action==='complete'&&keys==='action,lease_token,model_response,task_id'&&uuid.test(command.task_id)&&uuid.test(command.lease_token);
       if(!claim&&!complete)throw fail(400);
+      action=command.action;
       if(busy)throw fail(409);busy=true;
       try{
         if(claim)await onEmpty(); // Trusted fixture scheduler; never HTTP-provided code or text.

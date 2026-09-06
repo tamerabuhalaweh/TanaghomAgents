@@ -30,6 +30,11 @@ accuracy and English/Arabic usefulness, not technical accounts or API keys.
 Tamer has not yet nominated the reviewers; no customer signoff is recorded.
 The proposed two-person rubric remains unapproved. `prerequisites.json` names
 each missing decision/model identity and its checker never authorizes execution.
+Runner implementation is in PR #198. Local unit tests: 166 passed; complete
+Linux comparison CI and a diagnostic Windows run each completed 360 attempts.
+Intermittent local HTTP aborts are retained as a known reproducibility limitation,
+not represented as model-quality failures or a proven transport fix. See the
+versioned implementation evidence and the final PR-head checks/artifacts.
 
 Parent: #174.
 

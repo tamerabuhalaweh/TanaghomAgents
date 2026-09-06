@@ -38,11 +38,19 @@ were corrected. An initial full single-execution batch passed, but later
 long-loop CLI runs stopped at 186 and 338 queued tasks without sufficient
 diagnostics to establish their root cause. A bounded run also encountered a
 completion HTTP-node failure; a subsequent bounded run and the first CI runner
-passed. The final runner retains stage/CLI diagnostics and failed attempt state,
-limits each n8n execution to 30 attempts, and closes disposable HTTP connections
-to avoid stale keep-alive reuse. The old transport failure's precise cause is
-not claimed as proven. Acceptance
-requires the final bounded runner to pass; the earlier pass is not its evidence.
+passed. A later Windows run at `b844197` aborted the Claim HTTP request after
+41 successful attempts (`ECONNABORTED`); connection closing alone did not resolve
+the intermittent local failure. The same commit passed all 40 Linux CI checks,
+including the complete comparison job:
+[run 34035128865](https://github.com/tamerabuhalaweh/TanaghomAgents/actions/runs/34035128865).
+The subsequent diagnostic local run `0519f865195b` passed all 360 attempts and
+six negative controls. These observations do not establish the transport fault's
+root cause or prove Windows repeatability. No failed attempt is retried silently
+or counted as successful.
+
+The final runner retains stage/CLI diagnostics, failed attempt state and bounded
+request-receipt/response-close diagnostics; each manual n8n batch is limited to
+30. Only the final source head's CI evidence can establish its acceptance.
 
 Each run stores `tmp/tanaghom-quality-<run>-evidence.json`; CI uploads these even
 on failure. The latest-result pointer is replaceable; the unique history is

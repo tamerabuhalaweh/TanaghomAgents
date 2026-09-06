@@ -5,7 +5,7 @@
   "files": [
     {
       "path": "evaluation/agency-runner-v1/RUNBOOK.md",
-      "sha256": "ec1a8c476520dfa5b32cb59d35ee5d73bf2eec534f92b7a221c5e8149e2240fb"
+      "sha256": "b4a41d9450b6cc8f480818c8fcf59004363604d33d55613e05f5486aa3801e5e"
     },
     {
       "path": "evaluation/agency-runner-v1/fixtures.mjs",
@@ -13,7 +13,7 @@
     },
     {
       "path": "evaluation/agency-runner-v1/gateway.mjs",
-      "sha256": "cc945a5ccb424d8caac7c47d0b3681889e61eea390b317060dcd82f7431d86f1"
+      "sha256": "73ba5d1b23da57a4950a6bab19a46602011e259bf1a91bfdf5eb9703e4b64f73"
     },
     {
       "path": "evaluation/agency-runner-v1/isolated.sql",
@@ -45,7 +45,7 @@
     },
     {
       "path": "scripts/agency-quality-runner.mjs",
-      "sha256": "2c60702e11474409e96cbda42e2f058a34a13afbe837f22272d0768f078e1601"
+      "sha256": "565930602675e33eac747203d2acc377da2d1072bcc50d537f301c8fe964ddee"
     },
     {
       "path": "tests/agency-quality-runner.test.mjs",

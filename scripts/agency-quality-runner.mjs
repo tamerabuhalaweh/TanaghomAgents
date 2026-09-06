@@ -33,7 +33,7 @@ const docker=(...a)=>run('docker',a),delay=ms=>new Promise(r=>setTimeout(r,ms));
 const listen=async(s,host='0.0.0.0')=>{s.listen(0,host);await once(s,'listening');return s.address().port;};
 const pass=s=>{checks.push(s);console.log(`PASS: ${s}`);};
 let pool,restricted,dashboard,gateway,auth,model,output='',fixtures,admin,worker,autoQueue=false,position=0,batchEnd=0,lastTask=null,workflowExecutions=0;
-const checks=[],attemptIds=[],conditions=new Map(),preparedRecords=[],modelRecords=[],failures=[];
+const checks=[],attemptIds=[],conditions=new Map(),preparedRecords=[],modelRecords=[],failures=[],transport=[];
 const schedule=buildSchedule(),runId=randomUUID();
 const manifest={version:'agency.isolated-comparison-run.v1',kind:'simulated_model',runner_source_lock_hash:fingerprint(sourceLock),corpus_hash:fingerprint(corpus),
   schedule_hash:fingerprint(schedule),repetitions:3,maximum_attempts:400,maximum_batch_attempts:30,images};
@@ -97,7 +97,7 @@ try{
       [r.body.id,run,meta.case_id,meta.profile_code,meta.language,meta.arm,meta.repetition,meta.case_hash]);
     if(record)attemptIds.push(r.body.id);return r.body.id;
   };
-  gateway=await createQualityGateway({pool:restricted,token,manifestHash,onFailure:failure=>{failures.push(failure);console.log('Validation diagnostic:',JSON.stringify(failure));},onEmpty:async()=>{
+  gateway=await createQualityGateway({pool:restricted,token,manifestHash,onTransport:event=>{transport.push({...event,at:new Date().toISOString(),position});if(event.elapsed_ms>1000||event.event==='aborted')console.log('Transport diagnostic:',JSON.stringify(event));},onFailure:failure=>{failures.push(failure);console.log('Validation diagnostic:',JSON.stringify(failure));},onEmpty:async()=>{
     if(!autoQueue)return;
     const controls=(await pool.query('SELECT emergency_stop FROM tanaghom.agency_pilot_controls')).rows[0];if(controls.emergency_stop)return;
     if(lastTask){const last=(await pool.query('SELECT status FROM tanaghom.agency_pilot_tasks WHERE id=$1',[lastTask])).rows[0];assert.equal(last.status,'succeeded','Prior comparison failed; batch must stop');}
@@ -192,6 +192,8 @@ try{
   pass('zero external-action jobs; both stops restored; exported n8n still inactive and no schedule');
   evidence={...evidence,result:'PASS',manifest,checks,actual_n8n_manual_executions:workflowExecutions,attempts_completed:360,
     simulated_model_http_calls:324,deterministic_reports:36,paired_conditions_verified:144,
+    gateway_transport:{requests_received:transport.filter(e=>e.event==='received').length,requests_finished:transport.filter(e=>e.event==='finished').length,
+      aborted_responses:transport.filter(e=>e.event==='aborted').length,maximum_observed_request_ms:Math.max(0,...transport.map(e=>e.elapsed_ms||0))},
     measurements_kind:'stub_transport_only_not_model_quality_or_production_latency',
     model_tokens:null,model_memory:null,model_cost:null,unmeasured_reason:'No real model executed; response usage fields are authored simulator fixtures.',
     attempts:tasks.map(t=>({case_id:t.case_id,profile:t.profile_code,language:t.language,arm:t.arm,repetition:t.repetition,
@@ -199,7 +201,7 @@ try{
     prepared_record_hash:fingerprint(preparedRecords),simulated_response_records_hash:fingerprint(modelRecords)};
 }catch(e){console.error('Isolated comparison failed:',e.message);
   const states=pool?(await pool.query('SELECT a.case_id,a.arm,a.repetition,t.status,t.error_code FROM tanaghom_quality.attempts a JOIN tanaghom.agency_pilot_tasks t ON t.id=a.task_id WHERE a.run_id=$1 ORDER BY t.created_at',[runId]).catch(()=>({rows:[]}))).rows:[];
-  evidence={...evidence,checks,diagnostics:failures,failed_attempt_states:states,runner_error:e.message,attempts_queued:attemptIds.length,simulated_model_http_calls:modelRecords.length,failure:'isolated_comparison_failed'};process.exitCode=1;
+  evidence={...evidence,checks,diagnostics:failures,transport_tail:transport.slice(-20),failed_attempt_states:states,runner_error:e.message,attempts_queued:attemptIds.length,simulated_model_http_calls:modelRecords.length,failure:'isolated_comparison_failed'};process.exitCode=1;
 }finally{
   autoQueue=false;
   if(pool)await pool.query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=true,model_execution_enabled=false; UPDATE tanaghom.agent_runtime_controls SET emergency_stop=true').catch(()=>{});
