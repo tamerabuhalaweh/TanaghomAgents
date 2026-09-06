@@ -16,6 +16,10 @@ transcript to locate the current implementation or approved next step.
   References in a Tanaghom runbook do not authorize changing those systems.
 - The separate Hybrid/New/tanaghum-platform deployment is not this repository's
   certified environment. Do not transplant its credentials, schema or evidence.
+- The CPU test VPS selected on 2026-09-06 is co-hosted `155.117.45.45`, not the
+  certified `38.247.187.232` runtime. Existing Gemma supplies shared inference;
+  test-state isolation does not isolate the model. See the reviewed successor
+  setup direction in [STATUS.md](STATUS.md); no ad hoc simulator retargeting.
 
 ## Where implementation actually lives
 

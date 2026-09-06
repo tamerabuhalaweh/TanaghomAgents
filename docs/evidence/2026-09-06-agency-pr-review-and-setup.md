@@ -1,7 +1,9 @@
 # Agency PR review and model-setup handoff
 
 Date: 2026-09-06. Scope: delegated Tanaghom technical PR review and #177 setup
-preparation. No server/provider/model access or deployment was performed.
+preparation. After #198's review, Tamer selected an existing CPU VPS and shared
+Gemma topology; only the CPU VPS was inspected read-only. No provider/model
+call, remote configuration change or deployment was performed.
 
 ## PR #198: accepted source slice
 
@@ -38,14 +40,27 @@ open and does not block #177. No archive text or live state was altered.
 ## Authority and outstanding decisions
 
 Tamer delegated technical PR reviews. This does not automatically appoint a
-business approver or two human bilingual reviewers, approve a model environment,
+business approver or two human bilingual reviewers, approve model execution,
 purchase resources or authorize inference/deployment. No customer signoff has
 been recorded. The plain-language proposal, review-row example, secret-free
 operator inventory and staged gates are in
 [Review and model setup](../planning/agency-expansion/REVIEW_AND_MODEL_SETUP.md).
 
+Subsequent user direction supplied CPU VPS `155.117.45.45` and specified using
+existing shared Gemma 4, not obtaining another GPU. The pending setup proposal
+was revised before merge. A [read-only CPU-host inventory](2026-09-06-cpu-vps-readonly-preflight.md)
+records 3 CPUs, 5,925 MiB RAM, about 40 GB free disk and existing co-hosted
+workloads. No GPU-host connection or model probe occurred. Shared inference is
+not model isolation: a successor manifest/transport, capacity limits and an
+operator-approved request window are still required. Original frozen packages
+are not retargeted and their prior isolated-model gate is not marked passed.
+
+The revised CPU/shared-Gemma documentation passed local `npm test` (167/167),
+`npm run check` (2,351 files) and `git diff --check`. Its own exact-head CI and
+merge outcome belong to PR #199; #198's checks are not reused as its acceptance.
+
 Original frozen corpus, rubric, prerequisites, runtime code, production
 migrations and workflow exports remain unchanged by this follow-up. #177 remains
 open for actual quality/resource and reviewer acceptance; #176 installation and
 live-provider UAT remain separate. Production-release evidence: **60/100**,
-unchanged; no new live release gate passed in this source-only work.
+unchanged; no new live release gate passed in this review/setup work.

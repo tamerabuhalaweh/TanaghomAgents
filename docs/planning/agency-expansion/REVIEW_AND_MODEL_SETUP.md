@@ -1,8 +1,10 @@
 # Agency pilot: people, model environment and next acceptance gate
 
 As of 2026-09-06. Owner: [#177](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/177).
-Status: setup proposal; human nominations, model environment and execution
-approval remain pending. This document runs nothing and changes no frozen input.
+Status: Tamer selected CPU VPS `155.117.45.45` for disposable test services and
+the existing shared Gemma 4 for inference. No second GPU is required. Human
+nominations, the concrete resource/transport package and execution approval
+remain pending. This document changes no frozen input.
 
 ## What is accepted
 
@@ -26,7 +28,7 @@ still be respected, never bypassed using administrator privileges.
 | Product scope and release decisions | Tamer | Existing product owner; no new release signoff recorded |
 | Correct offers, prices, policies and reference answers | Customer sales/support manager, or Tamer if he owns these decisions | Nomination pending |
 | Independent English/Arabic answer ratings | Tamer plus one bilingual customer representative | Proposed, not nominated or approved |
-| Isolated GPU environment, exact model inventory and resource limits | Environment owner designated by Tamer | Unknown; no host access performed |
+| CPU test services, shared Gemma inventory and resource/request window | Operators designated by Tamer | CPU VPS selected and inspected read-only; model metadata and execution window pending |
 
 The business approver can also be one of the two answer reviewers. These are
 people reading answers, not new technical accounts or API credentials. Two
@@ -95,14 +97,50 @@ Correction time and material changes, or not measured:
 Disagreement/adjudication reference, if needed:
 ```
 
-## Recommended isolated model setup
+## Selected topology: CPU test services and existing shared Gemma
 
-Use a separately approved **non-production Linux GPU environment** under a
-named operator. Its GPU/model process, database, credentials, queues and test
-network must be isolated from customer workloads. A second container on the
-same busy production GPU is not an accepted isolation plan. Do not use the
-shared 38.247 Gemma endpoint, modify SmartLabs/SmartCC/voice, or transplant the
-Hybrid environment's credentials. No infrastructure purchase is authorized.
+Tamer's subsequent direction supersedes this PR's initial proposal for a
+separate non-production GPU: use **CPU VPS `155.117.45.45`** for the test harness,
+disposable database and n8n, and use **existing shared Gemma 4** for inference.
+There is no second GPU purchase or model installation in this plan.
+
+This isolates **test state**, not the model process or all host resources.
+Shared inference can affect other work, and a schema/compiler failure can still
+harm the shared engine. Quality results must identify the shared endpoint;
+latency/resource observations cannot be presented as isolated GPU capacity or
+attributable per-run memory without appropriate measurements.
+
+The original frozen `evaluation/agency-v1` and `evaluation/agency-runner-v1`
+packages remain unchanged and still prohibit ad hoc shared-model retargeting.
+Prepare a **reviewed successor execution manifest and transport package** that
+explicitly records this topology, its changed risk boundary, matching compiler
+evidence, model identity and operator-approved request window. Do not populate
+the original isolated-environment approval field with this CPU host or claim
+its old model-isolation gate has passed. Selecting the topology is not
+authorization to run new structured-output schemas against shared Gemma.
+
+The [read-only VPS inventory](../../evidence/2026-09-06-cpu-vps-readonly-preflight.md)
+found 3 CPUs, 5,925 MiB RAM (3,307 MiB available in that snapshot), and about
+40 GB free root disk. It also found 21 existing containers, including four
+unhealthy/restarting containers. This is **not an empty or dedicated test host**.
+Their causes were not investigated; none was changed. The Hybrid application,
+Postiz and other existing workloads are not the certified Tanaghom environment.
+Never reuse their databases, vaults, credentials, ports or volumes.
+
+Before startup, the successor package must demonstrate an aggregate CPU/RAM/
+disk budget with host headroom, bounded logs/evidence, unique resource names,
+non-conflicting ports/networks, run-owned cleanup and stop conditions. Build
+artifacts off-host where practical. The accepted CI runner's PostgreSQL and
+n8n alone allow 512 MiB + 1,536 MiB and 1 + 2 CPUs, before dashboard/gateway
+overhead; copying those limits to this shared 3-CPU VPS is not a capacity plan.
+Keep the CI simulator's host networking/disabled SSRF settings out of the shared
+VPS design. Use a reviewed isolated test network, authenticated private test
+services and a fixed TLS-verified Gemma route; no arbitrary outbound URLs,
+provider credentials or public test UI/webhooks. Host firewall changes, if
+needed, require a separately reviewed exact diff and rollback, not this note.
+
+No SmartLabs, SmartCC, voice or Gemma service may be reconfigured, restarted or
+provisioned by this work. No infrastructure purchase is authorized.
 
 The existing Linux CI runner proves PostgreSQL/n8n/authentication using a local
 simulator; it neither supplies a GPU nor certifies a real model. The Windows
@@ -113,14 +151,15 @@ Ask the environment owner for a secret-free inventory and approval reference:
 
 | Required fact | Why it is needed |
 | --- | --- |
-| Environment identifier, operator and isolation evidence | Know where a failure is contained and who may stop it |
-| GPU device/allocation, available VRAM/RAM/disk, absolute limits | Prevent borrowing unknown shared capacity; no guessed minimum GPU size |
+| CPU host identity, operator, resource caps and disposable-state boundaries | Confirm run-owned resources and protect co-hosted workloads |
+| Shared Gemma operator, approved endpoint and request window | Explicitly accept shared inference risk without administration rights |
+| GPU allocation/headroom and existing health/stop signals | Bound request load; unknown measurements remain unknown |
 | Exact served model ID and immutable model-file manifest/digests | An alias such as Gemma is not a reproducible model identity |
 | Tokenizer and chat-template digests, quantization and context limit | Match prompt formatting and verify prompt plus output fits the context |
-| Immutable inference image, vLLM/xgrammar versions, backend and launch configuration | Test the compiler/runtime actually intended for the candidate |
+| Immutable inference image/build, vLLM/xgrammar versions, backend and launch configuration | Match the actual serving installation, including non-container installations |
 | Supported sampling and seed parameters | Record actual behavior without promising deterministic output |
-| Private test route, credential reference and reviewed network boundary | Fixed isolated destination; no production fallback or public ingress |
-| Approved GPU/RAM/disk/time/request budget and cost basis | Self-hosted compute is not assumed free or unlimited |
+| Fixed TLS-verified Gemma route, credential reference and reviewed network boundary | Only the selected inference API, never unrelated private services or provider endpoints |
+| Approved CPU/RAM/disk/time/request budget and cost basis | Existing compute is not assumed free or unlimited; no extra GPU purchase |
 
 Use existing operator/release records where available. This is a request for
 information, not permission to inspect or hash files on a protected live host.
@@ -132,27 +171,36 @@ and version-dependent request fields. The implementation must target the
 or change the existing production request contract.
 [Primary vLLM documentation](https://docs.vllm.ai/en/latest/features/structured_outputs/).
 
+XGrammar exposes a separate tokenizer-aware schema compilation step with CPU
+preprocessing. This supports a CPU-side compiler compatibility check using the
+matching approved package/tokenizer/configuration, without loading a second
+GPU model. It is not proof that the complete shared vLLM service cannot fail.
+[Primary XGrammar workflow](https://github.com/mlc-ai/xgrammar/blob/main/docs/start/workflow_of_xgrammar.md?plain=true).
+
 ## Ordered test gates and proposed limits
 
 These limits carry forward the proposed rubric; they do not grant execution
-authority. Concrete memory, cost, host and reviewer approvals are still missing.
+authority. The CPU/shared-model topology is selected; concrete capacity limits,
+the successor transport, shared-model window and reviewer approvals are missing.
 
 1. **Inventory and freeze:** approve the people, data/reference/withheld plan,
-   model identity, isolated environment, schema hashes and absolute budgets.
+   model identity, shared-inference risk, schema hashes and absolute budgets.
    Preserve the accepted simulator and its two source locks unchanged.
 2. **Implement the separate real-model transport/compiler package:** fixed
    destination, manifest-bound model/case/arm, no arbitrary prompts/URLs,
-   authenticated durable jobs, request/body/time/token limits, isolated health
-   checks and operator stop procedure. This package is not implemented by this
+   authenticated durable jobs, request/body/time/token limits, reviewed read-only
+   health checks and operator stop procedure. This package is not implemented by this
    setup document. The simulator cannot be switched to live by a flag.
 3. **Compiler-only gate:** test the four actual strategy/content/conversation/
-   Brand schemas inside the approved matching compiler environment. Record
+   Brand schemas in a bounded CPU-only matching compiler environment. Record
    schema/image hashes, exit codes, bounded logs and resource use. A JavaScript
    schema screen is not this compiler test. No model inference yet.
-4. **Separately authorized smoke gate:** at most eight isolated model requests
+4. **Separately authorized shared-Gemma smoke gate:** at most eight requests
    (four schemas, English/Arabic), one outstanding request, zero automatic
    retries, at least five seconds between requests, 90-second request timeout.
-   Check isolated model identity/health before and after each request. A failure
+   Check approved model identity/health signals before and after each request.
+   A timeout does not prove server-side generation stopped: halt the batch and
+   require operator confirmation before any further inference. Any failure
    stops new requests; do not restart a failed engine or replay a fatal schema.
 5. **Review smoke evidence, then authorize the quality run:** the existing
    public plan is 324 model attempts plus 36 deterministic reports, with three
@@ -168,23 +216,25 @@ authority. Concrete memory, cost, host and reviewer approvals are still missing.
    separate. All provider actions remain forbidden throughout this experiment.
 
 On uncertainty, health loss, identity/schema drift, a limit breach or an
-unauthorized action: stop new requests, retain evidence and notify the isolated
-environment owner. Cleanup may remove only run-owned resources after evidence
+unauthorized action: stop new requests, retain evidence and notify the relevant
+CPU/model operator. Cleanup may remove only run-owned resources after evidence
 retention. It must never restart or modify shared production services.
 
 ## Current decision record and next step
 
 - Confirmed: Codex may conduct Tanaghom technical PR reviews; #198's source
-  simulator acceptance is complete.
-- Proposed only: Tamer plus a bilingual customer colleague for answer review;
-  separate non-production Linux GPU setup and the bounded sequence above.
+  simulator acceptance is complete. Tamer selected the CPU VPS plus existing
+  shared Gemma topology; a read-only CPU-host inventory is recorded.
+- Proposed only: Tamer plus a bilingual customer colleague for answer review,
+  the successor resource/network/transport design and bounded sequence above.
 - Missing: business reviewer nomination, approved reference/withheld/rubric
-  material, isolated operator/target/model inventory and resource authorization.
-- Not authorized/performed: host connection, provisioning, real-model inference,
+  material, model inventory/operator request window and resource authorization.
+- Not authorized/performed: remote provisioning/changes, real-model inference,
   provider action, workflow activation, deployment or customer release signoff.
 
-Best next move: obtain the single business-reviewer nomination and the isolated
-environment owner's inventory, then review the concrete compiler/transport
-package against those facts. Do not substitute another planning approval for
-missing runtime evidence. Production-release evidence remains **60/100** under
-the unchanged [scorecard](../../PRODUCTION_READINESS.md).
+Best next move: prepare the controlled CPU-VPS resource/network package and
+successor shared-Gemma transport using existing approved model records. Obtain
+missing operator metadata/window before compiler or model execution; collect
+the business-reviewer nomination in parallel. No new GPU or provider credential
+is needed for source preparation. Production-release evidence remains **60/100**
+under the unchanged [scorecard](../../PRODUCTION_READINESS.md).

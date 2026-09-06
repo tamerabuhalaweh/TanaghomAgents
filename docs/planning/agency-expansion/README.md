@@ -133,7 +133,7 @@ Concrete offline preparation is now in
 public reserve EN/AR cases, pinned paired request generation, proposed rubric
 and explicit execution gates. The reserves are not a blind holdout. PR #196
 accepted the authenticated simulation lane; actual paired quality execution,
-isolated compiler/model pins, reviewer approval and production installation
+matching compiler/model pins, reviewer approval and production installation
 remain separate. This package does not certify new agents.
 
 The next [isolated authenticated runner](../../../evaluation/agency-runner-v1/RUNBOOK.md)
@@ -160,8 +160,9 @@ additional specialists must justify their latency and resource cost.
 ## Completion and context discipline
 
 - [Review and model setup](REVIEW_AND_MODEL_SETUP.md) records PR #198 acceptance,
-  delegated technical review, proposed human roles and the isolated-model
-  inventory/gates. Human nomination and real execution are not yet approved.
+  delegated technical review, proposed human roles and Tamer's CPU-VPS/shared-
+  Gemma selection. A second GPU is not required. The original frozen isolation
+  plan needs a reviewed successor; human nomination and execution remain open.
 - Versioned snapshots of every new issue live in [issues/](issues/).
 - [issue-index.v1.json](issue-index.v1.json) maps the snapshots to live issues.
 - [CATALOG.md](CATALOG.md) is the human-readable full roster.

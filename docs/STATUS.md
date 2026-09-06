@@ -2,7 +2,9 @@
 
 **As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
 Current task authorization: delegated Tanaghom technical PR reviews and #177
-reviewer/isolated-model setup preparation. PR #198's simulator slice is accepted.
+reviewer/model setup preparation, plus a read-only inventory of Tamer's selected
+CPU test VPS. PR #198's simulator slice is accepted. Tests will use that CPU VPS
+and existing shared Gemma; no second GPU is required.
 No production deployment, live model/provider call or activation is authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
@@ -30,7 +32,8 @@ nor local adapter simulation establishes what is currently deployed.
 | Foundation issue state | #132, #133, #134 and #135 are closed implementation slices | [Pre-expansion issue snapshot](evidence/2026-09-06-pre-expansion-github-issues.json) |
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
-| Current server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
+| Current certified server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
+| Selected CPU test host | 155.117.45.45 inspected read-only: 3 CPUs, 5,925 MiB RAM, about 40 GB free disk; co-hosted, not empty or model-isolated | [VPS inventory and limitations](evidence/2026-09-06-cpu-vps-readonly-preflight.md) |
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
 | Accepted preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation preparation](../evaluation/agency-v1/RUNBOOK.md) |
@@ -103,11 +106,13 @@ Do not use this table as authority to clear stops or activate provider workers.
 - **#177**: paired bilingual evaluation preparation implemented: 72 synthetic
   cases, 47 source pins, proposed rubric and non-executable attempt ledger.
   The isolated authenticated fixed-baseline runner is now implemented with a
-  full 360-attempt simulator test. Actual isolated model/compiler evidence,
+  full 360-attempt simulator test. Actual matching compiler/model evidence,
   real-model transport approval, reference answers, blind holdout and reviewer
   acceptance remain pending. Not model-certified.
-  [People and isolated-model setup proposal](planning/agency-expansion/REVIEW_AND_MODEL_SETUP.md)
-  separates delegated code review from unfilled customer/model approvals.
+  [People and CPU/shared-Gemma setup](planning/agency-expansion/REVIEW_AND_MODEL_SETUP.md)
+  records Tamer's selected topology and unfilled customer/model approvals.
+  A successor manifest must explicitly replace the original isolation design;
+  frozen packages stay unchanged and cannot be retargeted by a setting.
 - **#178**: bounded team assignments on existing runtime handoffs.
 - **#179**: team onboarding/operations UX.
 - **#180**: governed improvement proposals.
@@ -123,12 +128,14 @@ Hermes or analytics executor is being introduced.
 authenticated integration PR #196, preparation PR #197 and simulator PR #198
 are accepted. #198 passed all 40 exact-head CI checks. Tamer delegated Tanaghom
 technical PR reviews to Codex; code review does not replace business acceptance.
-Next obtain the business-reviewer nomination and a secret-free inventory from
-the designated isolated-model environment owner, then prepare/review the concrete
-compiler and real-model transport package. See the linked setup proposal for
-roles, example review rows, staged limits and outstanding decisions.
-The prerequisite checker cannot grant authority. No live model/server/
-provider call is part of this implementation. Keep every candidate
+Next prepare/review the controlled CPU-VPS resource/network package and successor
+shared-Gemma transport. Use approved model records, obtain missing compiler/model
+metadata and the operator request window, and collect the business-reviewer
+nomination in parallel. The VPS was inspected only; no test services were started
+and its unrelated unhealthy/restarting containers were not investigated or changed.
+See the linked setup proposal for review examples, bounds and remaining decisions.
+The prerequisite checker cannot grant authority. No live model/provider call
+or remote configuration change is part of this work. Keep every candidate
 unavailable until its actual installation/dependency/certification gates pass.
 Full source review of the other 267 profiles is a later roadmap task, not a
 pilot start blocker. No new customer credential is needed for this source work.
