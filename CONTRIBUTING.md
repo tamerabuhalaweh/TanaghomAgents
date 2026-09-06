@@ -1,5 +1,9 @@
 # Contributing
 
+Read [current status](docs/STATUS.md) and the
+[developer context contract](docs/PROJECT_CONTEXT.md) before taking a task.
+Issue state, deployed state, activation and customer acceptance are distinct.
+
 ## Branch and review flow
 
 1. Work from an issue on a short-lived branch.
@@ -10,8 +14,10 @@
 
 ## Repository boundaries
 
-- `apps/dashboard`: the human-facing product UI.
-- `services/api`: authenticated application API and business rules.
+- `apps/dashboard`: the human-facing UI, implemented authenticated API routes,
+  and server-side business rules in `lib/server`.
+- `services/api`: a reserved/documentary boundary, not a separate implemented
+  service in the current deployment.
 - `packages/database`: migrations, database contracts, and tests.
 - `packages/contracts`: shared event and API schemas.
 - `n8n/workflows`: secret-free workflow exports.
@@ -28,3 +34,19 @@ coordinate through durable PostgreSQL records and events.
 - Every meaningful action requires a correlation ID and audit record.
 - Tests use fixtures and local services only.
 - Production credentials are entered into their runtime secret stores, never Git.
+
+## Durable project context
+
+Update `docs/STATUS.md`, affected decisions/catalog entries, and the relevant
+versioned issue snapshot with each material delivery. Link exact source and
+test/deployment evidence and identify untested limitations. Do not close an
+issue merely because its PR merged if its acceptance includes remaining UAT.
+
+Issues/comments and branch names are editable. Pin accepted artifacts by
+commit/content hash and record actor, timestamp and scope; do not describe an
+editable issue as immutable authorization. Never include secrets or raw
+customer data in evidence. GitHub source recovery is not database recovery.
+
+Only TanaghomAgents is in scope. Never infer permission to modify SmartLabs,
+SmartCC, voice or Gemma service administration from an agent capability or a
+linked future-department issue.
