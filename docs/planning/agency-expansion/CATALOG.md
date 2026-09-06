@@ -1,6 +1,6 @@
 # Complete Agency Agents source catalog — v1
 
-Planning inventory, captured 2026-09-06. All **273 profiles / 18 divisions** are retained in the roadmap. No profile below has been imported, adapted, certified or activated by this planning work.
+Original planning inventory, captured 2026-09-06. All **273 profiles / 18 divisions** are retained in the roadmap. Subsequent selected reviews and six normalized candidates are recorded in the [pilot package](../../../skills/pilots/agency-v1/README.md). None is installed or activated; the original inventory below remains an unchanged intake snapshot.
 
 The [machine-readable manifest](catalog.v1.json) records each exact source path, title, byte count, Git blob SHA-1, content SHA-256, primary department issue, pilot mapping and separate adoption states. [Source/review limits](PROVENANCE.md) apply to every row.
 

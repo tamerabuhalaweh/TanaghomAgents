@@ -1,0 +1,385 @@
+{
+  "contract_version": "tanaghom.agency-pilot-candidates.v1",
+  "scope": "source_candidates_only",
+  "recorded_at": "2026-09-06",
+  "epic": 174,
+  "review_issue": 175,
+  "pilot_issue": 176,
+  "evaluation_issue": 177,
+  "upstream_commit": "1454492577d1af4884722837f491fef14b501e21",
+  "inventory_ref": "docs/planning/agency-expansion/catalog.v1.json",
+  "license_ref": "docs/planning/agency-expansion/UPSTREAM_LICENSE.txt",
+  "model_execution": "not_performed",
+  "model_binding": null,
+  "runtime_installed": false,
+  "provider_execution_allowed": false,
+  "references": [
+    {
+      "path": "packages/contracts/schemas/phase7/organization-skill-draft.v1.schema.json",
+      "sha256": "d751c643cc7844262e5fe796f6c1713ac7cf945f7be0ef7ff3ec336cfd374542"
+    },
+    {
+      "path": "packages/contracts/schemas/phase7/agent-runtime-plan.v1.schema.json",
+      "sha256": "cc0e96f25505bf4251fc66e317a22e1a4a7e417cf08b5827aa270268f89b5178"
+    },
+    {
+      "path": "prompts/policy-resolved-agent/v1.md",
+      "sha256": "ea65fca6fc3759a89c140a73e01057d90d25475b891e0473ee0fa721c6382485"
+    },
+    {
+      "path": "packages/contracts/schemas/phase3/strategist-job.v1.schema.json",
+      "sha256": "d501de13ebb844f8153155c7f0d3d34a19eda64bb3f633826fcfacd4e1ec9e01"
+    },
+    {
+      "path": "packages/contracts/schemas/phase3/strategist-output.v1.schema.json",
+      "sha256": "a84a0ddaa4dbea9008b2fc60e69ba6bf2dc39ddf0bd3824039bdb9ebab1af66c"
+    },
+    {
+      "path": "skills/platform/create-campaign-strategy/SKILL.md",
+      "sha256": "6fc30a74e8ab9672d96b329491f3a08b59c40f693874399a3811c0a8dc89a2b7"
+    },
+    {
+      "path": "packages/contracts/schemas/phase3/content-producer-job.v1.schema.json",
+      "sha256": "8c12f033d6b01547776c8a62f4bb1baea3526e399c55264e6fbe38fcaf5562cc"
+    },
+    {
+      "path": "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json",
+      "sha256": "c39eb8226b521b51f9820a5be6c02b69ae2aa02f49fbbd04a29635d2e02e2c15"
+    },
+    {
+      "path": "skills/platform/generate-content-drafts/SKILL.md",
+      "sha256": "80b06ef7be51c32c1889ac56cb03736ac3e88460a368558b67b50b1abbd65907"
+    },
+    {
+      "path": "packages/contracts/schemas/phase5/conversation-intelligence-request.v1.schema.json",
+      "sha256": "35d9e60813bc69a0ec1e7195114d101a99f674bc8aa9298e37715ed25af7cab9"
+    },
+    {
+      "path": "packages/contracts/schemas/phase5/conversation-intelligence-output.v1.schema.json",
+      "sha256": "2cd6b23ce8f9f3455d20fffca00285d1ed31f8f06b48ae8e0e7a889124d5a943"
+    },
+    {
+      "path": "skills/platform/propose-conversation-reply/SKILL.md",
+      "sha256": "2fef589ae17a755e2e1c93e66568eaac825ec4c12e7d9a2f6f328192dee5793e"
+    }
+  ],
+  "profiles": [
+    {
+      "code": "social_media_strategist",
+      "display_name": "Social Media Strategist",
+      "owner_issues": [
+        176
+      ],
+      "source": {
+        "path": "marketing/marketing-social-media-strategist.md",
+        "git_blob_sha1": "fd39bfa5782fa36b862472e8a2b1cd3d517609e1",
+        "content_sha256": "7c698a9280872666b2726b7ca305c6d4890fcb95a098c7c316beb9bf5fdb4274",
+        "url": "https://github.com/msitarzewski/agency-agents/blob/1454492577d1af4884722837f491fef14b501e21/marketing/marketing-social-media-strategist.md"
+      },
+      "review": {
+        "status": "normalized_candidate_only",
+        "reviewer": "Codex source review; customer/domain acceptance pending",
+        "retained": [
+          "Audience-first cross-channel planning",
+          "Consistent brand themes with channel-specific adaptation"
+        ],
+        "removed": [
+          "Declared WebFetch/WebSearch/Read/Write/Edit tools",
+          "Unmeasured growth, engagement and ROI targets",
+          "Advertising execution and automatic outreach",
+          "Implicit persistent memory"
+        ]
+      },
+      "candidate": {
+        "path": "skills/pilots/agency-v1/social_media_strategist.skill.json",
+        "sha256": "7fb3804b5a366c9ec44fc739c86fe40b6d447523a7320ac2ec80e0b67aa6ea5f",
+        "content_hash": "sha256:14ed2a7ada906e13a88991ef1e12855c77d81782f4d53bf2c008335e234168f7"
+      },
+      "proposed_target": {
+        "role_code": "campaign_strategist",
+        "worker_code": "campaign_strategy_generator",
+        "platform_skill_code": "create_campaign_strategy",
+        "platform_skill_version_id": "72000000-0000-4000-8000-000000000001",
+        "platform_skill_content_hash": "6fc30a74e8ab9672d96b329491f3a08b59c40f693874399a3811c0a8dc89a2b7",
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "campaign_strategy_generator",
+          "version": "v1"
+        },
+        "input_schema_ref": "packages/contracts/schemas/phase3/strategist-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase3/strategist-output.v1.schema.json"
+      },
+      "available": false,
+      "activated": false,
+      "certified": false,
+      "blockers": [
+        "tenant_evidence_and_owner_review_required",
+        "versioned_binding_not_installed",
+        "paired_evaluation_pending",
+        "model_compatibility_probe_pending",
+        "live_promotion_not_authorized"
+      ]
+    },
+    {
+      "code": "content_creator",
+      "display_name": "Content Creator",
+      "owner_issues": [
+        176,
+        155
+      ],
+      "source": {
+        "path": "marketing/marketing-content-creator.md",
+        "git_blob_sha1": "4beedb05f5e4f8754c63125649ac8a9763609330",
+        "content_sha256": "26ddce44f057068a3935c13d53becd3c57385fb47fcdcfdd891b80269070b3d5",
+        "url": "https://github.com/msitarzewski/agency-agents/blob/1454492577d1af4884722837f491fef14b501e21/marketing/marketing-content-creator.md"
+      },
+      "review": {
+        "status": "normalized_candidate_only",
+        "reviewer": "Codex source review; customer/domain acceptance pending",
+        "retained": [
+          "Audience-centered narrative and brand consistency",
+          "Draft adaptation and repurposing with lineage"
+        ],
+        "removed": [
+          "Declared research and file-editing tools",
+          "Video/audio production claims without executors",
+          "Lead-growth, engagement and content ROI promises",
+          "Automatic distribution and invented performance"
+        ]
+      },
+      "candidate": {
+        "path": "skills/pilots/agency-v1/content_creator.skill.json",
+        "sha256": "2f5231e163ef6599b58dbfa9341c856f4ee5a85aedc4a7474d7f5f8e37da981e",
+        "content_hash": "sha256:8bd87949c37131a2b412a3b083e1316778d518d3e0b61209c7c162006793a734"
+      },
+      "proposed_target": {
+        "role_code": "content_producer",
+        "worker_code": "campaign_content_generator",
+        "platform_skill_code": "generate_content_drafts",
+        "platform_skill_version_id": "72000000-0000-4000-8000-000000000002",
+        "platform_skill_content_hash": "80b06ef7be51c32c1889ac56cb03736ac3e88460a368558b67b50b1abbd65907",
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "campaign_content_generator",
+          "version": "v1"
+        },
+        "input_schema_ref": "packages/contracts/schemas/phase3/content-producer-job.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase3/content-producer-output.v1.schema.json"
+      },
+      "available": false,
+      "activated": false,
+      "certified": false,
+      "blockers": [
+        "tenant_evidence_and_owner_review_required",
+        "versioned_binding_not_installed",
+        "paired_evaluation_pending",
+        "model_compatibility_probe_pending",
+        "live_promotion_not_authorized"
+      ]
+    },
+    {
+      "code": "brand_guardian",
+      "display_name": "Brand Guardian",
+      "owner_issues": [
+        176
+      ],
+      "source": {
+        "path": "design/design-brand-guardian.md",
+        "git_blob_sha1": "c6c6feda374146d84c46087e6707994d1f17ef5c",
+        "content_sha256": "d1d5c78af85d4d35be94b93d5c011d17e3cf5dcb69b2037a3ebf3059803b893e",
+        "url": "https://github.com/msitarzewski/agency-agents/blob/1454492577d1af4884722837f491fef14b501e21/design/design-brand-guardian.md"
+      },
+      "review": {
+        "status": "normalized_candidate_only",
+        "reviewer": "Codex source review; customer/domain acceptance pending",
+        "retained": [
+          "Voice consistency",
+          "Cultural appropriateness and explicit review findings"
+        ],
+        "removed": [
+          "CSS and shell examples",
+          "Trademark/legal assurance",
+          "Invented monitoring and implementation state",
+          "Automatic brand compliance or approval"
+        ]
+      },
+      "candidate": {
+        "path": "skills/pilots/agency-v1/brand_guardian.skill.json",
+        "sha256": "a5ff6d59c0b57099174612ccf18948c58fecf375404bf0d7c98aeac25d13deef",
+        "content_hash": "sha256:341862ac5c3203e3f44545ddcebb69c82e117c9baa133f32d7d7f9d3467f2364"
+      },
+      "proposed_target": null,
+      "available": false,
+      "activated": false,
+      "certified": false,
+      "blockers": [
+        "output_contract_and_executor_missing",
+        "tenant_evidence_and_owner_review_required",
+        "versioned_binding_not_installed",
+        "paired_evaluation_pending",
+        "model_compatibility_probe_pending",
+        "live_promotion_not_authorized"
+      ]
+    },
+    {
+      "code": "discovery_coach",
+      "display_name": "Discovery Coach",
+      "owner_issues": [
+        176,
+        152,
+        154
+      ],
+      "source": {
+        "path": "sales/sales-discovery-coach.md",
+        "git_blob_sha1": "76b82c89c7a3f90d784d8ae2e893d914b1d6dc7b",
+        "content_sha256": "8244a25e5b8785058b19ef92dca9e543a2c990e4dde1166d194f14514e3ae278",
+        "url": "https://github.com/msitarzewski/agency-agents/blob/1454492577d1af4884722837f491fef14b501e21/sales/sales-discovery-coach.md"
+      },
+      "review": {
+        "status": "normalized_candidate_only",
+        "reviewer": "Codex source review; customer/domain acceptance pending",
+        "retained": [
+          "Reflect stated needs and clarify actual fit",
+          "Honest uncertainty and no-fit outcomes"
+        ],
+        "removed": [
+          "Emotional-pressure and pain-expansion coaching",
+          "Invented objection-frequency figures",
+          "Forced long enterprise discovery on consumer chats",
+          "Call recording access or outbound scheduling"
+        ]
+      },
+      "candidate": {
+        "path": "skills/pilots/agency-v1/discovery_coach.skill.json",
+        "sha256": "17472a50545bc97b9eb71b6e75851157e8967365161b769cb2498238298c8ad0",
+        "content_hash": "sha256:0bd361ff06a356c0841e26af1dc61a1f4c180da1bea224be74c900c348294343"
+      },
+      "proposed_target": {
+        "role_code": "sales_crm",
+        "worker_code": "conversation_intelligence_worker",
+        "platform_skill_code": "propose_conversation_reply",
+        "platform_skill_version_id": "72000000-0000-4000-8000-000000000006",
+        "platform_skill_content_hash": "2fef589ae17a755e2e1c93e66568eaac825ec4c12e7d9a2f6f328192dee5793e",
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "conversation_intelligence_worker",
+          "version": "v1"
+        },
+        "input_schema_ref": "packages/contracts/schemas/phase5/conversation-intelligence-request.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase5/conversation-intelligence-output.v1.schema.json"
+      },
+      "available": false,
+      "activated": false,
+      "certified": false,
+      "blockers": [
+        "tenant_evidence_and_owner_review_required",
+        "versioned_binding_not_installed",
+        "paired_evaluation_pending",
+        "model_compatibility_probe_pending",
+        "live_promotion_not_authorized"
+      ]
+    },
+    {
+      "code": "support_responder",
+      "display_name": "Support Responder",
+      "owner_issues": [
+        176,
+        154
+      ],
+      "source": {
+        "path": "support/support-support-responder.md",
+        "git_blob_sha1": "3ea84672ac4906b7a50ee64573e1becd1aeb1ace",
+        "content_sha256": "4dcd962743e940d1cdd119dcc748d4a434b6b32775aa11ea68fbd2209ee0852c",
+        "url": "https://github.com/msitarzewski/agency-agents/blob/1454492577d1af4884722837f491fef14b501e21/support/support-support-responder.md"
+      },
+      "review": {
+        "status": "normalized_candidate_only",
+        "reviewer": "Codex source review; customer/domain acceptance pending",
+        "retained": [
+          "Empathy and clear troubleshooting proposals",
+          "Explicit escalation and knowledge-gap reporting"
+        ],
+        "removed": [
+          "Python analytics and YAML channel configuration",
+          "Unproven resolution rates and SLA claims",
+          "Unrequested outreach and account mutations",
+          "Automatic knowledge-base edits and cross-selling"
+        ]
+      },
+      "candidate": {
+        "path": "skills/pilots/agency-v1/support_responder.skill.json",
+        "sha256": "497ea0bbf6559bc1f15d159868ee6b20b5280dd7a03bed4c9a29ec7a4219d77c",
+        "content_hash": "sha256:104550ca53c6caf337ae8daa9633db796a34fcf143225b68ccb27fa6d19f196f"
+      },
+      "proposed_target": {
+        "role_code": "sales_crm",
+        "worker_code": "conversation_intelligence_worker",
+        "platform_skill_code": "propose_conversation_reply",
+        "platform_skill_version_id": "72000000-0000-4000-8000-000000000006",
+        "platform_skill_content_hash": "2fef589ae17a755e2e1c93e66568eaac825ec4c12e7d9a2f6f328192dee5793e",
+        "executor": {
+          "type": "pinned_n8n_workflow",
+          "ref": "conversation_intelligence_worker",
+          "version": "v1"
+        },
+        "input_schema_ref": "packages/contracts/schemas/phase5/conversation-intelligence-request.v1.schema.json",
+        "output_schema_ref": "packages/contracts/schemas/phase5/conversation-intelligence-output.v1.schema.json"
+      },
+      "available": false,
+      "activated": false,
+      "certified": false,
+      "blockers": [
+        "tenant_evidence_and_owner_review_required",
+        "versioned_binding_not_installed",
+        "paired_evaluation_pending",
+        "model_compatibility_probe_pending",
+        "live_promotion_not_authorized"
+      ]
+    },
+    {
+      "code": "executive_summary",
+      "display_name": "Executive Summary Generator",
+      "owner_issues": [
+        176,
+        153
+      ],
+      "source": {
+        "path": "support/support-executive-summary-generator.md",
+        "git_blob_sha1": "c8338a5eac9d8351d98687518d4471c25fa67f19",
+        "content_sha256": "298891fcf297de5d9b343e9ab9b63864317de63256b15c0c72e6cec172f8f0ff",
+        "url": "https://github.com/msitarzewski/agency-agents/blob/1454492577d1af4884722837f491fef14b501e21/support/support-executive-summary-generator.md"
+      },
+      "review": {
+        "status": "normalized_candidate_only",
+        "reviewer": "Codex source review; customer/domain acceptance pending",
+        "retained": [
+          "Concise findings and decision-oriented structure",
+          "Explicit data gaps and factual restraint"
+        ],
+        "removed": [
+          "Invented consultant employment or training history",
+          "Mandatory numerical claims when evidence is absent",
+          "Unsubstantiated revenue or probability forecasts",
+          "Implied persistent memory and autonomous executive decisions"
+        ]
+      },
+      "candidate": {
+        "path": "skills/pilots/agency-v1/executive_summary.skill.json",
+        "sha256": "3a8979c9277e3c3692e6097f700ca8742c0c37d3628433793030c545327a527c",
+        "content_hash": "sha256:b9f715ce74fcf5bfb79e5d8e7c99c98c138288afd6b73bf72c7f7fb0e76ce084"
+      },
+      "proposed_target": null,
+      "available": false,
+      "activated": false,
+      "certified": false,
+      "blockers": [
+        "output_contract_and_executor_missing",
+        "tenant_evidence_and_owner_review_required",
+        "versioned_binding_not_installed",
+        "paired_evaluation_pending",
+        "model_compatibility_probe_pending",
+        "live_promotion_not_authorized"
+      ]
+    }
+  ]
+}

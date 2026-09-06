@@ -2,7 +2,7 @@
 
 ## Authorization and status
 
-Planning/backlog authorized by Tamer on 2026-09-06. Implementation has not started under this issue. This GO authorizes GitHub documentation and tracking only; implementation, deployment, real model/provider calls and activation need separately scoped approval. Future department inclusion is a product direction, not certified capability.
+Selected intake has started under Tamer's 2026-09-06 scoped GO. Six complete source bodies were reviewed and their original-byte hashes matched the pinned inventory; normalized candidates and explicit omissions are recorded in config/agency-pilot-candidates.v1.json and skills/pilots/agency-v1/README.md. The original 273-row catalog remains an unchanged historical snapshot. The other 267 profiles remain semantically unreviewed. No source code was executed and no runtime was installed.
 
 Parent: #174.
 
@@ -27,7 +27,7 @@ As a platform maintainer, I need a complete pinned catalog and per-profile revie
 - #174; #151 remains responsible only for the separate downloaded flow pack.
 - Existing skill/lifecycle contracts #132-#135; executable/MCP work additionally requires #136/#137.
 
-Implementation owner: unassigned until a scoped development GO. Product/scope decisions: Tamer. The implementing developer must name the reviewer and required customer/domain approver in the PR.
+Source implementation and source review for this slice: Codex. Product/scope owner: Tamer. Customer/domain approver: to be designated by Tamer before quality acceptance or rollout; no independent review or customer signoff is implied. Other future slices remain unassigned.
 
 ## Acceptance criteria
 

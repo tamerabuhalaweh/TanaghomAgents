@@ -11,7 +11,8 @@ Start here: [developer context](PROJECT_CONTEXT.md).
 Tanaghom has implemented campaign/content, approvals, customer integrations,
 conversation governance, skills, Agent Studio and the shared policy runtime.
 Its initial commercial pilot remains separate from full live-provider
-acceptance. The new all-department expansion is planned, not implemented.
+acceptance. The all-department expansion has a first six-profile source-candidate
+slice; runtime bindings, two missing adapters and certification remain unfinished.
 
 The source baseline inspected is
 `0b5b5a761099e6eb6163efbeb00a75d891d680c7` (PR #173), matching remote main
@@ -26,7 +27,7 @@ when this work began. New planning documents change no runtime behavior.
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
 | Current server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
-| New expansion | Epic #174, issues #175-#190, 273 source profiles catalogued; no adaptations or activations | [Expansion plan](planning/agency-expansion/README.md) |
+| New expansion | 273-profile historical inventory; six normalized source candidates, four reuse mappings and two explicit adapter gaps; none installed or activated | [Pilot package](../skills/pilots/agency-v1/README.md) |
 
 The historical certification record did not establish that every scenario used
 a live model: its controlled resume included six direct jobs and zero model
@@ -80,9 +81,9 @@ Do not use this table as authority to clear stops or activate provider workers.
 ## Expansion lane: plan approved, selected pilot source work authorized
 
 - **#174**: all-department epic.
-- **#175**: full catalog review/admission; initial metadata inventory is present.
+- **#175**: six selected source reviews complete; 267 reviews still pending.
 - **#176**: six-profile pilot (strategy, content, brand review, discovery,
-  customer care, executive reporting).
+  customer care, executive reporting): six validated candidate drafts, not runtime agents.
 - **#177**: paired bilingual evaluation and resource/safety evidence.
 - **#178**: bounded team assignments on existing runtime handoffs.
 - **#179**: team onboarding/operations UX.
@@ -95,12 +96,15 @@ Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
 
-Accept #192 and documentation PR #191 only after their full CI gates pass.
-Tamer has authorized the next scoped source work on
-**#175's six selected semantic reviews and #176's pilot contracts**, with
-#177's rubric/data plan established before comparison results. Do not wait
-for all future departments. Full source review under #175 remains a longer
-parallel roadmap task, not a pilot launch blocker.
+#192's source fix is accepted. Documentation PR #191 and the new pilot-source
+PR each require their own full CI gate before merge. First pilot source slice:
+120 local tests PASS; see [evidence](evidence/2026-09-06-agency-pilot-candidates.md).
+Next implement reviewed versioned bindings for the four compatible procedures
+and explicitly scoped Brand/Executive contracts/adapters (coordinate #153).
+Keep every candidate unavailable until its actual dependency/certification
+gates pass. Review/freeze #177's rubric/data/model plan before comparison runs.
+Full source review of the other 267 profiles is a later roadmap task, not a
+pilot start blocker. No new customer credential is needed for this source work.
 
 Keep #125/#45/#54/#56/#137 provider acceptance on its separate critical path;
 new templates are not a substitute for those tests.

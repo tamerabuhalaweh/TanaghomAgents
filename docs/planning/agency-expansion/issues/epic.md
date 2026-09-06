@@ -2,7 +2,7 @@
 
 ## Authorization and status
 
-Planning/backlog authorized by Tamer on 2026-09-06. Implementation has not started under this issue. This GO authorizes GitHub documentation and tracking only; implementation, deployment, real model/provider calls and activation need separately scoped approval. Future department inclusion is a product direction, not certified capability.
+Planning approved and selected pilot source work authorized by Tamer on 2026-09-06 after targeted dependency remediation #192 (merged PR #193, 38/38 CI PASS). The first #175/#176 slice reviews six sources and packages six disabled proposal-instruction candidates. No runtime installation, deployment, model/provider call or activation. Future departments and the remaining epic tracks are not implemented by this slice.
 
 Related foundation epic: #131. This is a separate all-department expansion; it does not reset Phase 7 or the current provider release.
 
@@ -27,7 +27,7 @@ As a business owner, I want coordinated specialist teams with clear ownership, c
 - Existing platform foundation: #132, #133, #134, #135 (closed; retained as architecture dependencies).
 - Current release gates: #125, #137; optional MCP #136; Hermes #150.
 
-Implementation owner: unassigned until a scoped development GO. Product/scope decisions: Tamer. The implementing developer must name the reviewer and required customer/domain approver in the PR.
+Source implementation and source review for this slice: Codex. Product/scope owner: Tamer. Customer/domain approver: to be designated by Tamer before quality acceptance or rollout; no independent review or customer signoff is implied. Other future slices remain unassigned.
 
 ## Acceptance criteria
 

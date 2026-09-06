@@ -2,6 +2,12 @@
 
 Recorded: 2026-09-06. Intake owner: #175. Expansion epic: #174.
 
+Subsequent selected review: all six pilot source bodies were read and matched
+the recorded original-byte hashes. See the [candidate review and retention decision](../../../skills/pilots/agency-v1/README.md).
+The initial inventory below is preserved unchanged; its pending flags describe
+intake-time state, not the later six-candidate review. The other 267 bodies
+remain unreviewed by this source slice. No candidate has runtime admission.
+
 ## Pinned source
 
 - Repository: https://github.com/msitarzewski/agency-agents
