@@ -136,6 +136,11 @@ accepted the authenticated simulation lane; actual paired quality execution,
 isolated compiler/model pins, reviewer approval and production installation
 remain separate. This package does not certify new agents.
 
+The next [isolated authenticated runner](../../../evaluation/agency-runner-v1/RUNBOOK.md)
+now implements fixed baseline/adapted execution through the real owner API and
+restricted worker with disposable n8n/PostgreSQL. Its 360-attempt test uses only
+authored simulator responses; real model/reference/reviewer gates remain open.
+
 Before generating comparison results, approve the task rubric, data rights,
 model/runtime and acceptance thresholds. Proposed initial set: at least
 20 English and 20 Arabic representative cases covering all six profiles.

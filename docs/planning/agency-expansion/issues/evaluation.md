@@ -2,9 +2,18 @@
 
 ## Authorization and status
 
-PR #196 is accepted at 3769d5ae7abe2e98d6e3d7ad612d30160f886e30 with 39/39 CI checks. The authorized #177 slice prepares, but does not execute, controlled bilingual model-quality certification. `evaluation/agency-v1/RUNBOOK.md` documents 48 core cases plus 24 public reserves, 47 pinned sources, paired requests through the actual adapter, proposed anchored rubrics/resource budgets and a NOT_RUN ledger. Public reserves are not blind holdout data. No model-quality score has been generated. Customer/domain acceptance, private heldout/reference answers, exact isolated model/compiler pins, authenticated paired runner and separately authorized execution remain pending. Studio availability and production installation are separate #176 work.
+PR #196's authenticated integration and PR #197's evaluation preparation are accepted. PR #198 adds the isolated authenticated comparison runner and simulated-response testing; real-model certification is not executed. `evaluation/agency-v1/RUNBOOK.md` documents 48 core cases plus 24 public reserves, 47 pinned sources, paired requests through the actual adapter, proposed anchored rubrics/resource budgets and a NOT_RUN real-model ledger. Public reserves are not blind holdout data. No model-quality score has been generated. Customer/domain acceptance, private heldout/reference answers, exact isolated model/compiler pins, reviewed real-model transport and separately authorized execution remain pending. Studio availability and production installation are separate #176 work.
 
 ### Preparation progress (not quality acceptance)
+
+PR #197 is accepted at 7317b2e085f0b80d12bc0fb2c862d247716600a9 (39/39 checks).
+The next authorized source slice implements `evaluation/agency-runner-v1`:
+fixed baseline/adapted selection, actual owner-JWT queueing, restricted worker
+RPCs, immutable attempt labels, current database fact checks and a 360-attempt
+disposable n8n comparison test (324 simulated HTTP responses, 36 local reports).
+It changes no production API, migration or workflow. The prior preparation
+source lock remains unchanged. Runtime validation evidence belongs to the
+introducing PR and its unique CI artifacts, not a real-model quality score.
 
 - [x] Authored synthetic six-profile EN/AR corpus with honest public-reserve labeling.
 - [x] Pin source/procedure/schema/workflow/rubric inputs and reject drift.
@@ -12,9 +21,22 @@ PR #196 is accepted at 3769d5ae7abe2e98d6e3d7ad612d30160f886e30 with 39/39 CI ch
 - [x] Proposed rubrics, safety regression map, request budgets and stop/handoff procedure.
 - [x] Offline tests, pending attempt ledger and explicit no-execution authority.
 - [ ] Freeze customer/domain-approved rubric, genuine heldout cases, reference answers and reviewers.
-- [ ] Complete the isolated authenticated paired runner without accepting arbitrary prompts in protected APIs.
+- [x] Implement the isolated authenticated paired runner without accepting arbitrary prompts in protected APIs; simulator validation is separate from real-model acceptance.
 - [ ] Pin actual model/weights/tokenizer/compiler environment and measure bounded schema probes.
 - [ ] Execute paired model evaluation, measure resources, adjudicate results and record #137/#56 release decision.
+
+Reviewer clarification: these are people reading sample AI answers for business
+accuracy and English/Arabic usefulness, not technical accounts or API keys.
+Tamer has not yet nominated the reviewers; no customer signoff is recorded.
+The proposed two-person rubric remains unapproved. `prerequisites.json` names
+each missing decision/model identity and its checker never authorizes execution.
+Runner implementation is in PR #198. Local unit tests: 167 passed; complete
+Linux comparison CI and a diagnostic Windows run each completed 360 attempts.
+Intermittent local HTTP aborts are retained as a known reproducibility limitation.
+The runner now requires a verified Docker host-network loopback path before
+database startup, with Linux CI as its acceptance environment. The former Windows
+hostname fallback is removed; no host settings change is performed. See the
+versioned implementation evidence and the final PR-head checks/artifacts.
 
 Parent: #174.
 

@@ -1,0 +1,32 @@
+{
+  "version": "agency.quality-prerequisites.v1",
+  "domain_approver": null,
+  "bilingual_reviewers": [],
+  "rubric_approval_ref": null,
+  "corpus_approval_ref": null,
+  "reference_answers_hash": null,
+  "heldout_hash": null,
+  "heldout_rights_ref": null,
+  "blind_mapping_escrow_ref": null,
+  "model": {
+    "served_id": null,
+    "weights_sha256": null,
+    "tokenizer_sha256": null,
+    "chat_template_sha256": null,
+    "quantization": null,
+    "context_tokens": null,
+    "vllm_image": null,
+    "xgrammar_version": null,
+    "seed_support": null
+  },
+  "resource_budget": {
+    "memory_bytes": null,
+    "maximum_model_requests": null,
+    "maximum_elapsed_seconds": null,
+    "cost_basis_ref": null,
+    "approval_ref": null
+  },
+  "isolated_environment_approval_ref": null,
+  "compiler_evidence_ref": null,
+  "bounded_probe_approval_ref": null
+}

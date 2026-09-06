@@ -1,0 +1,59 @@
+{
+  "version": "agency.isolated-runner-source-lock.v1",
+  "accepted_preparation_commit": "7317b2e085f0b80d12bc0fb2c862d247716600a9",
+  "normalization": "UTF-8, CRLF normalized to LF",
+  "files": [
+    {
+      "path": "evaluation/agency-runner-v1/RUNBOOK.md",
+      "sha256": "fecf3f9340fa7d7a355792146d29ccf74287c4ebfbc184ad4c741e7829a86ca8"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/fixtures.mjs",
+      "sha256": "eee20ae759d2b03969cebb4fe606c0ea479c8f3f6e0fdfd65fc1ecdb6af975cb"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/gateway.mjs",
+      "sha256": "73ba5d1b23da57a4950a6bab19a46602011e259bf1a91bfdf5eb9703e4b64f73"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/isolated.sql",
+      "sha256": "88f01b0ea38ea477731d41db5f24f713167acf1fa6c47554f1cac610e321ff3e"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/manifest.mjs",
+      "sha256": "5f6a8274bde1ba40012c264343cf6be3abd97d597d61c76bef5f49e3a82e75c4"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/prerequisites.json",
+      "sha256": "45ee84fcf8ad6576d7a3e05ad82532a56148677d1e06a902a56e53acd2d484a5"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/prerequisites.mjs",
+      "sha256": "aa01bff5fd598aa1cecbcb23c885663438ad6e745d935682ce9776c4a45efdc7"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/runtime.mjs",
+      "sha256": "655f5ea6110ee12755a715e8dedf7ff98c23380de94827eaf36417ea6eb8381a"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/transport.mjs",
+      "sha256": "75302299d2e7d810aec3678e3c07290b46605a7634b23bf442b48d25b67bb705"
+    },
+    {
+      "path": "evaluation/agency-runner-v1/workflow.mjs",
+      "sha256": "8708eab5b51561d1c85e7043a717fde9c8f76b0185569e7d91da66d67a579deb"
+    },
+    {
+      "path": "evaluation/agency-v1/source-lock.json",
+      "sha256": "6b86147beeb5f0e3353fbd2711124916f916219805d53b5bcebbf5b2fe100cbb"
+    },
+    {
+      "path": "scripts/agency-quality-runner.mjs",
+      "sha256": "dd032d6f637ad357a7d0545fd46a54884089cce9f3be497963fd3cb702477ae2"
+    },
+    {
+      "path": "tests/agency-quality-runner.test.mjs",
+      "sha256": "5a435425848334b62c7d702d819e84e781baac229f4289ff11c09dafd35a898f"
+    }
+  ]
+}
