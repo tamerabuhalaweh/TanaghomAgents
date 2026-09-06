@@ -10,6 +10,10 @@ test('workspace deployment validates the ledger as administrator without widenin
  assert.match(deploy,/SELECT count\(\*\) FROM tanaghom.agency_workspaces/);
  assert.match(deploy,/SELECT NOT enabled AND emergency_stop/);
  assert.match(deploy,/if ! \$resume; then/);
+ const compose=readFileSync('deployment/agency-workspace/compose.yml','utf8');
+ assert.match(compose,/read_only: true/);
+ assert.match(compose,/\/home\/node\/\.cache:size=128m,uid=1000,gid=1000,mode=0700/);
+ assert.match(deploy,/w\.active!==0\|\|n!==0/);
 });
 const task={profile:'social_media_strategist',language:'en',model:'gemma4-26b-a4b-canary',title:'Fictional course campaign',brief:'Prepare organic Instagram content for our course.',source_facts:'The fictional course teaches basic photography. No price or start date is confirmed.',shared_context:[],context_hash:'sha256:'+ '1'.repeat(64)};
 test('workspace: six bounded profiles and no model compiler/tool request',()=>{
