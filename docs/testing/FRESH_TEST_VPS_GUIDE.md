@@ -1,8 +1,9 @@
 # Fresh CPU test workspace: owner walkthrough
 
 Scope: the additional 155.117.45.45 test installation under #200, not the
-certified 38.247 environment. This is manual dashboard/API/database testing,
-not acceptance of live agents, the six new Agency candidates, or providers.
+certified 38.247 environment. This is the original dashboard/API/database guide,
+not acceptance of live agents or providers. For the newly deployed specialist
+workspace, use the [AI workspace walkthrough](AGENCY_WORKSPACE_GUIDE.md).
 
 ## Sign in
 
@@ -38,7 +39,7 @@ not acceptance of live agents, the six new Agency candidates, or providers.
 3. Save the draft. Expect its detail page, then refresh and reopen it from
    Campaigns to check persistence.
 4. Stop at the saved brief. Do not use a generation/ready transition as a
-   live-agent test: n8n is not installed on this VPS and no model is connected.
+   live-agent test: the new private workspace n8n is inactive and no model is connected.
    This deployment will not automatically produce strategy/content drafts.
 
 ## Inspect the governance screens
@@ -61,11 +62,12 @@ live campaign journey. Do not upload real customer data to this disposable VPS.
 
 ## Next engineering gate
 
-Prepare a separate reviewed CPU n8n/evaluation and shared-Gemma transport
-package under #177, with matching compiler/model identity, fixed destination,
-bounded requests and stop conditions. Existing production inference services
-must not be reconfigured or restarted. Provider UAT and customer signoff remain
-separate #45/#54/#125/#137 gates.
+The separate workspace package is now deployed; its actual model gate is still
+pending the Gemma API credential and bounded English/Arabic validation. See
+the [deployment evidence](../evidence/2026-09-06-agency-workspace.md). The frozen
+#177 comparison runner is not repurposed as this live document worker. Existing
+production inference services must not be reconfigured or restarted. Provider
+UAT and customer signoff remain separate #45/#54/#125/#137 gates.
 
 The hostname and HTTPS certificate require no additional domain purchase.
 Availability depends on the VPS retaining its IP and the free DNS service;
