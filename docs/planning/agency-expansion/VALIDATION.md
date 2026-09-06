@@ -59,3 +59,20 @@ Per-profile semantic review remains open under #175.
 
 CI results for the documentation PR are separate from these local results.
 Do not represent queued or pending GitHub checks as passed.
+
+## CI finding after publication
+
+PR #191's dashboard-contract job failed on 2026-09-06 at
+`npm audit --audit-level=moderate`, before dashboard type/build validation.
+[Failed job](https://github.com/tamerabuhalaweh/TanaghomAgents/actions/runs/34013065179/job/101432088191)
+reports five vulnerability entries (two moderate, three high), including
+fast-uri/ajv, nanoid and postcss/next. The dependency manifests, lockfile and
+quality workflow are unchanged from baseline `0b5b5a7`. This is not evidence
+that the planning files introduced a dependency or that production is
+exploitable; exact applicability remains to be investigated.
+
+Tracked separately in [#192](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/192),
+with a [versioned issue snapshot](release-blocker-192.md). No dependency fix,
+audit bypass or production action occurred. The PR remains draft/not
+merge-ready while this gate is unresolved. The initial local test results
+above remain valid but are not an all-CI-pass statement.

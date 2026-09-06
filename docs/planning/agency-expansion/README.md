@@ -7,6 +7,10 @@ are **not authorized by this documentation GO**.
 Parent: [Epic #174](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/174).
 Read [current project status](../../STATUS.md) before starting work.
 
+Publication note: documentation PR #191 exposed an existing-dependency audit
+failure, tracked separately in #192. It remains a current release/CI gate,
+not a reason to activate or implement future agents. See [validation](VALIDATION.md).
+
 ## Product decision
 
 Tanaghom is a human-governed AI organization platform. Sales, content and

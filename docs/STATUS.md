@@ -32,6 +32,13 @@ jobs. Do not claim that it proves current Gemma capacity or new-profile quality.
 
 ## Current release blockers: existing lane
 
+**New CI gate observed 2026-09-06:** [#192](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/192)
+tracks the failed dependency audit in documentation PR #191. The job reports
+five vulnerability entries (two moderate, three high) in the existing
+dependency graph. Dependency manifests/lockfile and CI configuration are
+unchanged by this planning PR. This is an audit finding, not proof of current
+production exploitability. Remediation and deployment have not started.
+
 Do not treat credentials as the only definition of done. Latest historical
 provider evidence still required credentials/channel/contact setup plus
 actual execution and customer acceptance. Refresh these facts before action:
@@ -81,7 +88,10 @@ Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
 
-Review/merge the documentation PR, then authorize a scoped start on
+Keep documentation PR #191 draft while its audit gate is unresolved. The
+immediate best move is a scoped dependency investigation/remediation under
+#192, without bypassing the audit or changing production. Once that gate and
+documentation review pass, authorize a scoped start on
 **#175's six selected semantic reviews and #176's pilot contracts**, with
 #177's rubric/data plan established before comparison results. Do not wait
 for all future departments. Full source review under #175 remains a longer

@@ -100,7 +100,7 @@ if (githubChecked) {
       'Issue #' + issue.number + ' differs from its versioned snapshot',
     );
     assert.equal(live.title, issue.title);
-    assert.equal(live.state, 'open');
+    assert.equal(live.state, issue.state.toLowerCase());
   }
   for (const number of [125, 131, 137]) {
     const live = getIssue(number);
@@ -111,6 +111,12 @@ if (githubChecked) {
     );
     assert.equal(live.state, 'open');
   }
+  const releaseBlocker = getIssue(192);
+  assert.equal(
+    normalize(releaseBlocker.body),
+    normalize(read(base + '/release-blocker-192.md')),
+    'Release blocker #192 differs from its versioned snapshot',
+  );
 }
 
 console.log(JSON.stringify({
@@ -120,6 +126,7 @@ console.log(JSON.stringify({
   pilot_candidates: 6,
   new_issue_snapshots: 17,
   reconciled_existing_snapshots: 3,
+  release_blocker_snapshots: 1,
   local_markdown_links: linkCount,
   result: 'PASS',
 }));
