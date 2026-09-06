@@ -1,8 +1,8 @@
 # Tanaghom status and next work
 
 **As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
-Current task authorization: review/accept PR #196 and prepare controlled paired
-English/Arabic quality certification under #177 (offline preparation only).
+Current task authorization: review/accept PR #197 and implement/validate the
+isolated authenticated comparison runner under #177 using simulated responses.
 No production deployment, live model/provider call or activation is authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
@@ -18,7 +18,7 @@ export. Twelve disposable bilingual n8n/database round trips pass. Production
 installation, Studio availability and real-model quality certification remain unfinished.
 
 The accepted source baseline is now
-`3769d5ae7abe2e98d6e3d7ad612d30160f886e30` (PR #196; 39/39 CI checks passed).
+`7317b2e085f0b80d12bc0fb2c862d247716600a9` (PR #197; 39/39 CI checks passed).
 The original pre-expansion baseline was `0b5b5a7` (PR #173). Neither source merge
 nor local adapter simulation establishes what is currently deployed.
 
@@ -33,7 +33,8 @@ nor local adapter simulation establishes what is currently deployed.
 | Current server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
-| Current preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation runbook](../evaluation/agency-v1/RUNBOOK.md) |
+| Accepted preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation preparation](../evaluation/agency-v1/RUNBOOK.md) |
+| Current runner slice | Actual owner API + restricted worker + immutable case/arm records + disposable n8n loop; 360 planned attempts with simulated responses; no live model transport | [Isolated runner](../evaluation/agency-runner-v1/RUNBOOK.md) |
 
 **Production-release evidence score: 60/100; NO-GO for customer production.**
 This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a
@@ -101,8 +102,10 @@ Do not use this table as authority to clear stops or activate provider workers.
   [Integration evidence](evidence/2026-09-06-agency-authenticated-integration.md).
 - **#177**: paired bilingual evaluation preparation implemented: 72 synthetic
   cases, 47 source pins, proposed rubric and non-executable attempt ledger.
-  Actual quality runner, isolated model/compiler evidence, reference answers,
-  blind holdout and reviewer acceptance remain pending. Not certified.
+  The isolated authenticated fixed-baseline runner is now implemented with a
+  full 360-attempt simulator test. Actual isolated model/compiler evidence,
+  real-model transport approval, reference answers, blind holdout and reviewer
+  acceptance remain pending. Not model-certified.
 - **#178**: bounded team assignments on existing runtime handoffs.
 - **#179**: team onboarding/operations UX.
 - **#180**: governed improvement proposals.
@@ -115,12 +118,13 @@ Hermes or analytics executor is being introduced.
 ## Next best move and authority
 
 #192's source fix, planning PR #191, candidate PR #194, kernel PR #195 and
-authenticated integration PR #196 are accepted. #196 passed all 39 CI checks.
-#177's new offline certification-preparation package now needs source review.
-Next review that package, then complete its isolated authenticated paired
-runner and freeze the approved rubric, reference answers and exact model
-environment before a separately authorized compiler/probe gate. No live
-model/server/provider call is part of preparation. Keep every candidate
+authenticated integration PR #196 and preparation PR #197 are accepted.
+#197 passed all 39 CI checks. The new isolated comparison runner needs source
+review and its introducing PR's CI acceptance. Next approve that runner, then
+finalize reviewer/reference decisions and pin an approved isolated model
+environment for a separately reviewed real-model transport and compiler/probe
+gate. The prerequisite checker cannot grant authority. No live model/server/
+provider call is part of this implementation. Keep every candidate
 unavailable until its actual installation/dependency/certification gates pass.
 Full source review of the other 267 profiles is a later roadmap task, not a
 pilot start blocker. No new customer credential is needed for this source work.

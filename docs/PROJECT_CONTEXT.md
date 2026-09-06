@@ -29,6 +29,7 @@ transcript to locate the current implementation or approved next step.
 | Prompt sources and workflow generation | `prompts`, `scripts/generate-*.mjs` |
 | Authenticated Agency pilot (PR #196 accepted; not deployed) | `packages/agent-runtime/integration.mjs`, migration 0034, `n8n/workflows/agency-pilot`, [ADR 0019](architecture/0019-authenticated-agency-pilot.md) |
 | Agency bilingual certification preparation (#177; no model execution) | `evaluation/agency-v1`, `scripts/agency-quality-preparation.mjs`; [runbook](../evaluation/agency-v1/RUNBOOK.md) |
+| Isolated authenticated comparison runner (#177; simulator only) | `evaluation/agency-runner-v1`, `scripts/agency-quality-runner.mjs`; [runbook and prerequisites](../evaluation/agency-runner-v1/RUNBOOK.md); not production dashboard code |
 | Platform skill metadata and instruction packages | `config/skill-registry.v1.json`, `skills/platform` |
 | Tests and CI definitions | `tests`, `scripts/*test*`, `.github/workflows/quality.yml` |
 | Controlled release and rollback packages | `deployment` |
