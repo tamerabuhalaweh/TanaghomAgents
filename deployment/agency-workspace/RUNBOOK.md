@@ -92,6 +92,21 @@ are removed. A failed update after the migration automatically runs this path.
 An early failure before migration may leave build/secret/backup files; inspect
 and resume explicitly rather than blindly rerunning the one-time installer.
 
+For the observed pre-import validation failure (0035 retained, no assignments,
+workspace stopped, no n8n service created), the corrected script supports:
+
+```bash
+export EXPECTED_WORKSPACE_RELEASE=<reviewed-corrected-40-character-commit>
+export WORKSPACE_RESUME_STATE=/opt/tanaghom-test/runtime/workspace-20260906T185616Z
+bash deployment/agency-workspace/deploy.sh
+```
+
+It validates the original encrypted backup checksum, stopped/unused0035 state
+and existing secrets before resuming. It never reapplies the migration, replaces
+credentials or overwrites the original rollback image. The application-role
+probe does not read `public.schema_migrations`; that remains an administrator
+preflight check, preserving least privilege.
+
 `0035.down.sql` is only for an unused disposable workspace. Once any assignment
 exists it refuses; do not delete evidence to force it. A backup restore would
 overwrite later work and requires a separate reviewed recovery decision.

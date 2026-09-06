@@ -2,6 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { workspaceManifest,workspaceRequest,workspaceArtifact,modelEndpoint } from '../packages/agent-runtime/workspace.mjs';
+test('workspace deployment validates the ledger as administrator without widening API permissions',()=>{
+ const probe=readFileSync('deployment/agency-workspace/validate.cjs','utf8');
+ assert.doesNotMatch(probe,/query\(['"`]SELECT[^;\n]*schema_migrations/);
+ const deploy=readFileSync('deployment/agency-workspace/deploy.sh','utf8');
+ assert.match(deploy,/WORKSPACE_RESUME_STATE/);assert.match(deploy,/sha256sum -c/);
+ assert.match(deploy,/SELECT count\(\*\) FROM tanaghom.agency_workspaces/);
+ assert.match(deploy,/SELECT NOT enabled AND emergency_stop/);
+ assert.match(deploy,/if ! \$resume; then/);
+});
 const task={profile:'social_media_strategist',language:'en',model:'gemma4-26b-a4b-canary',title:'Fictional course campaign',brief:'Prepare organic Instagram content for our course.',source_facts:'The fictional course teaches basic photography. No price or start date is confirmed.',shared_context:[],context_hash:'sha256:'+ '1'.repeat(64)};
 test('workspace: six bounded profiles and no model compiler/tool request',()=>{
  assert.equal(workspaceManifest.profiles.length,6);
