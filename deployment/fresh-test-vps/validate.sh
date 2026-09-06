@@ -5,6 +5,7 @@ export TANAGHOM_RELEASE="$(git rev-parse HEAD)"
 compose=(docker compose -p tanaghom-test -f deployment/fresh-test-vps/compose.yml)
 "${compose[@]}" config --quiet
 "${compose[@]}" config --format json | python3 deployment/fresh-test-vps/validate-compose.py
+"${compose[@]}" exec -T dashboard node < deployment/fresh-test-vps/check-api-database.cjs
 test "$("${compose[@]}" ps --status running --services | wc -l)" -eq 3
 for service in postgres dashboard; do
   id=$("${compose[@]}" ps -q "$service")

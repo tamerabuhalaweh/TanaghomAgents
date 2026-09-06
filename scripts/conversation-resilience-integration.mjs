@@ -298,10 +298,16 @@ try {
   assert.deepEqual(recoveredIds, abandonedIds);
 
   const killedClient = await pool.connect();
-  const killedPid = killedClient.processID;
-  assert.equal((await pool.query("SELECT pg_terminate_backend($1) AS terminated", [killedPid])).rows[0].terminated, true);
-  await assert.rejects(killedClient.query("SELECT 1"));
-  killedClient.release(true);
+  // A checked-out Client emits its own error if termination arrives while idle.
+  // Listen before the deliberate kill; the Pool listener cannot handle this race.
+  killedClient.on("error", () => undefined);
+  try {
+    const killedPid = killedClient.processID;
+    assert.equal((await pool.query("SELECT pg_terminate_backend($1) AS terminated", [killedPid])).rows[0].terminated, true);
+    await assert.rejects(killedClient.query("SELECT 1"));
+  } finally {
+    killedClient.release(true);
+  }
   assert.equal((await pool.query("SELECT 1 AS connected")).rows[0].connected, 1);
 
   const { sourceFingerprint, restoredFingerprint } = await encryptedBacklogRestore("resilience-backlog-");

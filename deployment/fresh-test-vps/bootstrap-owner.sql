@@ -8,8 +8,6 @@ DO $$ BEGIN
   IF EXISTS (SELECT 1 FROM tanaghom.app_users) THEN
     RAISE EXCEPTION 'refuse reseeding a database with users';
   END IF;
-  EXECUTE format('ALTER ROLE tanaghom_api LOGIN PASSWORD %L',
-    trim(pg_read_file('/run/secrets/api_password')));
 END $$;
 UPDATE tanaghom.organizations SET name = 'Tanaghom Test Workspace'
 WHERE id = '10000000-0000-4000-8000-000000000001';
