@@ -81,6 +81,14 @@ initialization. Quote each complete mount and validate parsed Compose JSON;
 `config --quiet` alone accepts a syntactically valid but unusable second mount.
 Retry only the corrected exact revision; the migration ledger and existing
 owner check preserve completed initialization without reseeding.
+Normalize the generated role password using `configure-api-role.sql` after
+the migration ledger check and before the owner check, including on retries.
+It removes CR/LF, validates the exact 64-hex generated format, and changes only
+the local `tanaghom_api` login. PostgreSQL `trim()` alone does not strip LF;
+the initial bootstrap included a trailing newline and produced SQLSTATE 28P01.
+The corrected release runs `check-api-database.cjs` in a disposable dashboard
+container before public startup, proving real password/TCP authentication with
+the mounted URL and restricted role. It never logs that URL/password.
 Bootstrap the verified owner using `bootstrap-owner.sql` and psql variables
 `owner_email` and `owner_subject` (not authentication credentials).
 

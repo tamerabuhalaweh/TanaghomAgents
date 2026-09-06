@@ -30,6 +30,7 @@ for migration in packages/database/migrations/*.up.sql; do
   fi
   "${compose[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -v ON_ERROR_STOP=1 < "$migration"
 done
+"${compose[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -v ON_ERROR_STOP=1 < deployment/fresh-test-vps/configure-api-role.sql
 owner_count=$("${compose[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT count(*) FROM tanaghom.app_users')
 if [ "$owner_count" = 0 ]; then
   owner_subject=$(python3 -c "import json;print(json.load(open('/opt/tanaghom-test/runtime/owner.json'))['owner_subject'])")
@@ -38,6 +39,7 @@ if [ "$owner_count" = 0 ]; then
     -v owner_subject="$owner_subject" -v owner_email="$owner_email" < deployment/fresh-test-vps/bootstrap-owner.sql
 fi
 "${compose[@]}" build dashboard
+"${compose[@]}" run --rm -T --no-deps --entrypoint node dashboard < deployment/fresh-test-vps/check-api-database.cjs
 "${compose[@]}" up -d dashboard caddy
 https_ready=false
 for attempt in $(seq 1 40); do

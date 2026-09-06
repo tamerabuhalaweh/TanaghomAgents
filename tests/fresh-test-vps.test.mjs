@@ -24,6 +24,18 @@ test('fresh test deployment retains private database, digest pins and fail-close
  assert.match(seed,/current_database\(\) <> 'tanaghom_test'/);
  assert.match(seed,/refuse reseeding a database with users/);
  assert.doesNotMatch(seed,/fad025bc|tamer\.abuhalaweh|INSERT INTO tanaghom\.campaign/);
+ assert.doesNotMatch(seed,/ALTER ROLE/);
+ const role=await readFile(new URL('configure-api-role.sql',root),'utf8');
+ assert.ok(role.includes("rtrim(pg_read_file('/run/secrets/api_password'),chr(13)||chr(10))"));
+ assert.ok(role.includes("'^[a-f0-9]{64}$'"));
+ assert.match(role,/current_database\(\) <> 'tanaghom_test'/);
+ const deploy=await readFile(new URL('deploy.sh',root),'utf8');
+ assert.ok(deploy.indexOf('configure-api-role.sql')<deploy.indexOf('owner_count='));
+ assert.ok(deploy.indexOf('check-api-database.cjs')<deploy.indexOf('up -d dashboard caddy'));
+ const probe=await readFile(new URL('check-api-database.cjs',root),'utf8');
+ assert.match(probe,/await client\.connect\(\)/);
+ assert.match(probe,/assert\.equal\(url\.hostname,'postgres'\)/);
+ assert.match(probe,/assert\.equal\(row\.role,'tanaghom_api'\)/);
  const runbook=await readFile(new URL('RUNBOOK.md',root),'utf8');
  assert.match(runbook,/stop caddy dashboard postgres/);
  assert.match(runbook,/NOT an outbound allowlist/);
