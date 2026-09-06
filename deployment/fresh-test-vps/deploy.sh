@@ -12,6 +12,7 @@ trap 'if ! $committed; then "${compose[@]}" stop caddy dashboard >/dev/null 2>&1
 test "$(df --output=avail -BG / | tail -1 | tr -dc '0-9')" -ge 20
 test -d /opt/tanaghom-test/runtime/secrets
 "${compose[@]}" config --quiet
+"${compose[@]}" config --format json | python3 deployment/fresh-test-vps/validate-compose.py
 "${compose[@]}" pull postgres caddy
 "${compose[@]}" up -d postgres
 healthy=false

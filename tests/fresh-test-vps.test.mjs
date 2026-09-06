@@ -14,6 +14,12 @@ test('fresh test deployment retains private database, digest pins and fail-close
  for(const flag of ['AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED','AGENCY_PILOT_GATEWAY_ENABLED','POSTIZ_HANDOFF_ENABLED','POSTIZ_AUTOMATION_RUNTIME_READY','POSTIZ_PERFORMANCE_SYNC_ENABLED','GHL_CONTACT_SYNC_ENABLED','GHL_CONTACT_HANDOFF_ENABLED','GHL_WEBHOOK_INGRESS_ENABLED','GHL_ACTION_RUNTIME_ENABLED','GHL_ACTION_RUNTIME_READY','ALLOW_STAGING_PUBLISH'])assert.ok(source.includes(`${flag}: "false"`));
  assert.match(source,/APP_ENV: production/);
  assert.match(source,/TANAGHOM_RELEASE:\?exact source revision required/);
+ // Commas split unquoted YAML flow-list scalars into separate mounts.
+ for(const size of ['64m','32m'])assert.ok(source.includes(`tmpfs: ["/tmp:size=${size},mode=1777"]`));
+ for(const script of ['deploy.sh','validate.sh']){
+  const shell=await readFile(new URL(script,root),'utf8');
+  assert.match(shell,/config --format json \| python3 deployment\/fresh-test-vps\/validate-compose\.py/);
+ }
  const seed=await readFile(new URL('bootstrap-owner.sql',root),'utf8');
  assert.match(seed,/current_database\(\) <> 'tanaghom_test'/);
  assert.match(seed,/refuse reseeding a database with users/);
