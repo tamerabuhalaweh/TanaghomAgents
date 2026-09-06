@@ -1,8 +1,10 @@
 # Tanaghom status and next work
 
 **As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
-Current task authorization: review/accept PR #197 and implement/validate the
-isolated authenticated comparison runner under #177 using simulated responses.
+Current task authorization: delegated Tanaghom technical PR reviews and #177
+reviewer/model setup preparation, plus a read-only inventory of Tamer's selected
+CPU test VPS. PR #198's simulator slice is accepted. Tests will use that CPU VPS
+and existing shared Gemma; no second GPU is required.
 No production deployment, live model/provider call or activation is authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
@@ -18,7 +20,7 @@ export. Twelve disposable bilingual n8n/database round trips pass. Production
 installation, Studio availability and real-model quality certification remain unfinished.
 
 The accepted source baseline is now
-`7317b2e085f0b80d12bc0fb2c862d247716600a9` (PR #197; 39/39 CI checks passed).
+`9fde3aa673f4bc634c36bab00957cbf7f84ebd91` (PR #198; 40/40 exact-head CI checks passed).
 The original pre-expansion baseline was `0b5b5a7` (PR #173). Neither source merge
 nor local adapter simulation establishes what is currently deployed.
 
@@ -30,11 +32,12 @@ nor local adapter simulation establishes what is currently deployed.
 | Foundation issue state | #132, #133, #134 and #135 are closed implementation slices | [Pre-expansion issue snapshot](evidence/2026-09-06-pre-expansion-github-issues.json) |
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
-| Current server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
+| Current certified server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
+| Selected CPU test host | 155.117.45.45 inspected read-only: 3 CPUs, 5,925 MiB RAM, about 40 GB free disk; co-hosted, not empty or model-isolated | [VPS inventory and limitations](evidence/2026-09-06-cpu-vps-readonly-preflight.md) |
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
 | Accepted preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation preparation](../evaluation/agency-v1/RUNBOOK.md) |
-| Current runner slice (PR #198) | Actual owner API + restricted worker + immutable case/arm records + disposable n8n loop; full simulator passes recorded, 167 local unit tests; final exact-head Linux CI required; verified loopback prerequisite replaces unsupported Windows fallback; no live model transport | [Runner evidence and limitations](evidence/2026-09-06-agency-isolated-comparison-runner.md) |
+| Accepted runner slice (PR #198) | 360 successful simulator attempts in exact-head Linux CI; 167 local tests; verified loopback prerequisite replaces unsupported Windows fallback; no live model transport | [Accepted review and evidence](evidence/2026-09-06-agency-pr-review-and-setup.md) |
 
 **Production-release evidence score: 60/100; NO-GO for customer production.**
 This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a
@@ -103,9 +106,13 @@ Do not use this table as authority to clear stops or activate provider workers.
 - **#177**: paired bilingual evaluation preparation implemented: 72 synthetic
   cases, 47 source pins, proposed rubric and non-executable attempt ledger.
   The isolated authenticated fixed-baseline runner is now implemented with a
-  full 360-attempt simulator test. Actual isolated model/compiler evidence,
+  full 360-attempt simulator test. Actual matching compiler/model evidence,
   real-model transport approval, reference answers, blind holdout and reviewer
   acceptance remain pending. Not model-certified.
+  [People and CPU/shared-Gemma setup](planning/agency-expansion/REVIEW_AND_MODEL_SETUP.md)
+  records Tamer's selected topology and unfilled customer/model approvals.
+  A successor manifest must explicitly replace the original isolation design;
+  frozen packages stay unchanged and cannot be retargeted by a setting.
 - **#178**: bounded team assignments on existing runtime handoffs.
 - **#179**: team onboarding/operations UX.
 - **#180**: governed improvement proposals.
@@ -118,16 +125,24 @@ Hermes or analytics executor is being introduced.
 ## Next best move and authority
 
 #192's source fix, planning PR #191, candidate PR #194, kernel PR #195 and
-authenticated integration PR #196 and preparation PR #197 are accepted.
-#197 passed all 39 CI checks. The new isolated comparison runner needs source
-review and its introducing PR's CI acceptance. Next approve that runner, then
-finalize reviewer/reference decisions and pin an approved isolated model
-environment for a separately reviewed real-model transport and compiler/probe
-gate. The prerequisite checker cannot grant authority. No live model/server/
-provider call is part of this implementation. Keep every candidate
+authenticated integration PR #196, preparation PR #197 and simulator PR #198
+are accepted. #198 passed all 40 exact-head CI checks. Tamer delegated Tanaghom
+technical PR reviews to Codex; code review does not replace business acceptance.
+Next prepare/review the controlled CPU-VPS resource/network package and successor
+shared-Gemma transport. Use approved model records, obtain missing compiler/model
+metadata and the operator request window, and collect the business-reviewer
+nomination in parallel. The VPS was inspected only; no test services were started
+and its unrelated unhealthy/restarting containers were not investigated or changed.
+See the linked setup proposal for review examples, bounds and remaining decisions.
+The prerequisite checker cannot grant authority. No live model/provider call
+or remote configuration change is part of this work. Keep every candidate
 unavailable until its actual installation/dependency/certification gates pass.
 Full source review of the other 267 profiles is a later roadmap task, not a
 pilot start blocker. No new customer credential is needed for this source work.
+
+PR #44 was also reviewed. Its July-only deployment report is not in current
+main; it stays open pending refresh, current checks and explicit historical
+labeling. It is not evidence of today's server health and does not block #177.
 
 Keep #125/#45/#54/#56/#137 provider acceptance on its separate critical path;
 new templates are not a substitute for those tests.
