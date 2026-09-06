@@ -129,6 +129,14 @@ test("expired sessions rotate HttpOnly tokens once and retry the original reques
   assert.match(client, /return fetch\(retry\)/);
 });
 
+test("logout preserves same-origin protection behind the trusted HTTPS proxy", async () => {
+  const logout = await readFile(new URL("app/api/auth/logout/route.ts", dashboard), "utf8");
+  assert.match(logout, /if \(!hasValidSameOrigin\(request\)\)/);
+  assert.match(logout, /invalid_origin/);
+  assert.match(logout, /clearSessionCookies\(response\)/);
+  assert.doesNotMatch(logout, /origin !== request\.nextUrl\.origin/);
+});
+
 test("page protection stays optimistic while data authorization remains server-side", async () => {
   const proxy = await readFile(new URL("proxy.ts", dashboard), "utf8");
   const session = await readFile(new URL("app/api/auth/session/route.ts", dashboard), "utf8");

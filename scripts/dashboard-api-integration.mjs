@@ -822,6 +822,23 @@ try {
   });
   assert.equal(invalidRefresh.status, 401);
   assert.equal(cookies(invalidRefresh).filter((value) => /tanaghom_(access|refresh)_token=/.test(value)).length, 2);
+  const forwardedOrigin = "https://tanaghom-forwarded.test";
+  for (const headers of [
+    { Origin: dashboardOrigin },
+    { Origin: forwardedOrigin, "X-Forwarded-Host": "tanaghom-forwarded.test", "X-Forwarded-Proto": "https" },
+  ]) {
+    const logout = await fetch(`${dashboardOrigin}/api/auth/logout`, { method: "POST", headers });
+    assert.equal(logout.status, 200);
+    assert.equal(cookies(logout).filter((value) => /tanaghom_(access|refresh)_token=/.test(value) && /max-age=0/i.test(value)).length, 2);
+  }
+  for (const headers of [
+    {},
+    { Origin: "https://wrong-origin.test", "X-Forwarded-Host": "tanaghom-forwarded.test", "X-Forwarded-Proto": "https" },
+  ]) {
+    const logout = await fetch(`${dashboardOrigin}/api/auth/logout`, { method: "POST", headers });
+    assert.equal(logout.status, 403);
+    assert.equal(cookies(logout).length, 0);
+  }
   console.log("PASS: sessions, controlled campaign lifecycle, governed Skill Library, approvals, encrypted integrations, Postiz performance, contact-only GHL sync, gateway isolation, Content Library, and invitations verified.");
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");

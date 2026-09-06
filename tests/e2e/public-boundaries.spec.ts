@@ -3,6 +3,22 @@ import { expect, test } from "@playwright/test";
 test.use({ storageState: { cookies: [], origins: [] } });
 
 test.describe("public production boundaries", () => {
+  test("same-origin logout clears cookies behind HTTPS and rejects other origins", async ({ request, baseURL }) => {
+    const origin = new URL(baseURL ?? "http://127.0.0.1:3000").origin;
+    const response = await request.post("/api/auth/logout", { headers: { Origin: origin } });
+    expect(response.status()).toBe(200);
+    const cookies = response.headers()["set-cookie"] ?? "";
+    expect(cookies).toMatch(/tanaghom_access_token=/);
+    expect(cookies).toMatch(/tanaghom_refresh_token=/);
+    expect(cookies).toMatch(/max-age=0/i);
+    expect(cookies).toMatch(/httponly/i);
+    if (origin.startsWith("https:")) expect(cookies).toMatch(/secure/i);
+    const crossOrigin = await request.post("/api/auth/logout", { headers: { Origin: "https://invalid.test" } });
+    expect(crossOrigin.status()).toBe(403);
+    const missingOrigin = await request.post("/api/auth/logout");
+    expect(missingOrigin.status()).toBe(403);
+  });
+
   test("login page renders without browser errors", async ({ page }) => {
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
