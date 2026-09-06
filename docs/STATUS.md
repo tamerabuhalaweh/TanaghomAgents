@@ -34,7 +34,7 @@ nor local adapter simulation establishes what is currently deployed.
 | New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
 | Accepted preparation slice | #177: 48 core + 24 public reserve cases; six profiles in EN/AR; pinned paired requests and proposed rubric; no blind holdout or actual model-quality result | [Evaluation preparation](../evaluation/agency-v1/RUNBOOK.md) |
-| Current runner slice | Actual owner API + restricted worker + immutable case/arm records + disposable n8n loop; 360 planned attempts with simulated responses; no live model transport | [Isolated runner](../evaluation/agency-runner-v1/RUNBOOK.md) |
+| Current runner slice (PR #198) | Actual owner API + restricted worker + immutable case/arm records + disposable n8n loop; full 360-attempt simulator passes recorded, 166 local unit tests; exact-head CI required; intermittent Windows HTTP aborts documented; no live model transport | [Runner evidence and limitations](evidence/2026-09-06-agency-isolated-comparison-runner.md) |
 
 **Production-release evidence score: 60/100; NO-GO for customer production.**
 This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a

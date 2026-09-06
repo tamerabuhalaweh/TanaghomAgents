@@ -2,7 +2,7 @@
 
 ## Authorization and status
 
-PR #196 is accepted at 3769d5ae7abe2e98d6e3d7ad612d30160f886e30 with 39/39 CI checks. The authorized #177 slice prepares, but does not execute, controlled bilingual model-quality certification. `evaluation/agency-v1/RUNBOOK.md` documents 48 core cases plus 24 public reserves, 47 pinned sources, paired requests through the actual adapter, proposed anchored rubrics/resource budgets and a NOT_RUN ledger. Public reserves are not blind holdout data. No model-quality score has been generated. Customer/domain acceptance, private heldout/reference answers, exact isolated model/compiler pins, authenticated paired runner and separately authorized execution remain pending. Studio availability and production installation are separate #176 work.
+PR #196's authenticated integration and PR #197's evaluation preparation are accepted. PR #198 adds the isolated authenticated comparison runner and simulated-response testing; real-model certification is not executed. `evaluation/agency-v1/RUNBOOK.md` documents 48 core cases plus 24 public reserves, 47 pinned sources, paired requests through the actual adapter, proposed anchored rubrics/resource budgets and a NOT_RUN real-model ledger. Public reserves are not blind holdout data. No model-quality score has been generated. Customer/domain acceptance, private heldout/reference answers, exact isolated model/compiler pins, reviewed real-model transport and separately authorized execution remain pending. Studio availability and production installation are separate #176 work.
 
 ### Preparation progress (not quality acceptance)
 
