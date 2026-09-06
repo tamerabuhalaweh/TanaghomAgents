@@ -1,0 +1,115 @@
+name: tanaghom-test
+
+x-logging: &bounded-logging
+  driver: json-file
+  options: { max-size: 10m, max-file: "3" }
+
+services:
+  postgres:
+    image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: tanaghom_test
+      POSTGRES_PASSWORD_FILE: /run/secrets/postgres_password
+    secrets: [postgres_password, api_password]
+    volumes: [pgdata:/var/lib/postgresql/data]
+    networks: [database]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postgres -d tanaghom_test"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+    cpus: 0.75
+    mem_limit: 768m
+    pids_limit: 150
+    security_opt: [no-new-privileges:true]
+    logging: *bounded-logging
+
+  dashboard:
+    image: tanaghom-test-dashboard:${TANAGHOM_RELEASE:?exact source revision required}
+    build:
+      context: ../..
+      dockerfile: deployment/dashboard-canary/Dockerfile
+    restart: unless-stopped
+    environment:
+      APP_ENV: production
+      APP_BASE_URL: https://tanaghom-test.155-117-45-45.sslip.io
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      INTEGRATION_CREDENTIAL_KEY_VERSION: "1"
+      AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED: "false"
+      AGENCY_PILOT_GATEWAY_ENABLED: "false"
+      POSTIZ_HANDOFF_ENABLED: "false"
+      POSTIZ_AUTOMATION_RUNTIME_READY: "false"
+      POSTIZ_PERFORMANCE_SYNC_ENABLED: "false"
+      GHL_CONTACT_SYNC_ENABLED: "false"
+      GHL_CONTACT_HANDOFF_ENABLED: "false"
+      GHL_WEBHOOK_INGRESS_ENABLED: "false"
+      GHL_ACTION_RUNTIME_ENABLED: "false"
+      GHL_ACTION_RUNTIME_READY: "false"
+      ALLOW_STAGING_PUBLISH: "false"
+      POSTIZ_ALLOWED_BASE_URLS: ""
+    secrets:
+      - database_url
+      - supabase_url
+      - supabase_publishable_key
+      - supabase_jwks_url
+      - integration_credential_key
+      - integration_worker_token
+    depends_on:
+      postgres: { condition: service_healthy }
+    networks: [database, edge]
+    read_only: true
+    tmpfs: [/tmp:size=64m,mode=1777]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 1.0
+    mem_limit: 1024m
+    pids_limit: 200
+    logging: *bounded-logging
+    healthcheck:
+      test: [CMD, node, -e, "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
+      interval: 15s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+
+  caddy:
+    image: caddy:2-alpine@sha256:5f5c8640aae01df9654968d946d8f1a56c497f1dd5c5cda4cf95ab7c14d58648
+    restart: unless-stopped
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      dashboard: { condition: service_healthy }
+    networks: [edge]
+    read_only: true
+    tmpfs: [/tmp:size=32m,mode=1777]
+    cap_drop: [ALL]
+    cap_add: [NET_BIND_SERVICE]
+    security_opt: [no-new-privileges:true]
+    cpus: 0.25
+    mem_limit: 192m
+    pids_limit: 100
+    logging: *bounded-logging
+
+networks:
+  database: { internal: true }
+  edge: { driver: bridge }
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:
+
+secrets:
+  postgres_password: { file: /opt/tanaghom-test/runtime/secrets/postgres_password }
+  api_password: { file: /opt/tanaghom-test/runtime/secrets/api_password }
+  database_url: { file: /opt/tanaghom-test/runtime/secrets/database_url }
+  supabase_url: { file: /opt/tanaghom-test/runtime/secrets/supabase_url }
+  supabase_publishable_key: { file: /opt/tanaghom-test/runtime/secrets/supabase_publishable_key }
+  supabase_jwks_url: { file: /opt/tanaghom-test/runtime/secrets/supabase_jwks_url }
+  integration_credential_key: { file: /opt/tanaghom-test/runtime/secrets/integration_credential_key }
+  integration_worker_token: { file: /opt/tanaghom-test/runtime/secrets/integration_worker_token }
