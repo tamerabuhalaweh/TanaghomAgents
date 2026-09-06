@@ -2,7 +2,22 @@
 
 ## Authorization and status
 
-Implementation started under Tamer's 2026-09-06 scoped GO. First slice: six normalized proposal-instruction drafts, source/review/procedure/contract hashes, four proposed existing-worker mappings and two explicitly missing executors. The drafts pass the existing Skill Library schema and real server validator; 120/120 local tests pass. Runtime bindings, Brand/Executive adapters, Studio availability, model compatibility and comparative evaluation remain incomplete. No database installation, model/provider call, activation or deployment. Evidence: docs/evidence/2026-09-06-agency-pilot-candidates.md.
+Implementation started under Tamer's 2026-09-06 scoped GO. PR #194 is reviewed/merged at c77e25cfc006a6efd322adb1f259fbd3d9c47c3f with 38/38 CI checks. The next source slice implements four callable simulation bindings preserving existing workers, a bounded Brand precheck/semantic-proposal adapter, and a grounded Executive reporting adapter. Local evidence: 23 new test groups, 143 total tests and 12 synthetic bilingual journeys pass. Tests execute existing n8n Code-node bodies in Node.js with authored responses, not a hosted n8n/model canary. Authenticated tenant snapshot resolution, durable database/n8n installation, Studio availability and comparative model/quality certification remain incomplete. No production database, model/provider call, activation or deployment. Evidence: docs/evidence/2026-09-06-agency-runtime-adapters.md; exact integration limitations: packages/agent-runtime/README.md.
+
+### Source-slice tracking (not full issue acceptance)
+
+- [x] Candidate source review and complete normalized procedures (PR #194).
+- [x] Callable simulation bindings to the existing four compatible paths.
+- [x] Brand precheck and semantic proposal contract/validator; no approval authority.
+- [x] Cited, window/unit/denominator-bound reporting adapter; no invented ROI.
+- [x] English/Arabic contract and negative-control fixtures; zero live actions.
+- [ ] Authenticated storage resolver, durable binding/audit integration and actual disposable DB/n8n round trips.
+- [ ] Model compatibility, paired evaluation and semantic/Arabic quality acceptance.
+- [ ] Truthful Studio availability and separately reviewed installation/rollback.
+
+The checked source implementation items describe this branch's local evidence;
+its introducing PR must pass review and full CI. They do not mark the production
+or whole-issue acceptance criteria below complete.
 
 Parent: #174.
 

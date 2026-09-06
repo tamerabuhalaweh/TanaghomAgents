@@ -1,8 +1,8 @@
 # Tanaghom status and next work
 
 **As of 2026-09-06: repository/GitHub review, not a fresh production audit.**
-Current task authorization: targeted #192 dependency remediation, acceptance of
-the planning PR after its gates pass, and the six-profile pilot source work.
+Current task authorization: review/accept PR #194 and implement the four compatible
+Agency bindings plus bounded Brand Guardian/reporting adapters under #176.
 No production deployment, live model/provider call or activation is authorized.
 Start here: [developer context](PROJECT_CONTEXT.md).
 
@@ -11,12 +11,14 @@ Start here: [developer context](PROJECT_CONTEXT.md).
 Tanaghom has implemented campaign/content, approvals, customer integrations,
 conversation governance, skills, Agent Studio and the shared policy runtime.
 Its initial commercial pilot remains separate from full live-provider
-acceptance. The all-department expansion has a first six-profile source-candidate
-slice; runtime bindings, two missing adapters and certification remain unfinished.
+acceptance. The expansion now has six source candidates plus four callable
+simulation bindings and two bounded local adapters. Authenticated storage/runtime
+installation, Studio availability and model/quality certification remain unfinished.
 
-The source baseline inspected is
-`0b5b5a761099e6eb6163efbeb00a75d891d680c7` (PR #173), matching remote main
-when this work began. New planning documents change no runtime behavior.
+The accepted source baseline is now
+`c77e25cfc006a6efd322adb1f259fbd3d9c47c3f` (PR #194; 38/38 CI checks passed).
+The original pre-expansion baseline was `0b5b5a7` (PR #173). Neither source merge
+nor local adapter simulation establishes what is currently deployed.
 
 ## Evidence layers
 
@@ -27,7 +29,13 @@ when this work began. New planning documents change no runtime behavior.
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
 | Current server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
-| New expansion | 273-profile historical inventory; six normalized source candidates, four reuse mappings and two explicit adapter gaps; none installed or activated | [Pilot package](../skills/pilots/agency-v1/README.md) |
+| New expansion | Six candidates; four callable simulation bindings; Brand precheck/semantic proposal and grounded report adapters; none installed, model-certified or activated | [Runtime package](../packages/agent-runtime/README.md) |
+
+**Production-release evidence score: 60/100; NO-GO for customer production.**
+This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a
+feature-completion percentage or a reuse of historical 92–98% estimates. Twelve
+source/isolated-test gates are evidenced; eight current-runtime/customer gates
+need fresh evidence. New profile source tests do not earn production points.
 
 The historical certification record did not establish that every scenario used
 a live model: its controlled resume included six direct jobs and zero model
@@ -83,7 +91,8 @@ Do not use this table as authority to clear stops or activate provider workers.
 - **#174**: all-department epic.
 - **#175**: six selected source reviews complete; 267 reviews still pending.
 - **#176**: six-profile pilot (strategy, content, brand review, discovery,
-  customer care, executive reporting): six validated candidate drafts, not runtime agents.
+  customer care, executive reporting): executable simulation source; production
+  binding/resolver installation and acceptance remain open. [Evidence](evidence/2026-09-06-agency-runtime-adapters.md).
 - **#177**: paired bilingual evaluation and resource/safety evidence.
 - **#178**: bounded team assignments on existing runtime handoffs.
 - **#179**: team onboarding/operations UX.
@@ -96,13 +105,15 @@ Hermes or analytics executor is being introduced.
 
 ## Next best move and authority
 
-#192's source fix is accepted. Documentation PR #191 and the new pilot-source
-PR each require their own full CI gate before merge. First pilot source slice:
-120 local tests PASS; see [evidence](evidence/2026-09-06-agency-pilot-candidates.md).
-Next implement reviewed versioned bindings for the four compatible procedures
-and explicitly scoped Brand/Executive contracts/adapters (coordinate #153).
-Keep every candidate unavailable until its actual dependency/certification
-gates pass. Review/freeze #177's rubric/data/model plan before comparison runs.
+#192's source fix, planning PR #191 and candidate PR #194 are accepted.
+New simulation runtime source: 23 new test groups, 143 total local tests, and
+12 synthetic profile/language journeys PASS. Current implementation PR still
+requires its own review and CI; it changes no live runtime.
+Next finish the authenticated tenant snapshot resolver and durable, versioned
+database/n8n binding installation package; exercise those actual boundaries in
+disposable PostgreSQL/n8n. Then run the reviewed #177 paired bilingual evaluation
+with separately authorized exact model/schema settings. Keep every candidate
+unavailable until its actual installation/dependency/certification gates pass.
 Full source review of the other 267 profiles is a later roadmap task, not a
 pilot start blocker. No new customer credential is needed for this source work.
 
@@ -118,4 +129,5 @@ state from the expansion approval.
 Update this file with each material change. Name the source commit, evidence
 date and exact completion gate. A live issue is current work coordination;
 its versioned snapshot and PR evidence are the recoverable history. Do not
-reuse an old percentage as a new production-readiness measurement.
+reuse an old percentage as a new production-readiness measurement. Use the
+versioned scorecard and distinguish unknown runtime evidence from a broken feature.

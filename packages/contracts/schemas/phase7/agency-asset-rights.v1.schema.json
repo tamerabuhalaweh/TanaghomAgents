@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase7/agency-asset-rights.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "asset_id",
+    "allowed"
+  ],
+  "properties": {
+    "asset_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "allowed": {
+      "type": "boolean"
+    }
+  }
+}

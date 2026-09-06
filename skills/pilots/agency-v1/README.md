@@ -1,5 +1,10 @@
 # Agency six-profile pilot: source candidates, not installed agents
 
+Follow-up source implementation: [callable simulation bindings and Brand/reporting
+adapters](../../../packages/agent-runtime/README.md). The candidate v1 manifest
+below remains the original intake snapshot; it is not rewritten to claim runtime
+installation or certification by a later source slice.
+
 Issues: #175 selected-source intake, #176 pilot; #177 evaluation and #137
 certification. This is the first source implementation slice following Tamer's
 2026-09-06 GO. It does not finish those issues or add cards to the live Studio.

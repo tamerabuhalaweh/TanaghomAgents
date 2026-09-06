@@ -1,0 +1,174 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/phase7/agency-brand-review.v1.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "contract_version",
+    "mode",
+    "organization_id",
+    "content_id",
+    "content_version",
+    "content_hash",
+    "language",
+    "review_kind",
+    "findings",
+    "review_gaps",
+    "rights_evidence",
+    "snapshot_hash",
+    "binding_id",
+    "human_approval_granted",
+    "external_action_count"
+  ],
+  "properties": {
+    "contract_version": {
+      "const": "phase7.agency-brand-review.v1"
+    },
+    "mode": {
+      "const": "simulation"
+    },
+    "organization_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "content_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "content_version": {
+      "type": "integer",
+      "minimum": 1
+    },
+    "content_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "language": {
+      "enum": [
+        "en",
+        "ar"
+      ]
+    },
+    "review_kind": {
+      "const": "deterministic_precheck"
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "category",
+          "severity",
+          "affected_text",
+          "correction_proposal",
+          "evidence"
+        ],
+        "properties": {
+          "category": {
+            "enum": [
+              "tone",
+              "claim",
+              "disclaimer"
+            ]
+          },
+          "severity": {
+            "enum": [
+              "info",
+              "warning",
+              "high"
+            ]
+          },
+          "affected_text": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 300
+          },
+          "correction_proposal": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "evidence": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_id",
+              "version_id",
+              "content_hash"
+            ],
+            "properties": {
+              "source_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "version_id": {
+                "type": "string",
+                "format": "uuid"
+              },
+              "content_hash": {
+                "type": "string",
+                "pattern": "^sha256:[a-f0-9]{64}$"
+              }
+            }
+          }
+        }
+      },
+      "minItems": 0,
+      "maxItems": 40
+    },
+    "review_gaps": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 200
+      },
+      "minItems": 0,
+      "maxItems": 30
+    },
+    "rights_evidence": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_id",
+          "version_id",
+          "content_hash"
+        ],
+        "properties": {
+          "source_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "version_id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "content_hash": {
+            "type": "string",
+            "pattern": "^sha256:[a-f0-9]{64}$"
+          }
+        }
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "snapshot_hash": {
+      "type": "string",
+      "pattern": "^sha256:[a-f0-9]{64}$"
+    },
+    "binding_id": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 200
+    },
+    "human_approval_granted": {
+      "const": false
+    },
+    "external_action_count": {
+      "const": 0
+    }
+  }
+}
