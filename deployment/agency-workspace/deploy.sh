@@ -9,6 +9,7 @@ test -z "$(git status --porcelain)"
 base=(docker compose -p tanaghom-test -f deployment/fresh-test-vps/compose.yml)
 compose=("${base[@]}" -f deployment/agency-workspace/compose.yml)
 resume=false
+reuse_import=false
 if [ -n "${WORKSPACE_RESUME_STATE:-}" ]; then
  state=$(realpath -e "$WORKSPACE_RESUME_STATE")
  case "$state" in /opt/tanaghom-test/runtime/workspace-20*) ;; *) echo 'invalid resume state' >&2; exit 1;; esac
@@ -17,7 +18,11 @@ if [ -n "${WORKSPACE_RESUME_STATE:-}" ]; then
  test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT max(version) FROM public.schema_migrations')" = 0035_agency_workspace
  test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT count(*) FROM tanaghom.agency_workspaces')" = 0
  test "$("${base[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -Atc 'SELECT NOT enabled AND emergency_stop FROM tanaghom.agency_workspace_control')" = t
- test -z "$("${compose[@]}" ps -aq workspace-n8n)"
+ previous_n8n=$("${compose[@]}" ps -aq workspace-n8n)
+ if [ -n "$previous_n8n" ]; then
+  test "$(docker inspect --format '{{.State.Running}}' "$previous_n8n")" = false
+  reuse_import=true
+ fi
  for secret in workspace_worker_password workspace_database_url workspace_worker_token workspace_n8n_key; do test -s "/opt/tanaghom-test/runtime/secrets/$secret"; done
  resume=true
 else
@@ -58,7 +63,11 @@ for attempt in $(seq 1 40); do
 done
 "${compose[@]}" exec -T postgres psql -U postgres -d tanaghom_test -X -v ON_ERROR_STOP=1 < deployment/agency-workspace/configure-worker.sql
 "${compose[@]}" run --rm -T --no-deps --entrypoint node dashboard < deployment/agency-workspace/validate.cjs
-"${compose[@]}" run --rm -T --no-deps --entrypoint /bin/sh workspace-n8n /workspace/import.sh > "$state/n8n-import.log" 2>&1
+if $reuse_import; then
+ "${compose[@]}" run --rm -T --no-deps --entrypoint node workspace-n8n -e "const{DatabaseSync}=require('node:sqlite');const d=new DatabaseSync('/home/node/.n8n/database.sqlite',{readOnly:true});const w=d.prepare('SELECT active FROM workflow_entity WHERE id=?').get('tanaghomAgencyWorkspaceV1');const n=d.prepare('SELECT count(*) AS n FROM execution_entity').get().n;d.close();if(!w||w.active!==0||n!==0)process.exit(1);console.log('reusing inactive import with zero executions')"
+else
+ "${compose[@]}" run --rm -T --no-deps --entrypoint /bin/sh workspace-n8n /workspace/import.sh > "$state/n8n-import.log" 2>&1
+fi
 "${compose[@]}" up -d --no-deps dashboard caddy workspace-n8n
 healthy=false
 for attempt in $(seq 1 60); do

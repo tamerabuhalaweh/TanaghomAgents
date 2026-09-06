@@ -32,6 +32,9 @@ The deployment does **not** invent a key or clear stops without a real canary.
 Existing PostgreSQL/Caddy volumes remain. Add one persistent n8n SQLite volume
 `tanaghom-test_workspace_n8n`; it stores workflow and encrypted gateway credential.
 This single-dispatcher test is not a horizontally scaled production n8n design.
+Its root filesystem is read-only; `/home/node/.cache` is a disposable128MB tmpfs
+owned by UID/GID1000 so n8n can generate startup assets. It is not a persistent
+document/secret store. Actual read-only server startup has a separate test.
 No successful/error/manual execution bodies are retained; prune metadata after
 24h or 1,000 records. Logs cap at 10MB for n8n. New image layers can require
 roughly 1–3GB; workspace documents are capped at 16,000 characters per step,
@@ -102,7 +105,10 @@ bash deployment/agency-workspace/deploy.sh
 ```
 
 It validates the original encrypted backup checksum, stopped/unused0035 state
-and existing secrets before resuming. It never reapplies the migration, replaces
+and existing secrets before resuming. After a failed n8n startup, it also permits
+the package's stopped n8n container, but reuses the import only after verifying
+its exact workspace workflow is inactive and SQLite has zero executions.
+It never reapplies the migration, replaces
 credentials or overwrites the original rollback image. The application-role
 probe does not read `public.schema_migrations`; that remains an administrator
 preflight check, preserving least privilege.

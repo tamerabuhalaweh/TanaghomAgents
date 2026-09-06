@@ -46,7 +46,7 @@ services:
       - ../../n8n/workflows/agency/agency-workspace.v1.json:/workspace-workflow.json:ro
     networks: [workspace]
     read_only: true
-    tmpfs: ["/tmp:size=64m,mode=1777"]
+    tmpfs: ["/tmp:size=64m,mode=1777", "/home/node/.cache:size=128m,uid=1000,gid=1000,mode=0700"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
     cpus: 0.75
