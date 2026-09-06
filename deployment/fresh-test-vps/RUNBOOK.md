@@ -62,6 +62,7 @@ Checkout the exact reviewed source under `/opt/tanaghom-test/source`. Set
 cd /opt/tanaghom-test/source
 export TANAGHOM_RELEASE="$(git rev-parse HEAD)"
 docker compose -p tanaghom-test -f deployment/fresh-test-vps/compose.yml config --quiet
+docker compose -p tanaghom-test -f deployment/fresh-test-vps/compose.yml config --format json | python3 deployment/fresh-test-vps/validate-compose.py
 ```
 
 Create files once in root-owned mode-0700 `/opt/tanaghom-test/runtime/secrets`.
@@ -75,6 +76,11 @@ Start PostgreSQL only, wait for health, apply unapplied `.up.sql` files in order
 through its LOCAL Unix socket using `docker compose exec -T postgres psql`.
 Every migration is transactional and recorded in `public.schema_migrations`.
 Stop on failure and preserve the database; do not drop/recreate it automatically.
+The first startup caught an unquoted comma in a tmpfs flow list after database
+initialization. Quote each complete mount and validate parsed Compose JSON;
+`config --quiet` alone accepts a syntactically valid but unusable second mount.
+Retry only the corrected exact revision; the migration ledger and existing
+owner check preserve completed initialization without reseeding.
 Bootstrap the verified owner using `bootstrap-owner.sql` and psql variables
 `owner_email` and `owner_subject` (not authentication credentials).
 
