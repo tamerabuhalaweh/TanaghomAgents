@@ -3,7 +3,7 @@
 import { ArrowRight, CircleDollarSign, FileCheck2, Plus, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { Tone } from "@/data/fixtures";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { CampaignForm, type CampaignFormValue } from "./campaign-form";
@@ -46,6 +46,12 @@ export function CampaignsView() {
   const [error, setError] = useState<string | null>(null);
   const canOperate = operations.status === "ready"
     && ["owner", "operator"].includes(operations.data.current_user.role);
+
+  useEffect(() => {
+    if (!canOperate || new URLSearchParams(window.location.search).get("create") !== "1") return;
+    setCreating(true);
+    window.history.replaceState(null, "", "/campaigns");
+  }, [canOperate]);
 
   async function createCampaign(value: CampaignFormValue) {
     setBusy(true); setError(null);
