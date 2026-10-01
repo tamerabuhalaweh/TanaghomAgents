@@ -126,7 +126,11 @@ Do not use this table as authority to clear stops or activate provider workers.
   Campaigns lifecycle is separate. This planning task does not fix UI.
 - Notification destinations/monitoring are implemented, but ADR 0011 explicitly
   excludes the delivery worker from that slice. Do not promise working alert
-  delivery solely because a destination can be saved.
+  delivery solely because a destination can be saved. Branch
+  `readiness/03-alert-delivery` proposes the email/Slack worker (migration 0036,
+  [ADR 0020](architecture/0020-notification-delivery-worker.md), off by default,
+  tested only against local fakes) and the [acceptance kit](../deployment/notification-delivery/RUNBOOK.md).
+  No alert has been delivered on any host; no score change.
 - Generic Studio live promotion, enabled adapters, provider dispatch and
   customer acceptance remain separate from simulation certification.
 - Older roadmap/issue prose may still say a completed foundation is not started.
