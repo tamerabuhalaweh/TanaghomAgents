@@ -13,7 +13,17 @@ export class WorkspaceError extends Error { constructor(public code:string,publi
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const profileId="7d000000-0000-4000-8000-000000000002";
 const expectedModel="gemma4-26b-a4b-canary";
-declare global { var tanaghomWorkspacePool:Pool|undefined; }
+const { probeModelConnection, modelsUrl }: typeof import("@tanaghom/agent-runtime/model-connection")
+ = process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`)("@tanaghom/agent-runtime/model-connection");
+declare global { var tanaghomWorkspacePool:Pool|undefined; var tanaghomModelProbe:{at:number;result:Awaited<ReturnType<typeof probeModelConnection>>}|undefined; }
+// Real connection check (cached 60 s). Test probe origins are honoured only in test/integration environments.
+async function modelConnection(){
+ if(!configured())return {state:"pending" as const,code:"model_not_configured",checked_at:new Date().toISOString()};
+ const cached=globalThis.tanaghomModelProbe;if(cached&&Date.now()-cached.at<60000)return cached.result;
+ const testUrl=["test","integration"].includes(process.env.APP_ENV||"")?process.env.AGENCY_MODEL_PROBE_URL:undefined;
+ const result=await probeModelConnection({url:testUrl||modelsUrl(modelEndpoint),apiKey:process.env.GEMMA_API_KEY,model:expectedModel});
+ globalThis.tanaghomModelProbe={at:Date.now(),result};return result;
+}
 const configured=()=>process.env.AGENCY_WORKSPACE_ENABLED==="true" && Boolean(process.env.GEMMA_API_KEY?.trim()) && Boolean(process.env.AGENCY_WORKSPACE_DATABASE_URL) && (process.env.AGENCY_WORKSPACE_WORKER_TOKEN?.length||0)>=32;
 async function responseJson(response:Response){
  const reader=response.body?.getReader();if(!reader)throw new WorkspaceError("output_rejected");
@@ -52,12 +62,13 @@ export async function workspaceRead(request:NextRequest){
   database().query(`SELECT id,event_type,actor_kind,actor_ref,evidence,occurred_at FROM tanaghom.agency_workspace_events
     WHERE workspace_id=$1 AND organization_id=$2 ORDER BY id LIMIT 100`,[selected.id,actor.organizationId]),
  ]):[{rows:[]},{rows:[]}];
- const c=control.rows[0];
+ const c=control.rows[0];const connection=await modelConnection();const verified=connection.state==="verified";
  return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
   assignments:list.rows,selected:selected?{...selected,steps:steps.rows,events:events.rows}:null,
   can_manage:actor.role==="owner",can_review:["owner","reviewer"].includes(actor.role),
-  runtime:{ready:configured()&&c?.enabled&&!c.emergency_stop&&!c.platform_stop,
-   reason:!configured()?"The test model worker is not connected yet.":!c?.enabled||c.emergency_stop?c?.reason:c.platform_stop?"Platform emergency stop is active.":"Draft-only model worker configured. Real task results are shown below; no provider actions.",
+  runtime:{ready:configured()&&verified&&c?.enabled&&!c.emergency_stop&&!c.platform_stop,
+   reason:!configured()?"The test model worker is not connected yet.":!verified?`The model connection check failed (${connection.code}). No generation will start.`:!c?.enabled||c.emergency_stop?c?.reason:c.platform_stop?"Platform emergency stop is active.":"Draft-only model connection verified. Real task results are shown below; no provider actions.",
+   connection:{state:connection.state,code:connection.code,checked_at:connection.checked_at},
    model:expectedModel,external_actions:false,quality_certified:false}};
 }
 

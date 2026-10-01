@@ -18,6 +18,11 @@ and the [new customer walkthrough](testing/AGENCY_WORKSPACE_GUIDE.md).
 The local Gemma key is missing; no new real inference has run in this work.
 The page says **Model connection pending** and lets the owner save briefs;
 generation remains unavailable. Do not claim a delivered live AI team yet.
+Branch `readiness/04-model-connection-and-journey` proposes a #177 successor
+connection package: a real cached model probe replaces the static label, hard
+per-run call/token/spend limits, a default-on kill switch and a one-command
+English/Arabic [journey kit](../deployment/agency-model-journey/RUNBOOK.md),
+tested against a local stub model only. No real inference has run; no score change.
 The bounded test inference use is authorized, but SmartLabs/SmartCC/Gemma service
 changes and provider actions remain excluded. Production score remains60/100.
 
@@ -64,7 +69,7 @@ nor local adapter simulation establishes what is currently deployed.
 | Foundation issue state | #132, #133, #134 and #135 are closed implementation slices | [Pre-expansion issue snapshot](evidence/2026-09-06-pre-expansion-github-issues.json) |
 | Historical Studio certification | 14/14 canonical English/Arabic simulation scenarios recorded; agent stayed validated, zero provider actions | [2026-07-27 #137 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/137#issuecomment-5095194632) |
 | Last reviewed deployment record | PR #173 deployed at 0b5b5a7; migration 0033; dashboard health/boundaries passed then | [2026-07-28 #125 evidence](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/125#issuecomment-5104583814) |
-| Current certified server/provider health | Not checked by this planning task; July records are historical | Fresh authorized preflight required |
+| Current certified server/provider health | Not checked by this planning task; July records are historical. Branch `readiness/02-release-preflight-kit` adds the read-only [release preflight kit](../deployment/release-preflight/RUNBOOK.md); not yet run on the certified host, so no score change | Fresh authorized preflight required |
 | Selected CPU test host | Public dashboard, PostgreSQL, Caddy and private n8n on155.117.45.45;0035, 90GB free; workspace dispatcher inactive, all model/provider execution stopped | [Workspace deployment](evidence/2026-09-06-agency-workspace.md); [workspace walkthrough](testing/AGENCY_WORKSPACE_GUIDE.md). Earlier inventory is historical |
 | New expansion | Six original candidates and simulation adapters retained; separate document workspace successor deployed with five model procedures plus deterministic summary; no real-model quality certification | [Workspace scope](planning/agency-expansion/WORKSPACE_DELIVERY.md), [runtime package](../packages/agent-runtime/README.md) |
 | Accepted integration slice | Migration 0034, JWT/owner API, separate gateway role, inactive pilot export; 12 actual disposable n8n journeys, 10 stub-model HTTP calls, zero real model/provider calls | [Authenticated integration](architecture/0019-authenticated-agency-pilot.md) |
@@ -72,6 +77,9 @@ nor local adapter simulation establishes what is currently deployed.
 | Accepted runner slice (PR #198) | 360 successful simulator attempts in exact-head Linux CI; 167 local tests; verified loopback prerequisite replaces unsupported Windows fallback; no live model transport | [Accepted review and evidence](evidence/2026-09-06-agency-pr-review-and-setup.md) |
 
 **Production-release evidence score: 60/100; NO-GO for customer production.**
+An [independent review (2026-10-01)](reviews/2026-10-01-independent-production-readiness-review.md)
+adds a separate code-readiness opinion (67/100 today) and findings; it does not
+change this score.
 This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a
 feature-completion percentage or a reuse of historical 92–98% estimates. Twelve
 source/isolated-test gates are evidenced; eight current-runtime/customer gates
@@ -94,6 +102,10 @@ and PR #193: all 38 CI jobs passed; merged as
 `91fa3a4411dc6e4fbcbc8f9d125f26659569ce9a`. #192's source scope is complete.
 Deployment remains a separate gate;
 this source fix does not establish that production is patched.
+**2026-10-01:** new Next.js (critical), sharp, fast-uri and baseline-browser-mapping
+advisories make `npm audit` fail on `main` again; branch `readiness/00-dependency-audit`
+updates them ([evidence](evidence/2026-10-01-dependency-audit-refresh.md)). Until it
+merges, the "Patch dependency audit" gate evidence is stale.
 
 Do not treat credentials as the only definition of done. Latest historical
 provider evidence still required credentials/channel/contact setup plus
@@ -102,7 +114,7 @@ actual execution and customer acceptance. Refresh these facts before action:
 | Work | Canonical owner | What remains to verify/complete |
 |---|---|---|
 | Customer delivery acceptance | #125 | Agreed scope, complete journeys, classified defects and written signoff |
-| Postiz draft handoff | #45 | Certified-vault credential, supported mapped staging channel, one draft/replay/no-publish evidence |
+| Postiz draft handoff | #45 | Certified-vault credential, supported mapped staging channel, one draft/replay/no-publish evidence. Branch `readiness/05-postiz-draft-kit` adds a gateway draft-only guard, workflow-replay assertions and the [staging kit](../deployment/postiz-staging-acceptance/RUNBOOK.md); not yet run on staging, so no score change |
 | GHL actions | #54 | Exact scopes, signed webhook path, allowlisted test contact, consent/templates and approved Assisted evidence |
 | Human supervision | #53 | Complete remaining acceptance including takeover/no-double-send under real bounded journey |
 | Quality and rollout | #56 | Customer-approved baseline/thresholds and bounded Shadow/Assisted evidence |
@@ -114,12 +126,18 @@ Do not use this table as authority to clear stops or activate provider workers.
 
 ### Known repository caveats
 
-- Overview still has a disabled Create campaign entry point and stale phase
-  copy in `apps/dashboard/components/overview-dashboard.tsx`; the implemented
-  Campaigns lifecycle is separate. This planning task does not fix UI.
+- Overview's Create campaign entry now links owners/operators to the
+  implemented Campaigns draft form (`/campaigns?create=1`) and stale phase copy
+  is removed (branch `readiness/06-dashboard-fixes`, #14). Source contract test
+  added; the authenticated browser spec runs only with a test-account storage
+  state and has not run against a deployment. No production score change.
 - Notification destinations/monitoring are implemented, but ADR 0011 explicitly
   excludes the delivery worker from that slice. Do not promise working alert
-  delivery solely because a destination can be saved.
+  delivery solely because a destination can be saved. Branch
+  `readiness/03-alert-delivery` proposes the email/Slack worker (migration 0036,
+  [ADR 0020](architecture/0020-notification-delivery-worker.md), off by default,
+  tested only against local fakes) and the [acceptance kit](../deployment/notification-delivery/RUNBOOK.md).
+  No alert has been delivered on any host; no score change.
 - Generic Studio live promotion, enabled adapters, provider dispatch and
   customer acceptance remain separate from simulation certification.
 - Older roadmap/issue prose may still say a completed foundation is not started.

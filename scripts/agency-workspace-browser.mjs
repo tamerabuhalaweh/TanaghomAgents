@@ -17,6 +17,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
  const subject='90000000-0000-4000-8000-000000000001';
  const token=async sub=>new SignJWT({role:'authenticated',email:'owner@example.test'}).setProtectedHeader({alg:'RS256',kid:key.kid}).setIssuer(`${authOrigin}/auth/v1`).setAudience('authenticated').setSubject(sub).setIssuedAt().setExpirationTime('1h').sign(privateKey);
  const server=createServer(async(req,res)=>{
+  if(req.method==='GET'&&req.url==='/gemma4/v1/models'){res.writeHead(req.headers.authorization==='Bearer fixture'?200:401,{'content-type':'application/json'}).end(JSON.stringify({data:[{id:'gemma4-26b-a4b-canary',max_model_len:32768}]}));return;}
   if(req.url==='/auth/v1/.well-known/jwks.json'){res.writeHead(200,{'content-type':'application/json'}).end(JSON.stringify({keys:[key]}));return;}
   if(req.method==='POST'&&req.url?.startsWith('/auth/v1/token')){
    const chunks=[];for await(const c of req)chunks.push(c);const body=JSON.parse(Buffer.concat(chunks).toString());
@@ -30,7 +31,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   server.listen(43191,'127.0.0.1');await once(server,'listening');
   app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','apps/dashboard','-p','43192','-H','127.0.0.1'],{env:{...process.env,
    APP_ENV:'integration',DATABASE_URL:databaseUrl,SUPABASE_URL:authOrigin,SUPABASE_JWKS_URL:`${authOrigin}/auth/v1/.well-known/jwks.json`,SUPABASE_PUBLISHABLE_KEY:'disposable-public-key',SUPABASE_SECRET_KEY:'',
-   AGENCY_WORKSPACE_ENABLED:'true',AGENCY_WORKSPACE_DATABASE_URL:workerUrl,GEMMA_API_KEY:'fixture',AGENCY_WORKSPACE_WORKER_TOKEN:'disposable-workspace-worker-token-32-characters',
+   AGENCY_WORKSPACE_ENABLED:'true',AGENCY_WORKSPACE_DATABASE_URL:workerUrl,GEMMA_API_KEY:'fixture',AGENCY_MODEL_PROBE_URL:`${authOrigin}/gemma4/v1/models`,AGENCY_WORKSPACE_WORKER_TOKEN:'disposable-workspace-worker-token-32-characters',
    AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED:'false',AGENCY_PILOT_GATEWAY_ENABLED:'false',POSTIZ_HANDOFF_ENABLED:'false',GHL_CONTACT_HANDOFF_ENABLED:'false'},stdio:['ignore','pipe','pipe']});
   app.stdout.on('data',c=>{logs+=c});app.stderr.on('data',c=>{logs+=c});
   for(let i=0;i<100;i++){if(app.exitCode!==null)throw new Error(logs);try{if((await fetch(`${origin}/api/health`)).ok)break;}catch{}await new Promise(r=>setTimeout(r,250));}
@@ -42,6 +43,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   await page.goto(`${origin}/login`);await page.getByLabel('Email').fill('owner@example.test');await page.getByLabel('Password',{exact:true}).fill('disposable-browser-only');
   await page.getByRole('button',{name:'Enter workspace',exact:true}).click();await page.waitForURL(url=>url.pathname!=='/login');
   await page.goto(`${origin}/workspace`);await expect(page.getByRole('heading',{name:'AI workspace',exact:true})).toBeVisible();
+  await expect(page.getByTestId('workspace-model-connection')).toHaveText('Model connection verified');
   await page.getByRole('button',{name:'New assignment',exact:true}).click();
   await page.getByLabel('Assignment title').fill('Photography launch — browser fixture');
   await page.getByLabel('Task brief',{exact:true}).fill('Prepare an organic Instagram launch for our beginner photography course, with practical content and a support playbook.');
