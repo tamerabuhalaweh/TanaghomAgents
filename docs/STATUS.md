@@ -94,6 +94,10 @@ and PR #193: all 38 CI jobs passed; merged as
 `91fa3a4411dc6e4fbcbc8f9d125f26659569ce9a`. #192's source scope is complete.
 Deployment remains a separate gate;
 this source fix does not establish that production is patched.
+**2026-10-01:** new Next.js (critical), sharp, fast-uri and baseline-browser-mapping
+advisories make `npm audit` fail on `main` again; branch `readiness/00-dependency-audit`
+updates them ([evidence](evidence/2026-10-01-dependency-audit-refresh.md)). Until it
+merges, the "Patch dependency audit" gate evidence is stale.
 
 Do not treat credentials as the only definition of done. Latest historical
 provider evidence still required credentials/channel/contact setup plus
