@@ -126,9 +126,11 @@ Do not use this table as authority to clear stops or activate provider workers.
 
 ### Known repository caveats
 
-- Overview still has a disabled Create campaign entry point and stale phase
-  copy in `apps/dashboard/components/overview-dashboard.tsx`; the implemented
-  Campaigns lifecycle is separate. This planning task does not fix UI.
+- Overview's Create campaign entry now links owners/operators to the
+  implemented Campaigns draft form (`/campaigns?create=1`) and stale phase copy
+  is removed (branch `readiness/06-dashboard-fixes`, #14). Source contract test
+  added; the authenticated browser spec runs only with a test-account storage
+  state and has not run against a deployment. No production score change.
 - Notification destinations/monitoring are implemented, but ADR 0011 explicitly
   excludes the delivery worker from that slice. Do not promise working alert
   delivery solely because a destination can be saved. Branch
