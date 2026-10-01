@@ -72,6 +72,9 @@ nor local adapter simulation establishes what is currently deployed.
 | Accepted runner slice (PR #198) | 360 successful simulator attempts in exact-head Linux CI; 167 local tests; verified loopback prerequisite replaces unsupported Windows fallback; no live model transport | [Accepted review and evidence](evidence/2026-09-06-agency-pr-review-and-setup.md) |
 
 **Production-release evidence score: 60/100; NO-GO for customer production.**
+An [independent review (2026-10-01)](reviews/2026-10-01-independent-production-readiness-review.md)
+adds a separate code-readiness opinion (67/100 today) and findings; it does not
+change this score.
 This is the new explicit [20-gate scorecard v1](PRODUCTION_READINESS.md), not a
 feature-completion percentage or a reuse of historical 92–98% estimates. Twelve
 source/isolated-test gates are evidenced; eight current-runtime/customer gates
