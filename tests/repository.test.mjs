@@ -29,17 +29,17 @@ test('roadmap preserves the human publishing approval gate', async () => {
 test('security overrides keep audited URI and image dependencies on patched releases', async () => {
   const manifest = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
   const lock = JSON.parse(await readFile(new URL('../package-lock.json', import.meta.url), 'utf8'));
-  assert.equal(manifest.overrides['fast-uri'], '3.1.6');
+  assert.equal(manifest.overrides['fast-uri'], '3.1.8');
   assert.equal(manifest.overrides.postcss, '$postcss');
   assert.equal(manifest.overrides.sharp, '$sharp');
-  assert.equal(manifest.devDependencies.next, '16.2.11');
+  assert.equal(manifest.devDependencies.next, '16.3.8');
   assert.equal(manifest.devDependencies.postcss, '8.5.23');
-  assert.equal(manifest.devDependencies.sharp, '0.35.3');
-  assert.equal(lock.packages['node_modules/fast-uri'].version, '3.1.6');
-  assert.equal(lock.packages['node_modules/next'].version, '16.2.11');
+  assert.equal(manifest.devDependencies.sharp, '0.35.5');
+  assert.equal(lock.packages['node_modules/fast-uri'].version, '3.1.8');
+  assert.equal(lock.packages['node_modules/next'].version, '16.3.8');
   assert.equal(lock.packages['node_modules/postcss'].version, '8.5.23');
   assert.equal(lock.packages['node_modules/nanoid'].version, '3.3.18');
-  assert.equal(lock.packages['node_modules/sharp'].version, '0.35.3');
+  assert.equal(lock.packages['node_modules/sharp'].version, '0.35.5');
 });
 
 test('migration runner accepts PostgreSQL boolean output variants', async () => {
