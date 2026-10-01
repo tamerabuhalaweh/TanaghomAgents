@@ -8,6 +8,9 @@ import { noStore } from "@/lib/server/responses";
 
 export const runtime = "nodejs";
 
+const { assertPostizDraftOnly }: typeof import("@tanaghom/agent-runtime/postiz-draft-guard")
+  = process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`)("@tanaghom/agent-runtime/postiz-draft-guard");
+
 function workerAuthorized(request: NextRequest) {
   const configured = process.env.INTEGRATION_WORKER_TOKEN || "";
   const supplied = request.headers.get("authorization")?.match(/^Bearer\s+(.+)$/i)?.[1] || "";
@@ -23,6 +26,8 @@ export async function POST(request: NextRequest) {
   if (typeof body.job_id !== "string" || !/^[0-9a-f-]{36}$/i.test(body.job_id) || !body.request_body || typeof body.request_body !== "object") {
     return noStore({ error: "invalid_gateway_request" }, { status: 400 });
   }
+  try { assertPostizDraftOnly(body.request_body); }
+  catch (error) { return noStore({ error: (error as Error).message }, { status: 422 }); }
 
   const client = await database().connect();
   try {

@@ -206,6 +206,14 @@ try {
   assert.equal((await pool.query(`SELECT count(*)::int count FROM tanaghom.agent_jobs
     WHERE job_type='content.postiz.draft'
       AND input->>'content_item_id'='53000000-0000-4000-8000-000000000001'`)).rows[0].count, 1);
+  // Workflow replay after success: nothing is claimable, so simulated Postiz must see no second request.
+  const replayExecution = await run("docker", [...dockerBase, "execute", "--id=phase4PostizDraftV1", "--rawOutput"])
+    .catch((error) => error.message);
+  assert.equal(requestCount, 1, `workflow replay reached simulated Postiz\n${String(replayExecution).slice(-4000)}`);
+  assert.equal((await pool.query(`SELECT count(*)::int count FROM tanaghom.posts
+    WHERE content_item_id='53000000-0000-4000-8000-000000000001' AND provider='postiz'`)).rows[0].count, 1);
+  assert.equal((await pool.query(`SELECT count(*)::int count FROM tanaghom.posts
+    WHERE content_item_id='53000000-0000-4000-8000-000000000001' AND status IN ('scheduled','live')`)).rows[0].count, 0);
 
   await assert.rejects(
     pool.query(`INSERT INTO tanaghom.agent_jobs
@@ -217,7 +225,7 @@ try {
   );
   assert.equal(requestCount, 1, "forged unapproved job reached simulated Postiz");
   assert.equal(analyticsRequestCount, 1, "performance workflow replayed the provider read");
-  console.log("PASS: inactive Postiz workflows created one draft, normalized performance history, and blocked replay plus forged jobs.");
+  console.log("PASS: inactive Postiz workflows created one draft, normalized performance history, blocked queue and workflow replay plus forged jobs, and recorded no publication.");
 } finally {
   server.close();
   await pool.query(`
