@@ -55,7 +55,7 @@ have been inserted into the public database to make the screen appear busy.
 
 These are future acceptance steps, not claims that they have already passed:
 
-1. Open the saved assignment. Expect **Model worker configured** and an enabled
+1. Open the saved assignment. Expect **Model connection verified** and an enabled
    **Start assignment**. The engineer must also have validated actual dispatcher
    polling; a configured key alone does not prove a worker is consuming tasks.
 2. Click **Start assignment** once. Follow Queued → Working; the page refreshes
