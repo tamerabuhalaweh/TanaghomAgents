@@ -225,7 +225,8 @@ try {
   );
   assert.equal(requestCount, 1, "forged unapproved job reached simulated Postiz");
   assert.equal(analyticsRequestCount, 1, "performance workflow replayed the provider read");
-  console.log("PASS: inactive Postiz workflows created one draft, normalized performance history, blocked queue and workflow replay plus forged jobs, and recorded no publication.");
+  console.log("PASS: workflow replay made no second Postiz request and no post was scheduled or published.");
+  console.log("PASS: inactive Postiz workflows created one draft, normalized performance history, and blocked replay plus forged jobs.");
 } finally {
   server.close();
   await pool.query(`
