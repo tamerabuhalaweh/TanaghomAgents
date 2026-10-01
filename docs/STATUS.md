@@ -18,6 +18,11 @@ and the [new customer walkthrough](testing/AGENCY_WORKSPACE_GUIDE.md).
 The local Gemma key is missing; no new real inference has run in this work.
 The page says **Model connection pending** and lets the owner save briefs;
 generation remains unavailable. Do not claim a delivered live AI team yet.
+Branch `readiness/04-model-connection-and-journey` proposes a #177 successor
+connection package: a real cached model probe replaces the static label, hard
+per-run call/token/spend limits, a default-on kill switch and a one-command
+English/Arabic [journey kit](../deployment/agency-model-journey/RUNBOOK.md),
+tested against a local stub model only. No real inference has run; no score change.
 The bounded test inference use is authorized, but SmartLabs/SmartCC/Gemma service
 changes and provider actions remain excluded. Production score remains60/100.
 

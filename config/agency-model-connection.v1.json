@@ -1,0 +1,25 @@
+{
+  "contract_version": "agency.model-connection.v1",
+  "issue": 177,
+  "status": "proposed_successor_not_authorized",
+  "supersedes_for_live_journeys": "evaluation/agency-runner-v1 loopback-only simulator transport (unchanged and still frozen)",
+  "frozen_inputs_used_read_only": ["config/agency-workspace.v1.json", "packages/agent-runtime/workspace.mjs"],
+  "model": "gemma4-26b-a4b-canary",
+  "journey": {
+    "languages": ["en", "ar"],
+    "profiles": ["social_media_strategist", "content_creator"],
+    "human_decision": "review_sheet_only"
+  },
+  "limits": {
+    "max_calls_per_run": 4,
+    "max_total_tokens_per_run": 24000,
+    "max_output_tokens_per_call": 1400,
+    "max_spend_usd_per_run": 1.0,
+    "request_timeout_ms": 90000,
+    "probe_timeout_ms": 10000,
+    "max_response_bytes": 100000
+  },
+  "kill_switch_env": "AGENCY_MODEL_KILL_SWITCH",
+  "authorization_env": "AGENCY_MODEL_JOURNEY_AUTHORIZED",
+  "external_actions": 0
+}
