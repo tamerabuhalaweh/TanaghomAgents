@@ -114,7 +114,7 @@ actual execution and customer acceptance. Refresh these facts before action:
 | Work | Canonical owner | What remains to verify/complete |
 |---|---|---|
 | Customer delivery acceptance | #125 | Agreed scope, complete journeys, classified defects and written signoff |
-| Postiz draft handoff | #45 | Certified-vault credential, supported mapped staging channel, one draft/replay/no-publish evidence |
+| Postiz draft handoff | #45 | Certified-vault credential, supported mapped staging channel, one draft/replay/no-publish evidence. Branch `readiness/05-postiz-draft-kit` adds a gateway draft-only guard, workflow-replay assertions and the [staging kit](../deployment/postiz-staging-acceptance/RUNBOOK.md); not yet run on staging, so no score change |
 | GHL actions | #54 | Exact scopes, signed webhook path, allowlisted test contact, consent/templates and approved Assisted evidence |
 | Human supervision | #53 | Complete remaining acceptance including takeover/no-double-send under real bounded journey |
 | Quality and rollout | #56 | Customer-approved baseline/thresholds and bounded Shadow/Assisted evidence |
