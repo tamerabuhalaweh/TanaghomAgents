@@ -348,6 +348,27 @@ app.post('/api/templates/:id/approve', async (req, res) => {
 });
 
 /**
+ * Future departments — read-only (Phase C stubs, all inactive).
+ * No approve buttons here; activation via SQL + ROADMAP gates.
+ */
+app.get('/api/departments', async (_req, res) => {
+  try {
+    const { rows } = await pool.query(
+      `SELECT d.dept_key, d.display, d.status,
+              COALESCE(json_agg(json_build_object('skill_key', s.skill_key, 'status', s.status) ORDER BY s.skill_key) FILTER (WHERE s.skill_key IS NOT NULL), '[]') AS skills
+       FROM departments d
+       LEFT JOIN department_skills s ON s.dept_key = d.dept_key
+       GROUP BY d.dept_key, d.display, d.status
+       ORDER BY d.dept_key`
+    );
+    res.json({ departments: rows });
+  } catch (err) {
+    // Table missing until migration 007 — return empty, not 500 crash
+    res.json({ departments: [], note: '007_departments_stub.sql not applied yet: ' + err.message });
+  }
+});
+
+/**
  * Mark a lead as won (manual close) — logs purchase activity
  */
 app.post('/api/leads/:id/won', async (req, res) => {
