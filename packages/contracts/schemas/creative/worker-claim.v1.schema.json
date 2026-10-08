@@ -1,0 +1,13 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/creative/worker-claim.v1.schema.json",
+  "title": "Creative worker claim payload v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "lane", "worker", "lease_seconds"],
+  "properties": {
+    "contract_version": { "const": "creative.worker-claim.v1" },
+    "lane": { "enum": ["cpu", "gpu_image", "gpu_video", "gpu_audio"] },
+    "worker": { "type": "string", "minLength": 1, "maxLength": 200 },
+    "lease_seconds": { "type": "integer", "minimum": 30, "maximum": 3600 }
+  }
+}

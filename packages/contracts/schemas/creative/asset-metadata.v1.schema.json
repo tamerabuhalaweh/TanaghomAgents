@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/creative/asset-metadata.v1.schema.json",
+  "title": "Creative asset metadata v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "asset_id", "organization_id", "capability", "originating_job_id"],
+  "properties": {
+    "contract_version": { "const": "creative.asset-metadata.v1" },
+    "asset_id": { "type": "string", "format": "uuid" },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "voice", "music", "landing_page"] },
+    "title": { "type": ["string", "null"], "minLength": 1, "maxLength": 200 },
+    "originating_job_id": { "type": "string", "format": "uuid" }
+  }
+}
