@@ -88,6 +88,19 @@ Explicitly excluded: RMBG/BRIA (non-commercial) — never integrated.
   **external acceptance pending**, recorded in evaluation, never claimed
   certified.
 
+### Artifact retrieval hardening (added in review)
+
+Provider artifact URLs are validated in two stages: hostname text checks
+(allowlisted origins incl. verified `fal.media` suffix, HTTPS, no
+userinfo) plus DNS resolution of ALL A/AAAA answers with rejection of any
+non-public destination (loopback, RFC1918, link-local, metadata,
+multicast, reserved, CGNAT, documentation, IPv4-mapped unwrapped).
+Retrieval connects to the validated address with the original Host header
+and SNI preserved, so validation and connection cannot diverge (no DNS
+TOCTOU); every redirect target repeats the full check with a bounded
+chain. Loopback HTTP exists only behind an explicit test-only flag on
+both the URL validator and the adapter constructor.
+
 ## Cost/latency evidence collected in P2a
 
 - Local pipeline: measured ms + byte counts per case (evaluation ledger).

@@ -359,7 +359,7 @@ try {
       const jobParams = expectedParams.get(targetId) ?? { prompt: "fallback", width: 512, height: 512 };
       const adapter = httpImage.createHttpImageAdapter({
         name: "stub-schnell", endpoint: `${providerOrigin}/fal-ai/flux/schnell`, apiKey: "stub-key",
-        model: "fal-ai/flux/schnell", modelVersion: null, timeoutMs: 30000,
+        model: "fal-ai/flux/schnell", modelVersion: null, timeoutMs: 30000, testLoopback: true,
       });
       const callId = await beginCall(worker, targetId, "e2e-image-worker", {
         provider: "stub-schnell", model: "fal-ai/flux/schnell", modelVersion: null,
@@ -411,7 +411,7 @@ try {
       await worker.query(`SELECT tanaghom.mark_creative_job_running($1,'e2e-fault-worker')`, [faultJobId]);
       const adapter = httpImage.createHttpImageAdapter({
         name: `stub-${faultCase.fault}`, endpoint: `${providerOrigin}/fal-ai/flux/schnell/${faultCase.fault}`, apiKey: "stub-key",
-        model: "fal-ai/flux/schnell", timeoutMs: faultCase.timeoutMs,
+        model: "fal-ai/flux/schnell", timeoutMs: faultCase.timeoutMs, testLoopback: true,
       });
       const before = providerHits[faultCase.fault] ?? 0;
       let outcome;

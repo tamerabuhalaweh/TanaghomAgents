@@ -87,12 +87,13 @@ export async function executeImageRequest({ endpoint, apiKey, request, timeoutMs
   };
 }
 
-export function createHttpImageAdapter({ name, endpoint, apiKey, model, modelVersion, timeoutMs = 120000, fetchImpl = fetch }) {
+export function createHttpImageAdapter({ name, endpoint, apiKey, model, modelVersion, timeoutMs = 120000, fetchImpl = fetch, testLoopback = false }) {
   if (!name || !endpoint || !apiKey || !model) throw new Error("http_adapter_config_incomplete");
-  // Production endpoints must be https. Plain http is accepted only for
-  // loopback test doubles (127.0.0.1/localhost); never for real providers.
+  // Production endpoints must be https. Plain-http loopback doubles require
+  // an explicit test-only opt-in so production construction can never
+  // accidentally point at localhost.
   const https = /^https:\/\//.test(endpoint);
-  const loopbackHttp = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(endpoint);
+  const loopbackHttp = testLoopback && /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\//.test(endpoint);
   if (!https && !loopbackHttp) throw new Error("http_adapter_endpoint_must_be_https");
   return Object.freeze({
     name,
@@ -123,7 +124,10 @@ export function validateArtifactUrl(url, { allowedOrigins = [], testLoopback = f
   }
   const host = parsed.hostname.toLowerCase();
   if (!host) throw new ProviderAdapterError("deterministic", "provider artifact URL has no host");
-  if (isBlockedAddress(host) && !(testLoopback && isLoopbackHost(host))) {
+  // IP literals are gated here; hostnames pass to the DNS resolution stage,
+  // which rejects any non-public answer (see resolveAndPin).
+  const classification = classifyIp(host);
+  if (classification !== "public" && classification !== "not-an-ip" && !(testLoopback && isLoopbackHost(host))) {
     throw new ProviderAdapterError("deterministic", "provider artifact host is not retrievable");
   }
   const allowlisted = (allowedOrigins ?? []).some((origin) => {
@@ -139,31 +143,171 @@ export function validateArtifactUrl(url, { allowedOrigins = [], testLoopback = f
   return { host, protocol: parsed.protocol };
 }
 
-function isLoopbackHost(host) {
-  return host === "localhost" || host === "127.0.0.1" || host === "::1";
+export function isLoopbackHost(host) {
+  const lower = String(host ?? "").toLowerCase();
+  return lower === "localhost" || lower === "127.0.0.1" || lower === "::1";
 }
 
-function isBlockedAddress(host) {
-  if (isLoopbackHost(host)) return true;
-  if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
-    const [a, b] = host.split(".").map(Number);
-    if (a === 10) return true;
-    if (a === 172 && b >= 16 && b <= 31) return true;
-    if (a === 192 && b === 168) return true;
-    if (a === 169 && b === 254) return true;
-    if (a === 0) return true;
-    return false;
+// Positive IP gate: returns "public" only for globally routable unicast.
+// Everything else (loopback, private, link-local, unspecified, multicast,
+// reserved, documentation, benchmark, CGNAT, IPv4-mapped IPv6 unwrapped to
+// its v4 form) returns a reason string.
+export function classifyIp(ip) {
+  const lower = String(ip ?? "").toLowerCase();
+  if (isLoopbackHost(lower)) return "loopback";
+  const mapped = lower.startsWith("::ffff:") ? lower.slice("::ffff:".length) : null;
+  const v4 = mapped ?? lower;
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(v4)) {
+    const [a, b, c, d] = v4.split(".").map(Number);
+    if ([a, b, c, d].some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return "invalid";
+    if (a === 10) return "rfc1918";
+    if (a === 172 && b >= 16 && b <= 31) return "rfc1918";
+    if (a === 192 && b === 168) return "rfc1918";
+    if (a === 169 && b === 254) return "link-local";
+    if (a === 127) return "loopback";
+    if (a === 0) return "unspecified";
+    if (a === 100 && b >= 64 && b <= 127) return "cgnat";
+    if (a === 192 && b === 0 && (c === 0 || c === 2)) return "reserved";
+    if (a === 198 && ((b === 18 || b === 19) || (b === 51 && c === 100))) return "reserved";
+    if (a === 203 && b === 0 && c === 113) return "documentation";
+    if (a >= 224 && a <= 239) return "multicast";
+    if (a >= 240) return "reserved";
+    return "public";
   }
-  if (host.includes(":")) {
-    const lower = host.toLowerCase();
-    return lower === "::" || lower.startsWith("fe80:") || lower.startsWith("fec0:") || lower.startsWith("fc00:") || lower.startsWith("fd");
+  if (lower.includes(":")) {
+    if (lower === "::") return "unspecified";
+    if (lower.startsWith("fe80:")) return "link-local";
+    if (lower.startsWith("fec0:")) return "site-local";
+    if (lower.startsWith("fc00:") || lower.split(":")[0].startsWith("fd")) return "ula";
+    if (lower.startsWith("ff")) return "multicast";
+    if (lower.startsWith("2001:db8")) return "documentation";
+    if (lower.startsWith("64:ff9b:")) return classifyIp(lower.slice("64:ff9b:".length));
+    return "public";
   }
-  return false;
+  return "not-an-ip";
+}
+
+// Resolves ALL A/AAAA answers through the injected resolver and rejects
+// unless every usable destination is public. Test loopback bypass applies
+// only to loopback-literal hosts with explicit test mode.
+export async function resolveAndPin(hostname, { resolveHost = defaultResolveHost, testLoopback = false } = {}) {
+  const host = String(hostname ?? "").toLowerCase();
+  if (testLoopback && isLoopbackHost(host)) return { addresses: [host], pinned: host, loopback: true };
+  let answers;
+  try {
+    answers = await resolveHost(host);
+  } catch {
+    throw new ProviderAdapterError("deterministic", "provider artifact host does not resolve");
+  }
+  const addresses = (Array.isArray(answers) ? answers : []).map(String);
+  if (addresses.length === 0) throw new ProviderAdapterError("deterministic", "provider artifact host has no addresses");
+  for (const address of addresses) {
+    if (classifyIp(address) !== "public") {
+      throw new ProviderAdapterError("deterministic", `provider artifact destination is not public (${classifyIp(address)})`);
+    }
+  }
+  return { addresses, pinned: addresses[0], loopback: false };
+}
+
+async function defaultResolveHost(hostname) {
+  const { lookup } = await import("node:dns/promises");
+  const records = await lookup(hostname, { all: true, verbatim: true });
+  return records.map((record) => record.address);
+}
+
+function defaultPort(protocol) {
+  return protocol === "https:" ? 443 : 80;
+}
+
+// Pinned retrieval: TCP/TLS goes to the validated address while Host and
+// SNI preserve the original hostname, so validation and connection cannot
+// diverge (no DNS TOCTOU between check and fetch).
+async function pinnedRequest({ url, address, timeoutMs, maxBytes, init = {} }) {
+  const parsed = new URL(url);
+  const secure = parsed.protocol === "https:";
+  const transport = secure ? await import("node:https") : await import("node:http");
+  const port = parsed.port ? Number(parsed.port) : defaultPort(parsed.protocol);
+  const headers = { ...(init.headers ?? {}), Host: parsed.host };
+  const options = {
+    host: address,
+    port,
+    path: `${parsed.pathname}${parsed.search}`,
+    method: init.method ?? "GET",
+    headers,
+    timeout: timeoutMs,
+    ...(secure ? { servername: parsed.hostname } : {}),
+  };
+  return new Promise((resolve, reject) => {
+    let settled = false;
+    const timer = setTimeout(() => {
+      settled = true;
+      request.destroy(new Error("pinned request timed out"));
+      reject(new ProviderAdapterError("indeterminate", "provider artifact request timed out"));
+    }, timeoutMs);
+    const request = transport.request(options, (response) => {
+      const chunks = [];
+      let size = 0;
+      response.on("data", (chunk) => {
+        size += chunk.length;
+        if (size > maxBytes) {
+          clearTimeout(timer);
+          request.destroy();
+          if (!settled) {
+            settled = true;
+            reject(new ProviderAdapterError("deterministic", "artifact byte size out of bounds"));
+          }
+          return;
+        }
+        chunks.push(chunk);
+      });
+      response.on("end", () => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        resolve({
+          ok: response.statusCode >= 200 && response.statusCode < 300,
+          status: response.statusCode,
+          headers: { get: (name) => response.headers[String(name).toLowerCase()] ?? null },
+          arrayBuffer: async () => Buffer.concat(chunks),
+        });
+      });
+      response.on("error", (error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timer);
+        reject(error);
+      });
+    });
+    request.on("error", (error) => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      reject(error);
+    });
+    request.on("timeout", () => {
+      if (settled) return;
+      settled = true;
+      clearTimeout(timer);
+      request.destroy();
+      reject(new ProviderAdapterError("indeterminate", "provider artifact request timed out"));
+    });
+    request.end();
+  });
 }
 
 async function fetchValidatedArtifact({ url, options, redirectBudget = 3 }) {
   validateArtifactUrl(url, options);
-  const response = await options.fetchImpl(url, { ...(options.init ?? {}), redirect: "manual" });
+  const parsed = new URL(url);
+  const host = parsed.hostname.toLowerCase();
+  let response;
+  if (options.testLoopback && isLoopbackHost(host)) {
+    response = await options.fetchImpl(url, { ...(options.init ?? {}), redirect: "manual" });
+  } else {
+    const pinned = await resolveAndPin(host, options);
+    response = await (options.pinnedRequest ?? pinnedRequest)({
+      url, address: pinned.pinned, timeoutMs: options.timeoutMs, maxBytes: options.maxBytes, init: options.init ?? {},
+    });
+  }
   if (response.status >= 300 && response.status < 400) {
     if (redirectBudget <= 0) {
       throw new ProviderAdapterError("deterministic", "provider artifact redirect chain too long");
@@ -175,7 +319,7 @@ async function fetchValidatedArtifact({ url, options, redirectBudget = 3 }) {
   return response;
 }
 
-export async function downloadArtifact({ url, maxBytes = MAX_RESPONSE_BYTES, timeoutMs = 120000, fetchImpl = fetch, allowedOrigins = [], testLoopback = false }) {
+export async function downloadArtifact({ url, maxBytes = MAX_RESPONSE_BYTES, timeoutMs = 120000, fetchImpl = fetch, allowedOrigins = [], testLoopback = false, resolveHost, pinnedRequest }) {
   validateArtifactUrl(url, { allowedOrigins, testLoopback });
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -183,7 +327,7 @@ export async function downloadArtifact({ url, maxBytes = MAX_RESPONSE_BYTES, tim
     const response = await fetchValidatedArtifact({
       url,
       options: {
-        fetchImpl, allowedOrigins, testLoopback,
+        fetchImpl, allowedOrigins, testLoopback, timeoutMs, maxBytes, resolveHost, pinnedRequest,
         init: { signal: controller.signal },
       },
     });

@@ -183,24 +183,30 @@ test("review round: ssrf guard, attempt lifecycle, version truth, operation trut
   assert.deepEqual(http.validateArtifactUrl("http://127.0.0.1:43223/a.png", { allowedOrigins: [], testLoopback: true }).host, "127.0.0.1");
   assert.throws(() => http.validateArtifactUrl("http://169.254.169.254/x", { allowedOrigins: [], testLoopback: true }), /not retrievable/);
   assert.throws(() => http.validateArtifactUrl("https://example.com/x.png", { allowedOrigins: [], testLoopback: true }), /not allowlisted/);
-  // Redirects revalidate: a redirect to a private host is refused without fetching it.
+  // Redirects revalidate: a redirect to a private host is refused without connecting to it.
   const seen = [];
-  const redirectFetch = async (url) => {
+  const pinnedRedirect = async ({ url }) => {
     seen.push(url);
     if (url === "https://fal.media/start.png") {
-      return { status: 302, headers: { get: (name) => (name === "location" ? "http://169.254.169.254/evil" : null) }, text: async () => "" };
+      return { status: 302, headers: { get: (name) => (name === "location" ? "http://169.254.169.254/evil" : null) } };
     }
-    throw new Error(`unexpected fetch ${url}`);
+    throw new Error(`unexpected connection ${url}`);
   };
   await assert.rejects(
-    http.downloadArtifact({ url: "https://fal.media/start.png", allowedOrigins: ["fal.media"], testLoopback: false, fetchImpl: redirectFetch }),
+    http.downloadArtifact({
+      url: "https://fal.media/start.png", allowedOrigins: ["fal.media"], testLoopback: false,
+      resolveHost: async () => ["93.184.216.34"], pinnedRequest: pinnedRedirect,
+    }),
     /not retrievable/,
   );
   assert.deepEqual(seen, ["https://fal.media/start.png"]);
   // Over-long redirect chains are refused.
-  const loopFetch = async () => ({ status: 302, headers: { get: (name) => (name === "location" ? "https://fal.media/next.png" : null) }, text: async () => "" });
+  const loopPinned = async () => ({ status: 302, headers: { get: (name) => (name === "location" ? "https://fal.media/next.png" : null) } });
   await assert.rejects(
-    http.downloadArtifact({ url: "https://fal.media/a.png", allowedOrigins: ["fal.media"], fetchImpl: loopFetch }),
+    http.downloadArtifact({
+      url: "https://fal.media/a.png", allowedOrigins: ["fal.media"],
+      resolveHost: async () => ["93.184.216.34"], pinnedRequest: loopPinned,
+    }),
     /redirect chain too long/,
   );
 
@@ -333,4 +339,97 @@ test("s3 adapter signs deterministically and round-trips objects", async () => {
   const kSigning = nodeHmac("sha256", kService).update("aws4_request").digest();
   assert.equal(nodeHmac("sha256", kSigning).update(toSign).digest("hex"), signature);
   void store;
+});
+
+test("artifact downloads pin resolved public destinations; loopback needs test mode", async () => {
+  const http = await import("../packages/creative-runtime/adapters/http-image.mjs");
+  // IP classification matrix.
+  for (const [ip, verdict] of [
+    ["127.0.0.1", "loopback"], ["::1", "loopback"], ["10.0.0.5", "rfc1918"],
+    ["172.20.0.9", "rfc1918"], ["192.168.1.2", "rfc1918"], ["169.254.169.254", "link-local"],
+    ["0.0.0.0", "unspecified"], ["::", "unspecified"], ["fe80::1", "link-local"],
+    ["fc00::1", "ula"], ["fd00::1", "ula"], ["ff02::1", "multicast"],
+    ["100.64.0.1", "cgnat"], ["192.0.2.1", "reserved"], ["198.51.100.7", "reserved"],
+    ["203.0.113.9", "documentation"], ["224.0.0.1", "multicast"],
+    ["::ffff:127.0.0.1", "loopback"], ["::ffff:10.1.2.3", "rfc1918"],
+    ["93.184.216.34", "public"], ["2606:2800:220:1:248:1893:25c8:1946", "public"],
+  ]) {
+    assert.equal(http.classifyIp(ip), verdict, ip);
+  }
+  // Allowlisted hostname resolving to loopback/private/metadata is refused.
+  for (const [answers, label] of [
+    [["127.0.0.1"], "loopback-answer"],
+    [["10.8.0.1"], "rfc1918-answer"],
+    [["169.254.169.254"], "metadata-answer"],
+  ]) {
+    await assert.rejects(
+      http.resolveAndPin("v3.fal.media", { resolveHost: async () => answers }),
+      /not public/, label,
+    );
+  }
+  // Allowlisted hostname resolving only to public addresses validates.
+  const pinned = await http.resolveAndPin("v3.fal.media", { resolveHost: async () => ["93.184.216.34", "2606:2800:220:1:248:1893:25c8:1946"] });
+  assert.equal(pinned.pinned, "93.184.216.34");
+  // Mixed answers fail closed even when one is public.
+  await assert.rejects(
+    http.resolveAndPin("v3.fal.media", { resolveHost: async () => ["93.184.216.34", "10.0.0.5"] }),
+    /not public/,
+  );
+  await assert.rejects(
+    http.resolveAndPin("v3.fal.media", { resolveHost: async () => [] }),
+    /no addresses/,
+  );
+  // Explicit test loopback still works for localhost doubles only.
+  const looped = await http.resolveAndPin("127.0.0.1", { testLoopback: true, resolveHost: async () => { throw new Error("must not resolve"); } });
+  assert.equal(looped.loopback, true);
+  await assert.rejects(
+    http.resolveAndPin("internal.test", { testLoopback: true, resolveHost: async () => ["10.0.0.5"] }),
+    /not public/,
+  );
+  // Constructor refuses localhost HTTP without the explicit test flag.
+  assert.throws(
+    () => http.createHttpImageAdapter({ name: "x", endpoint: "http://127.0.0.1:9999/y", apiKey: "k", model: "m" }),
+    /must_be_https/,
+  );
+  assert.throws(
+    () => http.createHttpImageAdapter({ name: "x", endpoint: "http://localhost:9999/y", apiKey: "k", model: "m" }),
+    /must_be_https/,
+  );
+  const allowed = http.createHttpImageAdapter({
+    name: "x", endpoint: "http://127.0.0.1:9999/y", apiKey: "k", model: "m", testLoopback: true,
+  });
+  assert.equal(allowed.name, "x");
+  // Redirect to a private destination is refused without following it.
+  const seen = [];
+  const pinnedRedirect = async ({ url }) => {
+    seen.push(url);
+    if (url === "https://fal.media/start.png") {
+      return { status: 302, headers: { get: (name) => (name === "location" ? "http://169.254.169.254/evil" : null) } };
+    }
+    throw new Error(`must not connect ${url}`);
+  };
+  await assert.rejects(
+    http.downloadArtifact({
+      url: "https://fal.media/start.png", allowedOrigins: ["fal.media"],
+      resolveHost: async () => ["93.184.216.34"], pinnedRequest: pinnedRedirect,
+    }),
+    /not retrievable/,
+  );
+  assert.deepEqual(seen, ["https://fal.media/start.png"]);
+  // Pinned path connects to the validated address while preserving Host/SNI.
+  const connected = [];
+  const pinnedFetch = async ({ url, address }) => {
+    connected.push({ url, address });
+    return {
+      ok: true, status: 200,
+      headers: { get: () => "image/png" },
+      arrayBuffer: async () => new Uint8Array([137, 80, 78, 71]).buffer,
+    };
+  };
+  const downloaded = await http.downloadArtifact({
+    url: "https://v3.fal.media/files/a/b.png", allowedOrigins: ["fal.media"],
+    resolveHost: async () => ["93.184.216.34"], pinnedRequest: pinnedFetch,
+  });
+  assert.equal(downloaded.bytes.length, 4);
+  assert.deepEqual(connected, [{ url: "https://v3.fal.media/files/a/b.png", address: "93.184.216.34" }]);
 });
