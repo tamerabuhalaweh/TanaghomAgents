@@ -48,6 +48,27 @@ avoided), no new network permission.
 - Full matrix (typecheck, dashboard build, contract suites) runs in CI on
   the fix PR; deployment patching remains a separate gate per STATUS.md.
 
+## Reviewed source-freeze re-take (required by the lockfile change)
+
+`package-lock.json` is a frozen input of the agency quality locks
+(`scripts/agency-quality-preparation.mjs:31`,
+`evaluation/agency-runner-v1/manifest.mjs:9`), so the pin bumps above
+tripped 5 tests by design (`source freeze ... drift`, 4 runner freeze
+tests). Per `evaluation/agency-v1/RUNBOOK.md:22-24,44-45`, `--lock` output
+was diffed (not silently applied):
+
+- Preparation lock: exactly 1 differing hash (`package-lock.json`
+  `f240d57fbbc5 → ecf4e0fe5817`); version + `accepted_source_baseline`
+  unchanged. Re-taken (1-line diff).
+- Runner lock: exactly 1 differing hash (embedded
+  `evaluation/agency-v1/source-lock.json`); version +
+  `accepted_preparation_commit` unchanged. Re-taken (1-line diff).
+
+Post-freeze local results: `agency-quality-preparation` +
+`agency-quality-runner` 19/19 pass; `dependency-security` 4/4;
+`repository` 46/46. This freeze update is part of the reviewed PR diff,
+not a silent regeneration.
+
 ## Advisory references (ranges relevant to this lockfile)
 
 - GHSA-qw65-cvwx-89v3, GHSA-58mr-gqgx-xq4g, GHSA-hrr3-gc8f-f4qj (fast-uri)
