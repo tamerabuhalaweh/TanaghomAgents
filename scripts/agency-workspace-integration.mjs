@@ -19,9 +19,15 @@ try{
  const port=JSON.parse(docker(['inspect',name]))[0].NetworkSettings.Ports['5432/tcp'][0].HostPort;
  pool=new pg.Pool({host:'127.0.0.1',port:Number(port),database:'tanaghom_workspace_test',user:'postgres',password,max:4});
  for(let i=0;i<40;i++){try{await query('SELECT 1');break;}catch{await new Promise(r=>setTimeout(r,500));}}
- for(const f of readdirSync('packages/database/migrations').filter(f=>f.endsWith('.up.sql')).sort())await query(readFileSync(`packages/database/migrations/${f}`,'utf8'));
- await query(readFileSync('packages/database/migrations/0035_agency_workspace.down.sql','utf8'));
- await query(readFileSync('packages/database/migrations/0035_agency_workspace.up.sql','utf8'));count++;console.log('PASS all migrations and unused 0035 down/up');
+ for(const f of readdirSync('packages/database/migrations').filter(f=>f.endsWith('.up.sql')).sort()){
+  await query(readFileSync(`packages/database/migrations/${f}`,'utf8'));
+  // Unused-state 0035 down/up runs immediately after 0035 applies, so later
+  // migrations (0036+) never disturb its exact-0034 baseline guard.
+  if(f==='0035_agency_workspace.up.sql'){
+   await query(readFileSync('packages/database/migrations/0035_agency_workspace.down.sql','utf8'));
+   await query(readFileSync('packages/database/migrations/0035_agency_workspace.up.sql','utf8'));count++;console.log('PASS all migrations and unused 0035 down/up');
+  }
+ }
  await query(readFileSync('packages/database/seeds/staging.sql','utf8'));
  const bindingIds=[];
  for(const p of workspaceManifest.profiles){

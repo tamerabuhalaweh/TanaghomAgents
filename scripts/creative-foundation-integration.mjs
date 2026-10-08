@@ -96,8 +96,12 @@ async function waitForDashboard(child) {
 }
 
 function migrate() {
+  // The workflow pins DATABASE_MIGRATION_TARGET for historical controlled
+  // packages; this harness needs the full chain including 0036, so the
+  // target is explicitly unset here (database.mjs default migrates all).
+  const { DATABASE_MIGRATION_TARGET: _pinned, ...env } = process.env;
   const result = spawnSync(process.execPath, ["scripts/database.mjs", "migrate"], {
-    env: { ...process.env, DATABASE_URL: databaseUrl },
+    env: { ...env, DATABASE_URL: databaseUrl },
     stdio: "inherit",
   });
   if (result.error) throw result.error;
