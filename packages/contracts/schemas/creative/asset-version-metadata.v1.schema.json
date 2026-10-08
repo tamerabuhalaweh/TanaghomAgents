@@ -1,0 +1,27 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/creative/asset-version-metadata.v1.schema.json",
+  "title": "Creative asset version metadata v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "asset_version_id", "asset_id", "version", "job_id", "mime", "bytes", "sha256", "object_key", "method", "status"],
+  "properties": {
+    "contract_version": { "const": "creative.asset-version-metadata.v1" },
+    "asset_version_id": { "type": "string", "format": "uuid" },
+    "asset_id": { "type": "string", "format": "uuid" },
+    "version": { "type": "integer", "minimum": 1 },
+    "parent_version_id": { "type": ["string", "null"], "format": "uuid" },
+    "job_id": { "type": "string", "format": "uuid" },
+    "mime": { "enum": ["image/png", "image/jpeg", "image/webp", "video/mp4", "audio/wav", "audio/mpeg", "text/html"] },
+    "width": { "type": ["integer", "null"], "minimum": 1, "maximum": 16384 },
+    "height": { "type": ["integer", "null"], "minimum": 1, "maximum": 16384 },
+    "duration_ms": { "type": ["integer", "null"], "minimum": 1, "maximum": 3600000 },
+    "bytes": { "type": "integer", "minimum": 1, "maximum": 524288000 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "object_key": { "type": "string", "minLength": 3, "maxLength": 512 },
+    "thumb_key": { "type": ["string", "null"], "minLength": 3, "maxLength": 512 },
+    "prompt_ref": { "type": ["string", "null"], "minLength": 1, "maxLength": 300 },
+    "template_ref": { "type": ["string", "null"], "minLength": 1, "maxLength": 300 },
+    "method": { "enum": ["mock", "upload", "render", "edit", "composite"] },
+    "status": { "enum": ["draft", "in_review", "approved", "rejected", "archived"] }
+  }
+}

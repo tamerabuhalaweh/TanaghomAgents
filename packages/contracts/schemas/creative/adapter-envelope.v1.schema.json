@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/creative/adapter-envelope.v1.schema.json",
+  "title": "Creative stub adapter request/result envelope v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "adapter", "kind"],
+  "properties": {
+    "contract_version": { "const": "creative.adapter-envelope.v1" },
+    "adapter": { "const": "mock" },
+    "kind": { "enum": ["request", "result"] },
+    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "voice", "music", "landing_page"] },
+    "job_id": { "type": "string", "format": "uuid" },
+    "params": { "type": "object" },
+    "mime": { "enum": ["image/png", "image/jpeg", "image/webp", "video/mp4", "audio/wav", "audio/mpeg", "text/html"] },
+    "bytes": { "type": "integer", "minimum": 1, "maximum": 524288000 },
+    "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+    "outcome": { "enum": ["succeeded", "failed"] },
+    "error_class": { "type": ["string", "null"], "enum": ["transient", "deterministic", "capacity", "cancelled", "policy", "indeterminate", null] }
+  }
+}

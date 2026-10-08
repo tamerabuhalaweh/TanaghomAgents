@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/creative/brand-kit-snapshot.v1.schema.json",
+  "title": "Creative brand-kit snapshot v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "kit_id", "version", "organization_id"],
+  "properties": {
+    "contract_version": { "const": "creative.brand-kit-snapshot.v1" },
+    "kit_id": { "type": "string", "format": "uuid" },
+    "version": { "type": "integer", "minimum": 1 },
+    "organization_id": { "type": "string", "format": "uuid" },
+    "colors": { "type": "object" },
+    "typography": { "type": "object" },
+    "arabic_font": { "type": ["string", "null"], "minLength": 1, "maxLength": 120 },
+    "latin_font": { "type": ["string", "null"], "minLength": 1, "maxLength": 120 },
+    "logos": { "type": "object" },
+    "tone": { "type": ["string", "null"], "minLength": 1, "maxLength": 500 },
+    "rules": { "type": "object" },
+    "cta": { "type": "object" },
+    "channels": { "type": "object" }
+  }
+}
