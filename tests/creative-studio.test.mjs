@@ -42,6 +42,32 @@ test("creative studio migration, routes, and pages follow foundation conventions
   assert.match(down, /creative_events_action_check/);
 });
 
+test("review round two: globals read-only, no generic claim, idempotency-first, safe preview, serialized versions", async () => {
+  const up = await read("packages/database/migrations/0037_creative_studio_management.up.sql");
+  // 1. Tenant-only templates: 4-arg signature, no global path, read-only globals.
+  assert.match(up, /CREATE FUNCTION tanaghom\.create_creative_template\(p_actor uuid,p_kind text,p_name text,p_spec jsonb\)/);
+  assert.doesNotMatch(up, /p_global/);
+  assert.match(up, /global template is read-only/);
+  const templates = await read("apps/dashboard/lib/server/creative/templates.ts");
+  assert.match(templates, /global_templates_read_only/);
+  // 2. Upload pipeline avoids the generic claimant and control gate.
+  assert.doesNotMatch(up, /claim_creative_job\('cpu','upload-pipeline'/);
+  assert.match(up, /UPDATE tanaghom\.creative_jobs SET status='claimed',attempt=attempt\+1,claimed_by='upload-pipeline'/);
+  // 3. Idempotency reservation precedes the storage write textually.
+  const upload = await read("apps/dashboard/lib/server/creative/upload.ts");
+  assert.ok(upload.indexOf("reserveIdempotency(client") < upload.indexOf("storage.put("));
+  assert.match(upload, /if \(stored\)/);
+  // 4. Preview allowlist + nosniff + HTML refusal.
+  const preview = await read("apps/dashboard/app/api/creative/assets/versions/[id]/preview/route.ts");
+  assert.match(preview, /new Set\(\["image\/png", "image\/jpeg", "image\/webp"\]\)/);
+  assert.match(preview, /X-Content-Type-Options/);
+  assert.match(preview, /nosniff/);
+  assert.match(preview, /preview_not_supported/);
+  // 5. Version allocation serializes on the parent/scope.
+  assert.match(up, /SELECT \* INTO k FROM tanaghom\.brand_kits WHERE id=p_kit FOR UPDATE/);
+  assert.match(up, /pg_advisory_xact_lock\(hashtextextended\('creative-template:'\|\|org/);
+});
+
 test("creative server boundary stays provider-free with upload guards", async () => {
   const upload = await read("apps/dashboard/lib/server/creative/upload.ts");
   const storage = await read("apps/dashboard/lib/server/creative/storage.ts");

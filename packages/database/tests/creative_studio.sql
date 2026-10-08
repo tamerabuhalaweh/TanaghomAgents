@@ -51,17 +51,23 @@ DO $$ DECLARE kit uuid; v1 uuid; v2 uuid; BEGIN
  IF SQLERRM NOT LIKE '%brand kit requires owner%' THEN RAISE; END IF; END;
 END $$;
 
--- Templates version per scope; globals are separate from org rows.
+-- Templates version per scope; globals are platform-seeded and read-only.
 DO $$ DECLARE t1 uuid; t2 uuid; g1 uuid; BEGIN
- t1 := tanaghom.create_creative_template('82000000-0000-4000-8000-000000000001',false,'ad','launch','{"headline":"Go"}');
- t2 := tanaghom.create_creative_template('82000000-0000-4000-8000-000000000001',false,'ad','launch','{"headline":"Go again"}');
+ t1 := tanaghom.create_creative_template('82000000-0000-4000-8000-000000000001','ad','launch','{"headline":"Go"}');
+ t2 := tanaghom.create_creative_template('82000000-0000-4000-8000-000000000001','ad','launch','{"headline":"Go again"}');
  IF (SELECT version FROM tanaghom.creative_templates WHERE id=t2)<>2 THEN RAISE EXCEPTION 'template did not version to v2'; END IF;
- g1 := tanaghom.create_creative_template('82000000-0000-4000-8000-000000001001',true,'ad','launch','{"headline":"Global"}');
- IF (SELECT version FROM tanaghom.creative_templates WHERE id=g1)<>1 THEN RAISE EXCEPTION 'global scope shares org numbering'; END IF;
- BEGIN PERFORM tanaghom.create_creative_template('82000000-0000-4000-8000-000000000003',false,'ad','launch','{"headline":"Nope"}');
+ INSERT INTO tanaghom.creative_templates(organization_id,kind,name,spec,version)
+ VALUES(NULL,'ad','platform-launch','{"headline":"Platform"}',1) RETURNING id INTO g1;
+ BEGIN PERFORM tanaghom.set_creative_template_active('82000000-0000-4000-8000-000000000001',g1,false);
+ RAISE EXCEPTION 'global toggle unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%read-only%' THEN RAISE; END IF; END;
+ BEGIN PERFORM tanaghom.set_creative_template_active('82000000-0000-4000-8000-000000001001',g1,false);
+ RAISE EXCEPTION 'foreign global toggle unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%read-only%' THEN RAISE; END IF; END;
+ BEGIN PERFORM tanaghom.create_creative_template('82000000-0000-4000-8000-000000000003','ad','launch','{"headline":"Nope"}');
  RAISE EXCEPTION 'reviewer template unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
  IF SQLERRM NOT LIKE '%template requires owner%' THEN RAISE; END IF; END;
- BEGIN PERFORM tanaghom.create_creative_template('82000000-0000-4000-8000-000000000001',false,'ad','launch','[1,2]');
+ BEGIN PERFORM tanaghom.create_creative_template('82000000-0000-4000-8000-000000000001','ad','launch','[1,2]');
  RAISE EXCEPTION 'non-object spec unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
  IF SQLERRM NOT LIKE '%invalid creative template%' THEN RAISE; END IF; END;
  IF tanaghom.set_creative_template_active('82000000-0000-4000-8000-000000000001',t1,false)<>false THEN RAISE EXCEPTION 'deactivate misreported'; END IF;
@@ -71,14 +77,23 @@ DO $$ DECLARE t1 uuid; t2 uuid; g1 uuid; BEGIN
  IF SQLERRM NOT LIKE '%cross-tenant template forbidden%' THEN RAISE; END IF; END;
 END $$;
 
--- Upload registration runs the full job lifecycle in one transaction.
-DO $$ DECLARE rec record; BEGIN
+-- Upload registration runs without provider execution control and never
+-- touches unrelated queued jobs.
+DO $$ DECLARE rec record; decoy uuid; BEGIN
+ decoy := tanaghom.create_creative_job('82000000-0000-4000-8000-000000000001','image','cpu','{"decoy":true}','85000000-0000-4000-8000-000000000009','86000000-0000-4000-8000-000000000009');
+ UPDATE tanaghom.creative_controls SET enabled=false, emergency_stop=true, reason='Upload must work while stopped';
  SELECT * INTO rec FROM tanaghom.register_upload_asset('82000000-0000-4000-8000-000000000002','image','Studio upload','image/png',32,32,1024,
   'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff','t/81000000-0000-4000-8000-000000000001/image/88000000-0000-4000-8000-000000000001/v1.png',
   '{"upload":true,"original_name":"photo.png"}','85000000-0000-4000-8000-000000000001','86000000-0000-4000-8000-000000000001');
  IF (SELECT status FROM tanaghom.creative_jobs WHERE id=rec.o_job_id)<>'succeeded' THEN RAISE EXCEPTION 'upload job did not succeed'; END IF;
- IF (SELECT method FROM tanaghom.creative_asset_versions WHERE id=rec.o_version_id)<>'upload' THEN RAISE EXCEPTION 'upload method not recorded'; END IF;
+ IF (SELECT status FROM tanaghom.creative_jobs WHERE id=decoy)<>'queued' THEN RAISE EXCEPTION 'decoy job was disturbed'; END IF;
+ IF (SELECT claimed_by FROM tanaghom.creative_jobs WHERE id=decoy) IS NOT NULL THEN RAISE EXCEPTION 'decoy job was claimed'; END IF;
  IF (SELECT count(*) FROM tanaghom.agent_actions_log WHERE correlation_id='86000000-0000-4000-8000-000000000001')<4 THEN RAISE EXCEPTION 'upload audit lineage short'; END IF;
+ IF (SELECT method FROM tanaghom.creative_asset_versions WHERE job_id=rec.o_job_id)<>'upload' THEN RAISE EXCEPTION 'upload method not recorded'; END IF;
+ PERFORM tanaghom.request_creative_cancel('82000000-0000-4000-8000-000000000001',decoy);
+ UPDATE tanaghom.creative_controls SET enabled=true, emergency_stop=false, reason='Disposable creative studio test';
+END $$;
+DO $$ BEGIN
  BEGIN PERFORM tanaghom.register_upload_asset('82000000-0000-4000-8000-000000000003','image','Reviewer upload','image/png',32,32,1024,
    'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff','t/81000000-0000-4000-8000-000000000001/image/88000000-0000-4000-8000-000000000002/v1.png',
    '{}','85000000-0000-4000-8000-000000000002','86000000-0000-4000-8000-000000000002');

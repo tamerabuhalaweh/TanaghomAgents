@@ -107,27 +107,30 @@ export async function uploadSourceImage(request: NextRequest) {
       version: 1,
       mime: detected,
     });
-    const storage = localStorage();
-    try {
-      const stored = await storage.put(objectKey, bytes, detected);
-      if (stored.sha256 !== sha256) throw new UploadRequestError("checksum_mismatch", 500);
-    } catch (error) {
-      if (error instanceof Error && error.message === "object_key_exists") {
-        throw new UploadRequestError("duplicate_object_key", 409);
-      }
-      throw error;
-    }
     const client = await database().connect();
+    // Idempotency is resolved BEFORE any storage write: replays return the
+    // cached response without writing, and every non-committed failure path
+    // below removes bytes it wrote.
+    let stored = false;
     try {
       await client.query("BEGIN");
       const slot = await reserveIdempotency(client, user.id, "creative.upload", headerKey, requestHash);
       if (slot.replayed) {
         await client.query("COMMIT");
-        // Replay must not store a second copy: the first attempt owns the key.
-        await storage.remove(objectKey);
         const response = noStore(slot.response_body, { status: slot.response_status });
         response.headers.set("Idempotency-Replayed", "true");
         return response;
+      }
+      const storage = localStorage();
+      try {
+        const written = await storage.put(objectKey, bytes, detected);
+        if (written.sha256 !== sha256) throw new UploadRequestError("checksum_mismatch", 500);
+        stored = true;
+      } catch (error) {
+        if (error instanceof Error && error.message === "object_key_exists") {
+          throw new UploadRequestError("duplicate_object_key", 409);
+        }
+        throw error;
       }
       let registered: { o_job_id: string; o_asset_id: string; o_version_id: string };
       try {
@@ -145,8 +148,11 @@ export async function uploadSourceImage(request: NextRequest) {
         registered = result.rows[0];
       } catch (error) {
         await storage.remove(objectKey);
-        if (error instanceof Error && /creative (enqueue requires|invalid upload|unknown creative|object key|runtime stopped)/.test(error.message)) {
-          throw new UploadRequestError("upload_rejected", 400);
+        if (error instanceof Error && /creative (enqueue requires|invalid upload|unknown creative|object key|runtime stopped)|upload (idempotency conflict|job not queued)/.test(error.message)) {
+          throw new UploadRequestError(
+            error.message.includes("conflict") || error.message.includes("not queued") ? "upload_conflict" : "upload_rejected",
+            error.message.includes("conflict") || error.message.includes("not queued") ? 409 : 400,
+          );
         }
         throw error;
       }
@@ -171,6 +177,13 @@ export async function uploadSourceImage(request: NextRequest) {
       return noStore(responseBody);
     } catch (error) {
       await client.query("ROLLBACK");
+      if (stored) {
+        try {
+          await localStorage().remove(objectKey);
+        } catch (cleanupError) {
+          console.error("Creative upload cleanup failed", { object_key: objectKey, cleanupError });
+        }
+      }
       throw error;
     } finally {
       client.release();

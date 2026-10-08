@@ -22,7 +22,6 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
   const [name, setName] = useState("");
   const [kind, setKind] = useState("ad");
   const [spec, setSpec] = useState('{"headline":"Hello"}');
-  const [global, setGlobal] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const canAdmin = role === "owner";
@@ -35,7 +34,7 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
       const body = await api<{ template_id: string }>(`/api/creative/templates`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey("creative-tpl") },
-        body: JSON.stringify({ kind, name: name.trim(), spec: parsed, global }),
+        body: JSON.stringify({ kind, name: name.trim(), spec: parsed }),
       });
       setNotice(`${t(locale, "templates.created")} (${body.template_id})`);
       setName("");
@@ -76,7 +75,6 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
             </select>
           </label>
           <label>{t(locale, "templates.spec")}<textarea value={spec} onChange={(event) => setSpec(event.target.value)} dir="ltr" /></label>
-          <label><input type="checkbox" checked={global} onChange={(event) => setGlobal(event.target.checked)} /> {t(locale, "templates.global")}</label>
           <button type="submit" className="creative-button" disabled={working || !name.trim()}>{t(locale, "common.save")}</button>
         </form>
       )}

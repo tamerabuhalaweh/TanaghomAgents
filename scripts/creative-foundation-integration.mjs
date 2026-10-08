@@ -390,6 +390,16 @@ try {
   const tplSameNameOtherOrg = await postJson("/api/creative/templates", orgBOwner,
     { kind: "ad", name: "e2e-promo", spec: { headline: "Go B" } }, "e2e-tpl-2");
   assert.equal(tplSameNameOtherOrg.status, 200);
+  const tplGlobalAttempt = await postJson("/api/creative/templates", owner,
+    { kind: "ad", name: "e2e-global-sneak", spec: { headline: "Mine" }, global: true }, "e2e-tpl-global");
+  assert.equal(tplGlobalAttempt.status, 400);
+  assert.equal((await tplGlobalAttempt.json()).error, "global_templates_read_only");
+  const globalRow = await pool.query(
+    `SELECT id::text AS id FROM tanaghom.creative_templates WHERE organization_id IS NULL LIMIT 1`,
+  );
+  assert.ok(globalRow.rows[0]);
+  const tplGlobalToggle = await postJson(`/api/creative/templates/${globalRow.rows[0].id}/active`, owner, { active: false }, "e2e-tpl-global-toggle");
+  assert.equal(tplGlobalToggle.status, 403);
   for (const [headers, name] of [[reviewer, "reviewer"], [operator, "operator"]]) {
     const denied = await postJson("/api/creative/templates", headers, { kind: "ad", name: `nope-${name}`, spec: {} }, `e2e-tpl-deny-${name}`);
     assert.equal(denied.status, 403, `template create ${name}`);
@@ -402,6 +412,37 @@ try {
   const tplCross = await postJson(`/api/creative/templates/${templateId}/active`, orgBOwner, { active: true }, "e2e-tpl-5");
   assert.equal(tplCross.status, 403);
   console.log("PASS template lifecycle, tenant-safe naming, roles");
+
+  // ---- P1b: version-allocation races serialize (Fix 5) ----
+  const raceKit = await postJson("/api/creative/brand-kits", owner, { name: `Race Kit ${Date.now()}` }, "e2e-race-kit");
+  assert.equal(raceKit.status, 200);
+  const raceKitId = (await raceKit.json()).kit_id;
+  const raceA = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  const raceB = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  try {
+    const [r1, r2] = await Promise.allSettled([
+      raceA.query(`SELECT tanaghom.create_brand_kit_version('00000000-0000-4000-8000-000000000001',$1,'{"a":1}') AS id`, [raceKitId]),
+      raceB.query(`SELECT tanaghom.create_brand_kit_version('00000000-0000-4000-8000-000000000001',$1,'{"b":2}') AS id`, [raceKitId]),
+    ]);
+    assert.equal(r1.status, "fulfilled");
+    assert.equal(r2.status, "fulfilled");
+    const kitVersions = await pool.query(`SELECT version FROM tanaghom.brand_kit_versions WHERE kit_id=$1 ORDER BY version`, [raceKitId]);
+    assert.deepEqual(kitVersions.rows.map((row) => row.version), [1, 2, 3]);
+    const raceName = `race-tpl-${Date.now()}`;
+    const [t1, t2] = await Promise.allSettled([
+      raceA.query(`SELECT tanaghom.create_creative_template('00000000-0000-4000-8000-000000000001','ad',$1,'{"x":1}') AS id`, [raceName]),
+      raceB.query(`SELECT tanaghom.create_creative_template('00000000-0000-4000-8000-000000000001','ad',$1,'{"x":2}') AS id`, [raceName]),
+    ]);
+    assert.equal(t1.status, "fulfilled");
+    assert.equal(t2.status, "fulfilled");
+    const tplVersions = await pool.query(
+      `SELECT version FROM tanaghom.creative_templates WHERE organization_id='10000000-0000-4000-8000-000000000001' AND kind='ad' AND name=$1 ORDER BY version`, [raceName]);
+    assert.deepEqual(tplVersions.rows.map((row) => row.version), [1, 2]);
+  } finally {
+    await raceA.end();
+    await raceB.end();
+  }
+  console.log("PASS concurrent version allocation serializes");
 
   // ---- P1b: secure uploads + private preview ----
   const { renameSync, existsSync } = await import("node:fs");
@@ -471,6 +512,50 @@ try {
   }
   assert.ok(existsSync(uploadPath));
   console.log("PASS private preview (auth, tenant, bytes, missing-artifact)");
+  assert.equal(preview.headers.get("x-content-type-options"), "nosniff");
+
+  // Failure injection AFTER the storage write: no orphan bytes may remain.
+  const { readdirSync: readDirSync, statSync } = await import("node:fs");
+  function uploadFileCount() {
+    const root = joinPath(process.cwd(), "tmp", "creative-uploads");
+    let count = 0;
+    const walk = (dir) => {
+      for (const entry of readDirSync(dir, { withFileTypes: true })) {
+        const full = joinPath(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (statSync(full).isFile()) count += 1;
+      }
+    };
+    try { walk(root); } catch { return count; }
+    return count;
+  }
+  await pool.query(`CREATE OR REPLACE FUNCTION tmp_fail_upload_jobs() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected upload failure'; END $$;`);
+  await pool.query(`CREATE TRIGGER tmp_fail_upload_jobs BEFORE INSERT ON tanaghom.creative_jobs FOR EACH ROW WHEN (NEW.params->>'upload' = 'true') EXECUTE FUNCTION tmp_fail_upload_jobs();`);
+  const filesBefore = uploadFileCount();
+  try {
+    const injected = await uploadFile({ headers: owner, key: "e2e-up-inject", bytes: png1x1, filename: "inject.png", mime: "image/png" });
+    assert.equal(injected.status, 503);
+    assert.equal(uploadFileCount(), filesBefore);
+  } finally {
+    await pool.query(`DROP TRIGGER tmp_fail_upload_jobs ON tanaghom.creative_jobs`);
+    await pool.query(`DROP FUNCTION tmp_fail_upload_jobs()`);
+  }
+  console.log("PASS post-write failure leaves no orphan bytes");
+
+  // Stored HTML is never served inline on the dashboard origin.
+  const htmlAsset = await pool.query(
+    `INSERT INTO tanaghom.creative_assets(organization_id, capability, title) VALUES ('10000000-0000-4000-8000-000000000001','landing_page','HTML probe') RETURNING id`);
+  const htmlAssetId = htmlAsset.rows[0].id;
+  const htmlVersion = await pool.query(
+    `INSERT INTO tanaghom.creative_asset_versions(asset_id, version, job_id, mime, bytes, sha256, object_key, method)
+     VALUES ($1, 1, $2, 'text/html', 100, $3, $4, 'mock') RETURNING id`,
+    [htmlAssetId, gateJobId, "f".repeat(64),
+      `t/10000000-0000-4000-8000-000000000001/landing_page/${htmlAssetId}/v1.html`]);
+  const htmlPreview = await fetch(
+    `${dashboardOrigin}/api/creative/assets/versions/${htmlVersion.rows[0].id}/preview`, { headers: owner });
+  assert.equal(htmlPreview.status, 415);
+  assert.equal((await htmlPreview.json()).error, "preview_not_supported");
+  console.log("PASS HTML preview refused");
 
   // ---- P1b: browser journeys (EN/AR, desktop/mobile, roles) ----
   const { runCreativeStudioBrowser } = await import("./creative-studio-browser.mjs");

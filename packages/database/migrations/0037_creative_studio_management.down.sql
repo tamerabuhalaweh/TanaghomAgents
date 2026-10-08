@@ -6,7 +6,7 @@ DO $$ BEGIN
 END $$;
 DROP FUNCTION tanaghom.register_upload_asset(uuid,text,text,text,int,int,bigint,text,text,jsonb,uuid,uuid);
 DROP FUNCTION tanaghom.set_creative_template_active(uuid,uuid,boolean);
-DROP FUNCTION tanaghom.create_creative_template(uuid,boolean,text,text,jsonb);
+DROP FUNCTION tanaghom.create_creative_template(uuid,text,text,jsonb);
 DROP FUNCTION tanaghom.set_brand_kit_current(uuid,uuid,integer);
 DROP FUNCTION tanaghom.create_brand_kit_version(uuid,uuid,jsonb,jsonb,text,text,jsonb,text,jsonb,jsonb,jsonb);
 DROP FUNCTION tanaghom.create_brand_kit(uuid,text,jsonb,jsonb,text,text,jsonb,text,jsonb,jsonb,jsonb);

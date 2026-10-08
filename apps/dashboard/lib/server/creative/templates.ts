@@ -35,6 +35,7 @@ async function bodyJson(request: NextRequest) {
 function mapDbError(error: unknown): never {
   if (error instanceof Error) {
     if (/template requires owner/.test(error.message)) throw new CreativeJobRequestError("forbidden", 403);
+    if (/global template is read-only/.test(error.message)) throw new CreativeJobRequestError("forbidden", 403);
     if (/unknown creative template/.test(error.message)) throw new CreativeJobRequestError("template_not_found", 404);
     if (/cross-tenant template/.test(error.message)) throw new CreativeJobRequestError("forbidden", 403);
     if (/duplicate key|unique/i.test(error.message)) throw new CreativeJobRequestError("duplicate_version", 409);
@@ -64,8 +65,10 @@ export async function createCreativeTemplate(request: NextRequest) {
     if (!body.spec || typeof body.spec !== "object" || Array.isArray(body.spec)) {
       throw new CreativeJobRequestError("invalid_spec", 400);
     }
-    if (body.global !== undefined && typeof body.global !== "boolean") {
-      throw new CreativeJobRequestError("invalid_global", 400);
+    if (body.global === true) {
+      // Platform-global rows are read-only to organization users; globals
+      // are seeded only by a future explicit platform-admin authority.
+      throw new CreativeJobRequestError("global_templates_read_only", 400);
     }
     const headerKey = idempotencyKey(request);
     const requestHash = `sha256:${createHash("sha256").update(JSON.stringify({ ...body, headerKey })).digest("hex")}`;
@@ -82,8 +85,8 @@ export async function createCreativeTemplate(request: NextRequest) {
       let templateId: string;
       try {
         const created = await client.query<{ id: string }>(
-          `SELECT tanaghom.create_creative_template($1,$2,$3,$4,$5) AS id`,
-          [user.id, body.global === true, body.kind, (body.name as string).trim(), JSON.stringify(body.spec)],
+          `SELECT tanaghom.create_creative_template($1,$2,$3,$4) AS id`,
+          [user.id, body.kind, (body.name as string).trim(), JSON.stringify(body.spec)],
         );
         templateId = created.rows[0].id;
       } catch (error) { mapDbError(error); }
