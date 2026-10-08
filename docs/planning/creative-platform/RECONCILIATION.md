@@ -1,10 +1,10 @@
 # Creative Runtime — Repository Reconciliation (docs-only)
 
 **Branch:** `plan/creative-runtime-reconciliation`
-**Base:** `origin/main` at `b3e8619` (Merge PR #211)
-**Date:** 2026-10-07
+**Base:** `origin/main` at `1ab823f` (Merge PR #223; rebased 2026-10-08 — was `b3e8619` at draft time)
+**Date:** 2026-10-07 drafted, 2026-10-08 closeout
 **Scope:** RECONCILIATION ONLY — documentation, no feature code
-**Status:** DRAFT FOR REVIEW — not a build authorization
+**Status:** P0 CLOSEOUT — ready for final review; not a build authorization
 
 ## Explicit non-goals of this PR
 
@@ -28,17 +28,28 @@ Read completely, in order, at this branch base:
 2. `docs/PROJECT_CONTEXT.md` — READ (135 lines, repo boundary, `apps/dashboard`, `packages/*`, `archive/legacy-v0` not deployable).
 3. `docs/PRODUCTION_READINESS.md` — READ (76 lines, 20-gate v1 scorecard, 60/60 source + 0/40 runtime).
 4. `docs/DEFINITION_OF_DONE.md` — READ (37 lines, UI/API demo + versioned reversible DB + idempotent writes + audit + tests + rollback).
-5. `docs/planning/creative-platform/AGENT_COORDINATION.md` — **MISSING**.
-6. `docs/planning/creative-platform/MASTER_PLAN.md` — **MISSING**.
-7. `docs/planning/creative-platform/MUSE_REPO_RECONCILIATION.md` — **MISSING**.
+5. `docs/planning/creative-platform/AGENT_COORDINATION.md` — READ (82 lines, merged via PR #223 at `1ab823f`).
+6. `docs/planning/creative-platform/MASTER_PLAN.md` — READ (388 lines, merged via PR #223 at `1ab823f`).
+7. `docs/planning/creative-platform/MUSE_REPO_RECONCILIATION.md` — READ (79 lines, merged via PR #223 at `1ab823f`).
 
-Proof at base (no creative-platform docs on either ref):
+History: items 5–7 were absent from `origin/main` at draft time (verified
+via `git ls-tree` on `b3e8619`; they lived on `plan/creative-platform-3aqel-parity`).
+Docs-only PR #223 was merged into `main` as `1ab823f` on 2026-10-08T06:13:48Z
+(CI 41/41 green after dependency remediation PR #224, merged as `03e290f`
+without weakening the `npm audit --audit-level=moderate` policy). This branch
+was rebased onto `1ab823f`; `git diff 51e83f6..1ab823f --
+docs/planning/creative-platform/` is empty, so the §7–§15 analysis written
+against the PR head stands verbatim against merged content.
 
-- `git ls-tree -r --name-only origin/main -- docs/planning/` contains `agency-expansion/*` + `headcount-groky-adaptation.md` only; `Select-String "creative"` returns nothing.
-- `git ls-tree -r --name-only origin/main -- docs/planning/creative-platform/` returns nothing.
+Historical proof (draft time, retained for provenance):
+
+- `git ls-tree -r --name-only origin/main@b3e8619 -- docs/planning/` contained `agency-expansion/*` + `headcount-groky-adaptation.md` only; `Select-String "creative"` returned nothing.
 - Same result on former HEAD `48d8cef` (`feat/groky-headcount-reference-20261003`), which only adds `archive/legacy-v0/HEADCOUNT_*` reference material + `docs/planning/headcount-groky-adaptation.md` (review-only, non-deployable).
 
-Consequence: the questionnaire in item 7 cannot be answered verbatim. This file instead answers the 18 explicit investigation items from the assignment (§2) against CURRENT source. Current source wins over any old planning or chat history. `archive/legacy-v0` is reference/recovery only per `archive/legacy-v0/README.md:1-22` and is never cited as implementation.
+The questionnaire is now answered verbatim in §7–§15 (Q1–Q20 cross-map plus the six
+review-requested sections). Current source still wins over any planning prose or chat
+history wherever they conflict. `archive/legacy-v0` is reference/recovery only per
+`archive/legacy-v0/README.md:1-22` and is never cited as implementation.
 
 Spot-verified in this pass (in addition to full grep/migration review):
 
@@ -369,7 +380,7 @@ Deliberately NOT introduced here: duplicate Hermes (#150), flow-pack intake (#15
 
 ## 5. Blockers / open questions (need owner input before any build PR)
 
-1. The three creative-platform planning docs are missing (§0) — confirm whether `AGENT_COORDINATION.md`, `MASTER_PLAN.md`, and the canonical `MUSE_REPO_RECONCILIATION.md` questionnaire exist elsewhere or are superseded by this file.
+1. RESOLVED — the three planning docs are merged in `main` at `1ab823f` (PR #223, 2026-10-08T06:13:48Z, CI 41/41). No drift vs PR head (`git diff 51e83f6..1ab823f -- docs/planning/creative-platform/` empty). Questionnaire answered in §7–§15.
 2. Confirm #157 scope covers talking-head + video generation, or split them explicitly (no duplicate issue).
 3. Confirm Arabic acceptance scope under #14 for creative surfaces (fonts, devices, caption timing) before any renderer PR.
 4. Confirm test-host-only worker placement and secrets handling (existing runbooks apply; no new topology in this PR).
@@ -377,10 +388,11 @@ Deliberately NOT introduced here: duplicate Hermes (#150), flow-pack intake (#15
 
 ## 6. Definition of done for THIS reconciliation PR
 
-- [x] Branch from `origin/main`, docs-only commit(s), no runtime/secret/n8n/GPU/production effects.
+- [x] Rebased onto `origin/main@1ab823f`; planning docs re-read + re-verified from merged SHA (zero drift vs `51e83f6`).
+- [x] Stale “planning docs missing” wording removed (§0, §5.1); merged SHA recorded.
 - [ ] Reviewers confirm §1 claims against cited files (spot-check at least auth, roles, audit, outbox, vault, workspace, n8n README).
 - [ ] Reviewers confirm §3 classifications (especially 7–8 under #157, 9/14/16 as extensions, 25 as reuse).
-- [ ] Missing planning docs disposition recorded (§5.1) — superseded vs to-be-provided.
+- [ ] Reviewers confirm §7–§15 (data model/RBAC/migrations; queue/storage/worker/adapter; provider matrix; PR decomposition + ownership; #157 decision; scorecard proposal).
 - [ ] Follow-up build/ADR PRs scoped separately with their own DoD, tests, and rollback notes per `docs/DEFINITION_OF_DONE.md`.
 
 Validation performed for this docs-only change:
@@ -392,7 +404,7 @@ Validation performed for this docs-only change:
 ## 7. Update record — PR #223 review (2026-10-07, second pass)
 
 - PR #222 review (tamerabuhalaweh, 2026-10-07T13:38Z) accepted the core findings (§1–§3) and clarified the three planning files lived on branch `plan/creative-platform-3aqel-parity` (docs-only PR #223), explaining their absence from `origin/main`.
-- PR #223 state at time of writing: **OPEN, MERGEABLE, UNSTABLE, no review decision** (`gh pr view 223`). Head `51e83f6`, 3 commits. `origin/main` unchanged at `b3e8619`; rebase of this branch is therefore a no-op and will be re-run the moment #223 merges (no conflicts expected — #223 adds three new files, this PR adds one different file).
+- PR #223 state at time of writing: **OPEN, MERGEABLE, UNSTABLE, no review decision** (`gh pr view 223`). Head `51e83f6`, 3 commits. `origin/main` unchanged at `b3e8619`; rebase of this branch is therefore a no-op and will be re-run the moment #223 merges (no conflicts expected — #223 adds three new files, this PR adds one different file). **CLOSEOUT 2026-10-08: resolved — #223 merged as `1ab823f` (41/41 green after #224 remediation `03e290f`); this branch rebased cleanly onto `1ab823f` with zero conflicts.**
 - The three files were read from the PR #223 head (not from `main`), sizes: `MASTER_PLAN.md` 388 lines, `AGENT_COORDINATION.md` 82 lines, `MUSE_REPO_RECONCILIATION.md` 79 lines. All §7–§12 below answer them. Citations to planning content name the exact PR head SHA `51e83f6` so any pre-merge drift in #223 is detectable; a post-merge re-verify + rebase is still required before any build PR.
 - Relevant new facts gathered for this pass (all verified, no speculation):
   - Next migration after `main` is **`0036`** (`packages/database/migrations/*.up.sql` ends at `0035_agency_workspace.up.sql`).
