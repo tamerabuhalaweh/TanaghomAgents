@@ -19,6 +19,7 @@ DROP FUNCTION tanaghom.heartbeat_creative_job(uuid,text,int);
 DROP FUNCTION tanaghom.mark_creative_job_running(uuid,text);
 DROP FUNCTION tanaghom.claim_creative_job(text,text,int);
 DROP FUNCTION tanaghom.create_creative_job(uuid,text,text,jsonb,uuid,uuid,int,int,text,uuid,int);
+DROP FUNCTION tanaghom.creative_object_key_is_scoped(text,uuid);
 DROP TABLE tanaghom.creative_events,tanaghom.brand_kit_versions,tanaghom.brand_kits,tanaghom.creative_templates,tanaghom.creative_asset_versions,tanaghom.creative_assets,tanaghom.creative_job_transitions,tanaghom.creative_jobs,tanaghom.creative_controls;
 DROP FUNCTION tanaghom.guard_creative_asset_version();
 DELETE FROM public.schema_migrations WHERE version='0036_creative_foundation';

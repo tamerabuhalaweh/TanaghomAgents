@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
@@ -131,6 +131,18 @@ export async function decideCreativeAssetVersion(request: NextRequest, versionId
         return response;
       }
       let status: string;
+      // Reuse the originating job's correlation so the decision shares the
+      // job trace instead of forking a new one. Org-scoped: foreign versions 404.
+      const lineage = await client.query<{ correlation_id: string }>(
+        `SELECT job.correlation_id
+           FROM tanaghom.creative_asset_versions version
+           JOIN tanaghom.creative_assets asset ON asset.id = version.asset_id
+           JOIN tanaghom.creative_jobs job ON job.id = version.job_id
+          WHERE version.id = $1 AND asset.organization_id = $2 AND job.organization_id = $2`,
+        [versionId, user.organizationId],
+      );
+      if (!lineage.rows[0]) throw new CreativeJobRequestError("version_not_found", 404);
+      const correlationId = lineage.rows[0].correlation_id as string;
       try {
         const decided = await client.query<{ status: string }>(
           `SELECT tanaghom.decide_creative_asset_version($1,$2,$3,$4) AS status`,
@@ -151,7 +163,6 @@ export async function decideCreativeAssetVersion(request: NextRequest, versionId
         }
         throw error;
       }
-      const correlationId = randomUUID();
       const responseBody = { ok: true, asset_version_id: versionId, decision: input.decision, status, correlation_id: correlationId };
       await client.query(
         `INSERT INTO tanaghom.agent_actions_log (

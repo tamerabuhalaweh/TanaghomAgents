@@ -225,3 +225,28 @@ test("creative server boundary stays authenticated, authorized, idempotent, and 
   const envExample = await read(".env.example");
   assert.match(envExample, /CREATIVE_STUDIO_ENABLED=false/);
 });
+
+test("review corrections are present: tenant templates, brand FK, audit mirrors, key scope", async () => {
+  const up = await read("packages/database/migrations/0036_creative_foundation.up.sql");
+  const down = await read("packages/database/migrations/0036_creative_foundation.down.sql");
+  // 1. No global template uniqueness; tenant + global partial indexes instead.
+  assert.doesNotMatch(up, /UNIQUE\(kind,name,version\)/);
+  assert.match(up, /creative_templates_org_kind_name_version_idx/);
+  assert.match(up, /creative_templates_global_kind_name_version_idx/);
+  assert.match(up, /WHERE organization_id IS NULL/);
+  // 2. Brand-kit reference integrity beyond the enqueue-time check.
+  assert.match(up, /creative_jobs_brand_kit_version_fk/);
+  assert.match(up, /FOREIGN KEY \(brand_kit_version_id\)\s*\n?\s*REFERENCES tanaghom\.brand_kit_versions\(id\)/);
+  // 3. Every worker lifecycle transition mirrors canonical audit in-transaction.
+  for (const action of ["creative.job_claimed", "creative.job_running", "creative.job_heartbeat",
+    "creative.job_requeued", "creative.job_failed", "creative.job_succeeded",
+    "creative.job_expired", "creative.job_cancelled", "creative.asset_version_created"]) {
+    assert.match(up, new RegExp(`'${action.replace(/\./g, "\\.")}'`));
+  }
+  assert.match(up, /INSERT INTO tanaghom\.agent_actions_log\(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result\)/);
+  // 4. Strict key-scope helper exists, is used by registration, and rolls back.
+  assert.match(up, /CREATE FUNCTION tanaghom\.creative_object_key_is_scoped\(p_key text,p_org uuid\)/);
+  assert.match(up, /tanaghom\.creative_object_key_is_scoped\(p_object_key,j\.organization_id\)/);
+  assert.match(up, /\^t\//);
+  assert.match(down, /DROP FUNCTION tanaghom\.creative_object_key_is_scoped\(text,uuid\);/);
+});

@@ -280,6 +280,83 @@ DO $$ BEGIN
  IF SQLERRM NOT LIKE '%immutable%' THEN RAISE; END IF; END;
 END $$;
 
+-- Template names are tenant-scoped: both orgs may own ('ad','promo',1).
+INSERT INTO tanaghom.creative_templates(organization_id,kind,name,spec,version) VALUES
+ ('71000000-0000-4000-8000-000000000001','ad','promo','{}',1),
+ ('71000000-0000-4000-8000-000000000002','ad','promo','{}',1),
+ (NULL,'ad','promo','{}',1);
+DO $$ BEGIN
+ BEGIN INSERT INTO tanaghom.creative_templates(organization_id,kind,name,spec,version)
+  VALUES('71000000-0000-4000-8000-000000000001','ad','promo','{}',1);
+ RAISE EXCEPTION 'same-org duplicate template unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLSTATE<>'23505' THEN RAISE; END IF; END;
+ BEGIN INSERT INTO tanaghom.creative_templates(organization_id,kind,name,spec,version)
+  VALUES(NULL,'ad','promo','{}',1);
+ RAISE EXCEPTION 'duplicate global template unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLSTATE<>'23505' THEN RAISE; END IF; END;
+END $$;
+
+-- Brand-kit linkage is referentially enforced, not just checked at enqueue.
+DO $$ DECLARE j uuid; BEGIN
+ BEGIN PERFORM tanaghom.create_creative_job('72000000-0000-4000-8000-000000000001','design','cpu','{}','75000000-0000-4000-8000-000000000050','76000000-0000-4000-8000-000000000050',0,3,NULL,'77000000-0000-4000-8000-000000000099',NULL);
+ RAISE EXCEPTION 'unknown brand kit unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%unknown brand kit version%' THEN RAISE; END IF; END;
+ j := tanaghom.create_creative_job('72000000-0000-4000-8000-000000000001','design','cpu','{}','75000000-0000-4000-8000-000000000051','76000000-0000-4000-8000-000000000051',0,3,NULL,'77000000-0000-4000-8000-000000000011',NULL);
+ IF (SELECT brand_kit_version_id FROM tanaghom.creative_jobs WHERE id=j) IS DISTINCT FROM '77000000-0000-4000-8000-000000000011' THEN RAISE EXCEPTION 'brand kit version not stored'; END IF;
+ BEGIN PERFORM tanaghom.create_creative_job('72000000-0000-4000-8000-000000001001','design','cpu','{}','75000000-0000-4000-8000-000000000052','76000000-0000-4000-8000-000000000052',0,3,NULL,'77000000-0000-4000-8000-000000000011',NULL);
+ RAISE EXCEPTION 'cross-org brand kit unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%unknown brand kit version%' THEN RAISE; END IF; END;
+ BEGIN INSERT INTO tanaghom.creative_jobs(organization_id,requested_by,idempotency_key,input_hash,correlation_id,capability,lane,params,brand_kit_version_id)
+  VALUES('71000000-0000-4000-8000-000000000001','72000000-0000-4000-8000-000000000001','75000000-0000-4000-8000-000000000053','h','76000000-0000-4000-8000-000000000053','image','cpu','{}','77000000-0000-4000-8000-000000000099');
+ RAISE EXCEPTION 'orphan brand kit insert unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLSTATE<>'23503' THEN RAISE; END IF; END;
+END $$;
+
+-- Worker lifecycle mirrors into canonical agent_actions_log with job correlation.
+DO $$ DECLARE j uuid; c uuid; v uuid; n_events integer; n_log integer; n_actions integer; BEGIN
+ j := tanaghom.create_creative_job('72000000-0000-4000-8000-000000000002','image','cpu','{"m":"audit"}','75000000-0000-4000-8000-000000000060','76000000-0000-4000-8000-000000000060',100,3);
+ SELECT correlation_id INTO c FROM tanaghom.creative_jobs WHERE id=j;
+ PERFORM tanaghom.claim_creative_job('cpu','worker-audit',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-audit' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ PERFORM tanaghom.mark_creative_job_running(j,'worker-audit');
+ PERFORM tanaghom.heartbeat_creative_job(j,'worker-audit',120);
+ PERFORM tanaghom.fail_creative_job(j,'worker-audit','transient','audit probe',0);
+ PERFORM tanaghom.claim_creative_job('cpu','worker-audit',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-audit' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ PERFORM tanaghom.mark_creative_job_running(j,'worker-audit');
+ v := tanaghom.create_creative_asset_version(j,'worker-audit',NULL,'Audit artifact','image/png',64,64,NULL,512,
+  'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd','t/71000000-0000-4000-8000-000000000001/image/'||j::text||'/v1.png',NULL,'{"adapter":"mock"}',NULL,NULL,'mock');
+ PERFORM tanaghom.complete_creative_job(j,'worker-audit',v,NULL);
+ SELECT count(*) INTO n_events FROM tanaghom.creative_events WHERE job_id=j;
+ SELECT count(*) INTO n_log FROM tanaghom.agent_actions_log WHERE correlation_id=c;
+ SELECT count(DISTINCT action_type) INTO n_actions FROM tanaghom.agent_actions_log WHERE correlation_id=c;
+ IF n_events<>9 THEN RAISE EXCEPTION 'expected 9 creative events, saw %',n_events; END IF;
+ IF n_log<>8 THEN RAISE EXCEPTION 'expected 8 canonical audit rows, saw %',n_log; END IF;
+ IF n_actions<>6 THEN RAISE EXCEPTION 'expected 6 distinct audit actions, saw %',n_actions; END IF;
+ IF EXISTS(SELECT 1 FROM tanaghom.agent_actions_log WHERE correlation_id=c AND action_type NOT LIKE 'creative.%') THEN RAISE EXCEPTION 'non-creative audit leaked into job trace'; END IF;
+END $$;
+
+-- Object keys require the strict tenant-prefixed shape, not substring presence.
+DO $$ DECLARE j uuid; BEGIN
+ j := tanaghom.create_creative_job('72000000-0000-4000-8000-000000000002','image','cpu','{"m":"key"}','75000000-0000-4000-8000-000000000061','76000000-0000-4000-8000-000000000061');
+ PERFORM tanaghom.claim_creative_job('cpu','worker-key',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-key' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ PERFORM tanaghom.mark_creative_job_running(j,'worker-key');
+ BEGIN PERFORM tanaghom.create_creative_asset_version(j,'worker-key',NULL,'Sneaky','image/png',64,64,NULL,512,
+   'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee','t/71000000-0000-4000-8000-000000000002/image/71000000-0000-4000-8000-000000000001/v1.png',NULL,'{}',NULL,NULL,'mock');
+ RAISE EXCEPTION 'mid-string tenant scope unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%tenant scope%' THEN RAISE; END IF; END;
+ BEGIN PERFORM tanaghom.create_creative_asset_version(j,'worker-key',NULL,'Loud','image/png',64,64,NULL,512,
+   'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee','T/71000000-0000-4000-8000-000000000001/IMAGE/'||j::text||'/V1.PNG',NULL,'{}',NULL,NULL,'mock');
+ RAISE EXCEPTION 'uppercase key unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%tenant scope%' THEN RAISE; END IF; END;
+ BEGIN PERFORM tanaghom.create_creative_asset_version(j,'worker-key',NULL,'Wrong ext','image/png',64,64,NULL,512,
+   'eeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee','t/71000000-0000-4000-8000-000000000001/image/'||j::text||'/v1.pdf',NULL,'{}',NULL,NULL,'mock');
+ RAISE EXCEPTION 'disallowed extension unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%tenant scope%' THEN RAISE; END IF; END;
+ IF NOT tanaghom.creative_object_key_is_scoped('t/71000000-0000-4000-8000-000000000001/image/'||j::text||'/v1.png','71000000-0000-4000-8000-000000000001') THEN RAISE EXCEPTION 'valid key rejected'; END IF;
+END $$;
+
 -- Control switch is owner-only.
 DO $$ BEGIN
  BEGIN PERFORM tanaghom.set_creative_control('72000000-0000-4000-8000-000000000004',true,false,'viewer attempt');

@@ -210,7 +210,7 @@ try {
   const jobKey = randomUUID();
   const jobCorrelation = randomUUID();
   const enqueueHeaders = { ...owner, "Content-Type": "application/json", "Idempotency-Key": "e2e-enqueue-1" };
-  const enqueueBody = JSON.stringify({ capability: "image", lane: "cpu", params: { prompt: "e2e mock square" }, idempotency_key: jobKey, correlation_id: jobCorrelation });
+  const enqueueBody = JSON.stringify({ capability: "image", lane: "cpu", params: { prompt: "e2e mock square" }, idempotency_key: jobKey, correlation_id: jobCorrelation, priority: 100 });
   const enqueued = await fetch(`${dashboardOrigin}/api/creative/jobs`, { method: "POST", headers: enqueueHeaders, body: enqueueBody });
   assert.equal(enqueued.status, 200);
   const enqueuedBody = await enqueued.json();
@@ -228,7 +228,7 @@ try {
   const crossCancel = await fetch(`${dashboardOrigin}/api/creative/jobs/${gateJobId}/cancel`, {
     method: "POST", headers: { ...orgBOwner, "Idempotency-Key": "e2e-cross-cancel" },
   });
-  assert.equal(crossCancel.status, 403);
+  assert.equal(crossCancel.status, 404);
   const viewerCancel = await fetch(`${dashboardOrigin}/api/creative/jobs/${gateJobId}/cancel`, {
     method: "POST", headers: { ...viewer, "Idempotency-Key": "e2e-viewer-cancel" },
   });
@@ -276,7 +276,9 @@ try {
       body: JSON.stringify({ decision: "rejected", feedback: "off-brand test feedback" }),
     });
     assert.equal(rejected.status, 200);
-    assert.equal((await rejected.json()).status, "rejected");
+    const rejectedBody = await rejected.json();
+    assert.equal(rejectedBody.status, "rejected");
+    assert.equal(rejectedBody.correlation_id, jobCorrelation);
     const lateApprove = await fetch(`${dashboardOrigin}/api/creative/assets/versions/${versionId}/decision`, {
       method: "POST", headers: { ...owner, "Content-Type": "application/json", "Idempotency-Key": "e2e-decide-3" },
       body: JSON.stringify({ decision: "approved" }),
@@ -303,7 +305,10 @@ try {
     method: "POST", headers: { ...owner, "Idempotency-Key": "e2e-cancel-2" },
   });
   assert.equal(cancelled.status, 200);
-  assert.equal((await cancelled.json()).status, "cancelled");
+  const cancelledBody = await cancelled.json();
+  assert.equal(cancelledBody.status, "cancelled");
+  const cancelJobCorr = (await pool.query(`SELECT correlation_id::text AS c FROM tanaghom.creative_jobs WHERE id=$1`, [cancelJobId])).rows[0].c;
+  assert.equal(cancelledBody.correlation_id, cancelJobCorr);
   const cancelledAgain = await fetch(`${dashboardOrigin}/api/creative/jobs/${cancelJobId}/cancel`, {
     method: "POST", headers: { ...owner, "Idempotency-Key": "e2e-cancel-3" },
   });
@@ -324,6 +329,21 @@ try {
   assert.deepEqual({ posts: evidence.rows[0].posts, operations: evidence.rows[0].operations, provider: evidence.rows[0].provider },
     { posts: 0, operations: 0, provider: null });
   console.log("PASS audit lineage and zero provider actions");
+
+  // Correlation continuity: every audit row for the gate job, its versions,
+  // and the cancel job shares the originating job trace — no forked UUIDs.
+  const traces = await pool.query(
+    `SELECT DISTINCT correlation_id::text AS c FROM tanaghom.agent_actions_log
+      WHERE entity_id=$1 OR entity_id IN (SELECT id FROM tanaghom.creative_asset_versions WHERE job_id=$1)`,
+    [gateJobId],
+  );
+  assert.deepEqual(traces.rows.map((row) => row.c), [jobCorrelation]);
+  const cancelTraces = await pool.query(
+    `SELECT DISTINCT correlation_id::text AS c FROM tanaghom.agent_actions_log WHERE entity_id=$1`,
+    [cancelJobId],
+  );
+  assert.deepEqual(cancelTraces.rows.map((row) => row.c), [cancelJobCorr]);
+  console.log("PASS correlation continuity across enqueue, worker, cancel, and decisions");
 
   // Used-state 0036 down refuses; the migration stays applied.
   try {

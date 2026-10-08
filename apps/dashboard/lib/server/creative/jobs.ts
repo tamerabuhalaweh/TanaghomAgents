@@ -1,6 +1,6 @@
 import "server-only";
 
-import { createHash, randomUUID } from "node:crypto";
+import { createHash } from "node:crypto";
 import type { NextRequest } from "next/server";
 
 import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
@@ -231,12 +231,19 @@ export async function cancelCreativeJob(request: NextRequest, jobId: string) {
         return response;
       }
       let status: string;
+      let correlationId: string;
       try {
-        const cancelled = await client.query<{ status: string }>(
+        const cancelled = await client.query<{ status: string; correlation_id: string }>(
+          `SELECT status, correlation_id FROM tanaghom.creative_jobs WHERE id = $1 AND organization_id = $2`,
+          [jobId, user.organizationId],
+        );
+        if (!cancelled.rows[0]) throw new CreativeJobRequestError("job_not_found", 404);
+        correlationId = cancelled.rows[0].correlation_id as string;
+        const requested = await client.query<{ status: string }>(
           `SELECT tanaghom.request_creative_cancel($1,$2) AS status`,
           [user.id, jobId],
         );
-        status = cancelled.rows[0].status;
+        status = requested.rows[0].status;
       } catch (error) {
         if (error instanceof Error && /creative (cancel requires|job already terminal)|unknown creative job/.test(error.message)) {
           throw new CreativeJobRequestError(
@@ -247,12 +254,12 @@ export async function cancelCreativeJob(request: NextRequest, jobId: string) {
         }
         throw error;
       }
-      const responseBody = { ok: true, job_id: jobId, status };
+      const responseBody = { ok: true, job_id: jobId, status, correlation_id: correlationId };
       await client.query(
         `INSERT INTO tanaghom.agent_actions_log (
            correlation_id, actor_user_id, action_type, entity_type, entity_id, payload, result
          ) VALUES ($1, $2, 'creative.job_cancel_requested', 'creative_job', $3, $4::jsonb, 'success')`,
-        [randomUUID(), user.id, jobId, JSON.stringify({ status })],
+        [correlationId, user.id, jobId, JSON.stringify({ status })],
       );
       await completeIdempotency(client, slot.reservation_id, 200, responseBody);
       await client.query("COMMIT");

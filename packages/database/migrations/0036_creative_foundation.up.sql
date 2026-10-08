@@ -135,11 +135,12 @@ CREATE TABLE tanaghom.creative_templates (
  spec jsonb NOT NULL,
  version integer NOT NULL DEFAULT 1 CHECK(version BETWEEN 1 AND 1000),
  is_active boolean NOT NULL DEFAULT true,
- created_at timestamptz NOT NULL DEFAULT now(),
- UNIQUE(kind,name,version)
+ created_at timestamptz NOT NULL DEFAULT now()
 );
 CREATE UNIQUE INDEX creative_templates_org_kind_name_version_idx
  ON tanaghom.creative_templates(organization_id,kind,name,version) WHERE organization_id IS NOT NULL;
+CREATE UNIQUE INDEX creative_templates_global_kind_name_version_idx
+ ON tanaghom.creative_templates(kind,name,version) WHERE organization_id IS NULL;
 
 CREATE TABLE tanaghom.brand_kits (
  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -170,6 +171,13 @@ CREATE TABLE tanaghom.brand_kit_versions (
 );
 CREATE TRIGGER brand_kit_versions_immutable BEFORE UPDATE OR DELETE ON tanaghom.brand_kit_versions
  FOR EACH ROW EXECUTE FUNCTION tanaghom.prevent_audit_mutation();
+
+-- brand_kit_versions is created after creative_jobs, so the reference is
+-- added here. Enqueue-time existence checks remain, but only this constraint
+-- survives privileged writes and later deletes of kit versions.
+ALTER TABLE tanaghom.creative_jobs
+ ADD CONSTRAINT creative_jobs_brand_kit_version_fk
+ FOREIGN KEY (brand_kit_version_id) REFERENCES tanaghom.brand_kit_versions(id);
 
 CREATE TABLE tanaghom.creative_events (
  id bigint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -245,6 +253,8 @@ BEGIN
  VALUES(picked.organization_id,picked.id,'queued','claimed','worker',p_worker,'claimed lane '||p_lane);
  INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
  VALUES(picked.organization_id,picked.id,'job_claimed',jsonb_build_object('lane',p_lane,'worker',p_worker,'attempt',picked.attempt+1),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ VALUES(picked.correlation_id,picked.requested_by,'creative.job_claimed','creative_job',picked.id,jsonb_build_object('lane',p_lane,'worker',p_worker,'attempt',picked.attempt+1),'success');
  RETURN QUERY SELECT picked.id,picked.organization_id,picked.capability,picked.lane,picked.params,picked.attempt+1,picked.max_attempts,picked.correlation_id,picked.idempotency_key;
 END $$;
 
@@ -262,15 +272,19 @@ BEGIN
   UPDATE tanaghom.creative_jobs SET status='cancelled',finished_at=now(),updated_at=now() WHERE id=p_job;
   INSERT INTO tanaghom.creative_job_transitions(organization_id,job_id,from_status,to_status,actor_kind,actor_ref,reason)
   VALUES(j.organization_id,p_job,'claimed','cancelled','worker',p_worker,'cancel requested before run');
-  INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
-  VALUES(j.organization_id,p_job,'job_cancelled',jsonb_build_object('worker',p_worker),'success');
-  RETURN 'cancelled';
+ INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
+ VALUES(j.organization_id,p_job,'job_cancelled',jsonb_build_object('worker',p_worker),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ VALUES(j.correlation_id,j.requested_by,'creative.job_cancelled','creative_job',p_job,jsonb_build_object('worker',p_worker),'success');
+ RETURN 'cancelled';
  END IF;
  UPDATE tanaghom.creative_jobs SET status='running',updated_at=now() WHERE id=p_job;
  INSERT INTO tanaghom.creative_job_transitions(organization_id,job_id,from_status,to_status,actor_kind,actor_ref,reason)
  VALUES(j.organization_id,p_job,'claimed','running','worker',p_worker,'execution started');
  INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
  VALUES(j.organization_id,p_job,'job_running',jsonb_build_object('worker',p_worker),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ VALUES(j.correlation_id,j.requested_by,'creative.job_running','creative_job',p_job,jsonb_build_object('worker',p_worker),'success');
  RETURN 'running';
 END $$;
 
@@ -290,6 +304,8 @@ BEGIN
  UPDATE tanaghom.creative_jobs SET lease_expires_at=lease,heartbeat_at=now(),updated_at=now() WHERE id=p_job;
  INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
  VALUES(j.organization_id,p_job,'job_heartbeat',jsonb_build_object('worker',p_worker),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ VALUES(j.correlation_id,j.requested_by,'creative.job_heartbeat','creative_job',p_job,jsonb_build_object('worker',p_worker),'success');
  RETURN lease;
 END $$;
 
@@ -316,6 +332,8 @@ BEGIN
  VALUES(j.organization_id,p_job,j.status,'succeeded','worker',p_worker,'artifact persisted');
  INSERT INTO tanaghom.creative_events(organization_id,job_id,asset_version_id,action,payload,result)
  VALUES(j.organization_id,p_job,p_asset_version_id,'job_succeeded',jsonb_build_object('worker',p_worker,'actual_credits',p_actual_credits),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ VALUES(j.correlation_id,j.requested_by,'creative.job_succeeded','creative_job',p_job,jsonb_build_object('worker',p_worker,'asset_version_id',p_asset_version_id,'actual_credits',p_actual_credits),'success');
  RETURN 'succeeded';
 END $$;
 
@@ -342,10 +360,14 @@ BEGIN
    available_at=now()+make_interval(secs=>p_retry_after_seconds),error_class=p_error_class,error_message=p_error_message,updated_at=now() WHERE id=p_job;
   INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
   VALUES(j.organization_id,p_job,'job_requeued',jsonb_build_object('error_class',p_error_class,'attempt',j.attempt,'max_attempts',j.max_attempts),'success');
+  INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+  VALUES(j.correlation_id,j.requested_by,'creative.job_requeued','creative_job',p_job,jsonb_build_object('error_class',p_error_class,'attempt',j.attempt,'max_attempts',j.max_attempts),'success');
  ELSE
   UPDATE tanaghom.creative_jobs SET status=next_status,error_class=p_error_class,error_message=p_error_message,finished_at=now(),updated_at=now() WHERE id=p_job;
   INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
   VALUES(j.organization_id,p_job,'job_failed',jsonb_build_object('error_class',p_error_class,'terminal',next_status),'failed');
+  INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+  VALUES(j.correlation_id,j.requested_by,'creative.job_failed','creative_job',p_job,jsonb_build_object('error_class',p_error_class,'terminal',next_status),'failed');
  END IF;
  INSERT INTO tanaghom.creative_job_transitions(organization_id,job_id,from_status,to_status,actor_kind,actor_ref,reason)
  VALUES(j.organization_id,p_job,j.status,next_status,'worker',p_worker,left(p_error_class||': '||p_error_message,500));
@@ -382,7 +404,7 @@ CREATE FUNCTION tanaghom.expire_creative_leases()
 RETURNS integer LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
 DECLARE n integer := 0; r record;
 BEGIN
- FOR r IN SELECT id,organization_id,status FROM tanaghom.creative_jobs
+ FOR r IN SELECT id,organization_id,status,requested_by,correlation_id FROM tanaghom.creative_jobs
   WHERE status IN ('claimed','running') AND lease_expires_at IS NOT NULL AND lease_expires_at<now()
   ORDER BY lease_expires_at FOR UPDATE SKIP LOCKED LOOP
   UPDATE tanaghom.creative_jobs SET status='expired',finished_at=now(),updated_at=now() WHERE id=r.id;
@@ -390,10 +412,20 @@ BEGIN
   VALUES(r.organization_id,r.id,r.status,'expired','system','lease-reaper','lease lapsed without heartbeat');
   INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
   VALUES(r.organization_id,r.id,'job_expired',jsonb_build_object('prior_status',r.status),'failed');
+  INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+  VALUES(r.correlation_id,r.requested_by,'creative.job_expired','creative_job',r.id,jsonb_build_object('prior_status',r.status),'failed');
   n:=n+1;
  END LOOP;
  RETURN n;
 END $$;
+
+-- Strict tenant-scoped object-key shape: t/<org>/<capability>/<asset>/v<n>.<ext>,
+-- lowercase canonical. Replaces substring presence checks before any external
+-- storage adapter exists (see ADR 0022).
+CREATE FUNCTION tanaghom.creative_object_key_is_scoped(p_key text,p_org uuid) RETURNS boolean
+LANGUAGE sql IMMUTABLE SET search_path=pg_catalog,pg_temp AS $$
+ SELECT p_key ~ ('^t/' || p_org::text || '/[a-z_]+/[0-9a-f-]{36}/v[0-9]+\.(png|jpg|jpeg|webp|mp4|wav|mp3|html)$')
+$$;
 
 -- Asset version registration by the executing worker. New asset when p_asset_id is null.
 CREATE FUNCTION tanaghom.create_creative_asset_version(p_job uuid,p_worker text,p_asset_id uuid,p_title text,p_mime text,p_width integer,p_height integer,p_duration_ms integer,p_bytes bigint,p_sha256 text,p_object_key text,p_thumb_key text,p_provenance jsonb,p_prompt_ref text,p_template_ref text,p_method text)
@@ -419,7 +451,7 @@ BEGIN
  IF j.id IS NULL THEN RAISE EXCEPTION 'unknown creative job'; END IF;
  IF j.claimed_by IS DISTINCT FROM p_worker THEN RAISE EXCEPTION 'creative worker mismatch'; END IF;
  IF j.status NOT IN ('claimed','running') THEN RAISE EXCEPTION 'creative job not active'; END IF;
- IF position(j.organization_id::text IN p_object_key)=0 THEN RAISE EXCEPTION 'object key missing tenant scope'; END IF;
+ IF NOT tanaghom.creative_object_key_is_scoped(p_object_key,j.organization_id) THEN RAISE EXCEPTION 'object key missing tenant scope'; END IF;
  IF p_asset_id IS NULL THEN
   INSERT INTO tanaghom.creative_assets(organization_id,capability,title,originating_job_id)
   VALUES(j.organization_id,j.capability,coalesce(nullif(trim(p_title),''),'Untitled '||j.capability),p_job) RETURNING id INTO a;
@@ -438,6 +470,9 @@ BEGIN
  INSERT INTO tanaghom.creative_events(organization_id,job_id,asset_version_id,action,payload,result)
  VALUES(j.organization_id,p_job,made,CASE WHEN v=1 THEN 'asset_created' ELSE 'asset_version_created' END,
   jsonb_build_object('asset_id',a,'version',v,'mime',p_mime,'bytes',p_bytes,'method',p_method),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ VALUES(j.correlation_id,j.requested_by,'creative.asset_version_created','creative_asset_version',made,
+  jsonb_build_object('asset_id',a,'version',v,'mime',p_mime,'method',p_method),'success');
  RETURN made;
 END $$;
 
