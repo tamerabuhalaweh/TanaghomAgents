@@ -10,8 +10,11 @@
     "./repository": "./repository.mjs",
     "./queue": "./queue.mjs",
     "./adapters/mock": "./adapters/mock.mjs",
+    "./adapters/http-image": "./adapters/http-image.mjs",
+    "./adapters/local-sharp": "./adapters/local-sharp.mjs",
     "./storage/keys": "./storage/keys.mjs",
-    "./storage/test-adapter": "./storage/test-adapter.mjs"
+    "./storage/test-adapter": "./storage/test-adapter.mjs",
+    "./storage/s3": "./storage/s3.mjs"
   },
   "dependencies": {
     "ajv": "^8.18.0",

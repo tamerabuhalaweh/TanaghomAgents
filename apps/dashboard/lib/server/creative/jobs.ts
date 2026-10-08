@@ -244,7 +244,16 @@ export async function getCreativeJob(request: NextRequest, jobId: string) {
         ORDER BY created_at ASC, id ASC`,
       [jobId, user.organizationId],
     );
-    return noStore({ job, timeline: { transitions: transitions.rows, events: events.rows } });
+    const providerCalls = await database().query(
+      `SELECT provider, model, model_version, operation, provider_request_id,
+              status, started_at, finished_at, units, estimated_cost_usd,
+              actual_cost_usd, retry_count, error_class, attempt_no
+         FROM tanaghom.creative_provider_calls
+        WHERE job_id = $1 AND organization_id = $2
+        ORDER BY attempt_no ASC`,
+      [jobId, user.organizationId],
+    );
+    return noStore({ job, timeline: { transitions: transitions.rows, events: events.rows }, provider_calls: providerCalls.rows });
   } catch (error) {
     if (error instanceof CreativeJobRequestError) {
       return noStore({ error: error.code }, { status: error.status });

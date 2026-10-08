@@ -1,0 +1,17 @@
+{
+  "contract_version": "creative.evaluation-corpus.v1",
+  "lane": "image",
+  "cases": [
+    { "id": "img-en-01", "kind": "text_to_image", "prompt": "A red square on a white background, flat vector style", "language": "en", "expect": "provider_or_pending" },
+    { "id": "img-ar-01", "kind": "text_to_image", "prompt": "مربع أحمر على خلفية بيضاء بأسلوب بسيط", "language": "ar", "expect": "provider_or_pending" },
+    { "id": "prd-easy-01", "kind": "product_scene", "preset": "clean_white", "complexity": "easy", "notes": "Single-color bottle, no text" },
+    { "id": "prd-medium-01", "kind": "product_scene", "preset": "marble", "complexity": "medium", "notes": "Logo plus short label text" },
+    { "id": "prd-hard-01", "kind": "product_scene", "preset": "outdoor_lifestyle", "complexity": "hard", "notes": "Small package text plus distinctive markings" },
+    { "id": "relight-01", "kind": "relight", "preset": "office_studio", "notes": "Brightness/saturation modulation recorded" },
+    { "id": "scene-swap-01", "kind": "scene_replace", "preset": "wood", "notes": "Same foreground, new background" },
+    { "id": "neg-timeout-01", "kind": "negative", "fault": "timeout", "notes": "Provider stub delays beyond timeout; caller must classify indeterminate" },
+    { "id": "neg-429-01", "kind": "negative", "fault": "rate_limit", "notes": "429 maps to capacity, never silent" },
+    { "id": "neg-malformed-01", "kind": "negative", "fault": "malformed_json", "notes": "Non-JSON provider body is deterministic failure" },
+    { "id": "neg-empty-01", "kind": "negative", "fault": "no_artifact", "notes": "Empty image list is deterministic failure" }
+  ]
+}
