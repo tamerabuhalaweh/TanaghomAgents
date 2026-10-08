@@ -8,15 +8,18 @@
         {
           "provider": "fal-ai",
           "model": "fal-ai/flux/schnell",
-          "model_version": "schnell-20260414",
+          "model_version": null,
+          "adapter_config_version": "creative.providers.v1",
           "endpoint": "https://fal.run/fal-ai/flux/schnell",
+          "artifact_origins": ["fal.media"],
           "weights_license": "Apache-2.0",
+          "weights_lineage": "FLUX.1-schnell (verified 2026-10-08; no date-suffixed provider version is published, so none is recorded)",
           "commercial": true,
           "unit": "megapixel",
           "unit_price_usd": 0.003,
           "timeout_ms": 120000,
           "max_bytes": 8388608,
-          "operations": ["text_to_image", "image_to_image"]
+          "operations": ["text_to_image"]
         }
       ],
       "blocked": [

@@ -104,12 +104,38 @@ export async function probeImage(bytes) {
   return { width: meta.width, height: meta.height, format: meta.format, hasAlpha: !!meta.hasAlpha, exifPresent: !!meta.exif };
 }
 
+// Chroma-key cutout: a REAL segmentation primitive for solid backgrounds
+// (green-screen class inputs). Pixels within tolerance of the key color
+// become transparent. General ML segmentation (BiRefNet) remains a
+// separately-hosted adapter; this proves the segment operation boundary
+// end to end without GPU or weights.
+export async function segmentChroma({ bytes, keyColor = "#00ff00", tolerance = 60 }) {
+  assertImageInput(bytes, "segment");
+  const key = hexToRgb(keyColor);
+  if (!Number.isFinite(tolerance) || tolerance < 0 || tolerance > 441) throw new Error("invalid_chroma_tolerance");
+  const { data, info } = await sharp(bytes, { limitInputPixels: 80_000_000 }).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+  if (info.channels !== 4) throw new Error("unreadable_image");
+  const out = Buffer.from(data);
+  for (let i = 0; i < out.length; i += 4) {
+    const dr = out[i] - key.r;
+    const dg = out[i + 1] - key.g;
+    const db = out[i + 2] - key.b;
+    if (Math.sqrt(dr * dr + dg * dg + db * db) <= tolerance) out[i + 3] = 0;
+  }
+  const cut = await sharp(out, { raw: { width: info.width, height: info.height, channels: 4 } }).png().toBuffer();
+  return {
+    bytes: cut, mime: "image/png", width: info.width, height: info.height,
+    provenance: { adapter: "local-sharp", operation: "segment", method: "chroma-key", key_color: keyColor, tolerance },
+  };
+}
+
 export const localSharpAdapter = Object.freeze({
   name: "local-sharp",
   capabilities: Object.freeze(["image", "edit"]),
   async execute({ operation, ...input }) {
     if (operation === "compose") return composeScene(input);
     if (operation === "enhance") return enhanceImage(input);
+    if (operation === "segment") return segmentChroma(input);
     throw new Error(`unsupported_local_operation:${operation}`);
   },
 });

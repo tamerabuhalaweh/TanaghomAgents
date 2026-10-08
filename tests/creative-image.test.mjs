@@ -157,6 +157,95 @@ test("http image adapter normalizes, allowlists, and classifies without network"
   await assert.rejects(http.downloadArtifact({ url: "ftp://evil/x.png", fetchImpl: stubFetch }), /http\(s\)/);
 });
 
+test("review round: ssrf guard, attempt lifecycle, version truth, operation truth, chroma segment", async () => {
+  const http = await import("../packages/creative-runtime/adapters/http-image.mjs");
+  const allow = { allowedOrigins: ["fal.media"] };
+  // Allowlisted public host passes (no network: validator only).
+  assert.deepEqual(http.validateArtifactUrl("https://v3.fal.media/files/a/b.png", allow).host, "v3.fal.media");
+  assert.deepEqual(http.validateArtifactUrl("https://fal.media/files/a.png", allow).host, "fal.media");
+  // Rejections: loopback, private, metadata, userinfo, non-allowlisted, bad scheme.
+  for (const bad of [
+    "http://127.0.0.1:43223/artifact.png",
+    "http://localhost:43223/artifact.png",
+    "http://169.254.169.254/latest/meta-data/",
+    "http://10.0.0.5/x.png",
+    "http://192.168.1.2/x.png",
+    "http://172.20.0.9/x.png",
+    "http://0.0.0.0/x.png",
+    "https://user:pass@fal.media/x.png",
+    "https://example.com/x.png",
+    "ftp://fal.media/x.png",
+    "not-a-url",
+  ]) {
+    assert.throws(() => http.validateArtifactUrl(bad, allow), /not retrievable|not allowlisted|malformed|credentials|scheme|must be https/, bad);
+  }
+  // Explicit test loopback mode permits loopback only — never private/metadata.
+  assert.deepEqual(http.validateArtifactUrl("http://127.0.0.1:43223/a.png", { allowedOrigins: [], testLoopback: true }).host, "127.0.0.1");
+  assert.throws(() => http.validateArtifactUrl("http://169.254.169.254/x", { allowedOrigins: [], testLoopback: true }), /not retrievable/);
+  assert.throws(() => http.validateArtifactUrl("https://example.com/x.png", { allowedOrigins: [], testLoopback: true }), /not allowlisted/);
+  // Redirects revalidate: a redirect to a private host is refused without fetching it.
+  const seen = [];
+  const redirectFetch = async (url) => {
+    seen.push(url);
+    if (url === "https://fal.media/start.png") {
+      return { status: 302, headers: { get: (name) => (name === "location" ? "http://169.254.169.254/evil" : null) }, text: async () => "" };
+    }
+    throw new Error(`unexpected fetch ${url}`);
+  };
+  await assert.rejects(
+    http.downloadArtifact({ url: "https://fal.media/start.png", allowedOrigins: ["fal.media"], testLoopback: false, fetchImpl: redirectFetch }),
+    /not retrievable/,
+  );
+  assert.deepEqual(seen, ["https://fal.media/start.png"]);
+  // Over-long redirect chains are refused.
+  const loopFetch = async () => ({ status: 302, headers: { get: (name) => (name === "location" ? "https://fal.media/next.png" : null) }, text: async () => "" });
+  await assert.rejects(
+    http.downloadArtifact({ url: "https://fal.media/a.png", allowedOrigins: ["fal.media"], fetchImpl: loopFetch }),
+    /redirect chain too long/,
+  );
+
+  // Attempt lifecycle is begin/finish shaped; no invented versions; ops truthful.
+  const up = await read("packages/database/migrations/0038_creative_image_lane.up.sql");
+  assert.match(up, /CREATE FUNCTION tanaghom\.begin_creative_provider_call\(/);
+  assert.match(up, /CREATE FUNCTION tanaghom\.finish_creative_provider_call\(/);
+  assert.match(up, /attempt already terminal/);
+  assert.match(up, /FOR UPDATE/);
+  assert.doesNotMatch(up, /record_creative_provider_call/);
+  const down = await read("packages/database/migrations/0038_creative_image_lane.down.sql");
+  assert.match(down, /DROP FUNCTION tanaghom\.begin_creative_provider_call/);
+  assert.match(down, /DROP FUNCTION tanaghom\.finish_creative_provider_call/);
+  assert.doesNotMatch(down, /record_creative_provider_call/);
+  const providers = loadJson("config/creative-providers.v1.json");
+  const schnell = providers.adapters["http-image"].allowlist[0];
+  assert.deepEqual(schnell.operations, ["text_to_image"]);
+  assert.equal(schnell.model_version, null);
+  assert.equal(schnell.adapter_config_version, "creative.providers.v1");
+  assert.deepEqual(schnell.artifact_origins, ["fal.media"]);
+  for (const path of [
+    "config/creative-providers.v1.json",
+    "docs/planning/creative-platform/tasks/229-provider-decision.md",
+    "scripts/creative-image-integration.mjs",
+    "packages/database/tests/creative_image_lane.sql",
+  ]) {
+    assert.doesNotMatch(await read(path), /schnell-20260414/, path);
+  }
+
+  // Chroma-key segmentation boundary is real and deterministic.
+  const sharp = await import("../packages/creative-runtime/adapters/local-sharp.mjs");
+  const greenRaw = await (await import("sharp")).default({ create: { width: 8, height: 8, channels: 3, background: { r: 0, g: 255, b: 0 } } }).png().toBuffer();
+  const cut = await sharp.segmentChroma({ bytes: greenRaw, keyColor: "#00ff00", tolerance: 10 });
+  const cutRaw = await (await import("sharp")).default(cut.bytes).ensureAlpha().raw().toBuffer();
+  for (let i = 3; i < cutRaw.length; i += 4) assert.equal(cutRaw[i], 0);
+  assert.equal(cut.provenance.method, "chroma-key");
+  const redRaw = await (await import("sharp")).default({ create: { width: 8, height: 8, channels: 3, background: { r: 255, g: 0, b: 0 } } }).png().toBuffer();
+  const kept = await sharp.segmentChroma({ bytes: redRaw, keyColor: "#00ff00", tolerance: 10 });
+  const keptRaw = await (await import("sharp")).default(kept.bytes).ensureAlpha().raw().toBuffer();
+  for (let i = 3; i < keptRaw.length; i += 4) assert.equal(keptRaw[i], 255);
+  await assert.rejects(sharp.segmentChroma({ bytes: redRaw, keyColor: "#00ff00", tolerance: 999 }), /tolerance/);
+  const viaAdapter = await sharp.localSharpAdapter.execute({ operation: "segment", bytes: greenRaw });
+  assert.equal(viaAdapter.provenance.operation, "segment");
+});
+
 test("local sharp pipeline renders, composes, and enhances deterministically", async () => {
   const sharp = await import("../packages/creative-runtime/adapters/local-sharp.mjs");
   const png1x1 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "base64");

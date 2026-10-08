@@ -49,6 +49,7 @@ export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
   return (
     <div className="creative-page" dir={dir} lang={locale}>
       <div className="creative-head"><h1>{t(locale, "product.title")}</h1></div>
+      <div className="creative-notice" role="note"><p>{t(locale, "product.segmentation")}</p></div>
       {presets.loading || assets.loading ? <Loading locale={locale} />
         : presets.error ? <LoadError locale={locale} error={presets.error} onRetry={presets.reload} />
         : assets.error ? <LoadError locale={locale} error={assets.error} onRetry={assets.reload} />

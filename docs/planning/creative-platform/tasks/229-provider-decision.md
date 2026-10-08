@@ -38,16 +38,17 @@ owned; 8B params / 16.5GB weights; gated HF; Enterprise license above
 $1M). Kept as a documented second allowlist candidate for later phases
 because the revenue threshold needs a business decision first.
 
-### 2. Segmentation (product cutout): interface reserved, integration deferred
+### 2. Segmentation (product cutout): PARTIAL in P2a, follow-up #231
 
 | Field | Value |
 |---|---|
-| Candidate | BiRefNet (`ZhengPeng7/BiRefNet`), 445–885MB weights |
+| Shipped in P2a | Deterministic chroma-key `segment` operation (local-sharp, solid backgrounds) + alpha/mask composition path. Proves the operation boundary end to end. |
+| Candidate for ML | BiRefNet (`ZhengPeng7/BiRefNet`), 445–885MB weights |
 | License | **MIT** (code + weights, verified on GitHub + HF `license: mit`) |
 | Commercial/revenue/redistribution | None (MIT) |
 | Self-host vs API | Self-host (Python/torch or onnxruntime); provider-API option recorded |
 | VRAM | GPU recommended; CPU viable but 30–60s+ per image |
-| Decision | **Deferred**: no GPU/python host in P2a scope. P2a product flow uses alpha/mask inputs + sharp composition. Adapter operation name reserved: `segment`. |
+| Disposition | **PARTIAL**: Product Studio does NOT yet remove backgrounds from normal photos. Studio UI states this. Mandatory follow-up: **#231** before any virtual-studio parity claim. |
 | Fallback | fal/Replicate-hosted BiRefNet endpoints (keyed, stub-tested pattern) |
 
 Explicitly excluded: RMBG/BRIA (non-commercial) — never integrated.

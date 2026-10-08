@@ -14,22 +14,33 @@ INSERT INTO tanaghom.app_users (id, organization_id, email, display_name, kind, 
 
 UPDATE tanaghom.creative_controls SET enabled=true, emergency_stop=false, reason='Disposable image lane test';
 
--- Provider calls record per-attempt metering with worker identity.
+-- Provider attempts: one real request = one row. Begin allocates under the
+-- job lock; finish terminalizes the same row exactly once. No invented
+-- provider model versions are stored: schnell has none, so NULL + config rev.
 DO $$ DECLARE j uuid; c1 uuid; c2 uuid; BEGIN
  j := tanaghom.create_creative_job('91000000-0000-4000-8000-000000000001','image','gpu_image','{"prompt":"red square"}','93000000-0000-4000-8000-000000000001','94000000-0000-4000-8000-000000000001',100,3);
  PERFORM tanaghom.claim_creative_job('gpu_image','worker-meter',120);
  SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-meter' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
  PERFORM tanaghom.mark_creative_job_running(j,'worker-meter');
- c1 := tanaghom.record_creative_provider_call(j,'worker-meter','fal-ai','fal-ai/flux/schnell','schnell-20260414','text_to_image',NULL,'{"megapixels":1}',0.003,NULL,0,'started',NULL,NULL);
- c2 := tanaghom.record_creative_provider_call(j,'worker-meter','fal-ai','fal-ai/flux/schnell','schnell-20260414','text_to_image','fal-req-1','{"megapixels":1}',0.003,0.003,0,'succeeded',NULL,NULL);
- IF (SELECT attempt_no FROM tanaghom.creative_provider_calls WHERE id=c2)<>2 THEN RAISE EXCEPTION 'attempt numbering broken'; END IF;
- IF (SELECT count(*) FROM tanaghom.creative_provider_calls WHERE job_id=j)<>2 THEN RAISE EXCEPTION 'provider calls missing'; END IF;
- BEGIN PERFORM tanaghom.record_creative_provider_call(j,'intruder','fal-ai','x',NULL,'text_to_image',NULL,'{}',NULL,NULL,0,'started',NULL,NULL);
- RAISE EXCEPTION 'foreign recorder unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ c1 := tanaghom.begin_creative_provider_call(j,'worker-meter','fal-ai','fal-ai/flux/schnell',NULL,'text_to_image','{"megapixels":1}',0.003,'creative.providers.v1');
+ IF (SELECT attempt_no FROM tanaghom.creative_provider_calls WHERE id=c1)<>1 THEN RAISE EXCEPTION 'first attempt is not 1'; END IF;
+ IF (SELECT model_version FROM tanaghom.creative_provider_calls WHERE id=c1) IS NOT NULL THEN RAISE EXCEPTION 'unverified model version stored'; END IF;
+ IF (SELECT adapter_config_version FROM tanaghom.creative_provider_calls WHERE id=c1) IS DISTINCT FROM 'creative.providers.v1' THEN RAISE EXCEPTION 'adapter config revision missing'; END IF;
+ IF tanaghom.finish_creative_provider_call(c1,'worker-meter','fal-req-1',0.003,'succeeded',NULL,NULL)<>'succeeded' THEN RAISE EXCEPTION 'finish misreported'; END IF;
+ IF (SELECT count(*) FROM tanaghom.creative_provider_calls WHERE job_id=j)<>1 THEN RAISE EXCEPTION 'one execution must be one row'; END IF;
+ BEGIN PERFORM tanaghom.finish_creative_provider_call(c1,'worker-meter','fal-req-1',0.003,'succeeded',NULL,NULL);
+ RAISE EXCEPTION 'terminal rewrite unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%already terminal%' THEN RAISE; END IF; END;
+ c2 := tanaghom.begin_creative_provider_call(j,'worker-meter','fal-ai','fal-ai/flux/schnell',NULL,'text_to_image','{"megapixels":1}',0.003,'creative.providers.v1');
+ IF (SELECT attempt_no FROM tanaghom.creative_provider_calls WHERE id=c2)<>2 THEN RAISE EXCEPTION 'retry is not attempt 2'; END IF;
+ PERFORM tanaghom.finish_creative_provider_call(c2,'worker-meter',NULL,NULL,'failed','transient','flaky');
+ IF (SELECT count(*) FROM tanaghom.creative_provider_calls WHERE job_id=j)<>2 THEN RAISE EXCEPTION 'retry row missing'; END IF;
+ BEGIN PERFORM tanaghom.begin_creative_provider_call(j,'intruder','fal-ai','x',NULL,'text_to_image','{}',NULL,NULL);
+ RAISE EXCEPTION 'foreign begin unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
  IF SQLERRM NOT LIKE '%worker mismatch%' THEN RAISE; END IF; END;
- BEGIN PERFORM tanaghom.record_creative_provider_call(j,'worker-meter','fal-ai','x',NULL,'teleport',NULL,'{}',NULL,NULL,0,'started',NULL,NULL);
+ BEGIN PERFORM tanaghom.begin_creative_provider_call(j,'worker-meter','fal-ai','x',NULL,'teleport','{}',NULL,NULL);
  RAISE EXCEPTION 'bad operation unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
- IF SQLERRM NOT LIKE '%invalid provider call record%' THEN RAISE; END IF; END;
+ IF SQLERRM NOT LIKE '%invalid provider call begin%' THEN RAISE; END IF; END;
 END $$;
 
 -- Fidelity reviews append history and derive version status.

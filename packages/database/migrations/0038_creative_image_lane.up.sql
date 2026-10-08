@@ -29,6 +29,7 @@ CREATE TABLE tanaghom.creative_provider_calls (
  units jsonb NOT NULL DEFAULT '{}',
  estimated_cost_usd numeric(12,6) CHECK(estimated_cost_usd IS NULL OR estimated_cost_usd >= 0),
  actual_cost_usd numeric(12,6) CHECK(actual_cost_usd IS NULL OR actual_cost_usd >= 0),
+ adapter_config_version text CHECK(adapter_config_version IS NULL OR length(adapter_config_version) BETWEEN 1 AND 100),
  retry_count integer NOT NULL DEFAULT 0 CHECK(retry_count BETWEEN 0 AND 100),
  error_class text CHECK(error_class IS NULL OR error_class IN ('transient','deterministic','capacity','cancelled','policy','indeterminate')),
  error_message text CHECK(error_message IS NULL OR length(error_message) BETWEEN 1 AND 2000),
@@ -67,10 +68,13 @@ CREATE OR REPLACE FUNCTION tanaghom.guard_creative_asset_version() RETURNS trigg
  RETURN NEW;
 END $$;
 
--- Record a provider attempt. Callable by the executing worker identity and
--- the API service path; tenancy is resolved from the job row, never trusted
--- from the caller.
-CREATE FUNCTION tanaghom.record_creative_provider_call(p_job uuid,p_worker text,p_provider text,p_model text,p_model_version text,p_operation text,p_request_id text,p_units jsonb,p_est numeric,p_actual numeric,p_retries integer,p_status text,p_error_class text,p_error_message text)
+-- Provider attempt lifecycle: one real provider request = one attempt row.
+-- begin_creative_provider_call() allocates attempt N under the job-row lock
+-- (serialized per job) and returns the call id; finish_creative_provider_call()
+-- transitions that SAME row from started to terminal exactly once. Terminal
+-- rows are immutable to further finishes, so retries always allocate fresh
+-- attempt rows and indeterminate calls are never silently rewritten.
+CREATE FUNCTION tanaghom.begin_creative_provider_call(p_job uuid,p_worker text,p_provider text,p_model text,p_model_version text,p_operation text,p_units jsonb,p_est numeric,p_adapter_config text)
 RETURNS uuid LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
 DECLARE j tanaghom.creative_jobs%ROWTYPE; n integer; made uuid;
 BEGIN
@@ -79,27 +83,56 @@ BEGIN
   OR p_model IS NULL OR length(p_model) NOT BETWEEN 1 AND 200
   OR (p_model_version IS NOT NULL AND length(p_model_version) NOT BETWEEN 1 AND 200)
   OR p_operation NOT IN ('text_to_image','image_to_image','segment','relight','enhance','compose','tts','music','video','talking_head')
-  OR (p_request_id IS NOT NULL AND length(p_request_id) NOT BETWEEN 1 AND 300)
   OR p_units IS NULL OR jsonb_typeof(p_units)<>'object'
-  OR (p_est IS NOT NULL AND p_est < 0) OR (p_actual IS NOT NULL AND p_actual < 0)
-  OR p_retries IS NULL OR p_retries NOT BETWEEN 0 AND 100
-  OR p_status NOT IN ('started','succeeded','failed','cancelled','indeterminate')
-  OR (p_error_class IS NOT NULL AND p_error_class NOT IN ('transient','deterministic','capacity','cancelled','policy','indeterminate'))
-  OR (p_error_message IS NOT NULL AND length(p_error_message) NOT BETWEEN 1 AND 2000)
- THEN RAISE EXCEPTION 'invalid provider call record'; END IF;
- SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=p_job;
+  OR (p_est IS NOT NULL AND p_est < 0)
+  OR (p_adapter_config IS NOT NULL AND length(p_adapter_config) NOT BETWEEN 1 AND 100)
+ THEN RAISE EXCEPTION 'invalid provider call begin'; END IF;
+ SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=p_job FOR UPDATE;
  IF j.id IS NULL THEN RAISE EXCEPTION 'unknown creative job'; END IF;
  IF j.claimed_by IS DISTINCT FROM p_worker
   AND NOT (p_worker ~ '^[0-9a-f-]{36}$' AND EXISTS(SELECT 1 FROM tanaghom.app_users WHERE id=p_worker::uuid AND organization_id=j.organization_id AND kind='human' AND is_active AND accepted_at IS NOT NULL))
  THEN RAISE EXCEPTION 'creative worker mismatch'; END IF;
+ IF j.status NOT IN ('claimed','running') THEN RAISE EXCEPTION 'creative job not active'; END IF;
  SELECT coalesce(max(attempt_no),0)+1 INTO n FROM tanaghom.creative_provider_calls WHERE job_id=p_job;
- INSERT INTO tanaghom.creative_provider_calls(organization_id,job_id,attempt_no,provider,model,model_version,operation,provider_request_id,status,units,estimated_cost_usd,actual_cost_usd,retry_count,error_class,error_message,finished_at)
- VALUES(j.organization_id,p_job,n,p_provider,p_model,p_model_version,p_operation,p_request_id,p_status,p_units,p_est,p_actual,p_retries,p_error_class,p_error_message,
-  CASE WHEN p_status IN ('started') THEN NULL ELSE now() END)
+ INSERT INTO tanaghom.creative_provider_calls(organization_id,job_id,attempt_no,provider,model,model_version,operation,status,units,estimated_cost_usd,adapter_config_version)
+ VALUES(j.organization_id,p_job,n,p_provider,p_model,p_model_version,p_operation,'started',p_units,p_est,p_adapter_config)
  RETURNING id INTO made;
  INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
- VALUES(j.organization_id,p_job,'job_running',jsonb_build_object('provider',p_provider,'model',p_model,'operation',p_operation,'call_status',p_status),'success');
+ VALUES(j.organization_id,p_job,'job_running',jsonb_build_object('provider',p_provider,'model',p_model,'operation',p_operation,'attempt_no',n,'call_status','started'),'success');
  RETURN made;
+END $$;
+
+CREATE FUNCTION tanaghom.finish_creative_provider_call(p_call uuid,p_worker text,p_request_id text,p_actual numeric,p_status text,p_error_class text,p_error_message text)
+RETURNS text LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+DECLARE c tanaghom.creative_provider_calls%ROWTYPE; j tanaghom.creative_jobs%ROWTYPE;
+BEGIN
+ IF p_call IS NULL OR p_worker IS NULL OR length(p_worker) NOT BETWEEN 1 AND 200
+  OR (p_request_id IS NOT NULL AND length(p_request_id) NOT BETWEEN 1 AND 300)
+  OR (p_actual IS NOT NULL AND p_actual < 0)
+  OR p_status NOT IN ('succeeded','failed','cancelled','indeterminate')
+  OR (p_error_class IS NOT NULL AND p_error_class NOT IN ('transient','deterministic','capacity','cancelled','policy','indeterminate'))
+  OR (p_error_message IS NOT NULL AND length(p_error_message) NOT BETWEEN 1 AND 2000)
+ THEN RAISE EXCEPTION 'invalid provider call finish'; END IF;
+ SELECT * INTO c FROM tanaghom.creative_provider_calls WHERE id=p_call FOR UPDATE;
+ IF c.id IS NULL THEN RAISE EXCEPTION 'unknown provider call'; END IF;
+ IF c.status<>'started' THEN RAISE EXCEPTION 'provider attempt already terminal'; END IF;
+ SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=c.job_id;
+ IF j.claimed_by IS DISTINCT FROM p_worker
+  AND NOT (p_worker ~ '^[0-9a-f-]{36}$' AND EXISTS(SELECT 1 FROM tanaghom.app_users WHERE id=p_worker::uuid AND organization_id=j.organization_id AND kind='human' AND is_active AND accepted_at IS NOT NULL))
+ THEN RAISE EXCEPTION 'creative worker mismatch'; END IF;
+ IF p_request_id IS NOT NULL AND c.provider_request_id IS NOT NULL AND c.provider_request_id IS DISTINCT FROM p_request_id
+ THEN RAISE EXCEPTION 'provider request mismatch'; END IF;
+ UPDATE tanaghom.creative_provider_calls
+    SET provider_request_id=coalesce(provider_request_id,p_request_id),actual_cost_usd=p_actual,
+        status=p_status,error_class=p_error_class,error_message=p_error_message,finished_at=now()
+  WHERE id=p_call;
+ INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
+ VALUES(c.organization_id,c.job_id,'job_running',jsonb_build_object('provider',c.provider,'model',c.model,'operation',c.operation,'attempt_no',c.attempt_no,'call_status',p_status),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ SELECT j.correlation_id,j.requested_by,'creative.provider_call_finished','creative_job',c.job_id,
+  jsonb_build_object('provider',c.provider,'model',c.model,'operation',c.operation,'attempt_no',c.attempt_no,'status',p_status),
+  CASE WHEN p_status IN ('succeeded') THEN 'success' ELSE 'failed' END;
+ RETURN p_status;
 END $$;
 
 -- Fidelity review append + derived status. Approval gating itself stays on
@@ -151,11 +184,13 @@ END $$;
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA tanaghom FROM PUBLIC;
 GRANT SELECT ON tanaghom.creative_provider_calls, tanaghom.creative_fidelity_reviews TO tanaghom_api, tanaghom_readonly;
 GRANT EXECUTE ON FUNCTION
- tanaghom.record_creative_provider_call(uuid,text,text,text,text,text,text,jsonb,numeric,numeric,integer,text,text,text),
+ tanaghom.begin_creative_provider_call(uuid,text,text,text,text,text,jsonb,numeric,text),
+ tanaghom.finish_creative_provider_call(uuid,text,text,numeric,text,text,text),
  tanaghom.record_creative_fidelity_review(uuid,uuid,jsonb,text,text)
 TO tanaghom_api;
 GRANT EXECUTE ON FUNCTION
- tanaghom.record_creative_provider_call(uuid,text,text,text,text,text,text,jsonb,numeric,numeric,integer,text,text,text),
+ tanaghom.begin_creative_provider_call(uuid,text,text,text,text,text,jsonb,numeric,text),
+ tanaghom.finish_creative_provider_call(uuid,text,text,numeric,text,text,text),
  tanaghom.latest_creative_provider_call(uuid,text,text)
 TO tanaghom_creative_worker;
 

@@ -108,14 +108,85 @@ export function createHttpImageAdapter({ name, endpoint, apiKey, model, modelVer
   });
 }
 
-export async function downloadArtifact({ url, maxBytes = MAX_RESPONSE_BYTES, timeoutMs = 120000, fetchImpl = fetch }) {
-  if (!/^https?:\/\//.test(url ?? "")) {
-    throw new ProviderAdapterError("deterministic", "provider artifact URL is not http(s)");
+export function validateArtifactUrl(url, { allowedOrigins = [], testLoopback = false } = {}) {
+  let parsed;
+  try {
+    parsed = new URL(url ?? "");
+  } catch {
+    throw new ProviderAdapterError("deterministic", "provider artifact URL is malformed");
   }
+  if (parsed.protocol !== "https:" && parsed.protocol !== "http:") {
+    throw new ProviderAdapterError("deterministic", "provider artifact URL scheme must be http(s)");
+  }
+  if (parsed.username || parsed.password) {
+    throw new ProviderAdapterError("deterministic", "provider artifact URL must not carry credentials");
+  }
+  const host = parsed.hostname.toLowerCase();
+  if (!host) throw new ProviderAdapterError("deterministic", "provider artifact URL has no host");
+  if (isBlockedAddress(host) && !(testLoopback && isLoopbackHost(host))) {
+    throw new ProviderAdapterError("deterministic", "provider artifact host is not retrievable");
+  }
+  const allowlisted = (allowedOrigins ?? []).some((origin) => {
+    const candidate = String(origin).toLowerCase();
+    return host === candidate || host.endsWith(`.${candidate}`);
+  });
+  if (!allowlisted && !(testLoopback && isLoopbackHost(host))) {
+    throw new ProviderAdapterError("deterministic", "provider artifact host is not allowlisted");
+  }
+  if (parsed.protocol !== "https:" && !(testLoopback && isLoopbackHost(host))) {
+    throw new ProviderAdapterError("deterministic", "provider artifact URL must be https");
+  }
+  return { host, protocol: parsed.protocol };
+}
+
+function isLoopbackHost(host) {
+  return host === "localhost" || host === "127.0.0.1" || host === "::1";
+}
+
+function isBlockedAddress(host) {
+  if (isLoopbackHost(host)) return true;
+  if (/^\d+\.\d+\.\d+\.\d+$/.test(host)) {
+    const [a, b] = host.split(".").map(Number);
+    if (a === 10) return true;
+    if (a === 172 && b >= 16 && b <= 31) return true;
+    if (a === 192 && b === 168) return true;
+    if (a === 169 && b === 254) return true;
+    if (a === 0) return true;
+    return false;
+  }
+  if (host.includes(":")) {
+    const lower = host.toLowerCase();
+    return lower === "::" || lower.startsWith("fe80:") || lower.startsWith("fec0:") || lower.startsWith("fc00:") || lower.startsWith("fd");
+  }
+  return false;
+}
+
+async function fetchValidatedArtifact({ url, options, redirectBudget = 3 }) {
+  validateArtifactUrl(url, options);
+  const response = await options.fetchImpl(url, { ...(options.init ?? {}), redirect: "manual" });
+  if (response.status >= 300 && response.status < 400) {
+    if (redirectBudget <= 0) {
+      throw new ProviderAdapterError("deterministic", "provider artifact redirect chain too long");
+    }
+    const location = response.headers?.get?.("location");
+    if (!location) throw new ProviderAdapterError("deterministic", "provider artifact redirect has no location");
+    return fetchValidatedArtifact({ url: new URL(location, url).toString(), options, redirectBudget: redirectBudget - 1 });
+  }
+  return response;
+}
+
+export async function downloadArtifact({ url, maxBytes = MAX_RESPONSE_BYTES, timeoutMs = 120000, fetchImpl = fetch, allowedOrigins = [], testLoopback = false }) {
+  validateArtifactUrl(url, { allowedOrigins, testLoopback });
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
-    const response = await fetchImpl(url, { signal: controller.signal });
+    const response = await fetchValidatedArtifact({
+      url,
+      options: {
+        fetchImpl, allowedOrigins, testLoopback,
+        init: { signal: controller.signal },
+      },
+    });
     if (!response.ok) throw new ProviderAdapterError("transient", `artifact download failed (${response.status})`);
     const buffer = Buffer.from(await response.arrayBuffer());
     if (buffer.length === 0 || buffer.length > maxBytes) {

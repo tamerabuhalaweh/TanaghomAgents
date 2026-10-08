@@ -321,15 +321,21 @@ try {
     ledger.push({ ...entry, at: new Date().toISOString() });
     console.log(`LEDGER ${JSON.stringify(ledger[ledger.length - 1])}`);
   }
-  async function recordCall(jobId, actor, fields) {
-    const result = await worker.query(
-      `SELECT tanaghom.record_creative_provider_call($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14) AS id`,
+  async function beginCall(db, jobId, actor, fields) {
+    const result = await db.query(
+      `SELECT tanaghom.begin_creative_provider_call($1,$2,$3,$4,$5,$6,$7,$8,$9) AS id`,
       [jobId, actor, fields.provider, fields.model, fields.modelVersion ?? null, fields.operation,
-        fields.requestId ?? null, JSON.stringify(fields.units ?? {}),
-        fields.est ?? null, fields.actual ?? null, fields.retries ?? 0,
-        fields.status, fields.errorClass ?? null, fields.errorMessage ?? null],
+        JSON.stringify(fields.units ?? {}), fields.est ?? null, fields.adapterConfig ?? null],
     );
     return result.rows[0].id;
+  }
+  async function finishCall(db, callId, actor, fields) {
+    const result = await db.query(
+      `SELECT tanaghom.finish_creative_provider_call($1,$2,$3,$4,$5,$6,$7) AS status`,
+      [callId, actor, fields.requestId ?? null, fields.actual ?? null, fields.status,
+        fields.errorClass ?? null, fields.errorMessage ?? null],
+    );
+    return result.rows[0].status;
   }
   async function priorTerminalCall(jobId, operation, actor = "e2e-image-worker") {
     const existing = await worker.query(
@@ -353,15 +359,17 @@ try {
       const jobParams = expectedParams.get(targetId) ?? { prompt: "fallback", width: 512, height: 512 };
       const adapter = httpImage.createHttpImageAdapter({
         name: "stub-schnell", endpoint: `${providerOrigin}/fal-ai/flux/schnell`, apiKey: "stub-key",
-        model: "fal-ai/flux/schnell", modelVersion: "schnell-20260414", timeoutMs: 30000,
+        model: "fal-ai/flux/schnell", modelVersion: null, timeoutMs: 30000,
       });
-      await recordCall(targetId, "e2e-image-worker", {
-        provider: "stub-schnell", model: "fal-ai/flux/schnell", modelVersion: "schnell-20260414",
-        operation: "text_to_image", units: { megapixels: 1 }, est: 0.003, status: "started",
+      const callId = await beginCall(worker, targetId, "e2e-image-worker", {
+        provider: "stub-schnell", model: "fal-ai/flux/schnell", modelVersion: null,
+        operation: "text_to_image", units: { megapixels: 1 }, est: 0.003, adapterConfig: "creative.providers.v1",
       });
       const startedAt = Date.now();
       const generated = await adapter.execute({ prompt: jobParams.prompt, width: jobParams.width ?? 512, height: jobParams.height ?? 512, variants: 1 });
-      const downloaded = await httpImage.downloadArtifact({ url: generated.images[0].url });
+      const downloaded = await httpImage.downloadArtifact({
+        url: generated.images[0].url, allowedOrigins: [], testLoopback: true,
+      });
       assert.ok(downloaded.bytes.length > 0);
       const probed = await sharpPipe.probeImage(downloaded.bytes);
       assert.equal(probed.format, "png");
@@ -373,10 +381,8 @@ try {
           keysMod.sha256Hex(downloaded.bytes), `${keyBase}.png`,
           JSON.stringify({ adapter: "stub-schnell", provider_request_id: generated.requestId })],
       ).then((r) => r.rows[0].id);
-      await recordCall(targetId, "e2e-image-worker", {
-        provider: "stub-schnell", model: "fal-ai/flux/schnell", modelVersion: "schnell-20260414",
-        operation: "text_to_image", requestId: generated.requestId, units: { megapixels: 1 },
-        est: 0.003, actual: 0.003, status: "succeeded",
+      await finishCall(worker, callId, "e2e-image-worker", {
+        requestId: generated.requestId, actual: 0.003, status: "succeeded",
       });
       const done = await worker.query(`SELECT tanaghom.complete_creative_job($1,'e2e-image-worker',$2,1) AS s`, [targetId, versionId]);
       assert.equal(done.rows[0].s, "succeeded");
@@ -384,7 +390,9 @@ try {
     }
     console.log("PASS provider-path execution with provenance, cost, storage");
 
-    // Fault matrix: timeout, 429, malformed, empty.
+    // Fault matrix: timeout, 429, malformed, empty. Re-asserts the worker
+    // role explicitly: earlier phases release their client.
+    await worker.query("SET ROLE tanaghom_creative_worker");
     const faultCases = [
       { fault: "slow", timeoutMs: 300, errorClass: "indeterminate", terminal: "policy", label: "timeout" },
       { fault: "rate_limit", timeoutMs: 10000, errorClass: "capacity", terminal: "requeued", label: "rate_limit" },
@@ -407,6 +415,10 @@ try {
       });
       const before = providerHits[faultCase.fault] ?? 0;
       let outcome;
+      const faultCallId = await beginCall(worker, faultJobId, "e2e-fault-worker", {
+        provider: `stub-${faultCase.fault}`, model: "fal-ai/flux/schnell", modelVersion: null,
+        operation: "text_to_image", units: {}, est: 0, adapterConfig: "creative.providers.v1",
+      });
       try {
         await adapter.execute({ prompt: "x", width: 256, height: 256, variants: 1 });
         assert.fail(`fault ${faultCase.label} unexpectedly succeeded`);
@@ -414,9 +426,8 @@ try {
         assert.equal(error.errorClass, faultCase.errorClass, faultCase.label);
         outcome = error;
       }
-      await recordCall(faultJobId, "e2e-fault-worker", {
-        provider: `stub-${faultCase.fault}`, model: "fal-ai/flux/schnell", operation: "text_to_image",
-        units: {}, status: faultCase.errorClass === "indeterminate" ? "indeterminate" : "failed",
+      await finishCall(worker, faultCallId, "e2e-fault-worker", {
+        status: faultCase.errorClass === "indeterminate" ? "indeterminate" : "failed",
         errorClass: faultCase.errorClass, errorMessage: outcome.message.slice(0, 200),
       });
       if (faultCase.errorClass === "indeterminate") {
@@ -442,6 +453,40 @@ try {
       }
     }
     console.log("PASS fault classification without blind retry");
+
+    // Concurrent begins against one job serialize to distinct attempts.
+    const raceSubmit = await postJson("/api/creative/generations", owner,
+      { capability: "image", prompt: "race", width: 256, height: 256, variants: 1, idempotency_key: randomUUID(), correlation_id: randomUUID() }, "e2e-race-1");
+    assert.equal(raceSubmit.status, 200);
+    const raceJobId = (await raceSubmit.json()).job_ids[0];
+    await worker.query(`SELECT * FROM tanaghom.claim_creative_job('gpu_image','e2e-race-worker',120)`);
+    await worker.query(`SELECT tanaghom.mark_creative_job_running($1,'e2e-race-worker')`, [raceJobId]);
+    const raceA = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+    const raceB = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+    try {
+      await raceA.query("SET ROLE tanaghom_creative_worker");
+      await raceB.query("SET ROLE tanaghom_creative_worker");
+      const [ra, rb] = await Promise.allSettled([
+        raceA.query(`SELECT tanaghom.begin_creative_provider_call($1,'e2e-race-worker','stub','m',NULL,'text_to_image','{}',NULL,'creative.providers.v1') AS id`, [raceJobId]),
+        raceB.query(`SELECT tanaghom.begin_creative_provider_call($1,'e2e-race-worker','stub','m',NULL,'text_to_image','{}',NULL,'creative.providers.v1') AS id`, [raceJobId]),
+      ]);
+      assert.equal(ra.status, "fulfilled");
+      assert.equal(rb.status, "fulfilled");
+      const attempts = await pool.query(`SELECT attempt_no FROM tanaghom.creative_provider_calls WHERE job_id=$1 ORDER BY attempt_no`, [raceJobId]);
+      assert.deepEqual(attempts.rows.map((row) => row.attempt_no), [1, 2]);
+      // Terminal rows reject further finishes.
+      const firstId = ra.status === "fulfilled" ? ra.value.rows[0].id : null;
+      await worker.query(`SELECT tanaghom.finish_creative_provider_call($1,'e2e-race-worker',NULL,NULL,'failed','transient','x')`, [firstId]);
+      await assert.rejects(
+        worker.query(`SELECT tanaghom.finish_creative_provider_call($1,'e2e-race-worker',NULL,NULL,'failed','transient','x')`, [firstId]),
+        /already terminal/,
+      );
+    } finally {
+      await raceA.end();
+      await raceB.end();
+    }
+    await worker.query(`SELECT tanaghom.fail_creative_job($1,'e2e-race-worker','cancelled','race cleanup',0)`, [raceJobId]);
+    console.log("PASS attempt allocation serializes; terminal rows immutable");
   } finally {
     await worker.query("RESET ROLE").catch(() => {});
     worker.release();
@@ -522,10 +567,11 @@ try {
     assert.equal(done.rows[0].s, "succeeded");
     ledgerLine({ case_id: "prd-medium-01", kind: "product_scene", provider: "local-sharp", preset: "marble", output_bytes: scene.bytes.length, latency_ms: Date.now() - t0, cost_usd: 0, result: "succeeded", fidelity: "not_reviewed" });
     async function recordCallDirect(jobId, op, bytes, ms) {
-      await productWorker.query(
-        `SELECT tanaghom.record_creative_provider_call($1,'e2e-product-worker','local-sharp','sharp-0.35.5',NULL,$2,NULL,$3,NULL,NULL,0,'succeeded',NULL,NULL)`,
-        [jobId, op, JSON.stringify({ bytes })],
-      );
+      const callId = await beginCall(productWorker, jobId, "e2e-product-worker", {
+        provider: "local-sharp", model: "sharp", modelVersion: null,
+        operation: op, units: { bytes }, est: 0, adapterConfig: "local-sharp/builtin",
+      });
+      await finishCall(productWorker, callId, "e2e-product-worker", { actual: 0, status: "succeeded" });
       void ms;
     }
     console.log("PASS product scene execution with provenance");

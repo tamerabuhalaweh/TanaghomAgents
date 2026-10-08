@@ -8,6 +8,7 @@
     { "id": "prd-medium-01", "kind": "product_scene", "preset": "marble", "complexity": "medium", "notes": "Logo plus short label text" },
     { "id": "prd-hard-01", "kind": "product_scene", "preset": "outdoor_lifestyle", "complexity": "hard", "notes": "Small package text plus distinctive markings" },
     { "id": "relight-01", "kind": "relight", "preset": "office_studio", "notes": "Brightness/saturation modulation recorded" },
+    { "id": "seg-chroma-01", "kind": "segment", "method": "chroma-key", "notes": "Solid-background cutout via local pipeline; ML segmentation tracked separately" },
     { "id": "scene-swap-01", "kind": "scene_replace", "preset": "wood", "notes": "Same foreground, new background" },
     { "id": "neg-timeout-01", "kind": "negative", "fault": "timeout", "notes": "Provider stub delays beyond timeout; caller must classify indeterminate" },
     { "id": "neg-429-01", "kind": "negative", "fault": "rate_limit", "notes": "429 maps to capacity, never silent" },
