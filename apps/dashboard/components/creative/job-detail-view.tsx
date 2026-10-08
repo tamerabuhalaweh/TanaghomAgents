@@ -6,6 +6,23 @@ import { useState } from "react";
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 
+interface ProviderCallRow {
+  provider: string;
+  model: string;
+  model_version: string | null;
+  operation: string;
+  provider_request_id: string | null;
+  status: string;
+  started_at: string;
+  finished_at: string | null;
+  units: unknown;
+  estimated_cost_usd: string | null;
+  actual_cost_usd: string | null;
+  retry_count: number;
+  error_class: string | null;
+  attempt_no: number;
+}
+
 interface JobDetail {
   job_id: string;
   capability: string;
@@ -35,7 +52,7 @@ interface TimelineEntry {
 
 export function JobDetailView({ locale, dir, jobId }: { locale: CreativeLocale; dir: "rtl" | "ltr"; jobId: string }) {
   const role = useSessionRole();
-  const detail = useCreativeFetch<{ job: JobDetail; timeline: { transitions: TimelineEntry[]; events: TimelineEntry[] } }>(locale, `/api/creative/jobs/${jobId}`);
+  const detail = useCreativeFetch<{ job: JobDetail; timeline: { transitions: TimelineEntry[]; events: TimelineEntry[] }; provider_calls: ProviderCallRow[] }>(locale, `/api/creative/jobs/${jobId}`);
   const [notice, setNotice] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const canOperate = role === "owner" || role === "operator";
@@ -80,6 +97,25 @@ export function JobDetailView({ locale, dir, jobId }: { locale: CreativeLocale; 
               </div>
             )}
             {notice && <div className="creative-notice" role="status"><p>{notice}</p></div>}
+            <h2>{t(locale, "jobs.provider")}</h2>
+            {!detail.data.provider_calls.length ? <p>{t(locale, "overview.empty")}</p> : (
+              <div className="creative-table-scroll">
+                <table>
+                  <thead><tr><th>provider</th><th>model</th><th>op</th><th>status</th><th>{t(locale, "jobs.cost")}</th></tr></thead>
+                  <tbody>
+                    {detail.data.provider_calls.map((call, index) => (
+                      <tr key={index}>
+                        <td>{call.provider}</td>
+                        <td dir="ltr">{call.model}{call.model_version ? ` (${call.model_version})` : ""}</td>
+                        <td>{call.operation} · #{call.attempt_no}</td>
+                        <td>{call.status}{call.error_class ? ` (${call.error_class})` : ""}</td>
+                        <td dir="ltr">est {call.estimated_cost_usd ?? "—"} / act {call.actual_cost_usd ?? "—"}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
             <h2>{t(locale, "jobs.timeline")}</h2>
             <div className="creative-table-scroll">
               <table>

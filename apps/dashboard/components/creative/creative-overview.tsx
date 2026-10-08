@@ -37,6 +37,8 @@ export function CreativeOverview({ locale, dir }: { locale: CreativeLocale; dir:
         <li className="creative-card"><h2>{t(locale, "nav.assets")}</h2><Link href="/creative/assets">{t(locale, "overview.assets")}</Link></li>
         <li className="creative-card"><h2>{t(locale, "nav.brands")}</h2><Link href="/creative/brand-kits">{t(locale, "nav.brands")}</Link></li>
         <li className="creative-card"><h2>{t(locale, "nav.templates")}</h2><Link href="/creative/templates">{t(locale, "nav.templates")}</Link></li>
+        <li className="creative-card"><h2>{t(locale, "generate.title")}</h2><Link href="/creative/generate">{t(locale, "generate.title")}</Link></li>
+        <li className="creative-card"><h2>{t(locale, "product.title")}</h2><Link href="/creative/product">{t(locale, "product.title")}</Link></li>
       </ul>
       <section aria-label={t(locale, "overview.jobs")}>
         <h2>{t(locale, "overview.jobs")}</h2>

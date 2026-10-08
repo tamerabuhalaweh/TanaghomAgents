@@ -1,0 +1,24 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/creative/fidelity-review.v1.schema.json",
+  "title": "Creative fidelity review v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "asset_version_id", "overall", "checklist"],
+  "properties": {
+    "contract_version": { "const": "creative.fidelity-review.v1" },
+    "asset_version_id": { "type": "string", "format": "uuid" },
+    "overall": { "enum": ["passed", "failed", "not_reviewed"] },
+    "checklist": {
+      "type": "object", "additionalProperties": false,
+      "properties": {
+        "logo": { "enum": ["pass", "fail", "unreviewed"] },
+        "package_text": { "enum": ["pass", "fail", "unreviewed"] },
+        "shape": { "enum": ["pass", "fail", "unreviewed"] },
+        "proportions": { "enum": ["pass", "fail", "unreviewed"] },
+        "primary_colors": { "enum": ["pass", "fail", "unreviewed"] },
+        "markings": { "enum": ["pass", "fail", "unreviewed"] }
+      }
+    },
+    "override_reason": { "type": ["string", "null"], "minLength": 1, "maxLength": 2000 }
+  }
+}

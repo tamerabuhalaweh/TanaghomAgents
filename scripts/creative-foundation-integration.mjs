@@ -121,13 +121,14 @@ const workerPool = new pg.Pool({ connectionString: databaseUrl, max: 2 });
 let dashboard;
 try {
   migrate();
-  // Unused-state down/up cycle for the newest migration (0036's own cycle
-  // was proven pre-0037; with 0037 applied, cycling 0036 would violate its
-  // exact-0035 baseline guard by design).
-  await pool.query(readFileSync("packages/database/migrations/0037_creative_studio_management.down.sql", "utf8"));
-  console.log("PASS unused 0037 down");
-  await pool.query(readFileSync("packages/database/migrations/0037_creative_studio_management.up.sql", "utf8"));
-  console.log("PASS unused 0037 up");
+  // Unused-state down/up cycle for the newest migration, whatever it is at
+  // this head: hardcoding a version here broke the moment a later migration
+  // landed (its exact-baseline guard then correctly refuses).
+  const latestMigration = (await pool.query(`SELECT max(version) AS v FROM public.schema_migrations`)).rows[0].v;
+  await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.down.sql`, "utf8"));
+  console.log(`PASS unused ${latestMigration} down`);
+  await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.up.sql`, "utf8"));
+  console.log(`PASS unused ${latestMigration} up`);
   psqlFile("packages/database/tests/creative_foundation.sql");
   psqlFile("packages/database/tests/creative_studio.sql");
   psqlFile("packages/database/seeds/staging.sql");

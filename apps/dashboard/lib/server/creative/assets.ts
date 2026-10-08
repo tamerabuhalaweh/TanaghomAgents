@@ -97,7 +97,7 @@ export async function getCreativeAssetVersion(request: NextRequest, versionId: s
               version.width, version.height, version.duration_ms, version.bytes,
               version.sha256, version.object_key, version.thumb_key,
               version.provenance, version.prompt_ref, version.template_ref,
-              version.method, version.status, version.created_at,
+              version.method, version.status, version.fidelity_status, version.created_at,
               asset.capability, asset.organization_id
          FROM tanaghom.creative_asset_versions version
          JOIN tanaghom.creative_assets asset ON asset.id = version.asset_id
@@ -123,13 +123,8 @@ interface DecisionInput {
   feedback: string | null;
 }
 
-async function decisionInput(request: NextRequest): Promise<DecisionInput> {
-  let body: unknown;
-  try {
-    body = await request.json();
-  } catch {
-    throw new CreativeJobRequestError("invalid_json", 400);
-  }
+async function decisionInput(raw: unknown): Promise<DecisionInput> {
+  const body = raw;
   if (!body || typeof body !== "object") throw new CreativeJobRequestError("invalid_decision", 400);
   const record = body as Record<string, unknown>;
   if (record.decision !== "approved" && record.decision !== "rejected") {
@@ -147,9 +142,15 @@ export async function decideCreativeAssetVersion(request: NextRequest, versionId
     requireCreativeStudio();
     enforceSameOriginForCookieMutation(request);
     assertUuid(versionId, "invalid_version_id");
+    let raw: unknown;
+    try {
+      raw = await request.json();
+    } catch {
+      throw new CreativeJobRequestError("invalid_json", 400);
+    }
     const [user, input] = await Promise.all([
       authorize(request, ["owner", "reviewer"]),
-      decisionInput(request),
+      decisionInput(raw),
     ]);
     const headerKey = idempotencyKey(request);
     const requestHash = `sha256:${createHash("sha256").update(JSON.stringify({ version_id: versionId, ...input, headerKey })).digest("hex")}`;
@@ -166,8 +167,8 @@ export async function decideCreativeAssetVersion(request: NextRequest, versionId
       let status: string;
       // Reuse the originating job's correlation so the decision shares the
       // job trace instead of forking a new one. Org-scoped: foreign versions 404.
-      const lineage = await client.query<{ correlation_id: string }>(
-        `SELECT job.correlation_id
+      const lineage = await client.query<{ correlation_id: string; fidelity_status: string }>(
+        `SELECT job.correlation_id, version.fidelity_status
            FROM tanaghom.creative_asset_versions version
            JOIN tanaghom.creative_assets asset ON asset.id = version.asset_id
            JOIN tanaghom.creative_jobs job ON job.id = version.job_id
@@ -176,6 +177,16 @@ export async function decideCreativeAssetVersion(request: NextRequest, versionId
       );
       if (!lineage.rows[0]) throw new CreativeJobRequestError("version_not_found", 404);
       const correlationId = lineage.rows[0].correlation_id as string;
+      // Fidelity gate: a failed product variant cannot become approved
+      // without an explicit owner override reason, which is audited.
+      let overrideReason: string | null = null;
+      if (input.decision === "approved" && lineage.rows[0].fidelity_status === "failed") {
+        const rawOverride = (raw as Record<string, unknown>).fidelity_override_reason;
+        if (user.role !== "owner" || typeof rawOverride !== "string" || !rawOverride.trim() || rawOverride.trim().length > 2000) {
+          throw new CreativeJobRequestError("fidelity_override_required", 409);
+        }
+        overrideReason = rawOverride.trim();
+      }
       try {
         const decided = await client.query<{ status: string }>(
           `SELECT tanaghom.decide_creative_asset_version($1,$2,$3,$4) AS status`,
@@ -202,7 +213,7 @@ export async function decideCreativeAssetVersion(request: NextRequest, versionId
            correlation_id, actor_user_id, action_type, entity_type, entity_id, payload, result
          ) VALUES ($1, $2, $3, 'creative_asset_version', $4, $5::jsonb, 'success')`,
         [correlationId, user.id, `creative.asset_${input.decision}`, versionId,
-          JSON.stringify({ decision: input.decision, feedback: input.feedback })],
+          JSON.stringify({ decision: input.decision, feedback: input.feedback, fidelity_override_reason: overrideReason })],
       );
       await completeIdempotency(client, slot.reservation_id, 200, responseBody);
       await client.query("COMMIT");

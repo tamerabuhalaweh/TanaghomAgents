@@ -1,0 +1,37 @@
+{
+  "contract_version": "creative.providers.v1",
+  "adapters": {
+    "http-image": {
+      "kind": "http",
+      "description": "Keyed HTTP image provider (fal.ai schnell primary). No credentials in repo; key arrives via environment at runtime.",
+      "allowlist": [
+        {
+          "provider": "fal-ai",
+          "model": "fal-ai/flux/schnell",
+          "model_version": null,
+          "adapter_config_version": "creative.providers.v1",
+          "endpoint": "https://fal.run/fal-ai/flux/schnell",
+          "artifact_origins": ["fal.media"],
+          "weights_license": "Apache-2.0",
+          "weights_lineage": "FLUX.1-schnell (verified 2026-10-08; no date-suffixed provider version is published, so none is recorded)",
+          "commercial": true,
+          "unit": "megapixel",
+          "unit_price_usd": 0.003,
+          "timeout_ms": 120000,
+          "max_bytes": 8388608,
+          "operations": ["text_to_image"]
+        }
+      ],
+      "blocked": [
+        { "model": "fal-ai/flux/dev", "reason": "FLUX.1-dev weights are non-commercial licensed; API use inherits vendor terms — not allowlisted without explicit commercial review" }
+      ]
+    },
+    "local-sharp": {
+      "kind": "local",
+      "description": "Deterministic CPU pipeline (sharp): composite, relight-lite, enhance. No model weights, no network, no credentials.",
+      "operations": ["compose", "relight", "enhance"],
+      "timeout_ms": 60000,
+      "max_bytes": 10485760
+    }
+  }
+}

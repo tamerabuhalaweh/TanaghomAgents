@@ -1,0 +1,40 @@
+{
+  "contract_version": "creative.image-presets.v1",
+  "presets": [
+    {
+      "code": "clean_white",
+      "display": "Clean white",
+      "background": { "kind": "solid", "color": "#ffffff" },
+      "relight": { "brightness": 1.05, "saturation": 1.0 },
+      "output": { "width": 1024, "height": 1024, "format": "png" }
+    },
+    {
+      "code": "marble",
+      "display": "Marble",
+      "background": { "kind": "gradient", "from": "#f5f3ef", "to": "#d9d4cb", "angle": 135 },
+      "relight": { "brightness": 1.0, "saturation": 1.05 },
+      "output": { "width": 1024, "height": 1024, "format": "png" }
+    },
+    {
+      "code": "wood",
+      "display": "Wood",
+      "background": { "kind": "gradient", "from": "#c8a97e", "to": "#8a6844", "angle": 90 },
+      "relight": { "brightness": 0.98, "saturation": 1.08 },
+      "output": { "width": 1024, "height": 1024, "format": "png" }
+    },
+    {
+      "code": "office_studio",
+      "display": "Office studio",
+      "background": { "kind": "gradient", "from": "#e8edf2", "to": "#b9c4d0", "angle": 180 },
+      "relight": { "brightness": 1.02, "saturation": 1.0 },
+      "output": { "width": 1024, "height": 1024, "format": "png" }
+    },
+    {
+      "code": "outdoor_lifestyle",
+      "display": "Outdoor lifestyle",
+      "background": { "kind": "gradient", "from": "#bfe3f0", "to": "#7fb069", "angle": 180 },
+      "relight": { "brightness": 1.08, "saturation": 1.12 },
+      "output": { "width": 1024, "height": 1024, "format": "png" }
+    }
+  ]
+}

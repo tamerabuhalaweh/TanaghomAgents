@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://tanaghom.test/contracts/creative/image-generation-request.v1.schema.json",
+  "title": "Creative image generation request v1",
+  "type": "object", "additionalProperties": false,
+  "required": ["contract_version", "prompt", "capability"],
+  "properties": {
+    "contract_version": { "const": "creative.image-generation-request.v1" },
+    "capability": { "enum": ["image", "product_shoot"] },
+    "prompt": { "type": "string", "minLength": 1, "maxLength": 4000 },
+    "width": { "type": "integer", "minimum": 256, "maximum": 2048, "default": 1024 },
+    "height": { "type": "integer", "minimum": 256, "maximum": 2048, "default": 1024 },
+    "variants": { "type": "integer", "minimum": 1, "maximum": 4, "default": 1 },
+    "preset": { "type": ["string", "null"], "minLength": 1, "maxLength": 80 },
+    "source_version_id": { "type": ["string", "null"], "format": "uuid" },
+    "brand_kit_version_id": { "type": ["string", "null"], "format": "uuid" },
+    "idempotency_key": { "type": "string", "format": "uuid" },
+    "correlation_id": { "type": "string", "format": "uuid" }
+  }
+}
