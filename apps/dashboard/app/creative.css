@@ -1,0 +1,190 @@
+/* Creative Studio styles. Direction comes from the dir attribute set per
+   locale; layout uses logical properties so RTL needs no overrides. Arabic
+   text uses a system Arabic-capable stack (no webfont downloads). */
+
+.creative-page {
+  font-family: var(--font-inter), Inter, "Segoe UI", Tahoma, "Noto Kufi Arabic",
+    "Noto Naskh Arabic", "Amiri", "Cairo", "Tajawal", ui-sans-serif, system-ui, sans-serif;
+  padding-inline: 1.25rem;
+  padding-block: 1.25rem;
+  max-inline-size: 72rem;
+  margin-inline: auto;
+}
+
+.creative-page :lang(ar) {
+  font-family: "Segoe UI", Tahoma, "Noto Kufi Arabic", "Noto Naskh Arabic",
+    "Amiri", "Cairo", "Tajawal", var(--font-inter), Inter, sans-serif;
+  letter-spacing: normal;
+}
+
+.creative-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin-block-end: 1rem;
+}
+
+.creative-head h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.creative-lede {
+  color: var(--muted-foreground, #5b6472);
+  margin-block: 0.25rem 0;
+}
+
+.creative-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(16rem, 1fr));
+  gap: 0.75rem;
+  padding: 0;
+  list-style: none;
+}
+
+.creative-card {
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 0.75rem;
+  padding: 0.9rem 1rem;
+  background: var(--card, #fff);
+}
+
+.creative-card h2,
+.creative-card h3 {
+  margin-block: 0 0.35rem;
+  font-size: 1.05rem;
+}
+
+.creative-meta {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 0.2rem 0.75rem;
+  font-size: 0.9rem;
+  margin-block: 0.5rem;
+}
+
+.creative-meta dt {
+  color: var(--muted-foreground, #5b6472);
+}
+
+.creative-meta dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.creative-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+  margin-block-start: 0.6rem;
+}
+
+.creative-form {
+  display: grid;
+  gap: 0.6rem;
+  max-inline-size: 34rem;
+  margin-block: 1rem;
+}
+
+.creative-form label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.creative-form input,
+.creative-form select,
+.creative-form textarea {
+  font: inherit;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 0.5rem;
+  background: var(--background, #fff);
+  color: inherit;
+  inline-size: 100%;
+}
+
+.creative-form textarea {
+  min-block-size: 5rem;
+  resize: vertical;
+}
+
+.creative-button {
+  font: inherit;
+  padding: 0.5rem 0.9rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border, #cbd5e1);
+  background: var(--primary, #0f766e);
+  color: #fff;
+  cursor: pointer;
+  inline-size: fit-content;
+}
+
+.creative-button[disabled] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.creative-button-secondary {
+  background: transparent;
+  color: inherit;
+}
+
+.creative-notice {
+  border: 1px solid var(--border, #e2e8f0);
+  border-inline-start: 4px solid var(--primary, #0f766e);
+  border-radius: 0.5rem;
+  padding: 0.6rem 0.8rem;
+  margin-block: 0.75rem;
+  font-size: 0.92rem;
+}
+
+.creative-error {
+  border-inline-start-color: #dc2626;
+}
+
+.creative-preview {
+  max-inline-size: 100%;
+  block-size: auto;
+  border-radius: 0.5rem;
+  border: 1px solid var(--border, #e2e8f0);
+}
+
+.creative-table-scroll {
+  overflow-x: auto;
+}
+
+.creative-table-scroll table {
+  border-collapse: collapse;
+  inline-size: 100%;
+  font-size: 0.9rem;
+}
+
+.creative-table-scroll th,
+.creative-table-scroll td {
+  text-align: start;
+  padding: 0.45rem 0.6rem;
+  border-block-end: 1px solid var(--border, #e2e8f0);
+  vertical-align: top;
+}
+
+.creative-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: end;
+  margin-block-end: 0.75rem;
+}
+
+@media (max-width: 40rem) {
+  .creative-page {
+    padding-inline: 0.75rem;
+  }
+
+  .creative-head h1 {
+    font-size: 1.25rem;
+  }
+}

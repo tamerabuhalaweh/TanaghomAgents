@@ -186,6 +186,35 @@ export async function enqueueCreativeJob(request: NextRequest) {
   }
 }
 
+export async function listCreativeJobs(request: NextRequest) {
+  try {
+    requireCreativeStudio();
+    const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
+    const status = request.nextUrl.searchParams.get("status") || "";
+    if (status && !["queued", "claimed", "running", "succeeded", "failed", "cancelled", "expired"].includes(status)) {
+      throw new CreativeJobRequestError("invalid_status", 400);
+    }
+    const result = await database().query(
+      `SELECT id AS job_id, capability, lane, status, attempt, max_attempts,
+              correlation_id, cancel_requested, error_class, created_at, updated_at
+         FROM tanaghom.creative_jobs
+        WHERE organization_id = $1 AND ($2::text IS NULL OR status = $2)
+        ORDER BY created_at DESC
+        LIMIT 50`,
+      [user.organizationId, status || null],
+    );
+    return noStore({ jobs: result.rows });
+  } catch (error) {
+    if (error instanceof CreativeJobRequestError) {
+      return noStore({ error: error.code }, { status: error.status });
+    }
+    if (error instanceof CreativeDisabledError) {
+      return noStore({ error: "creative_studio_disabled" }, { status: 503 });
+    }
+    throw error;
+  }
+}
+
 export async function getCreativeJob(request: NextRequest, jobId: string) {
   try {
     requireCreativeStudio();
@@ -200,7 +229,22 @@ export async function getCreativeJob(request: NextRequest, jobId: string) {
       [jobId, user.organizationId],
     );
     if (!result.rows[0]) return noStore({ error: "job_not_found" }, { status: 404 });
-    return noStore({ job: result.rows[0] });
+    const job = result.rows[0] as Record<string, unknown>;
+    const transitions = await database().query(
+      `SELECT from_status, to_status, actor_kind, actor_ref, reason, created_at
+         FROM tanaghom.creative_job_transitions
+        WHERE job_id = $1 AND organization_id = $2
+        ORDER BY created_at ASC, id ASC`,
+      [jobId, user.organizationId],
+    );
+    const events = await database().query(
+      `SELECT action, payload, result, created_at
+         FROM tanaghom.creative_events
+        WHERE job_id = $1 AND organization_id = $2
+        ORDER BY created_at ASC, id ASC`,
+      [jobId, user.organizationId],
+    );
+    return noStore({ job, timeline: { transitions: transitions.rows, events: events.rows } });
   } catch (error) {
     if (error instanceof CreativeJobRequestError) {
       return noStore({ error: error.code }, { status: error.status });

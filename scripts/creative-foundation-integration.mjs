@@ -25,6 +25,7 @@ const dashboardOrigin = `http://127.0.0.1:${dashboardPort}`;
 const OWNER_SUBJECT = "90000000-0000-4000-8000-000000000001";
 const REVIEWER_SUBJECT = "90000000-0000-4000-8000-000000000011";
 const VIEWER_SUBJECT = "90000000-0000-4000-8000-000000000012";
+const OPERATOR_SUBJECT = "90000000-0000-4000-8000-000000000013";
 const ORGB_OWNER_SUBJECT = "90000000-0000-4000-8000-000000000021";
 const ORG_B_ID = "81000000-0000-4000-8000-000000000001";
 const { privateKey, publicKey } = await generateKeyPair("RS256");
@@ -34,6 +35,7 @@ const subjects = {
   "owner@example.test": OWNER_SUBJECT,
   "reviewer@example.test": REVIEWER_SUBJECT,
   "viewer@example.test": VIEWER_SUBJECT,
+  "operator@example.test": OPERATOR_SUBJECT,
   "orgb-owner@example.test": ORGB_OWNER_SUBJECT,
 };
 
@@ -119,12 +121,15 @@ const workerPool = new pg.Pool({ connectionString: databaseUrl, max: 2 });
 let dashboard;
 try {
   migrate();
-  // Unused-state 0036 down/up cycle, mirroring the workspace 0035 pattern.
-  await pool.query(readFileSync("packages/database/migrations/0036_creative_foundation.down.sql", "utf8"));
-  console.log("PASS unused 0036 down");
-  await pool.query(readFileSync("packages/database/migrations/0036_creative_foundation.up.sql", "utf8"));
-  console.log("PASS unused 0036 up");
+  // Unused-state down/up cycle for the newest migration (0036's own cycle
+  // was proven pre-0037; with 0037 applied, cycling 0036 would violate its
+  // exact-0035 baseline guard by design).
+  await pool.query(readFileSync("packages/database/migrations/0037_creative_studio_management.down.sql", "utf8"));
+  console.log("PASS unused 0037 down");
+  await pool.query(readFileSync("packages/database/migrations/0037_creative_studio_management.up.sql", "utf8"));
+  console.log("PASS unused 0037 up");
   psqlFile("packages/database/tests/creative_foundation.sql");
+  psqlFile("packages/database/tests/creative_studio.sql");
   psqlFile("packages/database/seeds/staging.sql");
   // Extra users for role/tenant API coverage (seed provides the owner).
   await pool.query(
@@ -136,9 +141,10 @@ try {
     `INSERT INTO tanaghom.app_users (id, organization_id, email, display_name, kind, role, auth_subject, accepted_at) VALUES
      ('00000000-0000-4000-8000-000000000011', '10000000-0000-4000-8000-000000000001', 'reviewer@example.test', 'Creative Reviewer', 'human', 'reviewer', $1, now()),
      ('00000000-0000-4000-8000-000000000012', '10000000-0000-4000-8000-000000000001', 'viewer@example.test', 'Creative Viewer', 'human', 'viewer', $2, now()),
-     ('00000000-0000-4000-8000-000000000021', $3, 'orgb-owner@example.test', 'Org B Owner', 'human', 'owner', $4, now())
+     ('00000000-0000-4000-8000-000000000013', '10000000-0000-4000-8000-000000000001', 'operator@example.test', 'Creative Operator', 'human', 'operator', $3, now()),
+     ('00000000-0000-4000-8000-000000000021', $4, 'orgb-owner@example.test', 'Org B Owner', 'human', 'owner', $5, now())
      ON CONFLICT (id) DO NOTHING`,
-    [REVIEWER_SUBJECT, VIEWER_SUBJECT, ORG_B_ID, ORGB_OWNER_SUBJECT],
+    [REVIEWER_SUBJECT, VIEWER_SUBJECT, OPERATOR_SUBJECT, ORG_B_ID, ORGB_OWNER_SUBJECT],
   );
 
   authServer.listen(authPort, "127.0.0.1");
@@ -194,6 +200,7 @@ try {
   const owner = await bearer(OWNER_SUBJECT);
   const reviewer = await bearer(REVIEWER_SUBJECT);
   const viewer = await bearer(VIEWER_SUBJECT);
+  const operator = await bearer(OPERATOR_SUBJECT);
   const orgBOwner = await bearer(ORGB_OWNER_SUBJECT);
 
   const anonymous = await fetch(`${dashboardOrigin}/api/creative/jobs/00000000-0000-4000-8000-000000000001`);
@@ -344,6 +351,219 @@ try {
   );
   assert.deepEqual(cancelTraces.rows.map((row) => row.c), [cancelJobCorr]);
   console.log("PASS correlation continuity across enqueue, worker, cancel, and decisions");
+
+  // ---- P1b: brand kits ----
+  async function postJson(path, headers, body, key) {
+    return fetch(`${dashboardOrigin}${path}`, {
+      method: "POST",
+      headers: { ...headers, "Content-Type": "application/json", "Idempotency-Key": key },
+      body: JSON.stringify(body),
+    });
+  }
+  const kitCreate = await postJson("/api/creative/brand-kits", owner,
+    { name: "E2E Kit", colors: { primary: "#0ea5e9" }, tone: "Calm" }, "e2e-kit-1");
+  assert.equal(kitCreate.status, 200);
+  const kitId = (await kitCreate.json()).kit_id;
+  for (const [headers, name, expected] of [[reviewer, "reviewer", 403], [operator, "operator", 403], [viewer, "viewer", 403]]) {
+    const denied = await postJson("/api/creative/brand-kits", headers, { name: `Nope ${name}` }, `e2e-kit-deny-${name}`);
+    assert.equal(denied.status, expected, `brand create ${name}`);
+  }
+  const kitVersion = await postJson(`/api/creative/brand-kits/${kitId}/versions`, owner, { colors: { primary: "#111111" } }, "e2e-kitver-1");
+  assert.equal(kitVersion.status, 200);
+  const kitCurrent = await postJson(`/api/creative/brand-kits/${kitId}/current`, owner, { version: 2 }, "e2e-kitcur-1");
+  assert.equal(kitCurrent.status, 200);
+  assert.equal((await kitCurrent.json()).current_version, 2);
+  const kitCurrentBad = await postJson(`/api/creative/brand-kits/${kitId}/current`, owner, { version: 9 }, "e2e-kitcur-2");
+  assert.equal(kitCurrentBad.status, 404);
+  const kitCross = await fetch(`${dashboardOrigin}/api/creative/brand-kits/${kitId}`, { headers: orgBOwner });
+  assert.equal(kitCross.status, 404);
+  const kitList = await fetch(`${dashboardOrigin}/api/creative/brand-kits`, { headers: reviewer });
+  assert.equal(kitList.status, 200);
+  assert.ok((await kitList.json()).kits.length >= 1);
+  console.log("PASS brand-kit lifecycle, roles, tenant isolation");
+
+  // ---- P1b: templates ----
+  const tplCreate = await postJson("/api/creative/templates", owner,
+    { kind: "ad", name: "e2e-promo", spec: { headline: "Go" } }, "e2e-tpl-1");
+  assert.equal(tplCreate.status, 200);
+  const templateId = (await tplCreate.json()).template_id;
+  const tplSameNameOtherOrg = await postJson("/api/creative/templates", orgBOwner,
+    { kind: "ad", name: "e2e-promo", spec: { headline: "Go B" } }, "e2e-tpl-2");
+  assert.equal(tplSameNameOtherOrg.status, 200);
+  const tplGlobalAttempt = await postJson("/api/creative/templates", owner,
+    { kind: "ad", name: "e2e-global-sneak", spec: { headline: "Mine" }, global: true }, "e2e-tpl-global");
+  assert.equal(tplGlobalAttempt.status, 400);
+  assert.equal((await tplGlobalAttempt.json()).error, "global_templates_read_only");
+  const globalRow = await pool.query(
+    `SELECT id::text AS id FROM tanaghom.creative_templates WHERE organization_id IS NULL LIMIT 1`,
+  );
+  assert.ok(globalRow.rows[0]);
+  const tplGlobalToggle = await postJson(`/api/creative/templates/${globalRow.rows[0].id}/active`, owner, { active: false }, "e2e-tpl-global-toggle");
+  assert.equal(tplGlobalToggle.status, 403);
+  for (const [headers, name] of [[reviewer, "reviewer"], [operator, "operator"]]) {
+    const denied = await postJson("/api/creative/templates", headers, { kind: "ad", name: `nope-${name}`, spec: {} }, `e2e-tpl-deny-${name}`);
+    assert.equal(denied.status, 403, `template create ${name}`);
+  }
+  const tplBadSpec = await postJson("/api/creative/templates", owner, { kind: "ad", name: "bad", spec: [1] }, "e2e-tpl-3");
+  assert.equal(tplBadSpec.status, 400);
+  const tplOff = await postJson(`/api/creative/templates/${templateId}/active`, owner, { active: false }, "e2e-tpl-4");
+  assert.equal(tplOff.status, 200);
+  assert.equal((await tplOff.json()).is_active, false);
+  const tplCross = await postJson(`/api/creative/templates/${templateId}/active`, orgBOwner, { active: true }, "e2e-tpl-5");
+  assert.equal(tplCross.status, 403);
+  console.log("PASS template lifecycle, tenant-safe naming, roles");
+
+  // ---- P1b: version-allocation races serialize (Fix 5) ----
+  const raceKit = await postJson("/api/creative/brand-kits", owner, { name: `Race Kit ${Date.now()}` }, "e2e-race-kit");
+  assert.equal(raceKit.status, 200);
+  const raceKitId = (await raceKit.json()).kit_id;
+  const raceA = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  const raceB = new pg.Pool({ connectionString: databaseUrl, max: 1 });
+  try {
+    const [r1, r2] = await Promise.allSettled([
+      raceA.query(`SELECT tanaghom.create_brand_kit_version('00000000-0000-4000-8000-000000000001',$1,'{"a":1}') AS id`, [raceKitId]),
+      raceB.query(`SELECT tanaghom.create_brand_kit_version('00000000-0000-4000-8000-000000000001',$1,'{"b":2}') AS id`, [raceKitId]),
+    ]);
+    assert.equal(r1.status, "fulfilled");
+    assert.equal(r2.status, "fulfilled");
+    const kitVersions = await pool.query(`SELECT version FROM tanaghom.brand_kit_versions WHERE kit_id=$1 ORDER BY version`, [raceKitId]);
+    assert.deepEqual(kitVersions.rows.map((row) => row.version), [1, 2, 3]);
+    const raceName = `race-tpl-${Date.now()}`;
+    const [t1, t2] = await Promise.allSettled([
+      raceA.query(`SELECT tanaghom.create_creative_template('00000000-0000-4000-8000-000000000001','ad',$1,'{"x":1}') AS id`, [raceName]),
+      raceB.query(`SELECT tanaghom.create_creative_template('00000000-0000-4000-8000-000000000001','ad',$1,'{"x":2}') AS id`, [raceName]),
+    ]);
+    assert.equal(t1.status, "fulfilled");
+    assert.equal(t2.status, "fulfilled");
+    const tplVersions = await pool.query(
+      `SELECT version FROM tanaghom.creative_templates WHERE organization_id='10000000-0000-4000-8000-000000000001' AND kind='ad' AND name=$1 ORDER BY version`, [raceName]);
+    assert.deepEqual(tplVersions.rows.map((row) => row.version), [1, 2]);
+  } finally {
+    await raceA.end();
+    await raceB.end();
+  }
+  console.log("PASS concurrent version allocation serializes");
+
+  // ---- P1b: secure uploads + private preview ----
+  const { renameSync, existsSync } = await import("node:fs");
+  const { createHash: nodeHash } = await import("node:crypto");
+  const { join: joinPath } = await import("node:path");
+  const png1x1 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "base64");
+  const pngSha = nodeHash("sha256").update(png1x1).digest("hex");
+  async function uploadFile({ headers, key, bytes, filename, mime, title }) {
+    const form = new FormData();
+    form.set("file", new File([bytes], filename, { type: mime }), filename);
+    if (title !== undefined) form.set("title", title);
+    return fetch(`${dashboardOrigin}/api/creative/uploads`, {
+      method: "POST", headers: { ...headers, "Idempotency-Key": key }, body: form,
+    });
+  }
+  const anonUpload = await uploadFile({ headers: {}, key: "e2e-up-0", bytes: png1x1, filename: "a.png", mime: "image/png" });
+  assert.equal(anonUpload.status, 401);
+  for (const [headers, name] of [[viewer, "viewer"], [reviewer, "reviewer"]]) {
+    const denied = await uploadFile({ headers, key: `e2e-up-deny-${name}`, bytes: png1x1, filename: "a.png", mime: "image/png" });
+    assert.equal(denied.status, 403, `upload ${name}`);
+  }
+  const uploaded = await uploadFile({ headers: operator, key: "e2e-up-1", bytes: png1x1, filename: "source.png", mime: "image/png", title: "E2E upload صورة" });
+  assert.equal(uploaded.status, 200);
+  const uploadedBody = await uploaded.json();
+  assert.equal(uploadedBody.sha256, pngSha);
+  assert.match(uploadedBody.object_key, /^t\/10000000-0000-4000-8000-000000000001\/image\//);
+  const uploadVersionId = uploadedBody.version_id;
+  const uploadAssetId = uploadedBody.asset_id;
+  const storedOrg = await pool.query(`SELECT organization_id::text AS o FROM tanaghom.creative_assets WHERE id=$1`, [uploadAssetId]);
+  assert.equal(storedOrg.rows[0].o, "10000000-0000-4000-8000-000000000001");
+  const replayedUpload = await uploadFile({ headers: operator, key: "e2e-up-1", bytes: png1x1, filename: "source.png", mime: "image/png", title: "E2E upload صورة" });
+  assert.equal(replayedUpload.status, 200);
+  assert.equal(replayedUpload.headers.get("idempotency-replayed"), "true");
+  assert.equal((await replayedUpload.json()).version_id, uploadVersionId);
+  // Attack shapes: spoofed mime, GIF, oversized, malformed, traversal filename.
+  const jpegMagicText = Buffer.concat([Buffer.from([0xff, 0xd8, 0xff, 0x00]), Buffer.from("not-an-image")]);
+  const spoofed = await uploadFile({ headers: owner, key: "e2e-up-2", bytes: jpegMagicText, filename: "x.png", mime: "image/png" });
+  assert.equal(spoofed.status, 415);
+  const gif = await uploadFile({ headers: owner, key: "e2e-up-3", bytes: Buffer.from("GIF89a..."), filename: "x.gif", mime: "image/gif" });
+  assert.equal(gif.status, 415);
+  const big = await uploadFile({ headers: owner, key: "e2e-up-4", bytes: Buffer.alloc(11 * 1024 * 1024, 7), filename: "big.png", mime: "image/png" });
+  assert.equal(big.status, 413);
+  const malformed = await uploadFile({ headers: owner, key: "e2e-up-5", bytes: Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a]), Buffer.from("garbage")]), filename: "x.png", mime: "image/png" });
+  assert.equal(malformed.status, 415);
+  const traversal = await uploadFile({ headers: owner, key: "e2e-up-6", bytes: png1x1, filename: "../../evil.png", mime: "image/png" });
+  assert.equal(traversal.status, 200);
+  assert.doesNotMatch((await traversal.json()).object_key, /\.\./);
+  console.log("PASS upload authorization, validation, idempotency, tenant keys");
+
+  const previewAnon = await fetch(`${dashboardOrigin}/api/creative/assets/versions/${uploadVersionId}/preview`);
+  assert.equal(previewAnon.status, 401);
+  const previewCross = await fetch(`${dashboardOrigin}/api/creative/assets/versions/${uploadVersionId}/preview`, { headers: orgBOwner });
+  assert.equal(previewCross.status, 404);
+  const preview = await fetch(`${dashboardOrigin}/api/creative/assets/versions/${uploadVersionId}/preview`, { headers: owner });
+  assert.equal(preview.status, 200);
+  assert.match(preview.headers.get("content-type") ?? "", /image\/png/);
+  assert.deepEqual(Buffer.from(await preview.arrayBuffer()), png1x1);
+  const uploadKey = uploadedBody.object_key;
+  const uploadPath = joinPath(process.cwd(), "tmp", "creative-uploads", ...uploadKey.split("/"));
+  const hiddenPath = `${uploadPath}.hidden-e2e`;
+  renameSync(uploadPath, hiddenPath);
+  try {
+    const missing = await fetch(`${dashboardOrigin}/api/creative/assets/versions/${uploadVersionId}/preview`, { headers: owner });
+    assert.equal(missing.status, 410);
+  } finally {
+    renameSync(hiddenPath, uploadPath);
+  }
+  assert.ok(existsSync(uploadPath));
+  console.log("PASS private preview (auth, tenant, bytes, missing-artifact)");
+  assert.equal(preview.headers.get("x-content-type-options"), "nosniff");
+
+  // Failure injection AFTER the storage write: no orphan bytes may remain.
+  const { readdirSync: readDirSync, statSync } = await import("node:fs");
+  function uploadFileCount() {
+    const root = joinPath(process.cwd(), "tmp", "creative-uploads");
+    let count = 0;
+    const walk = (dir) => {
+      for (const entry of readDirSync(dir, { withFileTypes: true })) {
+        const full = joinPath(dir, entry.name);
+        if (entry.isDirectory()) walk(full);
+        else if (statSync(full).isFile()) count += 1;
+      }
+    };
+    try { walk(root); } catch { return count; }
+    return count;
+  }
+  await pool.query(`CREATE OR REPLACE FUNCTION tmp_fail_upload_jobs() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'injected upload failure'; END $$;`);
+  await pool.query(`CREATE TRIGGER tmp_fail_upload_jobs BEFORE INSERT ON tanaghom.creative_jobs FOR EACH ROW WHEN (NEW.params->>'upload' = 'true') EXECUTE FUNCTION tmp_fail_upload_jobs();`);
+  const filesBefore = uploadFileCount();
+  try {
+    const injected = await uploadFile({ headers: owner, key: "e2e-up-inject", bytes: png1x1, filename: "inject.png", mime: "image/png" });
+    assert.equal(injected.status, 503);
+    assert.equal(uploadFileCount(), filesBefore);
+  } finally {
+    await pool.query(`DROP TRIGGER tmp_fail_upload_jobs ON tanaghom.creative_jobs`);
+    await pool.query(`DROP FUNCTION tmp_fail_upload_jobs()`);
+  }
+  console.log("PASS post-write failure leaves no orphan bytes");
+
+  // Stored HTML is never served inline on the dashboard origin.
+  const htmlAsset = await pool.query(
+    `INSERT INTO tanaghom.creative_assets(organization_id, capability, title) VALUES ('10000000-0000-4000-8000-000000000001','landing_page','HTML probe') RETURNING id`);
+  const htmlAssetId = htmlAsset.rows[0].id;
+  const htmlVersion = await pool.query(
+    `INSERT INTO tanaghom.creative_asset_versions(asset_id, version, job_id, mime, bytes, sha256, object_key, method)
+     VALUES ($1, 1, $2, 'text/html', 100, $3, $4, 'mock') RETURNING id`,
+    [htmlAssetId, gateJobId, "f".repeat(64),
+      `t/10000000-0000-4000-8000-000000000001/landing_page/${htmlAssetId}/v1.html`]);
+  const htmlPreview = await fetch(
+    `${dashboardOrigin}/api/creative/assets/versions/${htmlVersion.rows[0].id}/preview`, { headers: owner });
+  assert.equal(htmlPreview.status, 415);
+  assert.equal((await htmlPreview.json()).error, "preview_not_supported");
+  console.log("PASS HTML preview refused");
+
+  // ---- P1b: browser journeys (EN/AR, desktop/mobile, roles) ----
+  const { runCreativeStudioBrowser } = await import("./creative-studio-browser.mjs");
+  await runCreativeStudioBrowser({
+    dashboardOrigin,
+    mintToken: (subject) => accessToken(subject),
+    subjects: { owner: OWNER_SUBJECT, reviewer: REVIEWER_SUBJECT, viewer: VIEWER_SUBJECT, operator: OPERATOR_SUBJECT },
+  });
 
   // Used-state 0036 down refuses; the migration stays applied.
   try {
