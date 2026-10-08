@@ -19,6 +19,7 @@ import {
   BookOpenCheck,
   UsersRound,
   ShieldCheck,
+  Palette,
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
@@ -33,6 +34,7 @@ const primaryNavigation = [
   { href: "/approvals", label: "Approvals", icon: CheckCheck },
   { href: "/actions", label: "Agent actions", icon: ClipboardCheck },
   { href: "/content", label: "Content", icon: LibraryBig },
+  { href: "/creative", label: "Creative Studio", icon: Palette },
   { href: "/knowledge", label: "Knowledge", icon: BookOpenCheck },
   { href: "/agents", label: "Agents", icon: Bot },
   { href: "/leads", label: "Leads", icon: ContactRound },

@@ -53,6 +53,39 @@ export async function listCreativeAssets(request: NextRequest) {
   }
 }
 
+export async function getCreativeAsset(request: NextRequest, assetId: string) {
+  try {
+    requireCreativeStudio();
+    assertUuid(assetId, "invalid_asset_id");
+    const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
+    const asset = await database().query(
+      `SELECT id AS asset_id, capability, title, originating_job_id, created_at
+         FROM tanaghom.creative_assets
+        WHERE id = $1 AND organization_id = $2`,
+      [assetId, user.organizationId],
+    );
+    if (!asset.rows[0]) return noStore({ error: "asset_not_found" }, { status: 404 });
+    const versions = await database().query(
+      `SELECT id AS asset_version_id, version, parent_version_id, job_id, title,
+              mime, width, height, duration_ms, bytes, sha256, thumb_key,
+              prompt_ref, template_ref, method, status, created_at
+         FROM tanaghom.creative_asset_versions
+        WHERE asset_id = $1
+        ORDER BY version ASC`,
+      [assetId],
+    );
+    return noStore({ asset: asset.rows[0], versions: versions.rows });
+  } catch (error) {
+    if (error instanceof CreativeJobRequestError) {
+      return noStore({ error: error.code }, { status: error.status });
+    }
+    if (error instanceof CreativeDisabledError) {
+      return noStore({ error: "creative_studio_disabled" }, { status: 503 });
+    }
+    throw error;
+  }
+}
+
 export async function getCreativeAssetVersion(request: NextRequest, versionId: string) {
   try {
     requireCreativeStudio();

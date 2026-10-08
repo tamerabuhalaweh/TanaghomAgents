@@ -649,6 +649,7 @@ jobs:
           cache: npm
       - run: npm ci
       - run: npm run build:dashboard
+      - run: npx playwright install --with-deps chromium
       - run: npm run test:creative-foundation
 
   phase3-workflow-integration:
