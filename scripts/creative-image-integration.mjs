@@ -180,11 +180,13 @@ const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
 const workerPool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
 let dashboard;
 try {
-  migrate();
-  await pool.query(readFileSync("packages/database/migrations/0038_creative_image_lane.down.sql", "utf8"));
-  console.log("PASS unused 0038 down");
-  await pool.query(readFileSync("packages/database/migrations/0038_creative_image_lane.up.sql", "utf8"));
-  console.log("PASS unused 0038 up");
+  // Unused-state down/up cycle for the newest migration, whatever it is at
+  // this head (see the foundation script for why this is not hardcoded).
+  const latestMigration = (await pool.query(`SELECT max(version) AS v FROM public.schema_migrations`)).rows[0].v;
+  await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.down.sql`, "utf8"));
+  console.log(`PASS unused ${latestMigration} down`);
+  await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.up.sql`, "utf8"));
+  console.log(`PASS unused ${latestMigration} up`);
   psqlFile("packages/database/tests/creative_image_lane.sql");
 
   await pool.query(
