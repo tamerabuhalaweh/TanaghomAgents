@@ -129,6 +129,39 @@ export async function getVideoSource(db, { jobId, worker, versionId }) {
   return one(result.rows)?.source ?? null;
 }
 
+// Segmentation-lane controlled readers. Same EXECUTE-only contract.
+export async function claimSegmentJob(db, { worker, leaseSeconds = 120 }) {
+  const result = await db.query(
+    `SELECT * FROM tanaghom.claim_creative_segment_job($1,$2)`,
+    [worker, leaseSeconds],
+  );
+  return one(result.rows);
+}
+
+export async function getSegmentInput(db, { jobId, worker }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_segment_input($1,$2) AS input`,
+    [jobId, worker],
+  );
+  return one(result.rows)?.input ?? null;
+}
+
+export async function getSegmentSource(db, { jobId, worker, versionId }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_segment_source($1,$2,$3) AS source`,
+    [jobId, worker, versionId],
+  );
+  return one(result.rows)?.source ?? null;
+}
+
+export async function getSegmentState(db, { jobId, worker }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_segment_state($1,$2) AS state`,
+    [jobId, worker],
+  );
+  return one(result.rows)?.state ?? null;
+}
+
 export async function beginProviderCall(db, input) {
   const {
     jobId, worker, provider, model, modelVersion = null, operation,

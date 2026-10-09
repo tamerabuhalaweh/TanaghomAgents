@@ -1,0 +1,19 @@
+{
+  "contract_version": "creative.segmentation-evaluation.v1",
+  "engine": "local-deterministic",
+  "cases": [
+    { "id": "seg-plain-01", "fixture": "plain-backdrop", "notes": "Simple product on plain background; expect near-complete silhouette" },
+    { "id": "seg-dark-01", "fixture": "dark-on-dark", "notes": "Dark object on dark background; known-hard for threshold engines" },
+    { "id": "seg-white-01", "fixture": "white-on-white", "notes": "White object on white background; known-hard for threshold engines" },
+    { "id": "seg-translucent-01", "fixture": "translucent-packaging", "notes": "Translucent packaging; alpha handling under review" },
+    { "id": "seg-reflective-01", "fixture": "reflective-packaging", "notes": "Reflective gradient packaging; highlight leakage under review" },
+    { "id": "seg-thin-01", "fixture": "thin-edges", "notes": "Thin 6px edges; erosion must not erase them" },
+    { "id": "seg-hair-01", "fixture": "hair-fine-edges", "notes": "Hair-like fine edges; local engine is approximate, BiRefNet target" },
+    { "id": "seg-shadow-01", "fixture": "product-shadow", "notes": "Product with cast shadow; shadow should mostly drop out" },
+    { "id": "seg-hand-01", "fixture": "hand-held", "notes": "Product held by a hand-shape; hand inclusion is acceptable, document it" },
+    { "id": "seg-clutter-01", "fixture": "cluttered-background", "notes": "Cluttered background; leakage expected, document extent" },
+    { "id": "seg-ar-pack-01", "fixture": "arabic-packaging", "notes": "Arabic-style packaging bands; RGB preservation proves text safety by construction" },
+    { "id": "seg-en-pack-01", "fixture": "english-packaging", "notes": "English-style packaging bands; RGB preservation proves text safety by construction" }
+  ],
+  "human_columns": ["mask", "cutout", "edge_quality", "missing_product_regions", "leaked_background_regions", "packaging_text_preserved", "latency_ms", "device", "model_version", "human_review_result"]
+}
