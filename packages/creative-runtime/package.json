@@ -14,11 +14,14 @@
     "./adapters/local-sharp": "./adapters/local-sharp.mjs",
     "./storage/keys": "./storage/keys.mjs",
     "./storage/test-adapter": "./storage/test-adapter.mjs",
+    "./storage/local-fs": "./storage/local-fs.mjs",
     "./storage/s3": "./storage/s3.mjs",
     "./render/document": {
       "types": "./render/document.d.ts",
       "default": "./render/document.mjs"
-    }
+    },
+    "./render/chromium": "./render/chromium.mjs",
+    "./render/worker": "./render/worker.mjs"
   },
   "dependencies": {
     "ajv": "^8.18.0",

@@ -105,7 +105,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
     return new Response(html, {
       status: 200,
-      headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store", "X-Content-Type-Options": "nosniff" },
+      headers: {
+        "Content-Type": "text/html; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Content-Type-Options": "nosniff",
+        // Defense in depth: the preview document is fully self-contained
+        // (data-URI fonts/images, inline styles). No network source is ever
+        // legitimate inside this response.
+        "Content-Security-Policy": "default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+      },
     });
   } catch (error) {
     if (error instanceof CreativeDisabledError) {

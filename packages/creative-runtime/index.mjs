@@ -10,4 +10,5 @@ export { mockAdapter, mockExecute, MOCK_ADAPTER_NAME } from './adapters/mock.mjs
 export { createHttpImageAdapter } from './adapters/http-image.mjs';
 export { localSharpAdapter } from './adapters/local-sharp.mjs';
 export { createTestStorage } from './storage/test-adapter.mjs';
+export { createLocalFsStorage } from './storage/local-fs.mjs';
 export { createS3Storage } from './storage/s3.mjs';

@@ -12,8 +12,16 @@ import { generateKeyPair, exportJWK, SignJWT } from "jose";
 import pg from "pg";
 import { readFileSync } from "node:fs";
 
+import { mkdtempSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
+
 const databaseUrl = process.env.DATABASE_TEST_URL;
 if (!databaseUrl) throw new Error("DATABASE_TEST_URL is required");
+
+// Private upload dir shared by the dashboard under test and the render
+// worker under test: uploads land here, exports land here, nothing leaves.
+const uploadDir = mkdtempSync(join(tmpdir(), "design-e2e-uploads-"));
 
 const authPort = 43321;
 const dashboardPort = 43322;
@@ -21,6 +29,7 @@ const authOrigin = `http://127.0.0.1:${authPort}`;
 const dashboardOrigin = `http://127.0.0.1:${dashboardPort}`;
 const OWNER_SUBJECT = "91000000-0000-4000-8000-000000000031";
 const OPERATOR_SUBJECT = "91000000-0000-4000-8000-000000000033";
+const REVIEWER_SUBJECT = "91000000-0000-4000-8000-000000000034";
 const VIEWER_SUBJECT = "91000000-0000-4000-8000-000000000032";
 const ORGB_OWNER_SUBJECT = "91000000-0000-4000-8000-000000000041";
 const ORG_B_ID = "82000000-0000-4000-8000-000000000041";
@@ -108,10 +117,11 @@ try {
     `INSERT INTO tanaghom.app_users (id, organization_id, email, display_name, kind, role, auth_subject, accepted_at) VALUES
      ('00000000-0000-4000-8000-000000000131', '10000000-0000-4000-8000-000000000001', 'design-owner@example.test', 'Design Owner', 'human', 'owner', $1, now()),
      ('00000000-0000-4000-8000-000000000133', '10000000-0000-4000-8000-000000000001', 'design-operator@example.test', 'Design Operator', 'human', 'operator', $2, now()),
-     ('00000000-0000-4000-8000-000000000132', '10000000-0000-4000-8000-000000000001', 'design-viewer@example.test', 'Design Viewer', 'human', 'viewer', $3, now()),
-     ('00000000-0000-4000-8000-000000000141', $4, 'orgb-owner@example.test', 'Org B Owner', 'human', 'owner', $5, now())
+     ('00000000-0000-4000-8000-000000000134', '10000000-0000-4000-8000-000000000001', 'design-reviewer@example.test', 'Design Reviewer', 'human', 'reviewer', $3, now()),
+     ('00000000-0000-4000-8000-000000000132', '10000000-0000-4000-8000-000000000001', 'design-viewer@example.test', 'Design Viewer', 'human', 'viewer', $4, now()),
+     ('00000000-0000-4000-8000-000000000141', $5, 'orgb-owner@example.test', 'Org B Owner', 'human', 'owner', $6, now())
      ON CONFLICT (id) DO NOTHING`,
-    [OWNER_SUBJECT, OPERATOR_SUBJECT, VIEWER_SUBJECT, ORG_B_ID, ORGB_OWNER_SUBJECT],
+    [OWNER_SUBJECT, OPERATOR_SUBJECT, REVIEWER_SUBJECT, VIEWER_SUBJECT, ORG_B_ID, ORGB_OWNER_SUBJECT],
   );
 
   authServer.listen(authPort, "127.0.0.1");
@@ -149,10 +159,11 @@ try {
   console.log("PASS design flags off by default");
   await stopDashboard();
 
-  await bootDashboard({ CREATIVE_STUDIO_ENABLED: "true", DESIGN_STUDIO_ENABLED: "true" });
+  await bootDashboard({ CREATIVE_STUDIO_ENABLED: "true", DESIGN_STUDIO_ENABLED: "true", CAROUSEL_BUILDER_ENABLED: "true", CREATIVE_UPLOAD_DIR: uploadDir });
   await pool.query(`UPDATE tanaghom.creative_controls SET enabled=true, emergency_stop=false, reason='Disposable design e2e'`);
   const owner = await bearer(OWNER_SUBJECT);
   const operator = await bearer(OPERATOR_SUBJECT);
+  const reviewer = await bearer(REVIEWER_SUBJECT);
   const viewer = await bearer(VIEWER_SUBJECT);
   const orgBOwner = await bearer(ORGB_OWNER_SUBJECT);
 
@@ -239,7 +250,163 @@ try {
   assert.match(html, /عرض اليوم/);
   assert.doesNotMatch(html, /<script/);
   assert.doesNotMatch(html, /https?:\/\//);
-  console.log("PASS design preview renders local-only HTML");
+  assert.match(preview.headers.get("content-security-policy") ?? "", /default-src 'none'/);
+  assert.match(preview.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
+  console.log("PASS design preview renders local-only HTML with restrictive CSP");
+
+  // Runtime export worker: the claimed ad render job executes through the
+  // Creative Runtime worker (never the preview HTTP route) with real
+  // Chromium capture, PNG validation, private storage, versioned asset
+  // persistence, and controlled completion.
+  const { executeDesignRenderJob } = await import("../packages/creative-runtime/render/worker.mjs");
+  const { capturePng } = await import("../packages/creative-runtime/render/chromium.mjs");
+  const { createLocalFsStorage } = await import("../packages/creative-runtime/storage/local-fs.mjs");
+  const { chromium } = await import("@playwright/test");
+  const workerStorage = createLocalFsStorage({ dir: uploadDir });
+  const workerNetwork = { attempted: 0, blocked: 0 };
+  async function offlineCapture({ html: pageHtml, width, height }) {
+    const shot = await capturePng({ chromium, html: pageHtml, width, height });
+    workerNetwork.attempted += shot.attemptedExternal;
+    workerNetwork.blocked += shot.blockedExternal;
+    return shot;
+  }
+  const adResult = await executeDesignRenderJob({
+    db: pool, storage: workerStorage, capture: offlineCapture,
+    jobId: job.job_id, worker: "worker-design-e2e",
+  });
+  assert.equal(adResult.slides.length, 1);
+  assert.equal(workerNetwork.attempted, 0);
+  const adJobRow = await pool.query(`SELECT status, output_asset_ids FROM tanaghom.creative_jobs WHERE id = $1`, [job.job_id]);
+  assert.equal(adJobRow.rows[0].status, "succeeded");
+  const adVersions = await pool.query(
+    `SELECT v.id, v.version, v.mime, v.width, v.height, v.bytes, v.sha256, v.object_key, v.status, v.provenance, a.id AS asset_id, a.capability
+       FROM tanaghom.creative_asset_versions v JOIN tanaghom.creative_assets a ON a.id = v.asset_id
+      WHERE v.job_id = $1 ORDER BY v.version`,
+    [job.job_id],
+  );
+  assert.equal(adVersions.rows.length, 1);
+  assert.equal(adVersions.rows[0].mime, "image/png");
+  assert.equal(adVersions.rows[0].width, 1080);
+  assert.equal(adVersions.rows[0].status, "draft");
+  assert.equal(adVersions.rows[0].provenance.page_index, 0);
+  assert.equal(adVersions.rows[0].provenance.design_version, 2);
+  assert.equal(adVersions.rows[0].provenance.correlation_id, job.correlation_id);
+  assert.match(adVersions.rows[0].provenance.font_sha256, /^[0-9a-f]{64}$/);
+  const storedAd = await workerStorage.get(adVersions.rows[0].object_key);
+  assert.ok(storedAd && storedAd.bytes.length > 8);
+  assert.equal(storedAd.bytes.subarray(0, 8).toString("hex"), "89504e470d0a1a0a");
+  const auditAd = await pool.query(
+    `SELECT count(*)::int AS n FROM tanaghom.agent_actions_log WHERE correlation_id = $1 AND action_type IN ('creative.job_succeeded','creative.asset_version_created')`,
+    [job.correlation_id],
+  );
+  assert.equal(auditAd.rows[0].n, 2);
+  console.log(JSON.stringify({
+    case_id: "render-ad-01", job_id: job.job_id, asset_id: adVersions.rows[0].asset_id,
+    version_id: adVersions.rows[0].id, sha256: adVersions.rows[0].sha256,
+    bytes: adVersions.rows[0].bytes, network_attempted: workerNetwork.attempted, result: "succeeded",
+  }));
+  console.log("PASS render worker persists ad export with provenance and audit");
+
+  // Reviewer approves the exported ad version; viewers cannot decide.
+  const approve = await postJson(`/api/creative/assets/versions/${adVersions.rows[0].id}/decision`, reviewer,
+    { decision: "approved" }, "e2e-design-approve");
+  assert.equal(approve.status, 200);
+  const approvedRow = await pool.query(`SELECT status FROM tanaghom.creative_asset_versions WHERE id = $1`, [adVersions.rows[0].id]);
+  assert.equal(approvedRow.rows[0].status, "approved");
+  const viewerDecide = await postJson(`/api/creative/assets/versions/${adVersions.rows[0].id}/decision`, viewer,
+    { decision: "rejected", feedback: "x" }, "e2e-design-viewer-decide");
+  assert.equal(viewerDecide.status, 403);
+  console.log("PASS reviewer approval path with role enforcement");
+
+  // Carousel render job: one job, six ordered slide outputs, one asset, one
+  // correlation lineage.
+  const carouselRenderedText = await (async () => {
+    const response = await postJson(`/api/creative/designs/a1000000-0000-4000-8000-000000000006/render`, operator,
+      { format: "1:1" }, "e2e-design-carousel-render");
+    const text = await response.text();
+    assert.equal(response.status, 200, text.slice(0, 300));
+    return text;
+  })();
+  const carouselJob = JSON.parse(carouselRenderedText);
+  const carouselClaimed = await pool.query(`SELECT * FROM tanaghom.claim_creative_job('cpu','worker-design-carousel',120)`);
+  assert.ok(carouselClaimed.rows.find((candidate) => candidate.job_id === carouselJob.job_id));
+  const carouselResult = await executeDesignRenderJob({
+    db: pool, storage: workerStorage, capture: offlineCapture,
+    jobId: carouselJob.job_id, worker: "worker-design-carousel",
+  });
+  assert.equal(carouselResult.slides.length, 6);
+  assert.equal(workerNetwork.attempted, 0);
+  const carouselVersions = await pool.query(
+    `SELECT v.id, v.version, v.provenance, a.id AS asset_id
+       FROM tanaghom.creative_asset_versions v JOIN tanaghom.creative_assets a ON a.id = v.asset_id
+      WHERE v.job_id = $1 ORDER BY v.version`,
+    [carouselJob.job_id],
+  );
+  assert.equal(carouselVersions.rows.length, 6);
+  assert.deepEqual(carouselVersions.rows.map((row) => row.provenance.page_index), [0, 1, 2, 3, 4, 5]);
+  assert.deepEqual(carouselVersions.rows.map((row) => row.asset_id), Array(6).fill(carouselVersions.rows[0].asset_id));
+  for (const row of carouselVersions.rows) {
+    assert.equal(row.provenance.correlation_id, carouselJob.correlation_id);
+    assert.equal(row.provenance.page_count, 6);
+  }
+  const carouselJobRow = await pool.query(`SELECT status FROM tanaghom.creative_jobs WHERE id = $1`, [carouselJob.job_id]);
+  assert.equal(carouselJobRow.rows[0].status, "succeeded");
+  console.log(JSON.stringify({
+    case_id: "render-carousel-01", job_id: carouselJob.job_id, asset_id: carouselVersions.rows[0].asset_id,
+    versions: carouselVersions.rows.length, network_attempted: workerNetwork.attempted, result: "succeeded",
+  }));
+  console.log("PASS carousel render persists ordered slides under one lineage");
+
+  // Reviewer rejects one carousel slide with feedback.
+  const reject = await postJson(`/api/creative/assets/versions/${carouselVersions.rows[1].id}/decision`, reviewer,
+    { decision: "rejected", feedback: "Slide two headline wraps poorly." }, "e2e-design-reject");
+  assert.equal(reject.status, 200);
+  const rejectedRow = await pool.query(`SELECT status FROM tanaghom.creative_asset_versions WHERE id = $1`, [carouselVersions.rows[1].id]);
+  assert.equal(rejectedRow.rows[0].status, "rejected");
+  console.log("PASS reviewer rejection path with feedback");
+
+  // Source-asset path: an uploaded private image becomes a design image node
+  // and renders through tenant-checked worker resolution.
+  const PNG_1X1 = Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==", "base64");
+  const uploadForm = new FormData();
+  uploadForm.set("file", new Blob([PNG_1X1], { type: "image/png" }), "source.png");
+  uploadForm.set("title", "design source");
+  const uploaded = await fetch(`${dashboardOrigin}/api/creative/uploads`, {
+    method: "POST", headers: { ...operator, "Idempotency-Key": "e2e-design-upload" }, body: uploadForm,
+  });
+  const uploadedText = await uploaded.text();
+  assert.equal(uploaded.status, 200, uploadedText.slice(0, 300));
+  const uploadBody = JSON.parse(uploadedText);
+  const imageSpec = {
+    kind: "ad", locale: "en", direction: "ltr",
+    canvas: { width: 1080, height: 1080 }, background: { color: "#ffffff" },
+    nodes: [
+      { id: "photo-1", type: "image", role: "product", x: 90, y: 120, width: 500, height: 500, asset_version_id: uploadBody.version_id },
+      { id: "headline-1", type: "text", role: "headline", x: 90, y: 660, width: 900, height: 160, text: "With photo", font_size: 72, font_weight: 700, align: "start", color: "#111111" },
+    ],
+  };
+  const imageDesign = JSON.parse(await (async () => {
+    const response = await postJson("/api/creative/designs", owner, { kind: "ad", name: "photo ad", spec: imageSpec }, "e2e-design-image-create");
+    const text = await response.text();
+    assert.equal(response.status, 200, text.slice(0, 300));
+    return text;
+  })());
+  const imageRendered = JSON.parse(await (async () => {
+    const response = await postJson(`/api/creative/designs/${imageDesign.template_id}/render`, operator, { format: "1:1" }, "e2e-design-image-render");
+    const text = await response.text();
+    assert.equal(response.status, 200, text.slice(0, 300));
+    return text;
+  })());
+  const imageClaimed = await pool.query(`SELECT * FROM tanaghom.claim_creative_job('cpu','worker-design-image',120)`);
+  assert.ok(imageClaimed.rows.find((candidate) => candidate.job_id === imageRendered.job_id));
+  const imageResult = await executeDesignRenderJob({
+    db: pool, storage: workerStorage, capture: offlineCapture,
+    jobId: imageRendered.job_id, worker: "worker-design-image",
+  });
+  assert.equal(imageResult.slides.length, 1);
+  const imageVersions = await pool.query(`SELECT provenance FROM tanaghom.creative_asset_versions WHERE job_id = $1`, [imageRendered.job_id]);
+  assert.deepEqual(imageVersions.rows[0].provenance.source_asset_version_ids, [uploadBody.version_id]);
+  console.log("PASS render worker resolves tenant-checked private source assets");
 
   // Browser journeys for the new surfaces + render evidence.
   const { runCreativeDesignBrowser } = await import("./creative-design-browser.mjs");

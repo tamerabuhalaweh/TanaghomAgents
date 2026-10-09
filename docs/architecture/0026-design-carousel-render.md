@@ -11,11 +11,13 @@ structured, editable JSON documents rendered deterministically to local-only
 HTML, screenshotted by Chromium for export:
 
 1. Contracts (`packages/contracts/schemas/creative/ad-document.v1` and
-   `carousel-document.v1`): semantic node types only (text, badge, image,
-   shape, divider, spacer; container). No arbitrary HTML/JS/CSS fields
-   exist, so there is nothing to smuggle through. Canvas is one of
-   1080x1080 / 1080x1350 / 1080x1920; carousel is 2–10 ordered pages
-   (cover/body/end), each node inside exactly one page.
+   `carousel-document.v1`): semantic node types only — `text`, `image`,
+   `shape`, `badge` (exactly what `render/document.mjs` implements; no
+   `divider`, `spacer`, or `container` types exist in this slice). No
+   arbitrary HTML/JS/CSS fields exist, so there is nothing to smuggle
+   through. Canvas is one of 1080x1080 / 1080x1350 / 1080x1920; carousel
+   is 2–10 ordered pages (cover/body/end), each node inside exactly one
+   page.
 2. Renderer (`packages/creative-runtime/render/document.mjs`): pure
    validation + HTML builder, zero dependencies, no network. Defense in
    depth: contract validation at write, renderer validation at build,
@@ -39,6 +41,23 @@ HTML, screenshotted by Chromium for export:
    Chromium screenshots of every corpus case are CI artifacts for
    bounded human visual review of Arabic shaping. Status stays LEDGER
    ONLY until that review signs.
+6. Export worker (`packages/creative-runtime/render/worker.mjs` with
+   `render/chromium.mjs` capture and `storage/local-fs.mjs` backend,
+   operated via `scripts/creative-design-worker.mjs --once`): claims one
+   queued design|carousel cpu job, marks it running, resolves the pinned
+   input through `get_creative_render_input()`, loads tenant-checked
+   private source assets, captures each page in order through a
+   JavaScript-disabled Chromium context that aborts every routable
+   request, validates PNG magic/dimensions/checksum, stores immutable
+   tenant-scoped keys, registers one version per output (`render`
+   method, page_index/page_count/correlation/font/brand/source
+   provenance), and completes the job through the controlled lifecycle.
+   Carousels persist as one asset with N ordered versions under one
+   correlation; failures classify deterministic (bad document, missing
+   source, network attempt, duplicate execution) vs transient retry.
+   The worker never calls the authenticated preview HTTP route; the
+   preview route additionally carries a restrictive CSP
+   (`default-src 'none'`, data-only images/fonts, no frames/forms).
 
 ## Non-goals of this decision
 
