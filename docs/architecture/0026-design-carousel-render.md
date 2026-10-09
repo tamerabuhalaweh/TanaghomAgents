@@ -44,14 +44,20 @@ HTML, screenshotted by Chromium for export:
 6. Export worker (`packages/creative-runtime/render/worker.mjs` with
    `render/chromium.mjs` capture and `storage/local-fs.mjs` backend,
    operated via `scripts/creative-design-worker.mjs --once`): claims one
-   queued design|carousel cpu job, marks it running, resolves the pinned
-   input through `get_creative_render_input()`, loads tenant-checked
-   private source assets, captures each page in order through a
-   JavaScript-disabled Chromium context that aborts every routable
-   request, validates PNG magic/dimensions/checksum, stores immutable
-   tenant-scoped keys, registers one version per output (`render`
-   method, page_index/page_count/correlation/font/brand/source
-   provenance), and completes the job through the controlled lifecycle.
+   queued job through the capability-filtered
+   `claim_creative_design_job()` (never touches foreign CPU jobs), marks
+   it running, resolves the pinned input through
+   `get_creative_render_input()`, loads tenant-checked private source
+   assets through `get_creative_render_source()`, captures each page in
+   order through a JavaScript-disabled Chromium context that aborts every
+   routable request, validates PNG magic/dimensions/checksum, stores
+   immutable tenant-scoped keys, registers one version per output
+   (`render` method, page_index/page_count/correlation/font/brand/source
+   provenance, asset lineage via `get_creative_render_version_asset()`),
+   guards re-execution via `count_creative_render_outputs()`, and
+   completes the job through the controlled lifecycle. The worker role
+   stays EXECUTE-only: every database access is a controlled SECURITY
+   DEFINER function, never a table SELECT.
    Carousels persist as one asset with N ordered versions under one
    correlation; failures classify deterministic (bad document, missing
    source, network attempt, duplicate execution) vs transient retry.

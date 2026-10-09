@@ -6,7 +6,7 @@
 //
 // Operable, not a daemon: no loops, no retries inside this process.
 // Requires DATABASE_URL and CREATIVE_UPLOAD_DIR. Exit codes: 0 executed,
-// 2 queue empty or foreign capability (left for its own lane), 1 failure.
+// 2 no design|carousel job available, 1 failure.
 import pg from "pg";
 
 import { capturePng } from "../packages/creative-runtime/render/chromium.mjs";
@@ -28,7 +28,6 @@ for (let index = 0; index < argv.length; index += 1) {
   }
 }
 const worker = args.get("worker") ?? `design-worker-${process.pid}`;
-const lane = args.get("lane") ?? "cpu";
 const uploadDir = process.env.CREATIVE_UPLOAD_DIR;
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
 if (!uploadDir) throw new Error("CREATIVE_UPLOAD_DIR is required");
@@ -36,13 +35,9 @@ if (!uploadDir) throw new Error("CREATIVE_UPLOAD_DIR is required");
 const { chromium } = await import("@playwright/test");
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
 try {
-  const claimed = await claimDesignRenderJob(pool, { lane, worker });
+  const claimed = await claimDesignRenderJob(pool, { worker });
   if (!claimed) {
-    console.log(JSON.stringify({ result: "idle", reason: "queue_empty", worker }));
-    process.exit(2);
-  }
-  if (claimed.skipped) {
-    console.log(JSON.stringify({ result: "idle", reason: "foreign_capability", capability: claimed.row.capability, worker }));
+    console.log(JSON.stringify({ result: "idle", reason: "no_design_job", worker }));
     process.exit(2);
   }
   const storage = createLocalFsStorage({ dir: uploadDir });

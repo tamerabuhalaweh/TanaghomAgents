@@ -43,9 +43,18 @@ test("creative design migration is additive, guarded, and reversible", async () 
   const down = await read("packages/database/migrations/0039_creative_design_render.down.sql");
   assert.match(up, /0039 requires exact 0038 baseline/);
   assert.match(up, /CREATE FUNCTION tanaghom\.get_creative_render_input\(/);
+  assert.match(up, /CREATE FUNCTION tanaghom\.get_creative_render_source\(/);
+  assert.match(up, /CREATE FUNCTION tanaghom\.count_creative_render_outputs\(/);
+  assert.match(up, /CREATE FUNCTION tanaghom\.get_creative_render_version_asset\(/);
+  assert.match(up, /CREATE FUNCTION tanaghom\.claim_creative_design_job\(/);
+  assert.match(up, /capability IN \('design','carousel'\)/);
+  assert.match(up, /FOR UPDATE OF job SKIP LOCKED/);
   assert.match(up, /TO tanaghom_api, tanaghom_creative_worker/);
+  assert.match(up, /GRANT EXECUTE ON FUNCTION tanaghom\.claim_creative_design_job\(text,int\) TO tanaghom_creative_worker;/);
   assert.match(up, /INSERT INTO public\.schema_migrations\(version\) VALUES \('0039_creative_design_render'\)/);
   assert.doesNotMatch(up, /CREATE TABLE/);
+  assert.doesNotMatch(up, /GRANT SELECT/);
+  assert.match(down, /DROP FUNCTION tanaghom\.claim_creative_design_job\(text,int\);/);
   assert.match(down, /DROP FUNCTION tanaghom\.get_creative_render_input\(uuid,text\);/);
   assert.match(down, /DELETE FROM public.schema_migrations WHERE version='0039_creative_design_render'/);
 });

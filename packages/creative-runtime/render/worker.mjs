@@ -20,7 +20,17 @@ import path from "node:path";
 
 import { buildPageHtml, bundledFontCss, validateDocument } from "./document.mjs";
 import { buildObjectKey, sha256Hex } from "../storage/keys.mjs";
-import { completeJob, claimJob, failJob, markRunning, registerVersion } from "../repository.mjs";
+import {
+  claimDesignJob,
+  completeJob,
+  countRenderOutputs,
+  failJob,
+  getRenderInput,
+  getRenderSource,
+  getRenderVersionAsset,
+  markRunning,
+  registerVersion,
+} from "../repository.mjs";
 
 export const DESIGN_CAPABILITIES = Object.freeze(["design", "carousel"]);
 export const DESIGN_RENDER_MIME = "image/png";
@@ -79,26 +89,19 @@ function collectAssetRefs(doc) {
   return refs;
 }
 
-export async function getRenderInput(db, { jobId, worker }) {
-  const result = await db.query(`SELECT tanaghom.get_creative_render_input($1,$2) AS input`, [jobId, worker]);
-  return result.rows[0]?.input ?? null;
-}
-
-async function loadSourceAssets(db, storage, { organizationId, refs, fail }) {
+async function loadSourceAssets(db, storage, { jobId, worker, organizationId, refs, fail }) {
   const assets = new Map();
   for (const ref of refs) {
-    const found = await db.query(
-      `SELECT version.object_key, version.mime
-         FROM tanaghom.creative_asset_versions version
-         JOIN tanaghom.creative_assets asset ON asset.id = version.asset_id
-        WHERE version.id = $1 AND asset.organization_id = $2`,
-      [ref, organizationId],
-    );
-    const row = found.rows[0];
-    if (!row) await fail("deterministic", `render_source_asset_not_found:${ref}`);
+    let source = null;
+    try {
+      source = await getRenderSource(db, { jobId, worker, versionId: ref });
+    } catch {
+      source = null;
+    }
+    if (!source) await fail("deterministic", `render_source_asset_not_found:${ref}`);
     let stored = null;
     try {
-      stored = await storage.get(row.object_key);
+      stored = await storage.get(source.object_key);
     } catch {
       stored = null;
     }
@@ -108,16 +111,13 @@ async function loadSourceAssets(db, storage, { organizationId, refs, fail }) {
   return assets;
 }
 
-// Bounded claim helper for the manual/operator runner. Returns the claimed
-// row, or null when the queue is empty or the oldest job belongs to another
-// capability (that job is left claimed for its own lane; the lease reaper
-// returns it — the design worker never touches foreign jobs).
-export async function claimDesignRenderJob(db, { lane = "cpu", worker, leaseSeconds = 120 }) {
-  const row = await claimJob(db, { lane, worker, leaseSeconds });
+// Bounded claim helper for the manual/operator runner. Uses the
+// capability-filtered claim, so foreign CPU jobs are never touched: null
+// means no design|carousel job is available.
+export async function claimDesignRenderJob(db, { worker, leaseSeconds = 120 }) {
+  const row = await claimDesignJob(db, { worker, leaseSeconds });
   if (!row) return null;
-  const capability = row.capability ?? row.capability_name;
-  if (!DESIGN_CAPABILITIES.includes(capability)) return { skipped: true, row };
-  return { skipped: false, row, jobId: row.job_id ?? row.id };
+  return { row, jobId: row.job_id ?? row.id };
 }
 
 function slideTitle(name, format, index, count) {
@@ -141,11 +141,9 @@ export async function executeDesignRenderJob({ db, storage, capture, jobId, work
     throw error;
   };
   try {
-    const prior = await db.query(
-      `SELECT count(*)::int AS n FROM tanaghom.creative_asset_versions WHERE job_id = $1`,
-      [jobId],
-    );
-    if ((prior.rows[0]?.n ?? 0) > 0) await fail("deterministic", "render_duplicate_execution");
+    if ((await countRenderOutputs(db, { jobId, worker })) > 0) {
+      await fail("deterministic", "render_duplicate_execution");
+    }
     let input = null;
     try {
       input = await getRenderInput(db, { jobId, worker });
@@ -170,7 +168,7 @@ export async function executeDesignRenderJob({ db, storage, capture, jobId, work
     }
     const pageIds = doc.kind === "carousel" ? doc.pages.map((page) => page.id) : ["page-1"];
     const refs = collectAssetRefs(doc);
-    const assets = await loadSourceAssets(db, storage, { organizationId: input.organization_id, refs, fail });
+    const assets = await loadSourceAssets(db, storage, { jobId, worker, refs, fail });
     const fontCss = bundledFontCss(fontDir);
     const fontHash = fontSha256(fontDir);
     const designName = String(input.template?.name ?? "design").slice(0, 120);
@@ -247,10 +245,7 @@ export async function executeDesignRenderJob({ db, storage, capture, jobId, work
         await fail("transient", `render_version_register_failed:${error.message}`.slice(0, 200));
       }
       if (assetId === null) {
-        const created = await db.query(
-          `SELECT asset_id FROM tanaghom.creative_asset_versions WHERE id = $1`, [assetVersionId],
-        );
-        assetId = created.rows[0]?.asset_id ?? null;
+        assetId = await getRenderVersionAsset(db, { jobId, worker, versionId: assetVersionId });
       }
       slides.push({
         pageId, pageIndex: index, versionId: assetVersionId, objectKey,

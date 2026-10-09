@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import test from "node:test";
 import { mkdtempSync, rmSync } from "node:fs";
+import { readFile } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 
@@ -70,20 +71,20 @@ function stubDb({ input, priorVersions = 0, sourceRows = [], calls = null }) {
         log.marks.push(params);
         return { rows: [{ status: "running" }] };
       }
-      if (text.includes("creative_asset_versions WHERE job_id")) {
-        return { rows: [{ n: priorVersions }] };
+      if (text.includes("count_creative_render_outputs")) {
+        return { rows: [{ outputs: priorVersions }] };
       }
       if (text.includes("get_creative_render_input")) {
         return { rows: [{ input }] };
       }
-      if (text.includes("FROM tanaghom.creative_asset_versions version")) {
-        return { rows: sourceRows };
+      if (text.includes("get_creative_render_source")) {
+        return { rows: sourceRows.map((source) => ({ source })) };
       }
       if (text.includes("create_creative_asset_version")) {
         log.registers.push(params);
         return { rows: [{ asset_version_id: `50000000-0000-4000-8000-00000000000${log.registers.length}` }] };
       }
-      if (text.includes("FROM tanaghom.creative_asset_versions WHERE id")) {
+      if (text.includes("get_creative_render_version_asset")) {
         return { rows: [{ asset_id: "60000000-0000-4000-8000-000000000001" }] };
       }
       if (text.includes("complete_creative_job")) {
@@ -146,6 +147,15 @@ function fakeChromium({ screenshotBytes, seen = {} }) {
     },
   };
 }
+
+test("worker module stays EXECUTE-only: no direct table reads", async () => {
+  const source = await readFile(new URL("../packages/creative-runtime/render/worker.mjs", import.meta.url), "utf8");
+  assert.doesNotMatch(source, /FROM tanaghom\./);
+  assert.doesNotMatch(source, /db\.query/);
+  for (const name of ["getRenderInput", "getRenderSource", "countRenderOutputs", "getRenderVersionAsset", "claimDesignJob", "markRunning", "registerVersion", "completeJob", "failJob"]) {
+    assert.match(source, new RegExp(`\\b${name}\\b`));
+  }
+});
 
 test("PNG output validator enforces magic and canvas dimensions", () => {
   const good = assertPngBytes(pngBytes(1080, 1080), { width: 1080, height: 1080 });
@@ -285,16 +295,71 @@ test("worker fails closed on bad documents, foreign capabilities, and network at
   );
 });
 
-test("claim helper passes through empty queues and skips foreign capabilities", async () => {
+test("claim helper uses the capability-filtered claim only", async () => {
   const empty = { query: async () => ({ rows: [] }) };
   assert.equal(await claimDesignRenderJob(empty, { worker: WORKER }), null);
-  const foreign = { query: async () => ({ rows: [{ job_id: JOB, capability: "image" }] }) };
-  const skipped = await claimDesignRenderJob(foreign, { worker: WORKER });
-  assert.equal(skipped.skipped, true);
-  const own = { query: async () => ({ rows: [{ job_id: JOB, capability: "carousel" }] }) };
+  const calls = [];
+  const own = {
+    query: async (text, params) => {
+      calls.push([text, params]);
+      assert.match(text, /claim_creative_design_job/);
+      assert.doesNotMatch(text, /capability/);
+      return { rows: [{ job_id: JOB, capability: "carousel" }] };
+    },
+  };
   const claimed = await claimDesignRenderJob(own, { worker: WORKER });
-  assert.equal(claimed.skipped, false);
   assert.equal(claimed.jobId, JOB);
+  assert.deepEqual(calls[0][1], [WORKER, 120]);
+});
+
+test("worker resolves private source assets through the controlled reader", async () => {
+  const sourceVersion = "70000000-0000-4000-8000-000000000001";
+  const doc = {
+    ...adDoc(),
+    nodes: [
+      { id: "photo-1", type: "image", role: "product", x: 90, y: 120, width: 500, height: 500, asset_version_id: sourceVersion },
+    ],
+  };
+  const sourceBytes = pngBytes(1080, 1080);
+  const db = stubDb({
+    input: inputFor(doc, "design"),
+    sourceRows: [{ version_id: sourceVersion, object_key: `t/${ORG}/image/${JOB}/v1.png`, mime: "image/png" }],
+  });
+  const mem = createTestStorage();
+  await mem.put({ key: `t/${ORG}/image/${JOB}/v1.png`, bytes: sourceBytes, mime: "image/png" });
+  const storage = {
+    put: (key, bytes, mime) => mem.put({ key, bytes, mime }),
+    get: (key) => {
+      try {
+        return mem.get(key);
+      } catch {
+        return null;
+      }
+    },
+  };
+  const seenHtml = [];
+  const result = await executeDesignRenderJob({
+    db, storage,
+    capture: async ({ html }) => {
+      seenHtml.push(html);
+      return { bytes: pngBytes(1080, 1080), attemptedExternal: 0, blockedExternal: 0 };
+    },
+    jobId: JOB, worker: WORKER,
+  });
+  assert.equal(result.slides.length, 1);
+  assert.match(seenHtml[0], /data:image\/png;base64,/);
+  assert.doesNotMatch(seenHtml[0], new RegExp(sourceVersion));
+
+  const dbMissing = stubDb({ input: inputFor(doc, "design"), sourceRows: [] });
+  await assert.rejects(
+    executeDesignRenderJob({
+      db: dbMissing, storage: memoryStorage(),
+      capture: async () => { throw new Error("capture must not run"); },
+      jobId: JOB, worker: WORKER,
+    }),
+    /render_source_asset_not_found/,
+  );
+  assert.equal(dbMissing.log.fails[0][2], "deterministic");
 });
 
 test("local filesystem storage round-trips with exclusive create", async () => {

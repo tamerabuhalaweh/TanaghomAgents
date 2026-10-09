@@ -79,4 +79,55 @@ DO $$ DECLARE j uuid; BEGIN
  IF SQLERRM NOT LIKE '%design version mismatch%' THEN RAISE; END IF; END;
 END $$;
 
+-- Capability-filtered claim: an older product_shoot CPU job must never be
+-- touched; priority order holds among design jobs; no double-claim.
+DO $$ DECLARE prod uuid; d1 uuid; d2 uuid; got uuid; BEGIN
+ prod := tanaghom.create_creative_job('b1000000-0000-4000-8000-000000000001','product_shoot','cpu','{}',
+  'b5000000-0000-4000-8000-000000000011','b6000000-0000-4000-8000-000000000011',0,3);
+ d1 := tanaghom.create_creative_job('b1000000-0000-4000-8000-000000000001','design','cpu',
+  '{"design_template_id":"b4000000-0000-4000-8000-000000000001"}','b5000000-0000-4000-8000-000000000012','b6000000-0000-4000-8000-000000000012',0,3);
+ d2 := tanaghom.create_creative_job('b1000000-0000-4000-8000-000000000001','carousel','cpu',
+  '{"design_template_id":"b4000000-0000-4000-8000-000000000001"}','b5000000-0000-4000-8000-000000000013','b6000000-0000-4000-8000-000000000013',100,3);
+ SELECT job_id INTO got FROM tanaghom.claim_creative_design_job('worker-design-filter-1',120);
+ IF got IS DISTINCT FROM d2 THEN RAISE EXCEPTION 'filtered claim missed priority design job'; END IF;
+ SELECT job_id INTO got FROM tanaghom.claim_creative_design_job('worker-design-filter-2',120);
+ IF got IS DISTINCT FROM d1 THEN RAISE EXCEPTION 'filtered claim missed second design job'; END IF;
+ SELECT job_id INTO got FROM tanaghom.claim_creative_design_job('worker-design-filter-3',120);
+ IF got IS NOT NULL THEN RAISE EXCEPTION 'filtered claim touched a foreign job'; END IF;
+ PERFORM 1 FROM tanaghom.creative_jobs WHERE id=prod AND status='queued' AND claimed_by IS NULL;
+ IF NOT FOUND THEN RAISE EXCEPTION 'product job was claimed or moved'; END IF;
+END $$;
+
+-- Controlled render-worker readers: source resolution, output counting,
+-- version asset lookup, all tenant-checked.
+DO $$ DECLARE j uuid; v uuid; a uuid; src jsonb; BEGIN
+ j := tanaghom.create_creative_job('b1000000-0000-4000-8000-000000000001','design','cpu',
+  '{"design_template_id":"b4000000-0000-4000-8000-000000000001"}','b5000000-0000-4000-8000-000000000014','b6000000-0000-4000-8000-000000000014',0,3);
+ PERFORM tanaghom.claim_creative_design_job('worker-design-readers',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-design-readers' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ IF tanaghom.count_creative_render_outputs(j,'worker-design-readers') IS DISTINCT FROM 0 THEN RAISE EXCEPTION 'fresh job shows outputs'; END IF;
+ SELECT tanaghom.create_creative_asset_version(j,'worker-design-readers',NULL,'t','image/png',1080,1080,NULL,100,
+  'aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa',
+  't/b0000000-0000-4000-8000-000000000001/design/' || j::text || '/v1.png',NULL,'{}',NULL,'t','render') INTO v;
+ IF tanaghom.count_creative_render_outputs(j,'worker-design-readers') IS DISTINCT FROM 1 THEN RAISE EXCEPTION 'output count wrong'; END IF;
+ SELECT tanaghom.get_creative_render_version_asset(j,'worker-design-readers',v) INTO a;
+ IF a IS NULL THEN RAISE EXCEPTION 'version asset lookup failed'; END IF;
+ SELECT tanaghom.get_creative_render_source(j,'worker-design-readers',v) INTO src;
+ IF src->>'mime' IS DISTINCT FROM 'image/png' THEN RAISE EXCEPTION 'source resolve failed'; END IF;
+ BEGIN PERFORM tanaghom.get_creative_render_source(j,'intruder',v);
+ RAISE EXCEPTION 'foreign source read unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%worker mismatch%' THEN RAISE; END IF; END;
+END $$;
+
+-- Least-privilege boundary: the worker role stays EXECUTE-only. Direct
+-- table SELECTs fail; the controlled functions succeed under SET ROLE.
+SET ROLE tanaghom_creative_worker;
+DO $$ BEGIN
+ BEGIN PERFORM * FROM tanaghom.creative_asset_versions LIMIT 1;
+ RAISE EXCEPTION 'worker table select unexpectedly succeeded'; EXCEPTION WHEN insufficient_privilege THEN END;
+ BEGIN PERFORM * FROM tanaghom.creative_jobs LIMIT 1;
+ RAISE EXCEPTION 'worker job select unexpectedly succeeded'; EXCEPTION WHEN insufficient_privilege THEN END;
+END $$;
+RESET ROLE;
+
 SELECT 'PASS: creative design render contract holds.' AS result;

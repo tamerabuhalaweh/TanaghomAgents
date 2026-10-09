@@ -94,6 +94,7 @@ function psqlFile(path) {
 
 const pool = new pg.Pool({ connectionString: databaseUrl, max: 4 });
 let dashboard;
+let workerDb;
 try {
   migrate();
   const latestMigration = (await pool.query(`SELECT max(version) AS v FROM public.schema_migrations`)).rows[0].v;
@@ -126,6 +127,13 @@ try {
 
   authServer.listen(authPort, "127.0.0.1");
   await once(authServer, "listening");
+
+  // Least-privilege proof: every render-worker database call below runs as
+  // tanaghom_creative_worker (EXECUTE-only, no table SELECT). All harness
+  // assertions stay on the superuser pool.
+  const workerDbConnected = await pool.connect();
+  workerDb = workerDbConnected;
+  await workerDb.query("SET ROLE tanaghom_creative_worker");
 
   async function bootDashboard(extraEnv) {
     dashboard = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "apps/dashboard", "-p", String(dashboardPort)], {
@@ -161,6 +169,12 @@ try {
 
   await bootDashboard({ CREATIVE_STUDIO_ENABLED: "true", DESIGN_STUDIO_ENABLED: "true", CAROUSEL_BUILDER_ENABLED: "true", CREATIVE_UPLOAD_DIR: uploadDir });
   await pool.query(`UPDATE tanaghom.creative_controls SET enabled=true, emergency_stop=false, reason='Disposable design e2e'`);
+  // Foreign-capability decoy: an older product_shoot CPU job the design
+  // worker must never touch (filtered claim proof alongside the SQL test).
+  const decoyId = (await pool.query(
+    `SELECT tanaghom.create_creative_job('00000000-0000-4000-8000-000000000131','product_shoot','cpu','{}',$1,$2,0,3) AS id`,
+    [randomUUID(), randomUUID()],
+  )).rows[0].id;
   const owner = await bearer(OWNER_SUBJECT);
   const operator = await bearer(OPERATOR_SUBJECT);
   const reviewer = await bearer(REVIEWER_SUBJECT);
@@ -234,7 +248,7 @@ try {
   const job = JSON.parse(renderedText);
   assert.ok(job.job_id);
   // Worker path: claim then resolve the render input through the DB reader.
-  const claimed = await pool.query(`SELECT * FROM tanaghom.claim_creative_job('cpu','worker-design-e2e',120)`);
+  const claimed = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_design_job('worker-design-e2e',120)`);
   const claimedRow = claimed.rows.find((candidate) => candidate.job_id === job.job_id);
   assert.ok(claimedRow, "render job claimed by worker");
   const input = await pool.query(`SELECT tanaghom.get_creative_render_input($1,'worker-design-e2e') AS input`, [job.job_id]);
@@ -271,7 +285,7 @@ try {
     return shot;
   }
   const adResult = await executeDesignRenderJob({
-    db: pool, storage: workerStorage, capture: offlineCapture,
+    db: workerDb, storage: workerStorage, capture: offlineCapture,
     jobId: job.job_id, worker: "worker-design-e2e",
   });
   assert.equal(adResult.slides.length, 1);
@@ -328,10 +342,10 @@ try {
     return text;
   })();
   const carouselJob = JSON.parse(carouselRenderedText);
-  const carouselClaimed = await pool.query(`SELECT * FROM tanaghom.claim_creative_job('cpu','worker-design-carousel',120)`);
+  const carouselClaimed = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_design_job('worker-design-carousel',120)`);
   assert.ok(carouselClaimed.rows.find((candidate) => candidate.job_id === carouselJob.job_id));
   const carouselResult = await executeDesignRenderJob({
-    db: pool, storage: workerStorage, capture: offlineCapture,
+    db: workerDb, storage: workerStorage, capture: offlineCapture,
     jobId: carouselJob.job_id, worker: "worker-design-carousel",
   });
   assert.equal(carouselResult.slides.length, 6);
@@ -397,16 +411,35 @@ try {
     assert.equal(response.status, 200, text.slice(0, 300));
     return text;
   })());
-  const imageClaimed = await pool.query(`SELECT * FROM tanaghom.claim_creative_job('cpu','worker-design-image',120)`);
+  const imageClaimed = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_design_job('worker-design-image',120)`);
   assert.ok(imageClaimed.rows.find((candidate) => candidate.job_id === imageRendered.job_id));
   const imageResult = await executeDesignRenderJob({
-    db: pool, storage: workerStorage, capture: offlineCapture,
+    db: workerDb, storage: workerStorage, capture: offlineCapture,
     jobId: imageRendered.job_id, worker: "worker-design-image",
   });
   assert.equal(imageResult.slides.length, 1);
   const imageVersions = await pool.query(`SELECT provenance FROM tanaghom.creative_asset_versions WHERE job_id = $1`, [imageRendered.job_id]);
   assert.deepEqual(imageVersions.rows[0].provenance.source_asset_version_ids, [uploadBody.version_id]);
   console.log("PASS render worker resolves tenant-checked private source assets");
+
+  // Worker-role boundary: direct table SELECT stays denied under the role
+  // that just executed three render jobs successfully.
+  await assert.rejects(
+    workerDb.query(`SELECT * FROM tanaghom.creative_asset_versions LIMIT 1`),
+    /permission denied/,
+  );
+  await assert.rejects(
+    workerDb.query(`SELECT * FROM tanaghom.creative_jobs LIMIT 1`),
+    /permission denied/,
+  );
+  console.log("PASS worker role remains EXECUTE-only");
+
+  // Filtered-claim proof: the foreign decoy is still queued and unclaimed
+  // after every design claim in this run.
+  const decoy = await pool.query(`SELECT status, claimed_by FROM tanaghom.creative_jobs WHERE id = $1`, [decoyId]);
+  assert.equal(decoy.rows[0].status, "queued");
+  assert.equal(decoy.rows[0].claimed_by, null);
+  console.log("PASS filtered claim never touches foreign CPU jobs");
 
   // Browser journeys for the new surfaces + render evidence.
   const { runCreativeDesignBrowser } = await import("./creative-design-browser.mjs");
@@ -440,5 +473,10 @@ try {
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();
+  if (workerDb) {
+    try {
+      workerDb.release();
+    } catch {}
+  }
   await pool.end();
 }
