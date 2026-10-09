@@ -58,4 +58,7 @@ documents into MP4 private assets through a deterministic timeline:
 No generative video, no talking head, no voice/TTS, no music, no
 billing/credits semantics, no production deployment or FFmpeg
 bundling, no H.264 (stays rejected pending legal sign-off), no P4
-work. Diffusion text stays forbidden.
+work. Diffusion text stays forbidden. Choosing the native `mpeg4`
+encoder does not by itself clear all distribution or patent
+obligations: deployment-specific legal review of FFmpeg remains
+required before production use.

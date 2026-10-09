@@ -13,7 +13,7 @@ import pg from "pg";
 
 import { capturePng } from "../packages/creative-runtime/render/chromium.mjs";
 import { claimMotionRenderJob, executeMotionRenderJob } from "../packages/creative-runtime/render/motion-worker.mjs";
-import { encodeMp4 } from "../packages/creative-runtime/render/mp4.mjs";
+import { beginMp4Encode } from "../packages/creative-runtime/render/mp4.mjs";
 import { createLocalFsStorage } from "../packages/creative-runtime/storage/local-fs.mjs";
 
 const argv = process.argv.slice(2);
@@ -54,9 +54,7 @@ try {
       network.blocked += shot.blockedExternal;
       return { ...shot, pageIndex };
     },
-    encode: async ({ ffmpegPath, args: ffmpegArgs, frames, outputPath, timeoutMs }) => {
-      return encodeMp4({ ffmpegPath, args: ffmpegArgs, frames, outputPath, timeoutMs });
-    },
+    createEncoder: async (params) => beginMp4Encode(params),
     jobId: claimed.jobId,
     worker,
   });

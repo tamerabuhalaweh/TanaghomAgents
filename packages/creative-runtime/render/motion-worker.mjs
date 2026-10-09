@@ -24,7 +24,7 @@ import { fileURLToPath } from "node:url";
 import { buildMotionFrameHtml, planTimeline } from "./motion.mjs";
 import { bundledFontCss } from "./document.mjs";
 import { assertPngBytes } from "./worker.mjs";
-import { buildFfmpegArgs, encodeMp4, resolveFfmpegPath, validateMp4 } from "./mp4.mjs";
+import { buildFfmpegArgs, resolveFfmpegPath, validateMp4 } from "./mp4.mjs";
 import { sha256Hex } from "../storage/keys.mjs";
 import {
   claimMotionJob,
@@ -59,10 +59,10 @@ export async function claimMotionRenderJob(db, { worker, leaseSeconds = 120 }) {
 }
 
 export async function executeMotionRenderJob({
-  db, storage, capture, encode, jobId, worker, fontDir,
+  db, storage, capture, createEncoder, jobId, worker, fontDir,
   ffmpegPath, stagingDir, frameTimeoutMs = 60000, encodeTimeoutMs = 300000,
 }) {
-  if (!db || !storage || !capture || !encode) throw new Error("motion_worker_dependencies_required");
+  if (!db || !storage || !capture || !createEncoder) throw new Error("motion_worker_dependencies_required");
   if (!jobId || !worker) throw new Error("motion_worker_job_required");
   const fail = async (errorClass, message) => {
     try {
@@ -82,6 +82,7 @@ export async function executeMotionRenderJob({
   // Cooperative cancel that arrived between claim and execution: the marker
   // already terminalized the job, so report cancellation, not failure.
   if (running === "cancelled") await fail("cancelled", "motion_cancel_requested");
+  let encoder = null;
   try {
     if ((await countRenderOutputs(db, { jobId, worker })) > 0) {
       await fail("deterministic", "motion_duplicate_execution");
@@ -121,56 +122,95 @@ export async function executeMotionRenderJob({
     const fontHash = fontSha256(fontDir);
     const motionName = String(input.motion?.name ?? "motion").slice(0, 120);
     const canvas = designDoc.canvas;
-    const frames = [];
-    let attemptedExternal = 0;
-    for (let index = 0; index < plan.totalFrames; index += 1) {
-      if (index % CANCEL_POLL_FRAMES === 0) {
-        let state = null;
-        try {
-          state = await getMotionState(db, { jobId, worker });
-        } catch (error) {
-          await fail("transient", `motion_state_unreadable:${error.message}`.slice(0, 200));
-        }
-        if (!state || state.status === "cancelled" || state.cancel_requested) {
-          await fail("cancelled", "motion_cancel_requested");
-        }
-        if (state.status !== "running" && state.status !== "claimed") {
-          await fail("deterministic", `motion_job_inactive:${state.status}`);
-        }
-      }
-      const t = (index * 1000) / plan.fps;
-      const { html } = buildMotionFrameHtml({ motion, designDoc, assets, fontCss, fontFamily: "Cairo", t });
-      let shot = null;
+    // Frames stream into the encoder as they are produced and are dropped
+    // immediately after the write resolves: at most one frame Buffer is
+    // live at any moment, regardless of the 900-frame cap. Cancellation is
+    // polled during capture and wired into the encoder via AbortSignal so
+    // it also lands during the final mux.
+    const aborter = new AbortController();
+    async function pollCancel() {
+      let state = null;
       try {
-        shot = await capture({ html, width: canvas.width, height: canvas.height, pageId: `frame-${index}`, pageIndex: index, timeoutMs: frameTimeoutMs });
+        state = await getMotionState(db, { jobId, worker });
       } catch (error) {
-        await fail("transient", `motion_capture_failed:${error.message}`.slice(0, 200));
+        await fail("transient", `motion_state_unreadable:${error.message}`.slice(0, 200));
       }
-      attemptedExternal += shot.attemptedExternal ?? 0;
-      if ((shot.attemptedExternal ?? 0) > 0) {
-        await fail("deterministic", "motion_external_network_attempted");
+      if (!state || state.status === "cancelled" || state.cancel_requested) {
+        aborter.abort();
+        await fail("cancelled", "motion_cancel_requested");
       }
-      try {
-        assertPngBytes(shot.bytes, { width: canvas.width, height: canvas.height });
-      } catch (error) {
-        await fail("deterministic", `motion_frame_invalid:${error.message}`.slice(0, 200));
+      if (state.status !== "running" && state.status !== "claimed") {
+        await fail("deterministic", `motion_job_inactive:${state.status}`);
       }
-      frames.push(shot.bytes);
     }
     const ffmpeg = ffmpegPath ?? resolveFfmpegPath();
     const outputPath = path.join(stagingDir ?? tmpdir(), `tmg-${jobId}-v1.mp4`);
     const args = buildFfmpegArgs({ width: canvas.width, height: canvas.height, fps: plan.fps, outputPath });
+    // Never spawn FFmpeg for an already-cancelled job.
+    await pollCancel();
+    try {
+      encoder = await createEncoder({
+        ffmpegPath: ffmpeg, args, outputPath, timeoutMs: encodeTimeoutMs, signal: aborter.signal,
+      });
+    } catch (error) {
+      if (/spawn|ENOENT|missing|absent/i.test(error.message)) await fail("deterministic", `motion_encoder_unavailable:${error.message}`.slice(0, 200));
+      await fail("transient", `motion_encoder_start_failed:${error.message}`.slice(0, 200));
+    }
+    let attemptedExternal = 0;
+    let framesWritten = 0;
+    try {
+      for (let index = 0; index < plan.totalFrames; index += 1) {
+        if (index % CANCEL_POLL_FRAMES === 0) await pollCancel();
+        const t = (index * 1000) / plan.fps;
+        const { html } = buildMotionFrameHtml({ motion, designDoc, assets, fontCss, fontFamily: "Cairo", t });
+        let shot = null;
+        try {
+          shot = await capture({ html, width: canvas.width, height: canvas.height, pageId: `frame-${index}`, pageIndex: index, timeoutMs: frameTimeoutMs });
+        } catch (error) {
+          await fail("transient", `motion_capture_failed:${error.message}`.slice(0, 200));
+        }
+        attemptedExternal += shot.attemptedExternal ?? 0;
+        if ((shot.attemptedExternal ?? 0) > 0) {
+          await fail("deterministic", "motion_external_network_attempted");
+        }
+        try {
+          assertPngBytes(shot.bytes, { width: canvas.width, height: canvas.height });
+        } catch (error) {
+          await fail("deterministic", `motion_frame_invalid:${error.message}`.slice(0, 200));
+        }
+        try {
+          await encoder.writeFrame(shot.bytes);
+        } catch (error) {
+          // Encoder errors already carry a class, but the job still needs
+          // its terminal state recorded exactly once: map, never rethrow.
+          if ((error && error.errorClass === "cancelled") || /abort|cancel/i.test(error.message)) {
+            await fail("cancelled", `motion_encode_cancelled:${error.message}`.slice(0, 200));
+          }
+          if (/budget/i.test(error.message)) await fail("deterministic", `motion_intermediate_budget:${error.message}`.slice(0, 200));
+          await fail("transient", `motion_frame_write_failed:${error.message}`.slice(0, 200));
+        }
+        shot = null;
+        framesWritten += 1;
+      }
+      await pollCancel();
+    } catch (error) {
+      if (error && error.errorClass) throw error;
+      await fail("transient", `motion_frame_loop_failed:${error.message}`.slice(0, 200));
+    }
     let mp4 = null;
     try {
-      mp4 = await encode({ ffmpegPath: ffmpeg, args, frames, outputPath, timeoutMs: encodeTimeoutMs });
+      mp4 = await encoder.finish();
     } catch (error) {
-      if (/timeout/i.test(error.message)) await fail("transient", `motion_encode_timeout:${error.message}`.slice(0, 200));
+      if ((error && error.errorClass === "cancelled") || /abort|cancel/i.test(error.message)) {
+        await fail("cancelled", `motion_encode_cancelled:${error.message}`.slice(0, 200));
+      }
+      if (/timeout|stalled/i.test(error.message)) await fail("transient", `motion_encode_timeout:${error.message}`.slice(0, 200));
       if (/spawn|ENOENT|missing|absent/i.test(error.message)) await fail("deterministic", `motion_encoder_unavailable:${error.message}`.slice(0, 200));
       await fail("transient", `motion_encode_failed:${error.message}`.slice(0, 200));
     }
     let checked = null;
     try {
-      checked = validateMp4(mp4, { width: canvas.width, height: canvas.height, fps: plan.fps, frames: frames.length });
+      checked = validateMp4(mp4, { width: canvas.width, height: canvas.height, fps: plan.fps, frames: framesWritten });
     } catch (error) {
       await fail("deterministic", `motion_output_invalid:${error.message}`.slice(0, 200));
     }
@@ -198,9 +238,9 @@ export async function executeMotionRenderJob({
       document_kind: designDoc.kind,
       canvas: { width: canvas.width, height: canvas.height },
       fps: plan.fps,
-      frames: frames.length,
+      frames: framesWritten,
       duration_ms: plan.totalMs,
-      codec: "mpeg4",
+      codec: checked.codec,
       container: "mp4",
       font_family: "Cairo",
       font_sha256: fontHash,
@@ -214,7 +254,7 @@ export async function executeMotionRenderJob({
       versionId = await registerVersion(db, {
         jobId, worker,
         assetId: null,
-        title: `${motionName} · ${plan.fps}fps · ${frames.length}f`.slice(0, 200),
+        title: `${motionName} · ${plan.fps}fps · ${framesWritten}f`.slice(0, 200),
         mime: MOTION_RENDER_MIME,
         width: canvas.width, height: canvas.height, durationMs: plan.totalMs,
         bytes: mp4.length, sha256: sha256Hex(mp4), objectKey,
@@ -234,11 +274,16 @@ export async function executeMotionRenderJob({
       output: {
         objectKey, sha256: sha256Hex(mp4), bytes: mp4.length,
         width: canvas.width, height: canvas.height, fps: plan.fps,
-        frames: frames.length, durationMs: plan.totalMs,
+        frames: framesWritten, durationMs: plan.totalMs, codec: checked.codec,
       },
       attemptedExternalTotal: attemptedExternal,
     };
   } catch (error) {
+    if (encoder) {
+      try {
+        await encoder.abort();
+      } catch {}
+    }
     if (error && error.errorClass) throw error;
     await fail("transient", `motion_worker_failed:${error.message}`.slice(0, 200));
   }

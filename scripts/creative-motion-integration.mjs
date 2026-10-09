@@ -246,7 +246,7 @@ try {
   // frames, fixed-argv FFmpeg encode, validated MP4, private storage.
   const { executeMotionRenderJob } = await import("../packages/creative-runtime/render/motion-worker.mjs");
   const { capturePng } = await import("../packages/creative-runtime/render/chromium.mjs");
-  const { encodeMp4 } = await import("../packages/creative-runtime/render/mp4.mjs");
+  const { beginMp4Encode } = await import("../packages/creative-runtime/render/mp4.mjs");
   const { createLocalFsStorage } = await import("../packages/creative-runtime/storage/local-fs.mjs");
   const { chromium } = await import("@playwright/test");
   const workerStorage = createLocalFsStorage({ dir: uploadDir });
@@ -257,8 +257,8 @@ try {
     workerNetwork.blocked += shot.blockedExternal;
     return shot;
   }
-  async function offlineEncode({ ffmpegPath, args, frames, outputPath, timeoutMs }) {
-    return encodeMp4({ ffmpegPath, args, frames, outputPath, timeoutMs });
+  async function offlineCreateEncoder(params) {
+    return beginMp4Encode(params);
   }
 
   async function renderAndExecute({ templateId, version, format, worker, label }) {
@@ -270,7 +270,7 @@ try {
     const claimed = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_motion_job($1,120)`, [worker]);
     assert.ok(claimed.rows.find((candidate) => candidate.job_id === job.job_id), `${label} claimed`);
     const result = await executeMotionRenderJob({
-      db: workerDb, storage: workerStorage, capture: offlineCapture, encode: offlineEncode,
+      db: workerDb, storage: workerStorage, capture: offlineCapture, createEncoder: offlineCreateEncoder,
       jobId: job.job_id, worker,
     });
     assert.equal(workerNetwork.attempted, 0, `${label} network`);
@@ -293,7 +293,7 @@ try {
   assert.equal(arVersions.rows[0].capability, "motion");
   assert.equal(arVersions.rows[0].provenance.frames, 48);
   assert.equal(arVersions.rows[0].provenance.fps, 24);
-  assert.equal(arVersions.rows[0].provenance.codec, "mpeg4");
+  assert.equal(arVersions.rows[0].provenance.codec, "mp4v");
   assert.equal(arVersions.rows[0].provenance.design_version, 1);
   assert.equal(arVersions.rows[0].provenance.correlation_id, ar.job.correlation_id);
   assert.match(arVersions.rows[0].provenance.font_sha256, /^[0-9a-f]{64}$/);
@@ -388,7 +388,7 @@ try {
   assert.equal(cancelRequest.status, 200);
   await assert.rejects(
     executeMotionRenderJob({
-      db: workerDb, storage: workerStorage, capture: offlineCapture, encode: offlineEncode,
+      db: workerDb, storage: workerStorage, capture: offlineCapture, createEncoder: offlineCreateEncoder,
       jobId: cancelJob.job_id, worker: "worker-motion-cancel",
     }),
     /motion_cancel_requested/,

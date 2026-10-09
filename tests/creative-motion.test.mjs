@@ -11,6 +11,7 @@ import {
   validateMotion,
 } from "../packages/creative-runtime/render/motion.mjs";
 import {
+  beginMp4Encode,
   buildFfmpegArgs,
   encodeMp4,
   resolveFfmpegPath,
@@ -87,7 +88,7 @@ function box(type, ...payloads) {
   return Buffer.concat([header, body]);
 }
 
-function craftedMp4({ width = 1080, height = 1080, timescale = 1000, duration = 2000, brand = "isom" } = {}) {
+function craftedMp4({ width = 1080, height = 1080, timescale = 1000, duration = 2000, brand = "isom", fourcc = "mp4v", audioOnly = false, corruptStsd = false } = {}) {
   const u32 = (value) => {
     const buffer = Buffer.alloc(4);
     buffer.writeUInt32BE(value, 0);
@@ -105,7 +106,19 @@ function craftedMp4({ width = 1080, height = 1080, timescale = 1000, duration = 
         dims.writeUInt32BE(height * 65536, 4);
         return dims;
       })()]));
-  const moov = box("moov", mvhd, box("trak", tkhd));
+  const handler = audioOnly ? "soun" : "vide";
+  const hdlr = box("hdlr", Buffer.concat([u32(0), u32(0), Buffer.from(handler, "ascii"), Buffer.alloc(12)]));
+  const entry = corruptStsd
+    ? box("stsd", Buffer.concat([u32(0), u32(1)]))
+    : box("stsd", Buffer.concat([u32(0), u32(1),
+      (() => {
+        const header = Buffer.alloc(8);
+        header.writeUInt32BE(86, 0);
+        header.write(fourcc, 4, "ascii");
+        return Buffer.concat([header, Buffer.alloc(78)]);
+      })()]));
+  const mdia = box("mdia", box("mdhd", Buffer.concat([u32(0), u32(0), u32(0), u32(timescale), u32(duration), Buffer.alloc(8)])), hdlr, box("minf", box("stbl", entry)));
+  const moov = box("moov", mvhd, box("trak", tkhd, mdia));
   return Buffer.concat([ftyp, moov]);
 }
 
@@ -238,23 +251,54 @@ test("ffmpeg argv allowlist rejects codecs, dims, fps, and path injection", () =
   assert.throws(() => resolveFfmpegPath({ FFMPEG_PATH: "x$(id)" }), /mp4_ffmpeg_path_rejected/);
 });
 
-test("pure-JS MP4 validator enforces container, dims, and duration", () => {
+test("pure-JS MP4 validator enforces container, codec, dims, and duration", () => {
   const mp4 = craftedMp4({ width: 1080, height: 1080, timescale: 1000, duration: 2000 });
   const info = validateMp4(mp4, { width: 1080, height: 1080, fps: 24, frames: 48 });
   assert.equal(info.brand, "isom");
+  assert.equal(info.codec, "mp4v");
   assert.equal(info.durationSec, 2);
   assert.throws(() => validateMp4(mp4, { width: 1080, height: 1350, fps: 24, frames: 48 }), /mp4_dimensions/);
   assert.throws(() => validateMp4(mp4, { width: 1080, height: 1080, fps: 24, frames: 12 }), /mp4_duration/);
   assert.throws(() => validateMp4(Buffer.from("garbage bytes that are not an mp4 container...."), { width: 1080, height: 1080, fps: 24, frames: 48 }), /mp4_missing_ftyp/);
   assert.throws(() => validateMp4(craftedMp4({ brand: "xxxx" }), { width: 1080, height: 1080, fps: 24, frames: 48 }), /mp4_brand/);
+  assert.throws(
+    () => validateMp4(craftedMp4({ fourcc: "avc1" }), { width: 1080, height: 1080, fps: 24, frames: 48 }),
+    /mp4_codec:avc1/,
+  );
+  assert.throws(
+    () => validateMp4(craftedMp4({ fourcc: "hvc1" }), { width: 1080, height: 1080, fps: 24, frames: 48 }),
+    /mp4_codec:hvc1/,
+  );
+  assert.throws(
+    () => validateMp4(craftedMp4({ fourcc: "xxxx" }), { width: 1080, height: 1080, fps: 24, frames: 48 }),
+    /mp4_codec:xxxx/,
+  );
+  assert.throws(
+    () => validateMp4(craftedMp4({ audioOnly: true }), { width: 1080, height: 1080, fps: 24, frames: 48 }),
+    /mp4_no_video_track/,
+  );
+  assert.throws(
+    () => validateMp4(craftedMp4({ corruptStsd: true }), { width: 1080, height: 1080, fps: 24, frames: 48 }),
+    /mp4_malformed_stsd/,
+  );
 });
 
 test("encode fails closed on timeout and spawn errors without shell", async () => {
   const out = "C:/tmp/tmg-never.mp4";
   const args = buildFfmpegArgs({ width: 1080, height: 1080, fps: 24, outputPath: out });
   const frames = [pngBytes(1080, 1080)];
+  const hangingSpawn = () => {
+    const handlers = {};
+    return {
+      on: (event, handler) => { handlers[event] = handler; },
+      stdout: { on: () => {} },
+      stderr: { on: () => {} },
+      stdin: { write: () => true, end: () => {}, on: () => {} },
+      kill: () => { handlers.close?.(0); },
+    };
+  };
   await assert.rejects(
-    encodeMp4({ ffmpegPath: "ffmpeg", args, frames, outputPath: out, timeoutMs: 20, spawnFn: () => ({ on: () => {}, stdout: { on: () => {} }, stderr: { on: () => {} }, stdin: { write: () => true, end: () => {}, on: () => {} }, kill: () => {} }) }),
+    encodeMp4({ ffmpegPath: "ffmpeg", args, frames, outputPath: out, timeoutMs: 20, spawnFn: hangingSpawn }),
     /mp4_encode_timeout/,
   );
   await assert.rejects(
@@ -285,11 +329,185 @@ test("encode fails closed on timeout and spawn errors without shell", async () =
   assert.equal(shellUsed.shell, undefined);
 });
 
+test("streaming encoder cleans temp output on every exit path", async () => {
+  const { writeFileSync, existsSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { randomUUID } = await import("node:crypto");
+  function tempOut() {
+    const path = join(tmpdir(), `tmg-test-${randomUUID()}.mp4`);
+    writeFileSync(path, Buffer.from("partial"));
+    return path;
+  }
+  function controllableSpawn({ exitCode = 0, payload = null } = {}) {
+    const log = { kills: 0 };
+    return {
+      log,
+      spawnFn: (path, argv, opts) => {
+        assert.equal(opts.shell, undefined);
+        const handlers = {};
+        return {
+          on: (event, handler) => { handlers[event] = handler; },
+          stderr: { on: () => {} },
+          stdin: {
+            write: () => true,
+            end: () => {
+              if (payload && opts && argv.includes(payload.path)) {
+                writeFileSync(payload.path, payload.bytes);
+              }
+              handlers.close?.(exitCode);
+            },
+            on: () => {},
+            once: (event, handler) => {
+              if (event === "drain") setImmediate(handler);
+            },
+          },
+          kill: () => {
+            log.kills += 1;
+            handlers.close?.(exitCode);
+          },
+        };
+      },
+    };
+  }
+  // Success: bytes returned, temp removed.
+  {
+    const path = tempOut();
+    const fake = controllableSpawn({});
+    const mp4Bytes = craftedMp4({});
+    const encoder = await beginMp4Encode({
+      ffmpegPath: "ffmpeg",
+      args: buildFfmpegArgs({ width: 1080, height: 1080, fps: 24, outputPath: path }),
+      outputPath: path,
+      spawnFn: fake.spawnFn,
+    });
+    await encoder.writeFrame(pngBytes(1080, 1080));
+    // Swap in real bytes for the read path.
+    writeFileSync(path, mp4Bytes);
+    const done = await encoder.finish();
+    assert.deepEqual(done, mp4Bytes);
+    assert.equal(existsSync(path), false);
+  }
+  // Non-zero exit: temp removed, exit error surfaces.
+  {
+    const path = tempOut();
+    const fake = controllableSpawn({ exitCode: 1 });
+    const encoder = await beginMp4Encode({
+      ffmpegPath: "ffmpeg",
+      args: buildFfmpegArgs({ width: 1080, height: 1080, fps: 24, outputPath: path }),
+      outputPath: path,
+      spawnFn: fake.spawnFn,
+    });
+    await encoder.writeFrame(pngBytes(1080, 1080));
+    await assert.rejects(encoder.finish(), /mp4_encode_failed:exit_1/);
+    assert.equal(existsSync(path), false);
+  }
+  // Timeout: child killed, temp removed.
+  {
+    const path = tempOut();
+    const hangingHandlers = {};
+    const hanging = {
+      on: (event, handler) => { hangingHandlers[event] = handler; },
+      stderr: { on: () => {} },
+      stdin: { write: () => true, end: () => {}, on: () => {}, once: (event, handler) => { if (event === "drain") setImmediate(handler); } },
+      kill: () => { hangingHandlers.close?.(0); },
+    };
+    const encoder = await beginMp4Encode({
+      ffmpegPath: "ffmpeg",
+      args: buildFfmpegArgs({ width: 1080, height: 1080, fps: 24, outputPath: path }),
+      outputPath: path, timeoutMs: 20,
+      spawnFn: () => hanging,
+    });
+    await encoder.writeFrame(pngBytes(1080, 1080));
+    await new Promise((resolve) => setTimeout(resolve, 60));
+    await assert.rejects(encoder.finish(), /mp4_encoder_closed|mp4_encode_timeout/);
+    assert.equal(existsSync(path), false);
+  }
+  // Abort: kill recorded, temp removed, further writes rejected.
+  {
+    const path = tempOut();
+    const fake = controllableSpawn({});
+    const encoder = await beginMp4Encode({
+      ffmpegPath: "ffmpeg",
+      args: buildFfmpegArgs({ width: 1080, height: 1080, fps: 24, outputPath: path }),
+      outputPath: path,
+      spawnFn: fake.spawnFn,
+    });
+    await encoder.writeFrame(pngBytes(1080, 1080));
+    await assert.rejects(encoder.abort(), /mp4_encode_aborted/);
+    assert.equal(fake.log.kills, 1);
+    assert.equal(existsSync(path), false);
+    await assert.rejects(encoder.writeFrame(pngBytes(1080, 1080)), /mp4_encode_aborted/);
+    await assert.rejects(encoder.finish(), /mp4_encode_aborted/);
+  }
+  // Intermediate byte budget enforced deterministically.
+  {
+    const path = tempOut();
+    const fake = controllableSpawn({});
+    const encoder = await beginMp4Encode({
+      ffmpegPath: "ffmpeg",
+      args: buildFfmpegArgs({ width: 1080, height: 1080, fps: 24, outputPath: path }),
+      outputPath: path, maxIntermediateBytes: 1024,
+      spawnFn: fake.spawnFn,
+    });
+    await assert.rejects(encoder.writeFrame(Buffer.alloc(2048, 7)), /mp4_intermediate_budget/);
+    assert.equal(existsSync(path), false);
+  }
+  // Cancel during encode via AbortSignal terminates the child.
+  {
+    const path = tempOut();
+    const fake = controllableSpawn({});
+    const controller = new AbortController();
+    const encoder = await beginMp4Encode({
+      ffmpegPath: "ffmpeg",
+      args: buildFfmpegArgs({ width: 1080, height: 1080, fps: 24, outputPath: path }),
+      outputPath: path, signal: controller.signal,
+      spawnFn: fake.spawnFn,
+    });
+    await encoder.writeFrame(pngBytes(1080, 1080));
+    controller.abort();
+    for (let attempt = 0; attempt < 50 && existsSync(path); attempt += 1) {
+      await new Promise((resolve) => setTimeout(resolve, 20));
+    }
+    assert.equal(fake.log.kills, 1);
+    assert.equal(existsSync(path), false);
+    await assert.rejects(encoder.finish(), /mp4_encode_aborted/);
+  }
+});
+
+function fakeEncoder({ mp4, onWrite, onFinish } = {}) {
+  const log = { writes: 0, bytes: 0, finished: false, aborted: false };
+  return {
+    log,
+    createEncoder: async (params) => {
+      assert.ok(Object.isFrozen(params.args));
+      assert.match(params.outputPath, /\.mp4$/);
+      assert.ok(params.signal instanceof AbortSignal);
+      return {
+        writeFrame: async (frame) => {
+          log.writes += 1;
+          log.bytes += frame.length;
+          await onWrite?.(frame, log);
+        },
+        finish: async () => {
+          log.finished = true;
+          await onFinish?.(log);
+          return mp4;
+        },
+        abort: async () => {
+          log.aborted = true;
+        },
+      };
+    },
+  };
+}
+
 test("motion worker executes a job to one MP4 version and completes", async () => {
   const db = stubDb({ input: motionInput() });
   const storage = memoryStorage();
   const mp4 = craftedMp4({ width: 1080, height: 1080, timescale: 1000, duration: 2000 });
   const captures = [];
+  const fake = fakeEncoder({ mp4 });
   const result = await executeMotionRenderJob({
     db, storage,
     capture: async ({ html, width, height, pageIndex }) => {
@@ -297,15 +515,13 @@ test("motion worker executes a job to one MP4 version and completes", async () =
       assert.doesNotMatch(html, /https?:\/\//);
       return { bytes: pngBytes(width, height), attemptedExternal: 0, blockedExternal: 0 };
     },
-    encode: async ({ args, frames, outputPath }) => {
-      assert.ok(Object.isFrozen(args));
-      assert.equal(frames.length, 48);
-      assert.match(outputPath, /\.mp4$/);
-      return mp4;
-    },
+    createEncoder: fake.createEncoder,
     jobId: JOB, worker: WORKER,
   });
   assert.equal(captures.length, 48);
+  assert.equal(fake.log.writes, 48);
+  assert.equal(fake.log.finished, true);
+  assert.equal(fake.log.aborted, false);
   assert.deepEqual(db.log.marks, [[JOB, WORKER]]);
   assert.equal(db.log.registers.length, 1);
   const [jobId, worker, assetId, title, mime, width, height, durationMs, bytes, , objectKey, , provenance, , templateRef, method] = db.log.registers[0];
@@ -314,7 +530,7 @@ test("motion worker executes a job to one MP4 version and completes", async () =
   assert.match(objectKey, new RegExp(`^t/${ORG}/motion/${JOB}/v1\\.mp4$`));
   assert.equal(provenance.frames, 48);
   assert.equal(provenance.fps, 24);
-  assert.equal(provenance.codec, "mpeg4");
+  assert.equal(provenance.codec, "mp4v");
   assert.equal(provenance.design_version, 1);
   assert.equal(provenance.correlation_id, CORR);
   assert.match(provenance.font_sha256, /^[0-9a-f]{64}$/);
@@ -323,17 +539,59 @@ test("motion worker executes a job to one MP4 version and completes", async () =
   assert.deepEqual(db.log.completes, [[JOB, WORKER, "50000000-0000-4000-8000-000000000001", null]]);
   assert.equal(result.output.frames, 48);
   assert.equal(result.output.width, 1080);
+  assert.equal(result.output.codec, "mp4v");
   assert.equal(result.attemptedExternalTotal, 0);
   assert.match(title, /24fps/);
 });
 
+test("900-frame render never accumulates frame buffers", async () => {
+  const longDoc = {
+    ...motionDoc(),
+    fps: 30,
+    scenes: [
+      { id: "s1", page_id: "page-1", duration_ms: 10000 },
+      { id: "s2", page_id: "page-1", duration_ms: 10000 },
+      { id: "s3", page_id: "page-1", duration_ms: 10000 },
+    ],
+  };
+  const mp4 = craftedMp4({ width: 1080, height: 1080, timescale: 1000, duration: 30000 });
+  const db = stubDb({ input: motionInput(longDoc) });
+  const live = new Set();
+  let peak = 0;
+  const fake = fakeEncoder({
+    mp4,
+    onWrite: (frame) => {
+      live.delete(frame);
+      peak = Math.max(peak, live.size);
+    },
+  });
+  const result = await executeMotionRenderJob({
+    db, storage: memoryStorage(),
+    capture: async ({ width, height }) => {
+      const frame = pngBytes(width, height);
+      live.add(frame);
+      peak = Math.max(peak, live.size);
+      return { bytes: frame, attemptedExternal: 0, blockedExternal: 0 };
+    },
+    createEncoder: fake.createEncoder,
+    jobId: JOB, worker: WORKER,
+  });
+  assert.equal(result.output.frames, 900);
+  assert.equal(fake.log.writes, 900);
+  assert.ok(peak <= 2, `peak live frames ${peak} exceeds bound`);
+  assert.equal(live.size, 0);
+});
+
 test("motion worker honors cancellation, timeouts, and duplicate guards", async () => {
+  const neverEncoder = () => {
+    throw new Error("encoder must not start");
+  };
   const dbCancel = stubDb({ input: motionInput(), state: { status: "running", cancel_requested: true } });
   await assert.rejects(
     executeMotionRenderJob({
       db: dbCancel, storage: memoryStorage(),
       capture: async () => { throw new Error("capture must not run"); },
-      encode: async () => { throw new Error("encode must not run"); },
+      createEncoder: neverEncoder,
       jobId: JOB, worker: WORKER,
     }),
     /motion_cancel_requested/,
@@ -345,19 +603,46 @@ test("motion worker honors cancellation, timeouts, and duplicate guards", async 
     executeMotionRenderJob({
       db: dbPreCancel, storage: memoryStorage(),
       capture: async () => { throw new Error("capture must not run"); },
-      encode: async () => { throw new Error("encode must not run"); },
+      createEncoder: neverEncoder,
       jobId: JOB, worker: WORKER,
     }),
     /motion_cancel_requested/,
   );
   assert.equal(dbPreCancel.log.fails[0][2], "cancelled");
 
+  // Cancel lands mid-encode: finish rejects as cancelled, job cancelled.
+  const mp4 = craftedMp4({ width: 1080, height: 1080, timescale: 1000, duration: 2000 });
+  const dbMidEncode = stubDb({ input: motionInput() });
+  const midFake = fakeEncoder({
+    mp4,
+    onFinish: async () => {
+      const error = new Error("mp4_encode_aborted");
+      error.errorClass = "cancelled";
+      throw error;
+    },
+  });
+  await assert.rejects(
+    executeMotionRenderJob({
+      db: dbMidEncode, storage: memoryStorage(),
+      capture: async ({ width, height }) => ({ bytes: pngBytes(width, height), attemptedExternal: 0, blockedExternal: 0 }),
+      createEncoder: midFake.createEncoder,
+      jobId: JOB, worker: WORKER,
+    }),
+    /mp4_encode_aborted/,
+  );
+  assert.equal(dbMidEncode.log.fails[0][2], "cancelled");
+  assert.equal(dbMidEncode.log.completes.length, 0);
+
   const dbTimeout = stubDb({ input: motionInput() });
+  const timeoutFake = fakeEncoder({
+    mp4,
+    onFinish: async () => { throw new Error("motion_encode_timeout:deadline"); },
+  });
   await assert.rejects(
     executeMotionRenderJob({
       db: dbTimeout, storage: memoryStorage(),
       capture: async ({ width, height }) => ({ bytes: pngBytes(width, height), attemptedExternal: 0, blockedExternal: 0 }),
-      encode: async () => { throw new Error("motion_encode_timeout:deadline"); },
+      createEncoder: timeoutFake.createEncoder,
       jobId: JOB, worker: WORKER,
     }),
     /motion_encode_timeout/,
@@ -369,7 +654,7 @@ test("motion worker honors cancellation, timeouts, and duplicate guards", async 
     executeMotionRenderJob({
       db: dbDup, storage: memoryStorage(),
       capture: async () => { throw new Error("capture must not run"); },
-      encode: async () => { throw new Error("encode must not run"); },
+      createEncoder: neverEncoder,
       jobId: JOB, worker: WORKER,
     }),
     /motion_duplicate_execution/,
@@ -381,7 +666,7 @@ test("motion worker honors cancellation, timeouts, and duplicate guards", async 
     executeMotionRenderJob({
       db: dbBad, storage: memoryStorage(),
       capture: async () => { throw new Error("capture must not run"); },
-      encode: async () => { throw new Error("encode must not run"); },
+      createEncoder: neverEncoder,
       jobId: JOB, worker: WORKER,
     }),
     /motion_document_invalid/,

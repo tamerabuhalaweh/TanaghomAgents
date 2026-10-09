@@ -74,7 +74,10 @@ is configured `--enable-gpl` (libx264/libx265). Position:
   encoder — no external GPL encoder library is invoked), container
   `mp4`, `yuv420p`, `+faststart`, no audio track. `libx264`/`libx265`
   stay rejected: they are GPL-licensed encoder libraries, and enabling
-  them is a legal decision, not an engineering one.
+  them is a legal decision, not an engineering one. Note: choosing the
+  native encoder alone does not eliminate all distribution or patent
+  obligations — deployment-specific legal review is still required
+  before any production use of FFmpeg in any configuration.
 - Known trade-off (stated, not hidden): MPEG-4 Part 2 MP4s play in VLC
   and most native players but not in Chrome/Firefox `<video>`. The
   dashboard preview therefore plays the **animated HTML timeline**
