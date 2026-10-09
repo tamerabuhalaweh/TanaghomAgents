@@ -10,12 +10,16 @@ test("video lane migration is additive, guarded, and reversible", async () => {
   assert.match(up, /CREATE FUNCTION tanaghom\.get_creative_video_input\(/);
   assert.match(up, /CREATE FUNCTION tanaghom\.get_creative_video_source\(/);
   assert.match(up, /CREATE FUNCTION tanaghom\.claim_creative_video_job\(/);
+  assert.match(up, /CREATE FUNCTION tanaghom\.attach_creative_provider_request\(/);
+  assert.match(up, /CREATE FUNCTION tanaghom\.get_creative_provider_call\(/);
   assert.match(up, /capability='video' AND lane='gpu_video'|capability IN \('video'\)|job\.capability='video'/);
   assert.match(up, /GRANT EXECUTE ON FUNCTION tanaghom\.claim_creative_video_job\(text,int\) TO tanaghom_creative_worker;/);
   assert.match(up, /text_to_video','image_to_video/);
   assert.match(up, /INSERT INTO public\.schema_migrations\(version\) VALUES \('0044_creative_video_lane'\)/);
   assert.doesNotMatch(up, /CREATE TABLE/);
   assert.doesNotMatch(up, /GRANT SELECT/);
+  assert.match(down, /DROP FUNCTION tanaghom\.attach_creative_provider_request\(uuid,text,text\);/);
+  assert.match(down, /DROP FUNCTION tanaghom\.get_creative_provider_call\(uuid,text,text\);/);
   assert.match(down, /DROP FUNCTION tanaghom\.claim_creative_video_job\(text,int\);/);
   assert.match(down, /DELETE FROM public.schema_migrations WHERE version='0044_creative_video_lane'/);
 });
@@ -90,8 +94,8 @@ function videoInput(operation = "text_to_video") {
   };
 }
 
-function stubDb({ input = videoInput(), latest = null, source = null, calls = null, state = { status: "running", cancel_requested: false }, stateFn = null } = {}) {
-  const log = calls ?? { marks: [], begins: [], finishes: [], registers: [], completes: [], fails: [] };
+function stubDb({ input = videoInput(), prior = null, source = null, calls = null, state = { status: "running", cancel_requested: false }, stateFn = null } = {}) {
+  const log = calls ?? { marks: [], begins: [], attaches: [], finishes: [], registers: [], completes: [], fails: [] };
   return {
     log,
     async query(text, params) {
@@ -105,8 +109,12 @@ function stubDb({ input = videoInput(), latest = null, source = null, calls = nu
       if (text.includes("get_creative_video_input")) {
         return { rows: [{ input }] };
       }
-      if (text.includes("latest_creative_provider_call")) {
-        return { rows: [{ status: latest }] };
+      if (text.includes("get_creative_provider_call")) {
+        return { rows: prior ? [{ call: prior }] : [] };
+      }
+      if (text.includes("attach_creative_provider_request")) {
+        log.attaches.push(params);
+        return { rows: [{ request_id: params[2] }] };
       }
       if (text.includes("get_creative_video_source")) {
         return { rows: source ? [{ source }] : [] };
@@ -184,7 +192,7 @@ function stubProvider({ onCreate, onQuery, mp4 } = {}) {
 test("video worker module stays EXECUTE-only: no direct table reads", async () => {  const source = await readFile(new URL("../packages/creative-runtime/render/video-worker.mjs", import.meta.url), "utf8");
   assert.doesNotMatch(source, /FROM tanaghom\./);
   assert.doesNotMatch(source, /db\.query/);
-  for (const name of ["getVideoInput", "getVideoSource", "claimVideoJob", "beginProviderCall", "finishProviderCall", "latestProviderCall", "markRunning", "registerVersion", "completeJob", "failJob"]) {
+  for (const name of ["getVideoInput", "getVideoSource", "claimVideoJob", "beginProviderCall", "finishProviderCall", "getProviderCall", "attachProviderRequest", "markRunning", "registerVersion", "completeJob", "failJob"]) {
     assert.match(source, new RegExp(`\\b${name}\\b`));
   }
 });
@@ -299,6 +307,7 @@ test("video worker executes text-to-video to a persisted version", async () => {
   assert.equal(db.log.begins.length, 1);
   assert.equal(db.log.begins[0][2], "stub-minimax");
   assert.equal(db.log.begins[0][5], "text_to_video");
+  assert.deepEqual(db.log.attaches, [["90000000-0000-4000-8000-000000000001", WORKER, "424010985738629"]]);
   assert.equal(db.log.finishes.length, 1);
   assert.deepEqual(db.log.finishes[0].slice(3, 6), [0.4, "succeeded", null]);
   assert.equal(db.log.registers.length, 1);
@@ -366,8 +375,11 @@ test("indeterminate attempts are never blindly retried", async () => {
   assert.equal(dbFirst.log.fails[0][2], "transient");
   assert.deepEqual(dbFirst.log.finishes[0].slice(4, 6), ["indeterminate", "indeterminate"]);
 
-  // Second pass sees the indeterminate attempt and refuses a new call.
-  const dbSecond = stubDb({ latest: "indeterminate" });
+  // Second pass sees the unresolved attempt WITHOUT a task anchor and
+  // refuses a blind retry.
+  const dbSecond = stubDb({
+    prior: { call_id: "90000000-0000-4000-8000-000000000001", status: "indeterminate", error_class: "indeterminate", provider_request_id: null, attempt_no: 1 },
+  });
   const fakeSecond = stubProvider({});
   await assert.rejects(
     executeVideoJob({
@@ -378,6 +390,75 @@ test("indeterminate attempts are never blindly retried", async () => {
   );
   assert.equal(fakeSecond.log.creates, 0);
   assert.equal(dbSecond.log.fails[0][2], "deterministic");
+});
+
+test("restart resumes the SAME anchored task without a new create", async () => {
+  const prior = {
+    call_id: "90000000-0000-4000-8000-000000000001", status: "started", error_class: null,
+    provider_request_id: "task-anchored-1", attempt_no: 1,
+  };
+  const db = stubDb({ prior });
+  const queried = [];
+  const fake = stubProvider({
+    onCreate: () => { throw new Error("createTask must not run on resume"); },
+    onQuery: (taskId) => {
+      queried.push(taskId);
+      return { status: "succeeded", url: "https://cdn.hailuoai.com/output.mp4", duration: 5, resolution: "768P", ratio: "16:9", usage: { output_seconds: 5 } };
+    },
+  });
+  const result = await executeVideoJob({
+    db, storage: memoryStorage(), provider: fake.provider, download: fake.download,
+    jobId: JOB, worker: WORKER, pollIntervalMs: 5, pollTimeoutMs: 1000,
+  });
+  assert.equal(fake.log.creates, 0);
+  assert.deepEqual(queried, ["task-anchored-1"]);
+  assert.equal(result.provider.taskId, "task-anchored-1");
+  assert.equal(db.log.registers.length, 1);
+  assert.deepEqual(db.log.completes, [[JOB, WORKER, "50000000-0000-4000-8000-000000000001", null]]);
+  assert.equal(db.log.registers[0][12].reconciliation_resumed, true);
+});
+
+test("capacity rejection without a task allows exactly one new attempt", async () => {
+  const prior = {
+    call_id: "90000000-0000-4000-8000-000000000001", status: "failed", error_class: "capacity",
+    provider_request_id: null, attempt_no: 1,
+  };
+  const db = stubDb({ prior });
+  const fake = stubProvider({});
+  const result = await executeVideoJob({
+    db, storage: memoryStorage(), provider: fake.provider, download: fake.download,
+    jobId: JOB, worker: WORKER, pollIntervalMs: 5, pollTimeoutMs: 1000,
+  });
+  assert.equal(fake.log.creates, 1);
+  assert.equal(result.output.codec, "avc1");
+});
+
+test("transient poll errors keep reconciling the same task", async () => {
+  const db = stubDb({});
+  let polls = 0;
+  const fake = stubProvider({
+    onQuery: () => {
+      polls += 1;
+      if (polls <= 2) {
+        const error = new Error("gateway timeout during poll");
+        error.errorClass = "transient";
+        throw error;
+      }
+      return { status: "succeeded", url: "https://cdn.hailuoai.com/output.mp4", duration: 5, resolution: "768P", ratio: "16:9", usage: { output_seconds: 5 } };
+    },
+  });
+  const result = await executeVideoJob({
+    db, storage: memoryStorage(), provider: fake.provider, download: fake.download,
+    jobId: JOB, worker: WORKER, pollIntervalMs: 5, pollTimeoutMs: 5000,
+  });
+  assert.equal(fake.log.creates, 1);
+  assert.ok(polls >= 3);
+  assert.equal(result.output.codec, "avc1");
+  // No terminal finish was recorded for the transient blips: exactly one
+  // finish (the final success) exists.
+  assert.equal(db.log.finishes.length, 1);
+  assert.equal(db.log.finishes[0][4], "succeeded");
+  assert.equal(db.log.completes.length, 1);
 });
 
 test("moderated provider failures are deterministic and terminal", async () => {
@@ -395,6 +476,24 @@ test("moderated provider failures are deterministic and terminal", async () => {
   );
   assert.equal(db.log.fails[0][2], "deterministic");
   assert.equal(db.log.completes.length, 0);
+});
+
+test("provider-reported cancelled is the only path recording provider-cancelled", async () => {
+  const db = stubDb({});
+  const fake = stubProvider({
+    onQuery: () => ({ status: "cancelled" }),
+  });
+  await assert.rejects(
+    executeVideoJob({
+      db, storage: memoryStorage(), provider: fake.provider, download: fake.download,
+      jobId: JOB, worker: WORKER, pollIntervalMs: 5, pollTimeoutMs: 1000,
+    }),
+    /video_provider_task_cancelled/,
+  );
+  assert.deepEqual(db.log.finishes[0].slice(4, 6), ["cancelled", "cancelled"]);
+  assert.equal(db.log.fails[0][2], "cancelled");
+  assert.equal(db.log.completes.length, 0);
+  assert.equal(db.log.registers.length, 0);
 });
 
 test("local cancel stops polling without a provider cancel call", async () => {
@@ -418,14 +517,14 @@ test("local cancel stops polling without a provider cancel call", async () => {
   assert.equal(dbPre.log.fails[0][2], "cancelled");
 });
 
-test("cancel during provider polling records cancelled and stops", async () => {
+test("cancel during provider polling reconciles truthfully, then records cancel", async () => {
   const db = stubDb({
     stateFn: (n) => (n >= 3
       ? { status: "running", cancel_requested: true }
       : { status: "running", cancel_requested: false }),
   });
   const fake = stubProvider({
-    onQuery: () => ({ status: "running" }),
+    onQuery: () => ({ status: "succeeded", url: "https://cdn.hailuoai.com/output.mp4", duration: 5, resolution: "768P", ratio: "16:9", usage: { output_seconds: 5 } }),
   });
   await assert.rejects(
     executeVideoJob({
@@ -434,12 +533,15 @@ test("cancel during provider polling records cancelled and stops", async () => {
     }),
     /video_cancel_requested/,
   );
+  // The charged artifact still persisted as draft output...
+  assert.equal(db.log.registers.length, 1);
+  assert.equal(db.log.registers[0][12].local_cancel_requested, true);
+  assert.equal(db.log.registers[0][12].remote_outcome, "succeeded");
+  // ...while the job honors the user's cancel intent and never completes.
+  // No provider cancel endpoint exists or is called: only queryTask ran.
   assert.ok(fake.log.queries >= 1);
-  const queryCount = fake.log.queries;
   assert.equal(db.log.fails[0][2], "cancelled");
   assert.equal(db.log.completes.length, 0);
-  // No provider cancel endpoint exists or is called: only queryTask ran.
-  assert.ok(queryCount >= 1);
 });
 
 test("video claim helper uses the filtered claim", async () => {

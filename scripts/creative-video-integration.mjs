@@ -138,6 +138,12 @@ const providerServer = createServer(async (request, response) => {
     if (!task) return json(404, { type: "error", error: { message: "unknown task" } });
     task.polls += 1;
     if (task.fault === "stuck") return json(200, { task: { id: queryMatch[1], status: "running" } });
+    if (task.fault === "flaky" && task.polls <= 2) {
+      return json(500, { type: "error", error: { type: "server_error", message: "internal error (1000)", http_code: "500" } });
+    }
+    if (task.fault === "cancel-slow" && task.polls < 5) {
+      return json(200, { task: { id: queryMatch[1], status: "running" } });
+    }
     if (task.fault === "moderated") {
       return json(200, { task: { id: queryMatch[1], status: "failed", error: { code: "1026", message: "video description contains sensitive content" } } });
     }
@@ -494,6 +500,114 @@ try {
   assert.equal(indRow.rows[0].status, "failed");
   console.log(JSON.stringify({ case_id: "vid-indeterminate-01", job_id: indGen.job_ids[0], result: "no-blind-retry" }));
   console.log("PASS indeterminate attempts never blindly retry");
+
+  async function executeVideoJobResume({ jobId, worker }) {
+    const { executeVideoJob: resume } = await import("../packages/creative-runtime/render/video-worker.mjs");
+    return resume({
+      db: workerDb, storage: workerStorage, provider: stubProvider("ok"), download: downloadLoopback,
+      jobId, worker, pollIntervalMs: 50, pollTimeoutMs: 30000,
+    });
+  }
+
+  // Flaky polls: 500s during reconciliation resume the SAME task.
+  const flakyGen = JSON.parse(await (async () => {
+    const response = await postJson("/api/creative/video/generate", owner,
+      { operation: "text_to_video", prompt: "Flaky probe", duration: 5, ratio: "16:9", correlation_id: randomUUID() }, "e2e-video-flaky");
+    return response.text();
+  })());
+  const createsBeforeFlaky = providerHits.creates;
+  const flaky = await runVideoJob({ jobId: flakyGen.job_ids[0], worker: "worker-video-flaky", fault: "flaky" });
+  assert.equal(providerHits.creates - createsBeforeFlaky, 1);
+  assert.equal(flaky.output.codec, "mp4v");
+  console.log(JSON.stringify({ case_id: "vid-resume-01", job_id: flakyGen.job_ids[0], result: "same-task-resumed" }));
+  console.log("PASS transient poll failures resume the anchored task");
+
+  // Crash recovery: a dead worker's attached task_id carries the next pass.
+  const crashGen = JSON.parse(await (async () => {
+    const response = await postJson("/api/creative/video/generate", owner,
+      { operation: "text_to_video", prompt: "Crash probe", duration: 5, ratio: "16:9", correlation_id: randomUUID() }, "e2e-video-crash");
+    return response.text();
+  })());
+  console.error(`[e2e] crash job submitted: ${crashGen.job_ids[0]}`);
+  const createsBeforeCrash = providerHits.creates;
+  const probe = await new Promise((resolveProbe) => {
+    const child = spawn(process.execPath, ["scripts/creative-video-crash-probe.mjs", crashGen.job_ids[0], "worker-video-crash", "ok"], {
+      env: { ...process.env, DATABASE_URL: databaseUrl, CREATIVE_VIDEO_PROVIDER_ORIGIN: providerOrigin },
+      stdio: ["ignore", "pipe", "pipe"],
+    });
+    let stdout = "";
+    let stderr = "";
+    child.stdout.on("data", (chunk) => { stdout += chunk; });
+    child.stderr.on("data", (chunk) => { stderr += chunk; });
+    const watchdog = setTimeout(() => {
+      console.error(`[e2e] crash probe watchdog fired; killing pid=${child.pid}`);
+      try {
+        child.kill("SIGKILL");
+      } catch {}
+    }, 60000);
+    child.on("exit", (code, signal) => {
+      clearTimeout(watchdog);
+      console.error(`[e2e] crash probe exited code=${code} signal=${signal} stderr=${stderr.slice(-500)}`);
+      resolveProbe({ status: code, stdout, stderr, signal });
+    });
+    child.on("error", (error) => {
+      clearTimeout(watchdog);
+      resolveProbe({ status: null, stdout, stderr: `${stderr} spawn:${error.message}`, signal: null });
+    });
+  });
+  assert.equal(probe.status, 1);
+  const anchored = JSON.parse(probe.stdout.toString());
+  assert.equal(anchored.result, "anchored");
+  const crashResult = await executeVideoJobResume({ jobId: crashGen.job_ids[0], worker: "worker-video-crash" });
+  assert.equal(providerHits.creates - createsBeforeCrash, 1);
+  assert.equal(crashResult.provider.taskId, anchored.task_id);
+  console.log(JSON.stringify({ case_id: "vid-crash-01", job_id: crashGen.job_ids[0], task_id: anchored.task_id, result: "recovered" }));
+  console.log("PASS crash recovery resumes the anchored task");
+
+  // Local cancel with a live task: reconciliation continues to provider
+  // truth, the charged artifact persists as draft, the job closes
+  // cancelled, and no replacement task ever starts.
+  const liveCancelGen = JSON.parse(await (async () => {
+    const response = await postJson("/api/creative/video/generate", owner,
+      { operation: "text_to_video", prompt: "Live cancel probe", duration: 5, ratio: "16:9", correlation_id: randomUUID() }, "e2e-video-livecancel");
+    return response.text();
+  })());
+  const liveCreatesBefore = providerHits.creates;
+  const liveClaimed = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_video_job('worker-video-livecancel',120)`);
+  assert.ok(liveClaimed.rows.find((candidate) => candidate.job_id === liveCancelGen.job_ids[0]));
+  const { executeVideoJob: executeLive } = await import("../packages/creative-runtime/render/video-worker.mjs");
+  const liveRun = executeLive({
+    db: workerDb, storage: workerStorage, provider: stubProvider("cancel-slow"), download: downloadLoopback,
+    jobId: liveCancelGen.job_ids[0], worker: "worker-video-livecancel", pollIntervalMs: 50, pollTimeoutMs: 30000,
+  });
+  const queriesBeforeCancel = providerHits.queries;
+  for (let waited = 0; waited < 400 && providerHits.queries <= queriesBeforeCancel; waited += 1) {
+    await new Promise((resolve) => setTimeout(resolve, 25));
+  }
+  assert.ok(providerHits.queries > queriesBeforeCancel, "worker began polling before cancel");
+  const liveCancelRequest = await fetch(`${dashboardOrigin}/api/creative/jobs/${liveCancelGen.job_ids[0]}/cancel`, {
+    method: "POST", headers: { ...owner, "Content-Type": "application/json", "Idempotency-Key": "e2e-video-livecancel" },
+  });
+  assert.equal(liveCancelRequest.status, 200);
+  await assert.rejects(liveRun, /video_cancel_requested/);
+  assert.equal(providerHits.creates - liveCreatesBefore, 1);
+  const liveVersions = await pool.query(
+    `SELECT v.id, v.status, v.provenance FROM tanaghom.creative_asset_versions v WHERE v.job_id = $1`,
+    [liveCancelGen.job_ids[0]],
+  );
+  assert.equal(liveVersions.rows.length, 1);
+  assert.equal(liveVersions.rows[0].status, "draft");
+  assert.equal(liveVersions.rows[0].provenance.local_cancel_requested, true);
+  assert.equal(liveVersions.rows[0].provenance.remote_outcome, "succeeded");
+  const liveJobRow = await pool.query(`SELECT status FROM tanaghom.creative_jobs WHERE id = $1`, [liveCancelGen.job_ids[0]]);
+  assert.equal(liveJobRow.rows[0].status, "cancelled");
+  const liveCalls = await pool.query(
+    `SELECT status FROM tanaghom.creative_provider_calls WHERE job_id = $1 ORDER BY attempt_no`,
+    [liveCancelGen.job_ids[0]],
+  );
+  assert.equal(liveCalls.rows[0].status, "succeeded");
+  console.log(JSON.stringify({ case_id: "vid-livecancel-01", job_id: liveCancelGen.job_ids[0], result: "reconciled-then-cancelled" }));
+  console.log("PASS local cancel reconciles provider truth before closing");
 
   // Evil artifact host is rejected without download.
   const evilGen = JSON.parse(await (async () => {

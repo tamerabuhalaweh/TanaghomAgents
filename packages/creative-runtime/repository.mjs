@@ -161,6 +161,22 @@ export async function latestProviderCall(db, { jobId, worker, operation }) {
   return one(result.rows)?.status ?? null;
 }
 
+export async function attachProviderRequest(db, { callId, worker, requestId }) {
+  const result = await db.query(
+    `SELECT tanaghom.attach_creative_provider_request($1,$2,$3) AS request_id`,
+    [callId, worker, requestId],
+  );
+  return one(result.rows)?.request_id ?? null;
+}
+
+export async function getProviderCall(db, { jobId, worker, operation }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_provider_call($1,$2,$3) AS call`,
+    [jobId, worker, operation],
+  );
+  return one(result.rows)?.call ?? null;
+}
+
 export async function markRunning(db, { jobId, worker }) {
   const result = await db.query(`SELECT tanaghom.mark_creative_job_running($1,$2) AS status`, [jobId, worker]);
   return one(result.rows)?.status ?? null;

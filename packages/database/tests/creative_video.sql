@@ -118,6 +118,36 @@ DO $$ DECLARE j uuid; call uuid; call_status text; BEGIN
  IF SQLERRM NOT LIKE '%invalid provider call begin%' THEN RAISE; END IF; END;
 END $$;
 
+-- Provider request anchor: attach once, same-value idempotent,
+-- replacement rejected, non-started rejected, full record readable.
+DO $$ DECLARE j uuid; call uuid; rec jsonb; BEGIN
+ j := tanaghom.create_creative_job('e1000000-0000-4000-8000-000000000001','video','gpu_video',
+  '{"operation":"text_to_video","prompt":"x","duration":5}','e5000000-0000-4000-8000-000000000018','e6000000-0000-4000-8000-000000000018',0,3);
+ PERFORM tanaghom.claim_creative_video_job('worker-video-anchor',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-video-anchor' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ SELECT tanaghom.begin_creative_provider_call(j,'worker-video-anchor','minimax','MiniMax-H3',NULL,'text_to_video','{"seconds":5}',0.4,'creative.video-providers.v1') INTO call;
+ SELECT tanaghom.get_creative_provider_call(j,'worker-video-anchor','text_to_video') INTO rec;
+ IF rec->>'status' IS DISTINCT FROM 'started' THEN RAISE EXCEPTION 'call record wrong'; END IF;
+ IF rec->>'provider_request_id' IS NOT NULL THEN RAISE EXCEPTION 'request id should start null'; END IF;
+ PERFORM tanaghom.attach_creative_provider_request(call,'worker-video-anchor','task-abc-1');
+ PERFORM tanaghom.attach_creative_provider_request(call,'worker-video-anchor','task-abc-1');
+ SELECT tanaghom.get_creative_provider_call(j,'worker-video-anchor','text_to_video') INTO rec;
+ IF rec->>'provider_request_id' IS DISTINCT FROM 'task-abc-1' THEN RAISE EXCEPTION 'anchor not persisted'; END IF;
+ IF (rec->>'attempt_no')::int IS DISTINCT FROM 1 THEN RAISE EXCEPTION 'attempt number wrong'; END IF;
+ BEGIN PERFORM tanaghom.attach_creative_provider_request(call,'worker-video-anchor','task-other');
+ RAISE EXCEPTION 'request replacement unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%already attached%' THEN RAISE; END IF; END;
+ BEGIN PERFORM tanaghom.attach_creative_provider_request(call,'intruder','task-abc-1');
+ RAISE EXCEPTION 'foreign attach unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%worker mismatch%' THEN RAISE; END IF; END;
+ PERFORM tanaghom.finish_creative_provider_call(call,'worker-video-anchor','task-abc-1',0.4,'succeeded',NULL,NULL);
+ BEGIN PERFORM tanaghom.attach_creative_provider_request(call,'worker-video-anchor','task-abc-1');
+ RAISE EXCEPTION 'terminal attach unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%already terminal%' THEN RAISE; END IF; END;
+ SELECT tanaghom.get_creative_provider_call(j,'worker-video-anchor','image_to_video') INTO rec;
+ IF rec IS NOT NULL THEN RAISE EXCEPTION 'missing operation should return null'; END IF;
+END $$;
+
 -- Least-privilege boundary: the worker role stays EXECUTE-only.
 SET ROLE tanaghom_creative_worker;
 DO $$ BEGIN

@@ -29,17 +29,28 @@ reviewer approval:
    readers reused.
 3. Worker (`render/video-worker.mjs`, CLI
    `scripts/creative-video-worker.mjs --once`): mark running,
-   duplicate guard, blind-retry refusal while any attempt is
-   started/indeterminate, provider call metering per attempt,
-   bounded reconcile loop with cooperative cancel (no provider
-   cancel endpoint is documented, so cancel is local-only),
-   SSRF-safe download through the P2a boundary (allowlist, DNS
-   pinning, no private targets), MP4 validation against the vendor
-   codec allowlist (`mp4v`+`avc1`, never trusting MIME/filenames),
-   private storage, versioned asset with provider/model/task/cost
-   provenance, controlled completion. Failed/moderated provider
-   work is deterministic and terminal, matching the vendor's
-   no-deduction policy for failures.
+   duplicate guard, anchor decision from the full prior-attempt
+   record (`get_creative_provider_call`): at most one provider task
+   per job, anchored immediately via
+   `attach_creative_provider_request()` (same-value idempotent,
+   replacement rejected); retries and restarts reconcile the SAME
+   anchored task_id, and started/indeterminate attempts without an
+   anchor refuse deterministically. Provider call metering per
+   attempt; bounded reconcile loop with cooperative cancel. No
+   provider cancel endpoint is documented, so cancel is local-only
+   and NEVER records provider-cancelled: with a live task polling
+   continues to provider truth (success persists as draft output
+   with cost, job closes cancelled); only a provider-reported
+   `cancelled` status marks the attempt cancelled. Transient poll
+   failures never terminalize — they keep reconciling within
+   budget. SSRF-safe download through the P2a boundary (allowlist,
+   DNS pinning, no private targets), MP4 validation against the
+   vendor codec allowlist (`mp4v`+`avc1`, never trusting
+   MIME/filenames), private storage, versioned asset with
+   provider/model/task/cost/cancel/reconciliation provenance,
+   controlled completion. Failed/moderated provider work is
+   deterministic and terminal, matching the vendor's no-deduction
+   policy for failures.
 4. Cost model: pre-submit estimate (`duration × $0.08/s`, flagged
    informational-only); actuals computed from provider-reported
    output seconds at the same rate and persisted on both the call
@@ -57,7 +68,13 @@ reviewer approval:
 
 No talking head, lipsync, avatar, voice/TTS, music, reference-video
 inputs, audio tracks, credits/billing, or production deployment.
-Vendor-pixel certification, full ToS ownership/training verification,
-and result-CDN allowlist confirmation require a separately
-authorized bounded run. Provider cancel (undocumented) stays
-local-only by design.
+Vendor-pixel certification and result-CDN allowlist confirmation
+require a separately authorized bounded run. Provider cancel
+(undocumented) stays local-only by design. Terms recorded: as between
+customer and MiniMax the customer retains ownership rights in input
+and generated content, but MiniMax may use that input and content to
+provide, maintain, develop, and improve the Services — enterprise/
+customer-data policy must explicitly approve this improvement-use
+clause before production credentials exist or any non-synthetic media
+leaves the boundary. Real provider flags stay OFF until that
+privacy/data-use acceptance is signed.

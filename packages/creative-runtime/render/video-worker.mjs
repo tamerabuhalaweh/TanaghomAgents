@@ -3,21 +3,33 @@
 // provider MIME, filenames, or billing state:
 //
 //   claimed job -> mark running -> get_creative_video_input() ->
-//   blind-retry guard -> tenant-checked source bytes (i2v) ->
-//   begin provider call -> provider create task -> poll reconcile ->
+//   resolve prior attempt record ->
+//     CREATE_NEW (no prior billable attempt) |
+//     RESUME (prior task_id anchored) |
+//     REFUSE (unknown remote state) ->
+//   tenant-checked source bytes (i2v) ->
+//   begin provider call -> provider create task ->
+//   attach task_id IMMEDIATELY (crash-recovery anchor) ->
+//   poll reconcile (cancel-aware) ->
 //   SSRF-safe download -> container/track/codec/duration validation ->
 //   private storage -> create_creative_asset_version() ->
-//   complete/fail job with provider cancellation semantics.
+//   complete/fail job with truthful provider cancellation semantics.
 //
-// Billing rule: a provider attempt that ends indeterminate (timeout,
-// transport failure, 5xx at create) is finished as `indeterminate` and
-// the job requeues transiently — but the next pass REFUSES a new
-// provider call while the latest attempt is started/indeterminate, so a
-// possibly-generating, possibly-billing request is never blindly
-// duplicated. Provider cancel endpoints are undocumented for the
-// selected vendors, so local cancel stops polling and records
-// cancelled; the provider task may still complete remotely and that is
-// recorded in provenance.
+// Anchor rule (the double-charge guard): at most ONE provider task per
+// Tanaghom job. Once a task_id exists, every retry/resume/restart
+// queries the SAME task_id; createTask is never called again for the
+// job. A started/indeterminate attempt WITHOUT an attached task_id
+// means the remote state is unknowable -> deterministic refusal.
+// The only retry that creates anew is a capacity/deterministic
+// rejection that provably never started remote work.
+//
+// Cancel rule (no provider cancel endpoint is documented): local cancel
+// NEVER records provider-cancelled. With a task_id, polling CONTINUES
+// until the provider reports terminal truth or timeout; success is
+// then persisted as a draft/reconciled output (charged work is never
+// silently dropped) while the job records the user's cancel intent.
+// Only a provider-reported `cancelled` status marks the attempt
+// cancelled.
 //
 // Every database access is a controlled SECURITY DEFINER function via
 // repository.mjs; the worker never reads tables.
@@ -25,6 +37,7 @@ import { normalizeVideoRequest, estimateVideoCostUsd } from "../adapters/http-vi
 import { validateMp4 } from "./mp4.mjs";
 import { sha256Hex } from "../storage/keys.mjs";
 import {
+  attachProviderRequest,
   beginProviderCall,
   claimVideoJob,
   completeJob,
@@ -32,9 +45,9 @@ import {
   failJob,
   finishProviderCall,
   getMotionState,
+  getProviderCall,
   getVideoInput,
   getVideoSource,
-  latestProviderCall,
   markRunning,
   registerVersion,
 } from "../repository.mjs";
@@ -76,6 +89,8 @@ export async function executeVideoJob({
   }
   if (running === "cancelled") await fail("cancelled", "video_cancel_requested");
   let callId = null;
+  let taskId = null;
+  let resumed = false;
   try {
     if ((await countRenderOutputs(db, { jobId, worker })) > 0) {
       await fail("deterministic", "video_duplicate_execution");
@@ -88,11 +103,34 @@ export async function executeVideoJob({
     }
     if (!input) await fail("deterministic", "video_input_missing");
     const params = input.params ?? {};
-    // Never duplicate a possibly-live provider request.
-    const latest = await latestProviderCall(db, { jobId, worker, operation: params.operation ?? "text_to_video" })
+    // Anchor decision from the full prior-attempt record. One provider
+    // task per job: resume it, refuse the unknown, or create anew only
+    // when no billable attempt could exist.
+    const prior = await getProviderCall(db, { jobId, worker, operation: params.operation ?? "text_to_video" })
       .catch(() => null);
-    if (latest === "started" || latest === "indeterminate") {
+    if (prior && (prior.status === "started" || prior.status === "indeterminate") && prior.provider_request_id) {
+      taskId = prior.provider_request_id;
+      callId = prior.call_id;
+      resumed = true;
+    } else if (prior && (prior.status === "started" || prior.status === "indeterminate")) {
       await fail("deterministic", "video_blind_retry_refused");
+    } else if (prior && prior.provider_request_id) {
+      // Terminal record WITH a task: re-enter reconciliation of the same
+      // task (fresh time-limited URL, same charge) — never a new create.
+      taskId = prior.provider_request_id;
+      callId = prior.call_id;
+      resumed = true;
+    } else if (!prior || prior.error_class === "capacity") {
+      // No prior attempt, or a capacity/deterministic rejection that
+      // provably never started remote work... except deterministic
+      // rejections (e.g. moderation) must never recreate: the job is
+      // already terminal in those paths, and this guard closes the hole
+      // if it ever requeues.
+      if (prior && prior.error_class === "deterministic") {
+        await fail("deterministic", "video_no_second_provider_task");
+      }
+    } else {
+      await fail("deterministic", "video_no_second_provider_task");
     }
     // Resolve image-to-video source bytes through the controlled reader
     // FIRST: the provider receives a data URI via the adapter input
@@ -136,10 +174,10 @@ export async function executeVideoJob({
     }
     const unitPrice = typeof params.unit_price_usd === "number" ? params.unit_price_usd : 0.08;
     const estimated = estimateVideoCostUsd({ duration: request.duration, unitPriceUsd: unitPrice });
-    async function finishCall(status, errorClass, message) {
+    async function finishCall(status, errorClass, message, actual = null) {
       try {
         await finishProviderCall(db, {
-          callId, worker, requestId: taskId, actualCostUsd: null,
+          callId, worker, requestId: taskId, actualCostUsd: actual,
           status, errorClass, errorMessage: String(message ?? "").slice(0, 500),
         });
       } catch {}
@@ -147,87 +185,109 @@ export async function executeVideoJob({
     async function failJobTransient(message) {
       await fail("transient", message.slice(0, 200));
     }
-    try {
-      callId = await beginProviderCall(db, {
-        jobId, worker,
-        provider: provider.name,
-        model: provider.model,
-        modelVersion: provider.modelVersion,
-        operation: request.operation,
-        units: { seconds: request.duration, resolution: request.resolution },
-        estimatedCostUsd: estimated,
-        adapterConfig: provider.adapterConfig ?? "creative.video-providers.v1",
-      });
-    } catch (error) {
-      await fail("transient", `video_call_begin_failed:${error.message}`.slice(0, 200));
-    }
-    let taskId = null;
-    try {
-      const created = await provider.createTask({
-        operation: request.operation,
-        prompt: request.prompt,
-        duration: request.duration,
-        resolution: request.resolution,
-        ratio: request.ratio,
-        imageUrl,
-      });
-      taskId = created.taskId;
-    } catch (error) {
-      const errorClass = error?.errorClass ?? "transient";
-      if (errorClass === "capacity") {
-        await finishCall("failed", "capacity", error.message);
-        await failJobTransient(`video_provider_capacity:${error.message}`);
+    async function readCancel() {
+      try {
+        const state = await getMotionState(db, { jobId, worker });
+        return !!(state && (state.status === "cancelled" || state.cancel_requested));
+      } catch {
+        return false;
       }
-      if (errorClass === "deterministic") {
-        await finishCall("failed", "deterministic", error.message);
-        await fail("deterministic", `video_provider_rejected:${error.message}`.slice(0, 200));
-      }
-      // Transient (5xx) and indeterminate (timeout/transport) at create:
-      // the provider may still be generating/billing, so record
-      // indeterminate and requeue once — the next pass will refuse a
-      // blind retry while this attempt is unresolved.
-      await finishCall("indeterminate", "indeterminate", error.message);
-      await fail("transient", `video_provider_uncertain:${error.message}`.slice(0, 200));
     }
-    // Reconcile: bounded poll loop with cooperative cancel. No provider
-    // cancel endpoint is documented, so cancel stops polling locally.
+    if (!resumed) {
+      // CREATE_NEW path: cancel first (no task exists, nothing remote to
+      // reconcile), then begin + create + attach the anchor immediately.
+      if (await readCancel()) await fail("cancelled", "video_cancel_requested");
+      try {
+        callId = await beginProviderCall(db, {
+          jobId, worker,
+          provider: provider.name,
+          model: provider.model,
+          modelVersion: provider.modelVersion,
+          operation: request.operation,
+          units: { seconds: request.duration, resolution: request.resolution },
+          estimatedCostUsd: estimated,
+          adapterConfig: provider.adapterConfig ?? "creative.video-providers.v1",
+        });
+      } catch (error) {
+        await fail("transient", `video_call_begin_failed:${error.message}`.slice(0, 200));
+      }
+      try {
+        const created = await provider.createTask({
+          operation: request.operation,
+          prompt: request.prompt,
+          duration: request.duration,
+          resolution: request.resolution,
+          ratio: request.ratio,
+          imageUrl,
+        });
+        taskId = created.taskId;
+      } catch (error) {
+        const errorClass = error?.errorClass ?? "transient";
+        if (errorClass === "capacity") {
+          await finishCall("failed", "capacity", error.message);
+          await failJobTransient(`video_provider_capacity:${error.message}`);
+        }
+        if (errorClass === "deterministic") {
+          await finishCall("failed", "deterministic", error.message);
+          await fail("deterministic", `video_provider_rejected:${error.message}`.slice(0, 200));
+        }
+        // Transient (5xx) and indeterminate (timeout/transport) at create:
+        // the provider may still be generating/billing, so record
+        // indeterminate and requeue once — the anchor gate above refuses
+        // any blind retry while this attempt is unresolved.
+        await finishCall("indeterminate", "indeterminate", error.message);
+        await fail("transient", `video_provider_uncertain:${error.message}`.slice(0, 200));
+      }
+      try {
+        await attachProviderRequest(db, { callId, worker, requestId: taskId });
+      } catch (error) {
+        await fail("transient", `video_anchor_failed:${error.message}`.slice(0, 200));
+      }
+    }
+    // RECONCILE (fresh or resumed): bounded poll loop. Local cancel does
+    // NOT stop reconciliation and NEVER records provider-cancelled: the
+    // loop continues until the provider reports terminal truth or the
+    // poll budget runs out, and the job records the user's cancel intent
+    // separately at the end.
+    let localCancel = await readCancel();
     const started = Date.now();
     let terminal = null;
     while (Date.now() - started < pollTimeoutMs) {
-      let state = null;
-      try {
-        state = await getMotionState(db, { jobId, worker });
-      } catch {
-        state = null;
-      }
-      if (state && (state.status === "cancelled" || state.cancel_requested)) {
-        await finishCall("cancelled", "cancelled", "video_cancel_requested");
-        await fail("cancelled", "video_cancel_requested");
-      }
+      if (!localCancel && await readCancel()) localCancel = true;
       try {
         terminal = await provider.queryTask(taskId);
       } catch (error) {
-        if ((error?.errorClass ?? "transient") === "indeterminate") {
-          await finishCall("indeterminate", "indeterminate", error.message);
-          await fail("transient", `video_reconcile_uncertain:${error.message}`.slice(0, 200));
+        const errorClass = error?.errorClass ?? "transient";
+        if (errorClass === "deterministic") {
+          await finishCall("failed", "deterministic", error.message);
+          if (localCancel) await fail("cancelled", "video_cancel_requested");
+          await fail("deterministic", `video_reconcile_rejected:${error.message}`.slice(0, 200));
         }
-        await finishCall("failed", "transient", error.message);
-        await fail("transient", `video_reconcile_failed:${error.message}`.slice(0, 200));
+        // Transient/capacity/indeterminate poll errors: keep reconciling
+        // the SAME task within budget — never terminalize, never recreate.
+        await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
+        continue;
       }
       if (terminal.status === "succeeded" || terminal.status === "failed" || terminal.status === "cancelled") break;
       await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
     }
     if (!terminal || (terminal.status !== "succeeded" && terminal.status !== "failed" && terminal.status !== "cancelled")) {
-      await finishCall("indeterminate", "indeterminate", "video_reconcile_timeout");
+      await finishCall("indeterminate", "indeterminate", localCancel ? "video_reconcile_timeout_after_local_cancel" : "video_reconcile_timeout");
+      // No cancel: requeue so reconciliation resumes against the anchor.
+      // Cancel: terminal cancelled job = the documented manual state;
+      // the indeterminate call row keeps the remote truth recoverable.
+      if (localCancel) await fail("cancelled", "video_cancel_requested");
       await fail("transient", "video_reconcile_timeout");
+    }
+    if (terminal.status === "cancelled") {
+      // The ONLY path that records provider-cancelled: the provider said so.
+      await finishCall("cancelled", "cancelled", "provider task cancelled");
+      await fail("cancelled", "video_provider_task_cancelled");
     }
     if (terminal.status === "failed") {
       await finishCall("failed", "deterministic", "provider task failed without artifact");
+      if (localCancel) await fail("cancelled", "video_cancel_requested");
       await fail("deterministic", "video_provider_task_failed");
-    }
-    if (terminal.status === "cancelled") {
-      await finishCall("cancelled", "cancelled", "provider task cancelled");
-      await fail("cancelled", "video_provider_task_cancelled");
     }
     // SSRF-safe retrieval: exact artifact-host allowlist enforced inside
     // the injected download boundary (DNS pinning, no private targets).
@@ -241,6 +301,7 @@ export async function executeVideoJob({
       });
     } catch (error) {
       await finishCall("failed", error?.errorClass ?? "transient", error.message);
+      if (localCancel) await fail("cancelled", "video_cancel_requested");
       if ((error?.errorClass ?? "transient") === "deterministic") {
         await fail("deterministic", `video_artifact_rejected:${error.message}`.slice(0, 200));
       }
@@ -254,6 +315,7 @@ export async function executeVideoJob({
       });
     } catch (error) {
       await finishCall("failed", "deterministic", error.message);
+      if (localCancel) await fail("cancelled", "video_cancel_requested");
       await fail("deterministic", `video_output_invalid:${error.message}`.slice(0, 200));
     }
     const billedSeconds = Number(terminal?.usage?.output_seconds ?? request.duration);
@@ -288,6 +350,9 @@ export async function executeVideoJob({
       provider_task_id: taskId,
       provider_request_id: taskId,
       provider_usage: terminal?.usage ?? null,
+      remote_outcome: terminal.status,
+      local_cancel_requested: localCancel,
+      reconciliation_resumed: resumed,
       units: { seconds: request.duration, resolution: request.resolution },
       estimated_cost_usd: estimated,
       actual_cost_usd: actualCost,
@@ -312,6 +377,10 @@ export async function executeVideoJob({
     } catch (error) {
       await fail("transient", `video_version_register_failed:${error.message}`.slice(0, 200));
     }
+    // Success with a pending local cancel still honors the user's intent:
+    // the charged artifact persists as draft output, the job closes
+    // cancelled — completeJob is never called on this path.
+    if (localCancel) await fail("cancelled", "video_cancel_requested");
     await completeJob(db, { jobId, worker, assetVersionId: versionId });
     return {
       jobId,

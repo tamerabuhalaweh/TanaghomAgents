@@ -136,10 +136,60 @@ BEGIN
  RETURN QUERY SELECT picked.id,picked.organization_id,picked.capability,picked.lane,picked.params,picked.attempt+1,picked.max_attempts,picked.correlation_id,picked.idempotency_key;
 END $$;
 
+-- One-way provider request anchor. After createTask returns a task_id,
+-- the worker attaches it to the STARTED attempt immediately, so a crash
+-- between create and first poll still leaves a recoverable anchor.
+-- Immutability: attaching is allowed only while the attempt is started;
+-- re-attaching the SAME id is idempotent, replacing it is rejected.
+CREATE FUNCTION tanaghom.attach_creative_provider_request(p_call uuid,p_worker text,p_request_id text)
+RETURNS text LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+DECLARE c tanaghom.creative_provider_calls%ROWTYPE; j tanaghom.creative_jobs%ROWTYPE;
+BEGIN
+ IF p_call IS NULL OR p_worker IS NULL OR length(p_worker) NOT BETWEEN 1 AND 200
+  OR p_request_id IS NULL OR length(p_request_id) NOT BETWEEN 1 AND 300
+ THEN RAISE EXCEPTION 'invalid provider request attach'; END IF;
+ SELECT * INTO c FROM tanaghom.creative_provider_calls WHERE id=p_call FOR UPDATE;
+ IF c.id IS NULL THEN RAISE EXCEPTION 'unknown provider call'; END IF;
+ IF c.status<>'started' THEN RAISE EXCEPTION 'provider attempt already terminal'; END IF;
+ IF c.provider_request_id IS NOT NULL AND c.provider_request_id IS DISTINCT FROM p_request_id
+ THEN RAISE EXCEPTION 'provider request already attached'; END IF;
+ SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=c.job_id;
+ IF j.claimed_by IS DISTINCT FROM p_worker THEN RAISE EXCEPTION 'creative worker mismatch'; END IF;
+ IF j.status NOT IN ('claimed','running') THEN RAISE EXCEPTION 'creative job not active'; END IF;
+ UPDATE tanaghom.creative_provider_calls SET provider_request_id=p_request_id WHERE id=p_call;
+ INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
+ VALUES(c.organization_id,c.job_id,'job_running',jsonb_build_object('provider',c.provider,'model',c.model,'operation',c.operation,'attempt_no',c.attempt_no,'call_status','task_attached'),'success');
+ RETURN p_request_id;
+END $$;
+
+-- Full latest-attempt record for resume decisions: call id, status,
+-- error class, attached provider request id, attempt number. Returns
+-- NULL when no attempt exists for the operation.
+CREATE FUNCTION tanaghom.get_creative_provider_call(p_job uuid,p_worker text,p_operation text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+DECLARE j tanaghom.creative_jobs%ROWTYPE; c tanaghom.creative_provider_calls%ROWTYPE;
+BEGIN
+ IF p_job IS NULL OR p_worker IS NULL OR length(p_worker) NOT BETWEEN 1 AND 200
+  OR p_operation NOT IN ('text_to_image','image_to_image','segment','relight','enhance','compose','tts','music','video','talking_head','text_to_video','image_to_video')
+ THEN RAISE EXCEPTION 'invalid provider call lookup'; END IF;
+ SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=p_job;
+ IF j.id IS NULL THEN RAISE EXCEPTION 'unknown creative job'; END IF;
+ IF j.claimed_by IS DISTINCT FROM p_worker
+  AND NOT (p_worker ~ '^[0-9a-f-]{36}$' AND EXISTS(SELECT 1 FROM tanaghom.app_users WHERE id=p_worker::uuid AND organization_id=j.organization_id AND kind='human' AND is_active AND accepted_at IS NOT NULL))
+ THEN RAISE EXCEPTION 'creative worker mismatch'; END IF;
+ SELECT * INTO c FROM tanaghom.creative_provider_calls WHERE job_id=p_job AND operation=p_operation ORDER BY attempt_no DESC LIMIT 1;
+ IF c.id IS NULL THEN RETURN NULL; END IF;
+ RETURN jsonb_build_object('call_id',c.id,'status',c.status,'error_class',c.error_class,
+  'provider_request_id',c.provider_request_id,'attempt_no',c.attempt_no,
+  'provider',c.provider,'model',c.model,'operation',c.operation);
+END $$;
+
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA tanaghom FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION tanaghom.get_creative_video_input(uuid,text) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.get_creative_video_source(uuid,text,uuid) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.claim_creative_video_job(text,int) TO tanaghom_creative_worker;
+GRANT EXECUTE ON FUNCTION tanaghom.attach_creative_provider_request(uuid,text,text) TO tanaghom_creative_worker;
+GRANT EXECUTE ON FUNCTION tanaghom.get_creative_provider_call(uuid,text,text) TO tanaghom_creative_worker;
 
 INSERT INTO public.schema_migrations(version) VALUES ('0044_creative_video_lane');
 COMMIT;
