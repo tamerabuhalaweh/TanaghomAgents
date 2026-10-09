@@ -103,6 +103,92 @@ export async function getMotionState(db, { jobId, worker }) {
   return one(result.rows)?.state ?? null;
 }
 
+// Generative-video lane controlled readers. Same EXECUTE-only contract:
+// the worker never reads tables directly.
+export async function claimVideoJob(db, { worker, leaseSeconds = 120 }) {
+  const result = await db.query(
+    `SELECT * FROM tanaghom.claim_creative_video_job($1,$2)`,
+    [worker, leaseSeconds],
+  );
+  return one(result.rows);
+}
+
+export async function getVideoInput(db, { jobId, worker }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_video_input($1,$2) AS input`,
+    [jobId, worker],
+  );
+  return one(result.rows)?.input ?? null;
+}
+
+export async function getVideoSource(db, { jobId, worker, versionId }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_video_source($1,$2,$3) AS source`,
+    [jobId, worker, versionId],
+  );
+  return one(result.rows)?.source ?? null;
+}
+
+export async function beginProviderCall(db, input) {
+  const {
+    jobId, worker, provider, model, modelVersion = null, operation,
+    units, estimatedCostUsd = null, adapterConfig,
+  } = input ?? {};
+  const result = await db.query(
+    `SELECT tanaghom.begin_creative_provider_call($1,$2,$3,$4,$5,$6,$7,$8,$9) AS call_id`,
+    [jobId, worker, provider, model, modelVersion, operation, units, estimatedCostUsd, adapterConfig],
+  );
+  return one(result.rows)?.call_id ?? null;
+}
+
+export async function finishProviderCall(db, input) {
+  const {
+    callId, worker, requestId = null, actualCostUsd = null, status,
+    errorClass = null, errorMessage = null,
+  } = input ?? {};
+  const result = await db.query(
+    `SELECT tanaghom.finish_creative_provider_call($1,$2,$3,$4,$5,$6,$7) AS status`,
+    [callId, worker, requestId, actualCostUsd, status, errorClass, errorMessage],
+  );
+  return one(result.rows)?.status ?? null;
+}
+
+export async function latestProviderCall(db, { jobId, worker, operation }) {
+  const result = await db.query(
+    `SELECT tanaghom.latest_creative_provider_call($1,$2,$3) AS status`,
+    [jobId, worker, operation],
+  );
+  return one(result.rows)?.status ?? null;
+}
+
+export async function attachProviderRequest(db, { callId, worker, requestId }) {
+  const result = await db.query(
+    `SELECT tanaghom.attach_creative_provider_request($1,$2,$3) AS request_id`,
+    [callId, worker, requestId],
+  );
+  return one(result.rows)?.request_id ?? null;
+}
+
+export async function getProviderCall(db, { jobId, worker, operation }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_provider_call($1,$2,$3) AS call`,
+    [jobId, worker, operation],
+  );
+  return one(result.rows)?.call ?? null;
+}
+
+export async function reconcileProviderCall(db, input) {
+  const {
+    callId, worker, requestId, status,
+    errorClass = null, errorMessage = null, actualCostUsd = null,
+  } = input ?? {};
+  const result = await db.query(
+    `SELECT tanaghom.reconcile_creative_provider_call($1,$2,$3,$4,$5,$6,$7) AS status`,
+    [callId, worker, requestId, status, errorClass, errorMessage, actualCostUsd],
+  );
+  return one(result.rows)?.status ?? null;
+}
+
 export async function markRunning(db, { jobId, worker }) {
   const result = await db.query(`SELECT tanaghom.mark_creative_job_running($1,$2) AS status`, [jobId, worker]);
   return one(result.rows)?.status ?? null;

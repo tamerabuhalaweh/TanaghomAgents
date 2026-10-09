@@ -1,0 +1,13 @@
+{
+  "contract_version": "creative.video-evaluation.v1",
+  "cases": [
+    { "id": "vid-en-01", "operation": "text_to_video", "notes": "English prompt, 5s, 16:9" },
+    { "id": "vid-ar-01", "operation": "text_to_video", "notes": "Arabic prompt copy submitted (provider-side shaping out of scope for stubs)" },
+    { "id": "vid-i2v-01", "operation": "image_to_video", "notes": "First-frame source from private upload" },
+    { "id": "vid-cancel-01", "kind": "lifecycle", "notes": "Cancel requested mid-poll lands cancelled without provider cancel call" },
+    { "id": "vid-indeterminate-01", "kind": "lifecycle", "notes": "Timeout at create finishes indeterminate; next pass refuses blind retry" },
+    { "id": "vid-moderated-01", "kind": "negative", "notes": "422/moderated rejection is deterministic and terminal" },
+    { "id": "vid-ssrf-01", "kind": "negative", "notes": "Artifact host outside allowlist / private IP rejected" },
+    { "id": "vid-codec-01", "kind": "negative", "notes": "Non-allowlisted container codec rejected despite declared MIME" }
+  ]
+}
