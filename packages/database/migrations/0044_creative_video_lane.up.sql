@@ -184,12 +184,62 @@ BEGIN
   'provider',c.provider,'model',c.model,'operation',c.operation);
 END $$;
 
+-- Reconciliation of an UNRESOLVED attempt. The generic
+-- finish_creative_provider_call() intentionally freezes terminal rows,
+-- which would strand an `indeterminate` attempt forever: a resumed pass
+-- could never record the provider's eventual truth on the same row.
+-- This video-scoped function allows ONLY:
+--   indeterminate -> succeeded | failed | cancelled
+-- plus same-state idempotent re-writes. It requires the EXACT anchored
+-- request id, keeps the same row/attempt number, updates actual cost
+-- when known, and writes audit/event evidence. Terminal truth
+-- (succeeded/failed/cancelled) can never be rewritten to a conflicting
+-- state. P2a lifecycle semantics are untouched.
+CREATE FUNCTION tanaghom.reconcile_creative_provider_call(p_call uuid,p_worker text,p_request_id text,p_status text,p_error_class text,p_error_message text,p_actual numeric)
+RETURNS text LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+DECLARE c tanaghom.creative_provider_calls%ROWTYPE; j tanaghom.creative_jobs%ROWTYPE;
+BEGIN
+ IF p_call IS NULL OR p_worker IS NULL OR length(p_worker) NOT BETWEEN 1 AND 200
+  OR p_request_id IS NULL OR length(p_request_id) NOT BETWEEN 1 AND 300
+  OR p_status NOT IN ('succeeded','failed','cancelled','indeterminate')
+  OR (p_error_class IS NOT NULL AND p_error_class NOT IN ('transient','deterministic','capacity','cancelled','policy','indeterminate'))
+  OR (p_error_message IS NOT NULL AND length(p_error_message) NOT BETWEEN 1 AND 2000)
+  OR (p_actual IS NOT NULL AND p_actual < 0)
+ THEN RAISE EXCEPTION 'invalid provider reconcile'; END IF;
+ SELECT * INTO c FROM tanaghom.creative_provider_calls WHERE id=p_call FOR UPDATE;
+ IF c.id IS NULL THEN RAISE EXCEPTION 'unknown provider call'; END IF;
+ SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=c.job_id;
+ IF j.claimed_by IS DISTINCT FROM p_worker
+  AND NOT (p_worker ~ '^[0-9a-f-]{36}$' AND EXISTS(SELECT 1 FROM tanaghom.app_users WHERE id=p_worker::uuid AND organization_id=j.organization_id AND kind='human' AND is_active AND accepted_at IS NOT NULL))
+ THEN RAISE EXCEPTION 'creative worker mismatch'; END IF;
+ IF c.provider_request_id IS DISTINCT FROM p_request_id THEN RAISE EXCEPTION 'provider request mismatch'; END IF;
+ IF c.status IN ('succeeded','failed','cancelled') AND c.status IS DISTINCT FROM p_status THEN
+  RAISE EXCEPTION 'provider terminal truth is immutable';
+ END IF;
+ IF c.status NOT IN ('indeterminate','succeeded','failed','cancelled') THEN
+  RAISE EXCEPTION 'provider attempt not reconcilable';
+ END IF;
+ UPDATE tanaghom.creative_provider_calls
+  SET status=p_status,error_class=coalesce(p_error_class,error_class),
+   error_message=coalesce(p_error_message,error_message),
+   actual_cost_usd=coalesce(p_actual,actual_cost_usd),finished_at=now()
+  WHERE id=p_call;
+ INSERT INTO tanaghom.creative_events(organization_id,job_id,action,payload,result)
+ VALUES(c.organization_id,c.job_id,'job_running',jsonb_build_object('provider',c.provider,'model',c.model,'operation',c.operation,'attempt_no',c.attempt_no,'call_status',p_status,'reconciled',true),'success');
+ INSERT INTO tanaghom.agent_actions_log(correlation_id,actor_user_id,action_type,entity_type,entity_id,payload,result)
+ SELECT j.correlation_id,j.requested_by,'creative.provider_call_reconciled','creative_job',c.job_id,
+  jsonb_build_object('provider',c.provider,'model',c.model,'operation',c.operation,'attempt_no',c.attempt_no,'status',p_status),
+  CASE WHEN p_status IN ('succeeded') THEN 'success' ELSE 'failed' END;
+ RETURN p_status;
+END $$;
+
 REVOKE EXECUTE ON ALL FUNCTIONS IN SCHEMA tanaghom FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION tanaghom.get_creative_video_input(uuid,text) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.get_creative_video_source(uuid,text,uuid) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.claim_creative_video_job(text,int) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.attach_creative_provider_request(uuid,text,text) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.get_creative_provider_call(uuid,text,text) TO tanaghom_creative_worker;
+GRANT EXECUTE ON FUNCTION tanaghom.reconcile_creative_provider_call(uuid,text,text,text,text,text,numeric) TO tanaghom_creative_worker;
 
 INSERT INTO public.schema_migrations(version) VALUES ('0044_creative_video_lane');
 COMMIT;

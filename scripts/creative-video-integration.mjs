@@ -138,6 +138,9 @@ const providerServer = createServer(async (request, response) => {
     if (!task) return json(404, { type: "error", error: { message: "unknown task" } });
     task.polls += 1;
     if (task.fault === "stuck") return json(200, { task: { id: queryMatch[1], status: "running" } });
+    if (task.fault === "slow-ok" && task.polls < 12) {
+      return json(200, { task: { id: queryMatch[1], status: "running" } });
+    }
     if (task.fault === "flaky" && task.polls <= 2) {
       return json(500, { type: "error", error: { type: "server_error", message: "internal error (1000)", http_code: "500" } });
     }
@@ -521,6 +524,61 @@ try {
   assert.equal(flaky.output.codec, "mp4v");
   console.log(JSON.stringify({ case_id: "vid-resume-01", job_id: flakyGen.job_ids[0], result: "same-task-resumed" }));
   console.log("PASS transient poll failures resume the anchored task");
+
+  // Full reconcile arc on ONE attempt row: timeout -> indeterminate ->
+  // requeue -> resume same task -> succeeded with actual cost.
+  const recGen = JSON.parse(await (async () => {
+    const response = await postJson("/api/creative/video/generate", owner,
+      { operation: "text_to_video", prompt: "Reconcile probe", duration: 5, ratio: "16:9", correlation_id: randomUUID() }, "e2e-video-reconcile");
+    return response.text();
+  })());
+  const createsBeforeRec = providerHits.creates;
+  const recClaimed = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_video_job('worker-video-rec',120)`);
+  assert.ok(recClaimed.rows.find((candidate) => candidate.job_id === recGen.job_ids[0]));
+  const { executeVideoJob: executeRec } = await import("../packages/creative-runtime/render/video-worker.mjs");
+  await assert.rejects(
+    executeRec({
+      db: workerDb, storage: workerStorage, provider: stubProvider("slow-ok"), download: downloadLoopback,
+      jobId: recGen.job_ids[0], worker: "worker-video-rec", pollIntervalMs: 50, pollTimeoutMs: 400,
+    }),
+    /video_reconcile_timeout/,
+  );
+  const recCallsMid = await pool.query(
+    `SELECT id, attempt_no, status, provider_request_id, actual_cost_usd FROM tanaghom.creative_provider_calls WHERE job_id = $1 ORDER BY attempt_no`,
+    [recGen.job_ids[0]],
+  );
+  assert.equal(recCallsMid.rows.length, 1);
+  assert.equal(recCallsMid.rows[0].status, "indeterminate");
+  assert.ok(recCallsMid.rows[0].provider_request_id);
+  // Requeue, accelerate past backoff, resume the anchored task.
+  await pool.query(`UPDATE tanaghom.creative_jobs SET available_at = now() WHERE id = $1`, [recGen.job_ids[0]]);
+  const recClaimed2 = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_video_job('worker-video-rec2',120)`);
+  assert.ok(recClaimed2.rows.find((candidate) => candidate.job_id === recGen.job_ids[0]));
+  const recResult = await executeRec({
+    db: workerDb, storage: workerStorage, provider: stubProvider("slow-ok"), download: downloadLoopback,
+    jobId: recGen.job_ids[0], worker: "worker-video-rec2", pollIntervalMs: 50, pollTimeoutMs: 30000,
+  });
+  assert.equal(providerHits.creates - createsBeforeRec, 1);
+  const recCallsFinal = await pool.query(
+    `SELECT id, attempt_no, status, provider_request_id, actual_cost_usd FROM tanaghom.creative_provider_calls WHERE job_id = $1 ORDER BY attempt_no`,
+    [recGen.job_ids[0]],
+  );
+  assert.equal(recCallsFinal.rows.length, 1);
+  assert.equal(recCallsFinal.rows[0].id, recCallsMid.rows[0].id);
+  assert.equal(recCallsFinal.rows[0].attempt_no, 1);
+  assert.equal(recCallsFinal.rows[0].status, "succeeded");
+  assert.equal(Number(recCallsFinal.rows[0].actual_cost_usd), 0.4);
+  assert.equal(recCallsFinal.rows[0].provider_request_id, recCallsMid.rows[0].provider_request_id);
+  assert.equal(recResult.output.codec, "mp4v");
+  // Reconciliation audit exists on the job's correlation.
+  const recJob = await pool.query(`SELECT correlation_id FROM tanaghom.creative_jobs WHERE id = $1`, [recGen.job_ids[0]]);
+  const recAudit2 = await pool.query(
+    `SELECT count(*)::int AS n FROM tanaghom.agent_actions_log WHERE correlation_id = $1 AND action_type = 'creative.provider_call_reconciled'`,
+    [recJob.rows[0].correlation_id],
+  );
+  assert.ok(recAudit2.rows[0].n >= 1);
+  console.log(JSON.stringify({ case_id: "vid-reconcile-01", job_id: recGen.job_ids[0], task_id: recCallsFinal.rows[0].provider_request_id, result: "reconciled-same-row" }));
+  console.log("PASS indeterminate attempts reconcile to terminal truth on one row");
 
   // Crash recovery: a dead worker's attached task_id carries the next pass.
   const crashGen = JSON.parse(await (async () => {

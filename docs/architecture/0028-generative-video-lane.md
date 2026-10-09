@@ -43,7 +43,11 @@ reviewer approval:
    with cost, job closes cancelled); only a provider-reported
    `cancelled` status marks the attempt cancelled. Transient poll
    failures never terminalize — they keep reconciling within
-   budget. SSRF-safe download through the P2a boundary (allowlist,
+   budget. Unresolved attempts reconcile later on the SAME row via
+   `reconcile_creative_provider_call()` (indeterminate → terminal
+   with actual cost; terminal truth immutable); provider success +
+   cost are recorded BEFORE artifact work so downstream failures
+   stay Tanaghom-side. SSRF-safe download through the P2a boundary (allowlist,
    DNS pinning, no private targets), MP4 validation against the
    vendor codec allowlist (`mp4v`+`avc1`, never trusting
    MIME/filenames), private storage, versioned asset with

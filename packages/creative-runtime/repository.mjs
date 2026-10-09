@@ -177,6 +177,18 @@ export async function getProviderCall(db, { jobId, worker, operation }) {
   return one(result.rows)?.call ?? null;
 }
 
+export async function reconcileProviderCall(db, input) {
+  const {
+    callId, worker, requestId, status,
+    errorClass = null, errorMessage = null, actualCostUsd = null,
+  } = input ?? {};
+  const result = await db.query(
+    `SELECT tanaghom.reconcile_creative_provider_call($1,$2,$3,$4,$5,$6,$7) AS status`,
+    [callId, worker, requestId, status, errorClass, errorMessage, actualCostUsd],
+  );
+  return one(result.rows)?.status ?? null;
+}
+
 export async function markRunning(db, { jobId, worker }) {
   const result = await db.query(`SELECT tanaghom.mark_creative_job_running($1,$2) AS status`, [jobId, worker]);
   return one(result.rows)?.status ?? null;

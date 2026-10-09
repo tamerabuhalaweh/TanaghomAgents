@@ -49,6 +49,7 @@ import {
   getVideoInput,
   getVideoSource,
   markRunning,
+  reconcileProviderCall,
   registerVersion,
 } from "../repository.mjs";
 
@@ -91,6 +92,10 @@ export async function executeVideoJob({
   let callId = null;
   let taskId = null;
   let resumed = false;
+  // Mirrors the call row: 'started' routes settles through finish (P2a
+  // path); anything else routes through reconcile. Updated on every
+  // successful settle; initialized from the prior record on resume.
+  let callStatus = null;
   try {
     if ((await countRenderOutputs(db, { jobId, worker })) > 0) {
       await fail("deterministic", "video_duplicate_execution");
@@ -111,6 +116,7 @@ export async function executeVideoJob({
     if (prior && (prior.status === "started" || prior.status === "indeterminate") && prior.provider_request_id) {
       taskId = prior.provider_request_id;
       callId = prior.call_id;
+      callStatus = prior.status;
       resumed = true;
     } else if (prior && (prior.status === "started" || prior.status === "indeterminate")) {
       await fail("deterministic", "video_blind_retry_refused");
@@ -119,6 +125,7 @@ export async function executeVideoJob({
       // task (fresh time-limited URL, same charge) — never a new create.
       taskId = prior.provider_request_id;
       callId = prior.call_id;
+      callStatus = prior.status;
       resumed = true;
     } else if (!prior || prior.error_class === "capacity") {
       // No prior attempt, or a capacity/deterministic rejection that
@@ -174,12 +181,28 @@ export async function executeVideoJob({
     }
     const unitPrice = typeof params.unit_price_usd === "number" ? params.unit_price_usd : 0.08;
     const estimated = estimateVideoCostUsd({ duration: request.duration, unitPriceUsd: unitPrice });
-    async function finishCall(status, errorClass, message, actual = null) {
-      try {
+    // Settles the CURRENT attempt: first settle goes through finish (P2a
+    // started-state path), every later settle through reconcile. Throws
+    // on failure so the success path can abort loudly; best-effort
+    // wrapper below swallows for paths that fail the job right after.
+    async function settleCall(status, errorClass, message, actual = null) {
+      const clean = message === null || message === undefined ? null : String(message).slice(0, 500);
+      if (callStatus === "started") {
         await finishProviderCall(db, {
           callId, worker, requestId: taskId, actualCostUsd: actual,
-          status, errorClass, errorMessage: String(message ?? "").slice(0, 500),
+          status, errorClass, errorMessage: clean,
         });
+      } else {
+        await reconcileProviderCall(db, {
+          callId, worker, requestId: taskId, status, errorClass,
+          errorMessage: clean, actualCostUsd: actual,
+        });
+      }
+      callStatus = status;
+    }
+    async function settleBestEffort(status, errorClass, message, actual = null) {
+      try {
+        await settleCall(status, errorClass, message, actual);
       } catch {}
     }
     async function failJobTransient(message) {
@@ -208,6 +231,7 @@ export async function executeVideoJob({
           estimatedCostUsd: estimated,
           adapterConfig: provider.adapterConfig ?? "creative.video-providers.v1",
         });
+        callStatus = "started";
       } catch (error) {
         await fail("transient", `video_call_begin_failed:${error.message}`.slice(0, 200));
       }
@@ -224,18 +248,18 @@ export async function executeVideoJob({
       } catch (error) {
         const errorClass = error?.errorClass ?? "transient";
         if (errorClass === "capacity") {
-          await finishCall("failed", "capacity", error.message);
+          await settleBestEffort("failed", "capacity", error.message);
           await failJobTransient(`video_provider_capacity:${error.message}`);
         }
         if (errorClass === "deterministic") {
-          await finishCall("failed", "deterministic", error.message);
+          await settleBestEffort("failed", "deterministic", error.message);
           await fail("deterministic", `video_provider_rejected:${error.message}`.slice(0, 200));
         }
         // Transient (5xx) and indeterminate (timeout/transport) at create:
         // the provider may still be generating/billing, so record
         // indeterminate and requeue once — the anchor gate above refuses
         // any blind retry while this attempt is unresolved.
-        await finishCall("indeterminate", "indeterminate", error.message);
+        await settleBestEffort("indeterminate", "indeterminate", error.message);
         await fail("transient", `video_provider_uncertain:${error.message}`.slice(0, 200));
       }
       try {
@@ -259,7 +283,7 @@ export async function executeVideoJob({
       } catch (error) {
         const errorClass = error?.errorClass ?? "transient";
         if (errorClass === "deterministic") {
-          await finishCall("failed", "deterministic", error.message);
+          await settleBestEffort("failed", "deterministic", error.message);
           if (localCancel) await fail("cancelled", "video_cancel_requested");
           await fail("deterministic", `video_reconcile_rejected:${error.message}`.slice(0, 200));
         }
@@ -272,7 +296,7 @@ export async function executeVideoJob({
       await new Promise((resolve) => setTimeout(resolve, pollIntervalMs));
     }
     if (!terminal || (terminal.status !== "succeeded" && terminal.status !== "failed" && terminal.status !== "cancelled")) {
-      await finishCall("indeterminate", "indeterminate", localCancel ? "video_reconcile_timeout_after_local_cancel" : "video_reconcile_timeout");
+      await settleBestEffort("indeterminate", "indeterminate", localCancel ? "video_reconcile_timeout_after_local_cancel" : "video_reconcile_timeout");
       // No cancel: requeue so reconciliation resumes against the anchor.
       // Cancel: terminal cancelled job = the documented manual state;
       // the indeterminate call row keeps the remote truth recoverable.
@@ -281,13 +305,25 @@ export async function executeVideoJob({
     }
     if (terminal.status === "cancelled") {
       // The ONLY path that records provider-cancelled: the provider said so.
-      await finishCall("cancelled", "cancelled", "provider task cancelled");
+      await settleBestEffort("cancelled", "cancelled", "provider task cancelled");
       await fail("cancelled", "video_provider_task_cancelled");
     }
     if (terminal.status === "failed") {
-      await finishCall("failed", "deterministic", "provider task failed without artifact");
+      await settleBestEffort("failed", "deterministic", "provider task failed without artifact");
       if (localCancel) await fail("cancelled", "video_cancel_requested");
       await fail("deterministic", "video_provider_task_failed");
+    }
+    // Provider truth first: the ledger becomes succeeded WITH actual cost
+    // BEFORE any artifact work. Downstream failures (download, validation,
+    // storage, registration) are Tanaghom failures — the provider row
+    // stays succeeded+actual because MiniMax already completed and may
+    // have charged us. Retries re-query/re-download the SAME task.
+    const billedSeconds = Number(terminal?.usage?.output_seconds ?? request.duration);
+    const actualCost = Math.round((Number.isFinite(billedSeconds) ? billedSeconds : request.duration) * unitPrice * 1000) / 1000;
+    try {
+      await settleCall("succeeded", null, null, actualCost);
+    } catch (error) {
+      await fail("transient", `video_call_settle_failed:${error.message}`.slice(0, 200));
     }
     // SSRF-safe retrieval: exact artifact-host allowlist enforced inside
     // the injected download boundary (DNS pinning, no private targets).
@@ -300,7 +336,10 @@ export async function executeVideoJob({
         testLoopback: provider.testLoopback ?? false,
       });
     } catch (error) {
-      await finishCall("failed", error?.errorClass ?? "transient", error.message);
+      // The provider ledger already says succeeded+actual: downstream
+      // failures must not rewrite it (reconcile would reject the
+      // conflict, swallowed here).
+      await settleBestEffort("failed", error?.errorClass ?? "transient", error.message);
       if (localCancel) await fail("cancelled", "video_cancel_requested");
       if ((error?.errorClass ?? "transient") === "deterministic") {
         await fail("deterministic", `video_artifact_rejected:${error.message}`.slice(0, 200));
@@ -314,19 +353,9 @@ export async function executeVideoJob({
         allowedCodecs: [...PROVIDER_VIDEO_CODECS],
       });
     } catch (error) {
-      await finishCall("failed", "deterministic", error.message);
+      await settleBestEffort("failed", "deterministic", error.message);
       if (localCancel) await fail("cancelled", "video_cancel_requested");
       await fail("deterministic", `video_output_invalid:${error.message}`.slice(0, 200));
-    }
-    const billedSeconds = Number(terminal?.usage?.output_seconds ?? request.duration);
-    const actualCost = Math.round((Number.isFinite(billedSeconds) ? billedSeconds : request.duration) * unitPrice * 1000) / 1000;
-    try {
-      await finishProviderCall(db, {
-        callId, worker, requestId: taskId, actualCostUsd: actualCost,
-        status: "succeeded", errorClass: null, errorMessage: null,
-      });
-    } catch (error) {
-      await fail("transient", `video_call_finish_failed:${error.message}`.slice(0, 200));
     }
     const objectKey = `t/${input.organization_id}/video/${jobId}/v1.mp4`;
     try {

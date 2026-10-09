@@ -95,7 +95,7 @@ function videoInput(operation = "text_to_video") {
 }
 
 function stubDb({ input = videoInput(), prior = null, source = null, calls = null, state = { status: "running", cancel_requested: false }, stateFn = null } = {}) {
-  const log = calls ?? { marks: [], begins: [], attaches: [], finishes: [], registers: [], completes: [], fails: [] };
+  const log = calls ?? { marks: [], begins: [], attaches: [], finishes: [], reconciles: [], registers: [], completes: [], fails: [] };
   return {
     log,
     async query(text, params) {
@@ -126,6 +126,10 @@ function stubDb({ input = videoInput(), prior = null, source = null, calls = nul
       if (text.includes("finish_creative_provider_call")) {
         log.finishes.push(params);
         return { rows: [{ status: params[4] }] };
+      }
+      if (text.includes("reconcile_creative_provider_call")) {
+        log.reconciles.push(params);
+        return { rows: [{ status: params[3] }] };
       }
       if (text.includes("create_creative_asset_version")) {
         log.registers.push(params);
@@ -192,7 +196,7 @@ function stubProvider({ onCreate, onQuery, mp4 } = {}) {
 test("video worker module stays EXECUTE-only: no direct table reads", async () => {  const source = await readFile(new URL("../packages/creative-runtime/render/video-worker.mjs", import.meta.url), "utf8");
   assert.doesNotMatch(source, /FROM tanaghom\./);
   assert.doesNotMatch(source, /db\.query/);
-  for (const name of ["getVideoInput", "getVideoSource", "claimVideoJob", "beginProviderCall", "finishProviderCall", "getProviderCall", "attachProviderRequest", "markRunning", "registerVersion", "completeJob", "failJob"]) {
+  for (const name of ["getVideoInput", "getVideoSource", "claimVideoJob", "beginProviderCall", "finishProviderCall", "getProviderCall", "attachProviderRequest", "reconcileProviderCall", "markRunning", "registerVersion", "completeJob", "failJob"]) {
     assert.match(source, new RegExp(`\\b${name}\\b`));
   }
 });
@@ -416,6 +420,59 @@ test("restart resumes the SAME anchored task without a new create", async () => 
   assert.equal(db.log.registers.length, 1);
   assert.deepEqual(db.log.completes, [[JOB, WORKER, "50000000-0000-4000-8000-000000000001", null]]);
   assert.equal(db.log.registers[0][12].reconciliation_resumed, true);
+});
+
+test("resume of a terminal-succeeded attempt re-downloads without recreate", async () => {
+  const prior = {
+    call_id: "90000000-0000-4000-8000-000000000001", status: "succeeded", error_class: null,
+    provider_request_id: "task-anchored-2", attempt_no: 1,
+  };
+  const db = stubDb({ prior });
+  const queried = [];
+  const fake = stubProvider({
+    onCreate: () => { throw new Error("createTask must not run on resume"); },
+    onQuery: (taskId) => {
+      queried.push(taskId);
+      return { status: "succeeded", url: "https://cdn.hailuoai.com/output.mp4", duration: 5, resolution: "768P", ratio: "16:9", usage: { output_seconds: 5 } };
+    },
+  });
+  const result = await executeVideoJob({
+    db, storage: memoryStorage(), provider: fake.provider, download: fake.download,
+    jobId: JOB, worker: WORKER, pollIntervalMs: 5, pollTimeoutMs: 1000,
+  });
+  assert.equal(fake.log.creates, 0);
+  assert.deepEqual(queried, ["task-anchored-2"]);
+  // Success settle routed through reconcile (same-state, idempotent).
+  assert.equal(db.log.reconciles.length, 1);
+  assert.equal(db.log.reconciles[0][3], "succeeded");
+  assert.equal(db.log.finishes.length, 0);
+  assert.equal(result.output.codec, "avc1");
+  assert.deepEqual(db.log.completes, [[JOB, WORKER, "50000000-0000-4000-8000-000000000001", null]]);
+});
+
+test("provider success survives downstream artifact failure", async () => {
+  const db = stubDb({});
+  const fake = stubProvider({});
+  const badDownload = async () => {
+    const error = new Error("artifact download failed (404)");
+    error.errorClass = "deterministic";
+    throw error;
+  };
+  await assert.rejects(
+    executeVideoJob({
+      db, storage: memoryStorage(), provider: fake.provider, download: badDownload,
+      jobId: JOB, worker: WORKER, pollIntervalMs: 5, pollTimeoutMs: 1000,
+    }),
+    /video_artifact_rejected/,
+  );
+  // Provider ledger recorded succeeded+actual BEFORE the download; the
+  // conflicting rewrite back to failed was attempted and refused, so the
+  // success finish stands exactly once.
+  assert.deepEqual(db.log.finishes[0].slice(3, 6), [0.4, "succeeded", null]);
+  assert.equal(db.log.finishes.length, 1);
+  assert.equal(db.log.fails[0][2], "deterministic");
+  assert.equal(db.log.registers.length, 0);
+  assert.equal(db.log.completes.length, 0);
 });
 
 test("capacity rejection without a task allows exactly one new attempt", async () => {

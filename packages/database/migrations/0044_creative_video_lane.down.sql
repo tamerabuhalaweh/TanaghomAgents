@@ -1,4 +1,5 @@
 BEGIN;
+DROP FUNCTION tanaghom.reconcile_creative_provider_call(uuid,text,text,text,text,text,numeric);
 DROP FUNCTION tanaghom.get_creative_provider_call(uuid,text,text);
 DROP FUNCTION tanaghom.attach_creative_provider_request(uuid,text,text);
 DROP FUNCTION tanaghom.claim_creative_video_job(text,int);

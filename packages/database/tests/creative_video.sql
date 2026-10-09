@@ -148,6 +148,53 @@ DO $$ DECLARE j uuid; call uuid; rec jsonb; BEGIN
  IF rec IS NOT NULL THEN RAISE EXCEPTION 'missing operation should return null'; END IF;
 END $$;
 
+-- Reconciliation: indeterminate flips to terminal truth on the SAME
+-- row/attempt with actual cost; conflicting rewrites rejected.
+DO $$ DECLARE j uuid; call uuid; rec_status text; actual numeric; BEGIN
+ j := tanaghom.create_creative_job('e1000000-0000-4000-8000-000000000001','video','gpu_video',
+  '{"operation":"text_to_video","prompt":"x","duration":5}','e5000000-0000-4000-8000-000000000019','e6000000-0000-4000-8000-000000000019',0,3);
+ PERFORM tanaghom.claim_creative_video_job('worker-video-reconcile',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-video-reconcile' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ SELECT tanaghom.begin_creative_provider_call(j,'worker-video-reconcile','minimax','MiniMax-H3',NULL,'text_to_video','{"seconds":5}',0.4,'creative.video-providers.v1') INTO call;
+ PERFORM tanaghom.attach_creative_provider_request(call,'worker-video-reconcile','task-rec-1');
+ PERFORM tanaghom.finish_creative_provider_call(call,'worker-video-reconcile','task-rec-1',NULL,'indeterminate','indeterminate','timeout');
+ SELECT tanaghom.reconcile_creative_provider_call(call,'worker-video-reconcile','task-rec-1','succeeded',NULL,NULL,0.4) INTO rec_status;
+ IF rec_status IS DISTINCT FROM 'succeeded' THEN RAISE EXCEPTION 'reconcile to succeeded failed'; END IF;
+ SELECT actual_cost_usd INTO actual FROM tanaghom.creative_provider_calls WHERE id=call;
+ IF actual IS DISTINCT FROM 0.4 THEN RAISE EXCEPTION 'actual cost missing'; END IF;
+ -- Same-state idempotent re-write succeeds.
+ PERFORM tanaghom.reconcile_creative_provider_call(call,'worker-video-reconcile','task-rec-1','succeeded',NULL,NULL,NULL);
+ -- Conflicting rewrites of terminal truth are rejected.
+ BEGIN PERFORM tanaghom.reconcile_creative_provider_call(call,'worker-video-reconcile','task-rec-1','failed','deterministic','x',NULL);
+ RAISE EXCEPTION 'conflicting rewrite unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%immutable%' THEN RAISE; END IF; END;
+ -- Mismatched task id rejected.
+ BEGIN PERFORM tanaghom.reconcile_creative_provider_call(call,'worker-video-reconcile','task-other','failed','deterministic','x',NULL);
+ RAISE EXCEPTION 'mismatched task unexpectedly accepted'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%request mismatch%' THEN RAISE; END IF; END;
+ -- Foreign worker rejected.
+ BEGIN PERFORM tanaghom.reconcile_creative_provider_call(call,'intruder','task-rec-1','failed','deterministic','x',NULL);
+ RAISE EXCEPTION 'foreign reconcile unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%worker mismatch%' THEN RAISE; END IF; END;
+END $$;
+
+DO $$ DECLARE j uuid; call uuid; BEGIN
+ j := tanaghom.create_creative_job('e1000000-0000-4000-8000-000000000001','video','gpu_video',
+  '{"operation":"text_to_video","prompt":"x","duration":5}','e5000000-0000-4000-8000-000000000020','e6000000-0000-4000-8000-000000000020',0,3);
+ PERFORM tanaghom.claim_creative_video_job('worker-video-reconcile-2',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-video-reconcile-2' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ SELECT tanaghom.begin_creative_provider_call(j,'worker-video-reconcile-2','minimax','MiniMax-H3',NULL,'text_to_video','{"seconds":5}',0.4,'creative.video-providers.v1') INTO call;
+ -- Reconcile from started (not indeterminate) is rejected: started
+ -- attempts settle through finish, preserving P2a semantics.
+ BEGIN PERFORM tanaghom.reconcile_creative_provider_call(call,'worker-video-reconcile-2',NULL,'succeeded',NULL,NULL,0.4);
+ RAISE EXCEPTION 'started reconcile unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%invalid provider reconcile%' THEN RAISE; END IF; END;
+ PERFORM tanaghom.attach_creative_provider_request(call,'worker-video-reconcile-2','task-rec-2');
+ BEGIN PERFORM tanaghom.reconcile_creative_provider_call(call,'worker-video-reconcile-2','task-rec-2','succeeded',NULL,NULL,0.4);
+ RAISE EXCEPTION 'started reconcile unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%not reconcilable%' THEN RAISE; END IF; END;
+END $$;
+
 -- Least-privilege boundary: the worker role stays EXECUTE-only.
 SET ROLE tanaghom_creative_worker;
 DO $$ BEGIN
