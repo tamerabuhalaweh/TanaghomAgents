@@ -1,0 +1,13 @@
+{
+  "contract_version": "creative.motion-evaluation.v1",
+  "cases": [
+    { "id": "mot-ar-fade-01", "motion": "motion-ar-fade", "notes": "Arabic fade/slide/scale on 1:1, RTL start entrances" },
+    { "id": "mot-en-slide-01", "motion": "motion-en-slide", "notes": "English LTR control with reveal" },
+    { "id": "mot-ar-story-01", "motion": "motion-ar-story", "notes": "9:16 Arabic story with captions, numerals, punctuation" },
+    { "id": "mot-carousel-01", "motion": "created-carousel-motion", "notes": "Multi-scene carousel source with transitions" },
+    { "id": "mot-cancel-01", "kind": "lifecycle", "notes": "Cancel requested mid-render lands cancelled" },
+    { "id": "mot-malicious-01", "kind": "negative", "notes": "Unknown presets, easing injection, oversize timeline, script captions rejected" },
+    { "id": "mot-codec-01", "kind": "negative", "notes": "Non-allowlisted codec/container rejected; libx264 refused" },
+    { "id": "mot-network-01", "kind": "negative", "notes": "External URL in frame HTML is route-aborted; render fails deterministic" }
+  ]
+}
