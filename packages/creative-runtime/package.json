@@ -10,6 +10,7 @@
     "./repository": "./repository.mjs",
     "./queue": "./queue.mjs",
     "./adapters/mock": "./adapters/mock.mjs",
+    "./adapters/segmentation": "./adapters/segmentation.mjs",
     "./adapters/http-image": "./adapters/http-image.mjs",
     "./adapters/local-sharp": "./adapters/local-sharp.mjs",
     "./storage/keys": "./storage/keys.mjs",
