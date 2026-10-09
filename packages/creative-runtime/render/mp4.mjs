@@ -291,7 +291,11 @@ export async function encodeMp4({ ffmpegPath, args, frames, outputPath, timeoutM
 // `mp4v` sample entry passes: avc1/hvc1/hev1/unknown entries, audio-only
 // files, and malformed tracks are rejected. Rejects truncated, non-MP4,
 // dimension-mismatched, and duration-skewed outputs.
-export function validateMp4(bytes, { width, height, fps, frames }) {
+// `allowedCodecs` defaults to the strict in-house allowlist (mp4v only);
+// provider lanes pass their own vendor allowlist (e.g. mp4v+avc1) while
+// still rejecting everything else. Never trust provider MIME/filenames:
+// this walk is the verdict.
+export function validateMp4(bytes, { width = null, height = null, fps = null, frames = null, expectedDurationSec = null, allowedCodecs = ["mp4v"] }) {
   if (!Buffer.isBuffer(bytes) || bytes.length < 32) throw new Error("mp4_empty");
   if (bytes.length > MAX_MP4_BYTES) throw new Error("mp4_too_large");
   const top = readBoxes(bytes, 0, bytes.length);
@@ -315,8 +319,12 @@ export function validateMp4(bytes, { width, height, fps, frames }) {
     : bytes.readUInt32BE(mvhd.start + 24);
   if (!Number.isFinite(timescale) || timescale <= 0) throw new Error("mp4_bad_timescale");
   const durationSec = duration / timescale;
-  const expectedSec = frames / fps;
-  if (Math.abs(durationSec - expectedSec) > 1 / fps + 0.05) {
+  const expectedSec = expectedDurationSec ?? frames / fps;
+  if (!Number.isFinite(expectedSec)) throw new Error("mp4_duration_reference_required");
+  // Tight frame-exact tolerance for locally rendered timelines; wider for
+  // provider clips where only the requested duration is known.
+  const tolerance = expectedDurationSec !== null ? 1.5 : 1 / fps + 0.05;
+  if (Math.abs(durationSec - expectedSec) > tolerance) {
     throw new Error(`mp4_duration:${durationSec.toFixed(3)}s_expected_${expectedSec.toFixed(3)}s`);
   }
   let trackDims = null;
@@ -336,12 +344,19 @@ export function validateMp4(bytes, { width, height, fps, frames }) {
     }
   }
   if (!trackDims) throw new Error("mp4_missing_track_dims");
-  if (trackDims.width !== width || trackDims.height !== height) {
+  if (trackDims.width < 64 || trackDims.height < 64 || trackDims.width > 4096 || trackDims.height > 4096) {
+    throw new Error(`mp4_dimensions_suspect:${trackDims.width}x${trackDims.height}`);
+  }
+  if (width !== null && trackDims.width !== width) {
+    throw new Error(`mp4_dimensions:${trackDims.width}x${trackDims.height}`);
+  }
+  if (height !== null && trackDims.height !== height) {
     throw new Error(`mp4_dimensions:${trackDims.width}x${trackDims.height}`);
   }
   const codec = videoSampleEntry(bytes, moov);
-  if (codec !== "mp4v") {
-    throw new Error(`mp4_codec:${/^[A-Za-z0-9]{4}$/.test(codec) ? codec : "unknown"}`);
+  const printable = /^[A-Za-z0-9]{4}$/.test(codec) ? codec : "unknown";
+  if (!allowedCodecs.includes(codec)) {
+    throw new Error(`mp4_codec:${printable}`);
   }
   return {
     brand,

@@ -1,0 +1,15 @@
+{
+  "contract_version": "creative.video-presets.v1",
+  "operations": ["text_to_video", "image_to_video"],
+  "model": "MiniMax-H3",
+  "resolution": "768P",
+  "durations": [5, 8, 10],
+  "duration_min": 4,
+  "duration_max": 15,
+  "ratios": ["16:9", "9:16", "1:1"],
+  "prompt_max_chars": 7000,
+  "audio": "none (P4 ships silent clips; provider audio is never requested)",
+  "unit": "second",
+  "unit_price_usd": 0.08,
+  "variants": 1
+}

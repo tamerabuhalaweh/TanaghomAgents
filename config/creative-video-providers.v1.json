@@ -1,0 +1,55 @@
+{
+  "contract_version": "creative.video-providers.v1",
+  "adapters": {
+    "http-video": {
+      "kind": "http",
+      "description": "Keyed HTTP video provider (MiniMax-H3 primary via official platform.minimax.io pay-as-you-go). No credentials in repo; key arrives via environment at runtime. See tasks/236-provider-decision.md.",
+      "allowlist": [
+        {
+          "provider": "minimax",
+          "model": "MiniMax-H3",
+          "model_version": null,
+          "adapter_config_version": "creative.video-providers.v1",
+          "endpoint": "https://api.minimax.io/v2/video_generation",
+          "query_endpoint": "https://api.minimax.io/v2/query/video_generation",
+          "artifact_origins": ["cdn.hailuoai.com", "video-product.cdn.minimax.io"],
+          "terms": "Official pay-as-you-go; failures and security-review blocks are not deducted (verified 2026-10-09); commercial use permitted; full ToS ownership/training text pending acceptance review",
+          "commercial": true,
+          "unit": "second",
+          "unit_price_usd": 0.08,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 10000,
+          "poll_timeout_ms": 600000,
+          "max_bytes": 104857600,
+          "operations": ["text_to_video", "image_to_video"]
+        },
+        {
+          "provider": "kling",
+          "model": "kling-v3-turbo",
+          "model_version": null,
+          "adapter_config_version": "creative.video-providers.v1",
+          "endpoint": "https://api-singapore.klingai.com/image-to-video/kling-3.0-turbo",
+          "text_endpoint": "https://api-singapore.klingai.com/text-to-video/kling-3.0-turbo",
+          "query_endpoint": "https://api-singapore.klingai.com/tasks",
+          "artifact_origins": ["klingai.com", "inkwai.com"],
+          "terms": "Fallback only (enabled:false). Official API; unrestricted commercial use; failed-task deduction undocumented — requires acceptance note before promotion",
+          "commercial": true,
+          "enabled": false,
+          "unit": "second",
+          "unit_price_usd": 0.14,
+          "timeout_ms": 120000,
+          "poll_interval_ms": 10000,
+          "poll_timeout_ms": 600000,
+          "max_bytes": 104857600,
+          "operations": ["text_to_video", "image_to_video"]
+        }
+      ],
+      "blocked": [
+        { "model": "seedance-2.x (any reseller)", "reason": "No official ByteDance API surface found; terms unverifiable — rejected without escalation" },
+        { "model": "veo-3.1 (any route)", "reason": "Not selected: highest cost, fixed ~8s, forced audio, unverified download shape — see decision record" },
+        { "model": "wan-3.x", "reason": "Not selected: preview status, workspace-scoped endpoints, console-only pricing" },
+        { "model": "ltx-2.x", "reason": "Not selected: weight-license friction + endpoint deprecation churn" }
+      ]
+    }
+  }
+}
