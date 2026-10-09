@@ -1,0 +1,17 @@
+{
+  "contract_version": "creative.design-evaluation.v1",
+  "cases": [
+    { "id": "ad-ar-long-01", "kind": "ad", "locale": "ar", "template": "product-promo", "notes": "Long Arabic headline wrapping" },
+    { "id": "ad-mixed-01", "kind": "ad", "locale": "ar", "notes": "Arabic + English brand name + Latin numerals + price" },
+    { "id": "ad-price-cta-01", "kind": "ad", "locale": "ar", "template": "event-course", "notes": "Arabic price and CTA badge" },
+    { "id": "ad-en-01", "kind": "ad", "locale": "en", "template": "announcement", "notes": "English LTR control" },
+    { "id": "car-ar-6-01", "kind": "carousel", "locale": "ar", "template": "carousel-edu", "notes": "6-slide Arabic carousel order" },
+    { "id": "car-mixed-01", "kind": "carousel", "locale": "en", "template": "carousel-offer", "notes": "Mixed-language carousel with price slide" },
+    { "id": "mobile-01", "kind": "preview", "notes": "390px preview holds RTL layout" },
+    { "id": "aspect-01", "kind": "formats", "notes": "Same design at 1:1, 4:5, 9:16" },
+    { "id": "overflow-01", "kind": "negative", "notes": "Overlong headline must wrap or be rejected beyond bounds, never overflow silently" },
+    { "id": "font-fallback-01", "kind": "negative", "notes": "Unknown family falls back without tofu" },
+    { "id": "missing-image-01", "kind": "negative", "notes": "Dangling asset reference fails closed" },
+    { "id": "malicious-01", "kind": "negative", "notes": "Script tags, javascript: URLs, remote URLs, oversized docs rejected" }
+  ]
+}

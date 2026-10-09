@@ -8,6 +8,14 @@ export function creativeStudioEnabled() {
   return process.env.CREATIVE_STUDIO_ENABLED === "true";
 }
 
+export function designStudioEnabled() {
+  return process.env.DESIGN_STUDIO_ENABLED === "true";
+}
+
+export function carouselBuilderEnabled() {
+  return process.env.CAROUSEL_BUILDER_ENABLED === "true";
+}
+
 export class CreativeDisabledError extends Error {
   constructor() {
     super("creative_studio_disabled");

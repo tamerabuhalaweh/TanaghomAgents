@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@tanaghom/agent-runtime": "0.1.0",
+    "@tanaghom/creative-runtime": "0.1.0",
     "jose": "6.1.3",
     "lucide-react": "1.24.0",
     "next": "16.4.0",

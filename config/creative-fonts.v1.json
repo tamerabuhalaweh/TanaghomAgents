@@ -1,0 +1,23 @@
+{
+  "contract_version": "creative.fonts.v1",
+  "render_families": [
+    {
+      "family": "Cairo",
+      "arabic": true,
+      "latin": true,
+      "source": "bundled",
+      "path": "packages/creative-runtime/render/fonts/Cairo.ttf",
+      "license": "SIL Open Font License 1.1",
+      "license_file": "packages/creative-runtime/render/fonts/OFL.txt",
+      "sha256": "667c987182391c91f4e57a2f455b1794fb5e3ee6ca4ef3383e86bb690fa9c964",
+      "redistribution": "OFL permits bundling with license file; no sale of the font alone"
+    }
+  ],
+  "system_fallback_stack": ["Segoe UI", "Tahoma", "Arial", "sans-serif"],
+  "system_fonts_note": "System families are render-host fonts only: used for fallback shaping, never redistributed. No user-supplied font files are processed in P2b.",
+  "rules": {
+    "no_remote_fonts": true,
+    "no_user_font_upload": true,
+    "arabic_requires_shaping_engine": "browser/native only; diffusion text forbidden"
+  }
+}
