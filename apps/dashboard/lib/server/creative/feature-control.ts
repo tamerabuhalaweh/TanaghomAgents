@@ -16,6 +16,10 @@ export function carouselBuilderEnabled() {
   return process.env.CAROUSEL_BUILDER_ENABLED === "true";
 }
 
+export function motionStudioEnabled() {
+  return process.env.MOTION_STUDIO_ENABLED === "true";
+}
+
 export class CreativeDisabledError extends Error {
   constructor() {
     super("creative_studio_disabled");

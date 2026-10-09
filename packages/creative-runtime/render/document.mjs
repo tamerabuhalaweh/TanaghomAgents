@@ -168,26 +168,37 @@ function renderImageNode(node, assets) {
 
 // assets: Map(asset_version_id -> { bytes: Buffer, mime }). Backgrounds may
 // also resolve through the same map. options: { fontCss, fontFamily }.
-export function buildPageHtml({ doc, pageId, assets, fontCss = "", fontFamily = "Cairo" }) {
-  const { pages, canvas } = validateDocument(doc);
-  const page = (doc.kind === "carousel" ? doc.pages : [{ id: "page-1", nodes: doc.nodes }]).find((candidate) => candidate.id === pageId);
-  if (!page) throw new Error("invalid_design_document:unknown_page");
+export function renderNodeHtml(node, direction, assets) {
+  if (node.type === "text") return renderTextNode(node, direction);
+  if (node.type === "image") return renderImageNode(node, assets);
+  if (node.type === "shape") return renderShapeNode(node);
+  return renderBadgeNode(node, direction);
+}
+
+export function pageBackgroundHtml(doc, assets) {
   const background = doc.background ?? {};
-  let backgroundStyle = `background:${background.color ?? "#ffffff"};`;
+  const backgroundStyle = `background:${background.color ?? "#ffffff"};`;
   let backgroundImage = "";
   if (background.image_version_id) {
     const asset = assets.get(background.image_version_id);
     if (!asset) throw new Error("invalid_design_document:unresolved_background_ref");
     backgroundImage = `<img class="tanaghom-bg" alt="" src="data:${asset.mime};base64,${asset.bytes.toString("base64")}" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;" />`;
   }
-  const nodes = page.nodes.map((node) => {
-    if (node.type === "text") return renderTextNode(node, doc.direction);
-    if (node.type === "image") return renderImageNode(node, assets);
-    if (node.type === "shape") return renderShapeNode(node);
-    return renderBadgeNode(node, doc.direction);
-  }).join("");
+  return { backgroundStyle, backgroundImage };
+}
+
+export function pageShellHtml({ doc, canvas, fontCss = "", fontFamily = "Cairo", bodyHtml, extraCss = "" }) {
+  return `<!DOCTYPE html><html lang="${doc.locale}" dir="${doc.direction}"><head><meta charset="utf-8" /><style>${fontCss}*{margin:0;padding:0;box-sizing:border-box;}html,body{width:${canvas.width}px;height:${canvas.height}px;overflow:hidden;background:#fff;font-family:${fontFamily},'Segoe UI',Tahoma,Arial,sans-serif;}body{position:relative;${bodyHtml.backgroundStyle}}${extraCss}</style></head><body>${bodyHtml.backgroundImage}${bodyHtml.nodesHtml}</body></html>`;
+}
+
+export function buildPageHtml({ doc, pageId, assets, fontCss = "", fontFamily = "Cairo" }) {
+  const { pages, canvas } = validateDocument(doc);
+  const page = (doc.kind === "carousel" ? doc.pages : [{ id: "page-1", nodes: doc.nodes }]).find((candidate) => candidate.id === pageId);
+  if (!page) throw new Error("invalid_design_document:unknown_page");
+  const background = pageBackgroundHtml(doc, assets);
+  const nodes = page.nodes.map((node) => renderNodeHtml(node, doc.direction, assets)).join("");
   void pages;
-  return `<!DOCTYPE html><html lang="${doc.locale}" dir="${doc.direction}"><head><meta charset="utf-8" /><style>${fontCss}*{margin:0;padding:0;box-sizing:border-box;}html,body{width:${canvas.width}px;height:${canvas.height}px;overflow:hidden;background:#fff;font-family:${fontFamily},'Segoe UI',Tahoma,Arial,sans-serif;}body{position:relative;${backgroundStyle}}</style></head><body>${backgroundImage}${nodes}</body></html>`;
+  return pageShellHtml({ doc, canvas, fontCss, fontFamily, bodyHtml: { ...background, nodesHtml: nodes } });
 }
 
 export function buildDocumentHtml({ doc, assets, fontCss = "", fontFamily = "Cairo" }) {

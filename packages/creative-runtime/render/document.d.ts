@@ -53,6 +53,16 @@ export function buildPageHtml(args: {
   fontCss?: string;
   fontFamily?: string;
 }): string;
+export function renderNodeHtml(node: DesignNode, direction: "rtl" | "ltr", assets: Map<string, RenderAsset>): string;
+export function pageBackgroundHtml(doc: DesignDocument, assets: Map<string, RenderAsset>): { backgroundStyle: string; backgroundImage: string };
+export function pageShellHtml(args: {
+  doc: DesignDocument;
+  canvas: { width: number; height: number };
+  fontCss?: string;
+  fontFamily?: string;
+  bodyHtml: { backgroundStyle: string; backgroundImage: string; nodesHtml: string };
+  extraCss?: string;
+}): string;
 export function buildDocumentHtml(args: {
   doc: DesignDocument;
   assets: Map<string, RenderAsset>;

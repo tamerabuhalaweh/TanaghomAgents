@@ -77,6 +77,32 @@ export async function getRenderVersionAsset(db, { jobId, worker, versionId }) {
   return one(result.rows)?.asset_id ?? null;
 }
 
+// Motion-lane controlled readers. Same EXECUTE-only contract as the
+// design lane: the worker never reads tables directly.
+export async function claimMotionJob(db, { worker, leaseSeconds = 120 }) {
+  const result = await db.query(
+    `SELECT * FROM tanaghom.claim_creative_motion_job($1,$2)`,
+    [worker, leaseSeconds],
+  );
+  return one(result.rows);
+}
+
+export async function getMotionInput(db, { jobId, worker }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_motion_input($1,$2) AS input`,
+    [jobId, worker],
+  );
+  return one(result.rows)?.input ?? null;
+}
+
+export async function getMotionState(db, { jobId, worker }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_motion_state($1,$2) AS state`,
+    [jobId, worker],
+  );
+  return one(result.rows)?.state ?? null;
+}
+
 export async function markRunning(db, { jobId, worker }) {
   const result = await db.query(`SELECT tanaghom.mark_creative_job_running($1,$2) AS status`, [jobId, worker]);
   return one(result.rows)?.status ?? null;

@@ -21,7 +21,13 @@
       "default": "./render/document.mjs"
     },
     "./render/chromium": "./render/chromium.mjs",
-    "./render/worker": "./render/worker.mjs"
+    "./render/worker": "./render/worker.mjs",
+    "./render/motion": {
+      "types": "./render/motion.d.ts",
+      "default": "./render/motion.mjs"
+    },
+    "./render/mp4": "./render/mp4.mjs",
+    "./render/motion-worker": "./render/motion-worker.mjs"
   },
   "dependencies": {
     "ajv": "^8.18.0",

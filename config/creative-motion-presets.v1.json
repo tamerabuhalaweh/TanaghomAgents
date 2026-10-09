@@ -1,0 +1,32 @@
+{
+  "contract_version": "creative.motion-presets.v1",
+  "fps_allowlist": [24, 30],
+  "max_total_ms": 30000,
+  "max_frames": 900,
+  "max_scenes": 10,
+  "max_elements": 48,
+  "max_captions": 12,
+  "element_presets": {
+    "none": { "description": "Static element, no entrance motion." },
+    "fade": { "description": "Opacity 0 to 1 entrance." },
+    "slide": { "description": "Directional slide entrance with fade, 120px bounded offset." },
+    "scale": { "description": "Scale 0.6 to 1 entrance with fade." },
+    "reveal": { "description": "Directional clip-path reveal entrance with fade." }
+  },
+  "transition_presets": {
+    "none": { "description": "Hard cut between scenes." },
+    "fade": { "description": "Scene crossfade entrance." },
+    "slide": { "description": "Scene slide entrance with fade." },
+    "scale": { "description": "Scene scale entrance with fade." }
+  },
+  "directions": ["up", "down", "start", "end"],
+  "direction_note": "start/end are logical: resolved against document direction at frame build (RTL-aware).",
+  "easings": ["linear", "ease", "ease-in", "ease-out", "ease-in-out"],
+  "encoder": {
+    "binary": "deployment-provided ffmpeg on PATH or FFMPEG_PATH, never bundled",
+    "codecs": ["mpeg4"],
+    "container": "mp4",
+    "pixel_format": "yuv420p",
+    "audio": "none"
+  }
+}
