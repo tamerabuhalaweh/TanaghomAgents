@@ -61,9 +61,13 @@ export async function claimMotionRenderJob(db, { worker, leaseSeconds = 120 }) {
 export async function executeMotionRenderJob({
   db, storage, capture, createEncoder, jobId, worker, fontDir,
   ffmpegPath, stagingDir, frameTimeoutMs = 60000, encodeTimeoutMs = 300000,
+  finishPollMs = 1000,
 }) {
   if (!db || !storage || !capture || !createEncoder) throw new Error("motion_worker_dependencies_required");
   if (!jobId || !worker) throw new Error("motion_worker_job_required");
+  if (!Number.isInteger(finishPollMs) || finishPollMs < 10 || finishPollMs > 10000) {
+    throw new Error("motion_finish_poll_bounds");
+  }
   const fail = async (errorClass, message) => {
     try {
       await failJob(db, { jobId, worker, errorClass, errorMessage: message.slice(0, 500) });
@@ -198,8 +202,38 @@ export async function executeMotionRenderJob({
       await fail("transient", `motion_frame_loop_failed:${error.message}`.slice(0, 200));
     }
     let mp4 = null;
+    // Cancellation watcher: while finish() is pending (potentially a long
+    // mux), poll the controlled state on a bounded interval — never a
+    // busy loop. On cancel the AbortSignal terminates FFmpeg and the
+    // mapping below records cancelled, never success. The interval is
+    // cleared the moment finish settles either way: no leaked timers,
+    // no polls after terminal state.
     try {
-      mp4 = await encoder.finish();
+      mp4 = await new Promise((resolveFinish, rejectFinish) => {
+        const watcher = setInterval(() => {
+          void (async () => {
+            let state = null;
+            try {
+              state = await getMotionState(db, { jobId, worker });
+            } catch {
+              return;
+            }
+            if (!state || state.status === "cancelled" || state.cancel_requested) {
+              aborter.abort();
+            }
+          })();
+        }, finishPollMs);
+        encoder.finish().then(
+          (bytes) => {
+            clearInterval(watcher);
+            resolveFinish(bytes);
+          },
+          (error) => {
+            clearInterval(watcher);
+            rejectFinish(error);
+          },
+        );
+      });
     } catch (error) {
       if ((error && error.errorClass === "cancelled") || /abort|cancel/i.test(error.message)) {
         await fail("cancelled", `motion_encode_cancelled:${error.message}`.slice(0, 200));

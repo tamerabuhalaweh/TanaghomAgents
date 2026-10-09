@@ -24,14 +24,23 @@ documents into MP4 private assets through a deterministic timeline:
    stays disabled in capture). Logical start/end resolve against
    document direction, keeping Arabic entrances RTL-correct. Arabic
    stays browser-shaped Unicode text; captions are escaped.
-3. Capture/encode/validate: Chromium PNG frames through the existing
-   route-abort capture (zero attempted external requests asserted per
-   render), FFmpeg `rawvideo`-free path (`image2pipe` PNG in, MP4 out)
-   with a FROZEN argv allowlist (no shell, no filters, no user strings;
-   output is a worker-generated temp path), codec allowlist `mpeg4`
-   only (native encoder — no GPL encoder library invoked), container
-   `mp4`, `yuv420p`, `+faststart`, no audio. MP4 validation is pure JS
-   (ftyp brand, moov/mvhd duration, trak/tkhd dimensions).
+3. Capture/encode/validate: Chromium PNG frames streamed
+   incrementally through the existing route-abort capture (zero
+   attempted external requests asserted per render; at most one frame
+   Buffer live, 128MB intermediate budget, backpressure-aware), FFmpeg
+   path (`image2pipe` PNG in, MP4 out) with a FROZEN argv allowlist
+   (no shell, no filters, no user strings; output is a
+   worker-generated temp path removed on every exit). Codec allowlist
+   `mpeg4` only (native encoder — no GPL encoder library invoked),
+   container `mp4`, `yuv420p`, `+faststart`, no audio. MP4 validation
+   is pure JS: ftyp brand, moov/mvhd duration, trak/tkhd dimensions,
+   AND the stsd video sample-entry/fourcc walk (mdia/hdlr `vide` →
+   minf/stbl/stsd) requiring `mp4v` — avc1/hvc1/unknown entries,
+   audio-only files, and malformed tracks are rejected, and the
+   validated fourcc (not the requested encoder string) is persisted
+   in provenance. Encoding is cancellable (AbortSignal terminates
+   FFmpeg with awaited exit) and the worker polls cancellation on a
+   bounded interval while `finish()` is pending.
 4. Worker (`render/motion-worker.mjs`, CLI
    `scripts/creative-motion-worker.mjs --once`): filtered
    `claim_creative_motion_job()`, pinned input with embedded

@@ -122,7 +122,7 @@ function craftedMp4({ width = 1080, height = 1080, timescale = 1000, duration = 
   return Buffer.concat([ftyp, moov]);
 }
 
-function stubDb({ input, outputs = 0, state = { status: "running", cancel_requested: false }, markStatus = "running", calls = null }) {
+function stubDb({ input, outputs = 0, state = { status: "running", cancel_requested: false }, stateFn = null, markStatus = "running", calls = null }) {
   const log = calls ?? { marks: [], registers: [], completes: [], fails: [] };
   return {
     log,
@@ -138,7 +138,10 @@ function stubDb({ input, outputs = 0, state = { status: "running", cancel_reques
         return { rows: [{ input }] };
       }
       if (text.includes("get_creative_motion_state")) {
-        return { rows: [{ state }] };
+        log.stateCalls = (log.stateCalls ?? 0) + 1;
+        const current = stateFn ? stateFn(log.stateCalls) : state;
+        log.statesSeen = [...(log.statesSeen ?? []), current];
+        return { rows: [{ state: current }] };
       }
       if (text.includes("create_creative_asset_version")) {
         log.registers.push(params);
@@ -672,6 +675,78 @@ test("motion worker honors cancellation, timeouts, and duplicate guards", async 
     /motion_document_invalid/,
   );
   assert.equal(dbBad.log.fails[0][2], "deterministic");
+});
+
+test("worker polls cancellation while encoder.finish() is pending", async () => {
+  const mp4 = craftedMp4({ width: 1080, height: 1080, timescale: 1000, duration: 2000 });
+  void mp4;
+  // Polls 1-6 (pre-spawn, frames, pre-mux) see running; watcher polls 7+
+  // flip to cancelled only once finish is underway.
+  const db = stubDb({
+    input: motionInput(),
+    stateFn: (n) => (n >= 8
+      ? { status: "running", cancel_requested: true }
+      : { status: "running", cancel_requested: false }),
+  });
+  let writes = 0;
+  let finishEntered = false;
+  let finishPendingObserved = false;
+  let signalFired = false;
+  let encoderTerminated = false;
+  const fake = {
+    createEncoder: async (params) => {
+      assert.ok(params.signal instanceof AbortSignal);
+      params.signal.addEventListener("abort", () => {
+        signalFired = true;
+        encoderTerminated = true;
+      });
+      return {
+        writeFrame: async () => {
+          writes += 1;
+        },
+        finish: async () => {
+          // 1+2: every frame was written and finish stays pending here.
+          assert.equal(writes, 48);
+          finishEntered = true;
+          await new Promise((resolve) => setImmediate(resolve));
+          finishPendingObserved = true;
+          await new Promise((_, reject) => {
+            params.signal.addEventListener("abort", () => {
+              const error = new Error("mp4_encode_aborted");
+              error.errorClass = "cancelled";
+              reject(error);
+            });
+          });
+        },
+        abort: async () => {},
+      };
+    },
+  };
+  await assert.rejects(
+    executeMotionRenderJob({
+      db, storage: memoryStorage(),
+      capture: async ({ width, height }) => ({ bytes: pngBytes(width, height), attemptedExternal: 0, blockedExternal: 0 }),
+      createEncoder: fake.createEncoder,
+      jobId: JOB, worker: WORKER, finishPollMs: 20,
+    }),
+    /motion_encode_cancelled/,
+  );
+  // 3: early polls saw running.
+  assert.equal(db.log.statesSeen[0].cancel_requested, false);
+  // 4+5: watcher observed the flip and the AbortSignal fired.
+  assert.ok(db.log.stateCalls >= 8);
+  assert.equal(signalFired, true);
+  // 6: encoder terminated via the signal path.
+  assert.equal(encoderTerminated, true);
+  assert.equal(finishEntered, true);
+  assert.equal(finishPendingObserved, true);
+  // 7+8: job recorded cancelled, never completed.
+  assert.equal(db.log.fails[0][2], "cancelled");
+  assert.equal(db.log.completes.length, 0);
+  // 9: watcher stopped — no polls after terminal state.
+  const pollsAfter = db.log.stateCalls;
+  await new Promise((resolve) => setTimeout(resolve, 80));
+  assert.equal(db.log.stateCalls, pollsAfter);
 });
 
 test("motion claim helper uses the filtered claim", async () => {
