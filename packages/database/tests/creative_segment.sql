@@ -111,6 +111,25 @@ DO $$ DECLARE j uuid; v uuid; BEGIN
  IF v IS NULL THEN RAISE EXCEPTION 'segment method registration failed'; END IF;
 END $$;
 
+-- Output reader: empty before work, rows after registration, worker-scoped.
+DO $$ DECLARE j uuid; v uuid; rows jsonb; BEGIN
+ j := tanaghom.create_creative_job('f1000000-0000-4000-8000-000000000001','product_shoot','cpu',
+  '{"operation":"segment"}','f5000000-0000-4000-8000-000000000018','f6000000-0000-4000-8000-000000000018',0,3);
+ PERFORM tanaghom.claim_creative_segment_job('worker-segment-outputs',120);
+ SELECT id INTO j FROM tanaghom.creative_jobs WHERE claimed_by='worker-segment-outputs' AND status='claimed' ORDER BY created_at DESC LIMIT 1;
+ SELECT tanaghom.get_creative_segment_outputs(j,'worker-segment-outputs') INTO rows;
+ IF jsonb_array_length(rows) IS DISTINCT FROM 0 THEN RAISE EXCEPTION 'fresh job shows outputs'; END IF;
+ SELECT tanaghom.create_creative_asset_version(j,'worker-segment-outputs',NULL,'m','image/png',64,64,NULL,100,
+  'dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd',
+  't/f0000000-0000-4000-8000-000000000001/product_shoot/' || j::text || '/v1.png',NULL,'{"kind":"mask"}',NULL,'t','segment') INTO v;
+ SELECT tanaghom.get_creative_segment_outputs(j,'worker-segment-outputs') INTO rows;
+ IF jsonb_array_length(rows) IS DISTINCT FROM 1 THEN RAISE EXCEPTION 'output row missing'; END IF;
+ IF rows->0->>'kind' IS DISTINCT FROM 'mask' THEN RAISE EXCEPTION 'output kind wrong'; END IF;
+ BEGIN PERFORM tanaghom.get_creative_segment_outputs(j,'intruder');
+ RAISE EXCEPTION 'foreign outputs read unexpectedly succeeded'; EXCEPTION WHEN OTHERS THEN
+ IF SQLERRM NOT LIKE '%worker mismatch%' THEN RAISE; END IF; END;
+END $$;
+
 -- Least-privilege boundary: the worker role stays EXECUTE-only.
 SET ROLE tanaghom_creative_worker;
 DO $$ BEGIN
