@@ -162,6 +162,14 @@ export async function getSegmentState(db, { jobId, worker }) {
   return one(result.rows)?.state ?? null;
 }
 
+export async function getSegmentOutputs(db, { jobId, worker }) {
+  const result = await db.query(
+    `SELECT tanaghom.get_creative_segment_outputs($1,$2) AS outputs`,
+    [jobId, worker],
+  );
+  return one(result.rows)?.outputs ?? [];
+}
+
 export async function beginProviderCall(db, input) {
   const {
     jobId, worker, provider, model, modelVersion = null, operation,

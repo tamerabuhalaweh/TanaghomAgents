@@ -1,4 +1,5 @@
 BEGIN;
+DROP FUNCTION tanaghom.get_creative_segment_outputs(uuid,text);
 DROP FUNCTION tanaghom.get_creative_segment_state(uuid,text);
 DROP FUNCTION tanaghom.claim_creative_segment_job(text,int);
 DROP FUNCTION tanaghom.get_creative_segment_source(uuid,text,uuid);

@@ -2,10 +2,17 @@
 
 Fixed entry point for the segmentation worker. Takes ONLY validated
 scalars (paths checked for existence/shape, size/device from
-allowlists); performs no network access, executes no dynamic code, and
-emits exactly one JSON line on stdout. Any failure exits non-zero with
-a one-line stderr message. torch + BiRefNet code + weights are
-deployment-provisioned (never bundled by this repo).
+allowlists); performs no network access, and emits exactly one JSON
+line on stdout. Any failure exits non-zero with a one-line stderr
+message. torch + BiRefNet code + weights are deployment-provisioned
+(never bundled by this repo).
+
+Security property: fixed entry point + trusted revision/hash-pinned
+code. Importing the deployment-provisioned BiRefNet modules DOES
+execute that code, so the worker verifies the code manifest and
+weights hash BEFORE spawning this bridge; this file itself runs no
+dynamic imports beyond the pinned torch/PIL/torchvision/safetensors
+packages.
 """
 import argparse
 import hashlib
@@ -51,6 +58,7 @@ def main():
         import torch
         from PIL import Image
         from torchvision import transforms
+        from safetensors.torch import load_file as load_safetensors
         from models.birefnet import BiRefNet
         from utils import check_state_dict
     except ImportError as error:
@@ -58,6 +66,20 @@ def main():
 
     if args.device == "cuda" and not torch.cuda.is_available():
         fail("cuda unavailable")
+
+    # Format-faithful load: the selected artifact is model.safetensors.
+    # Anything else (pickle .pt/.bin, garbage) is rejected here — the
+    # legacy torch.load path is never used, so a pickle can neither
+    # execute nor load.
+    if not args.weights.lower().endswith(".safetensors"):
+        fail("weights must be a .safetensors artifact")
+    try:
+        with open(args.weights, "rb") as probe:
+            header = probe.read(8)
+        if len(header) < 8 or int.from_bytes(header, "little") <= 0:
+            fail("weights header malformed")
+    except Exception as error:
+        fail("weights unreadable: %s" % error)
 
     try:
         image = Image.open(args.input).convert("RGB")
@@ -72,8 +94,8 @@ def main():
     ])
     try:
         net = BiRefNet(bb_pretrained=False)
-        state = torch.load(args.weights, map_location=args.device)
-        net.load_state_dict(check_state_dict(state))
+        state_dict = load_safetensors(args.weights, device=args.device)
+        net.load_state_dict(check_state_dict(state_dict))
         net.to(args.device)
         net.eval()
     except Exception as error:

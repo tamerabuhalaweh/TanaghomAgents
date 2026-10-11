@@ -143,6 +143,28 @@ BEGIN
  RETURN QUERY SELECT picked.id,picked.organization_id,picked.capability,picked.lane,picked.params,picked.attempt+1,picked.max_attempts,picked.correlation_id,picked.idempotency_key;
 END $$;
 
+-- Controlled output reader for restart-safe persistence: every version
+-- this job produced, ordered, with the fields needed to verify and
+-- resume (object key, checksum, MIME, kind). No table reads on the
+-- worker role.
+CREATE FUNCTION tanaghom.get_creative_segment_outputs(p_job uuid,p_worker text)
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+DECLARE j tanaghom.creative_jobs%ROWTYPE;
+BEGIN
+ IF p_job IS NULL OR p_worker IS NULL OR length(p_worker) NOT BETWEEN 1 AND 200
+ THEN RAISE EXCEPTION 'invalid segment output lookup'; END IF;
+ SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=p_job;
+ IF j.id IS NULL THEN RAISE EXCEPTION 'unknown creative job'; END IF;
+ IF j.claimed_by IS DISTINCT FROM p_worker THEN RAISE EXCEPTION 'creative worker mismatch'; END IF;
+ IF j.status NOT IN ('claimed','running') THEN RAISE EXCEPTION 'creative job not active'; END IF;
+ RETURN (SELECT coalesce(jsonb_agg(row ORDER BY row->>'version'), '[]'::jsonb) FROM (
+  SELECT jsonb_build_object('version_id',v.id,'asset_id',v.asset_id,'version',v.version,
+    'object_key',v.object_key,'sha256',v.sha256,'mime',v.mime,
+    'kind',v.provenance->>'kind','title',v.title) AS row
+   FROM tanaghom.creative_asset_versions v WHERE v.job_id=p_job
+ ) AS versions);
+END $$;
+
 -- Cooperative cancellation poll for segmentation renders.
 CREATE FUNCTION tanaghom.get_creative_segment_state(p_job uuid,p_worker text)
 RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
@@ -161,6 +183,7 @@ GRANT EXECUTE ON FUNCTION tanaghom.get_creative_segment_input(uuid,text) TO tana
 GRANT EXECUTE ON FUNCTION tanaghom.get_creative_segment_source(uuid,text,uuid) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.claim_creative_segment_job(text,int) TO tanaghom_creative_worker;
 GRANT EXECUTE ON FUNCTION tanaghom.get_creative_segment_state(uuid,text) TO tanaghom_creative_worker;
+GRANT EXECUTE ON FUNCTION tanaghom.get_creative_segment_outputs(uuid,text) TO tanaghom_creative_worker;
 
 INSERT INTO public.schema_migrations(version) VALUES ('0045_creative_segmentation');
 COMMIT;

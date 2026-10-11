@@ -295,7 +295,103 @@ try {
   }));
   console.log("PASS segment worker persists mask v1 + cutout v2 with lineage");
 
-  // Cutout feeds Product Studio scene composition with the local pipeline.
+  // BiRefNet bridge proofs. Negative cases need only a Python torch
+  // deployment; the positive case additionally needs code+weights paths
+  // via env (never bundled, never defaulted).
+  async function pythonTorchAvailable() {
+    try {
+      const probe = spawnSync("python", ["-c", "import torch, safetensors.torch"], { stdio: "pipe", timeout: 120000 });
+      return probe.status === 0;
+    } catch {
+      return false;
+    }
+  }
+  const { fileURLToPath } = await import("node:url");
+  const bridgeScript = fileURLToPath(new URL("../packages/creative-runtime/adapters/birefnet_bridge.py", import.meta.url));
+  const bridgeCodeDir = process.env.ML_SEGMENTATION_BIREFNET_CODE_DIR ?? "";
+  const bridgeWeights = process.env.ML_SEGMENTATION_BIREFNET_WEIGHTS ?? "";
+  if (!(await pythonTorchAvailable())) {
+    console.log("SKIP birefnet bridge proofs: no Python torch deployment here");
+  } else {
+    const { execFileSync } = await import("node:child_process");
+    const bridgeTmp = mkdtempSync(join(tmpdir(), "seg-bridge-e2e-"));
+    await sharp(await productPhoto(256)).toFile(`${bridgeTmp}/in.png`);
+    // Pickle weights are rejected before any load (no torch.load fallback).
+    await sharp(Buffer.alloc(64), { raw: { width: 8, height: 8, channels: 1 } }).png().toFile(`${bridgeTmp}/fake.pt`);
+    const runBridgeCase = (weights, outName) => {
+      try {
+        execFileSync("python", [bridgeScript, "--code-dir", bridgeCodeDir || bridgeTmp, "--weights", weights,
+          "--input", `${bridgeTmp}/in.png`, "--output-mask", `${bridgeTmp}/${outName}`, "--size", "512", "--device", "cpu"],
+        { timeout: 600000, stdio: "pipe" });
+        return { ok: true };
+      } catch (error) {
+        return { ok: false, message: String(error.stderr ?? error.message) };
+      }
+    };
+    const pickleCase = runBridgeCase(`${bridgeTmp}/fake.pt`, "p.png");
+    assert.equal(pickleCase.ok, false);
+    assert.match(pickleCase.message, /safetensors artifact/);
+    await import("node:fs/promises").then((fs) => fs.writeFile(`${bridgeTmp}/bad.safetensors`, Buffer.from("not a safetensors file.........")));
+    const garbageCase = runBridgeCase(`${bridgeTmp}/bad.safetensors`, "g.png");
+    assert.equal(garbageCase.ok, false);
+    assert.match(garbageCase.message, /birefnet_bridge_failed/);
+    console.log("PASS bridge rejects pickle and malformed weights");
+    const { existsSync } = await import("node:fs");
+    if (bridgeCodeDir && bridgeWeights && existsSync(bridgeCodeDir) && existsSync(bridgeWeights)) {
+      const stdout = execFileSync("python", [bridgeScript, "--code-dir", bridgeCodeDir, "--weights", bridgeWeights,
+        "--input", `${bridgeTmp}/in.png`, "--output-mask", `${bridgeTmp}/real-mask.png`, "--size", "512", "--device", "cpu"],
+      { timeout: 900000 });
+      const report = JSON.parse(stdout.toString().trim().split("\n").pop());
+      assert.match(report.mask_sha256, /^[0-9a-f]{64}$/);
+      assert.ok(report.infer_ms > 0);
+      console.log(JSON.stringify({ case_id: "seg-birefnet-01", infer_ms: report.infer_ms, device: report.device, result: "real-inference" }));
+      console.log("PASS real BiRefNet bridge inference end to end");
+    } else {
+      console.log("SKIP real BiRefNet inference: ML_SEGMENTATION_BIREFNET_* unset (weights never bundled)");
+    }
+  }
+
+  // Restart recovery: cutout write fails once, retry adopts verified
+  // outputs and finishes with exactly one mask + one cutout version.
+  const retryUpload = await uploadPng({ headers: operator, key: "e2e-segment-retry-up", filename: "retry.png", title: "Retry product" });
+  const retrySubmit = await postJson("/api/creative/segment/jobs", owner,
+    { source_version_id: retryUpload.version_id, correlation_id: randomUUID() }, "e2e-segment-retry");
+  const retryJobId = (await retrySubmit.json()).job_id;
+  const retryClaimed = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_segment_job('worker-segment-retry',120)`);
+  assert.ok(retryClaimed.rows.find((candidate) => candidate.job_id === retryJobId));
+  let cutoutPuts = 0;
+  const flakyStorage = {
+    get: (key) => workerStorage.get(key),
+    put: (key, bytes, mime) => {
+      if (key.endsWith("/v2.png")) {
+        cutoutPuts += 1;
+        if (cutoutPuts === 1) throw new Error("simulated cutout write failure");
+      }
+      return workerStorage.put(key, bytes, mime);
+    },
+    remove: (key) => workerStorage.remove(key),
+  };
+  const { executeSegmentJob: executeRetry } = await import("../packages/creative-runtime/render/segment-worker.mjs");
+  await assert.rejects(
+    executeRetry({ db: workerDb, storage: flakyStorage, jobId: retryJobId, worker: "worker-segment-retry" }),
+    /segment_storage_failed:cutout/,
+  );
+  // Transient failure requeued the job: reclaim before the retry pass,
+  // exactly as a restarted worker would (clock accelerated past backoff).
+  await pool.query(`UPDATE tanaghom.creative_jobs SET available_at = now() WHERE id = $1`, [retryJobId]);
+  const retryClaimed2 = await workerDb.query(`SELECT * FROM tanaghom.claim_creative_segment_job('worker-segment-retry',120)`);
+  assert.ok(retryClaimed2.rows.find((candidate) => candidate.job_id === retryJobId));
+  const retryResult = await executeRetry({ db: workerDb, storage: workerStorage, jobId: retryJobId, worker: "worker-segment-retry" });
+  assert.equal(retryResult.maskVersionId && retryResult.cutoutVersionId ? true : false, true);
+  const retryVersions = await pool.query(
+    `SELECT version, provenance->>'kind' AS kind FROM tanaghom.creative_asset_versions WHERE job_id = $1 ORDER BY version`,
+    [retryJobId],
+  );
+  assert.deepEqual(retryVersions.rows.map((row) => [row.version, row.kind]), [[1, "mask"], [2, "cutout"]]);
+  const retryJobRow = await pool.query(`SELECT status FROM tanaghom.creative_jobs WHERE id = $1`, [retryJobId]);
+  assert.equal(retryJobRow.rows[0].status, "succeeded");
+  console.log(JSON.stringify({ case_id: "seg-restart-01", job_id: retryJobId, result: "recovered" }));
+  console.log("PASS restart recovery reuses verified outputs without duplicates");
   const { localSharpAdapter } = await import("../packages/creative-runtime/adapters/local-sharp.mjs");
   const { sha256Hex } = await import("../packages/creative-runtime/storage/keys.mjs");
   const cutoutPreview = await fetch(`${dashboardOrigin}/api/creative/assets/versions/${segVersions.rows[1].id}/preview`, { headers: owner });

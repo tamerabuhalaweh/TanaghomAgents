@@ -23,15 +23,16 @@ import {
   probeSource,
   runBirefnetBridge,
   segmentLocalDeterministic,
+  verifyBirefnetDeployment,
 } from "../adapters/segmentation.mjs";
 import { sha256Hex } from "../storage/keys.mjs";
 import {
   claimSegmentJob,
   completeJob,
-  countRenderOutputs,
   failJob,
   getRenderVersionAsset,
   getSegmentInput,
+  getSegmentOutputs,
   getSegmentSource,
   getSegmentState,
   markRunning,
@@ -54,7 +55,7 @@ export async function claimSegmentRenderJob(db, { worker, leaseSeconds = 120 }) 
 
 export async function executeSegmentJob({
   db, storage, jobId, worker, stagingDir,
-  birefnet = null, localEngine = null,
+  birefnet = null, localEngine = null, runBridge = null,
 }) {
   if (!db || !storage) throw new Error("segment_worker_dependencies_required");
   if (!jobId || !worker) throw new Error("segment_worker_job_required");
@@ -74,9 +75,6 @@ export async function executeSegmentJob({
   }
   if (running === "cancelled") await fail("cancelled", "segment_cancel_requested");
   try {
-    if ((await countRenderOutputs(db, { jobId, worker })) > 0) {
-      await fail("deterministic", "segment_duplicate_execution");
-    }
     let input = null;
     try {
       input = await getSegmentInput(db, { jobId, worker });
@@ -134,75 +132,46 @@ export async function executeSegmentJob({
       if (error && error.errorClass) throw error;
       await fail("transient", `segment_state_unreadable:${error.message}`.slice(0, 200));
     }
-    const aborter = new AbortController();
-    const cancelWatcher = setInterval(() => {
-      void (async () => {
-        try {
-          const state = await getSegmentState(db, { jobId, worker });
-          if (!state || state.status === "cancelled" || state.cancel_requested) aborter.abort();
-        } catch {}
-      })();
-    }, SEGMENT_CANCEL_POLL_MS);
-    let maskPng = null;
-    let cutoutPng = null;
-    let maskMeta = null;
-    try {
-      if (engine === "birefnet") {
-        const staged = await stageInput({ stagingDir, jobId, bytes: sourceBytes, ext: probed.ext });
-        try {
-          const report = await runBirefnetBridge({
-            pythonBin: birefnet.pythonBin, bridgeScript: birefnet.bridgeScript,
-            codeDir: birefnet.codeDir, weightsPath: birefnet.weightsPath,
-            inputPath: staged.inputPath, outputMaskPath: staged.maskPath,
-            size: birefnet.size ?? 1024, device: birefnet.device ?? "cpu",
-            timeoutMs: birefnet.timeoutMs ?? 600000, signal: aborter.signal,
-            spawnFn: birefnet.spawnFn,
-          });
-          maskMeta = { ...report, engine: "birefnet", model: birefnet.model ?? "BiRefNet", weights: birefnet.weightsRef ?? null };
-          maskPng = await readFile(staged.maskPath);
-        } finally {
-          await cleanupPaths([staged.inputPath, staged.maskPath]);
-        }
-      } else {
-        const local = localEngine ?? segmentLocalDeterministic;
-        const result = await local({ bytes: sourceBytes, refine: request.refine });
-        maskPng = result.maskPng;
-        cutoutPng = result.cutoutPng;
-        maskMeta = {
-          engine: "local-deterministic", width: result.width, height: result.height,
-          coverage: result.coverage, provenance: result.provenance,
-        };
-      }
-    } catch (error) {
-      if (error?.name === "AbortError" || /abort|cancel/i.test(error?.message ?? "")) {
-        await fail("cancelled", "segment_cancel_requested");
-      }
-      if (/timeout/i.test(error?.message ?? "")) {
-        await fail("transient", `segment_inference_timeout:${error.message}`.slice(0, 200));
-      }
-      await fail("transient", `segment_inference_failed:${error.message}`.slice(0, 200));
-    } finally {
-      clearInterval(cancelWatcher);
-    }
-    try {
-      const posted = await getSegmentState(db, { jobId, worker });
-      if (!posted || posted.status === "cancelled" || posted.cancel_requested) {
-        await fail("cancelled", "segment_cancel_requested");
-      }
-    } catch (error) {
-      if (error && error.errorClass) throw error;
-      await fail("transient", `segment_state_unreadable:${error.message}`.slice(0, 200));
-    }
-    // Original mask persists untouched; refinement (if any) shapes only
-    // the cutout alpha, reproducibly from v1 + recorded params.
-    assertPngImage(maskPng, { width: probed.width, height: probed.height });
-    if (!cutoutPng) {
-      cutoutPng = await applyMask(sourceBytes, maskPng, request.refine, probed);
-    }
-    assertPngImage(cutoutPng, { width: probed.width, height: probed.height });
     const maskKey = buildSegmentKey({ organizationId: input.organization_id, jobId, version: 1 });
     const cutoutKey = buildSegmentKey({ organizationId: input.organization_id, jobId, version: 2 });
-    for (const [key, bytes, label] of [[maskKey, maskPng, "mask"], [cutoutKey, cutoutPng, "cutout"]]) {
+    // --- restart-safe output state: inspect, verify, resume, continue.
+    // Objects are immutable (exclusive create, never overwritten or
+    // deleted) and rows are append-only, so every retry converges:
+    // verified outputs are adopted, missing ones are (re)produced,
+    // mismatches fail closed, and exactly one mask + one cutout
+    // version can ever exist for the job.
+    let priorOutputs = [];
+    try {
+      priorOutputs = await getSegmentOutputs(db, { jobId, worker });
+    } catch (error) {
+      await fail("transient", `segment_outputs_unreadable:${error.message}`.slice(0, 200));
+    }
+    if (!Array.isArray(priorOutputs)) await fail("deterministic", "segment_outputs_shape");
+    if (priorOutputs.length > 2) await fail("deterministic", "segment_outputs_unexpected");
+    const maskRow = priorOutputs.find((row) => row.version === 1) ?? null;
+    const cutoutRow = priorOutputs.find((row) => row.version === 2) ?? null;
+    for (const [row, wantKind, wantKey] of [[maskRow, "mask", maskKey], [cutoutRow, "cutout", cutoutKey]]) {
+      if (!row) continue;
+      if (row.kind !== wantKind || row.mime !== "image/png" || row.object_key !== wantKey) {
+        await fail("deterministic", "segment_outputs_shape");
+      }
+    }
+    async function readExisting(key, label) {
+      let stored = null;
+      try {
+        stored = await storage.get(key);
+      } catch {
+        stored = null;
+      }
+      if (!stored) return null;
+      try {
+        assertPngImage(stored.bytes, { width: probed.width, height: probed.height });
+      } catch (error) {
+        await fail("deterministic", `segment_${label}_bytes_invalid:${error.message}`.slice(0, 200));
+      }
+      return stored.bytes;
+    }
+    async function putNew(key, bytes, label) {
       try {
         const written = await storage.put(key, bytes, "image/png");
         if (written && written.sha256 && written.sha256.toLowerCase() !== sha256Hex(bytes)) {
@@ -210,54 +179,200 @@ export async function executeSegmentJob({
         }
       } catch (error) {
         if (/object_key_exists|object_key_immutable/.test(error.message)) {
-          await fail("deterministic", `segment_output_key_exists:${label}`);
+          const raced = await readExisting(key, label);
+          if (raced && sha256Hex(raced).toLowerCase() === sha256Hex(bytes).toLowerCase()) return raced;
+          await fail("deterministic", `segment_${label}_checksum_mismatch`);
         }
+        if (error && error.errorClass) throw error;
         await fail("transient", `segment_storage_failed:${label}:${error.message}`.slice(0, 200));
       }
+      return bytes;
+    }
+    // Adopt verified bytes for registered rows; orphans (no row) are
+    // adopted by shape only — the key is namespaced to (org, job) and
+    // only this job's first completion can have written it.
+    let maskPng = null;
+    let maskReusedObject = false;
+    if (maskRow) {
+      const existing = await readExisting(maskKey, "mask");
+      if (existing) {
+        if (sha256Hex(existing).toLowerCase() !== String(maskRow.sha256).toLowerCase()) {
+          await fail("deterministic", "segment_mask_checksum_mismatch");
+        }
+        maskPng = existing;
+        maskReusedObject = true;
+      }
+    } else {
+      const orphan = await readExisting(maskKey, "mask");
+      if (orphan) {
+        maskPng = orphan;
+        maskReusedObject = true;
+      }
+    }
+    let maskMeta = null;
+    let deployment = null;
+    let engineCutout = null;
+    if (maskPng === null) {
+      if (engine === "birefnet") {
+        if (!birefnet || !birefnet.manifest) {
+          await fail("deterministic", "segment_deployment_unverified");
+        }
+        try {
+          deployment = await verifyBirefnetDeployment({
+            codeDir: birefnet.codeDir, weightsPath: birefnet.weightsPath, manifest: birefnet.manifest,
+          });
+        } catch (error) {
+          await fail("deterministic", `segment_deployment_rejected:${error.message}`.slice(0, 200));
+        }
+      }
+      const aborter = new AbortController();
+      const cancelWatcher = setInterval(() => {
+        void (async () => {
+          try {
+            const state = await getSegmentState(db, { jobId, worker });
+            if (!state || state.status === "cancelled" || state.cancel_requested) aborter.abort();
+          } catch {}
+        })();
+      }, SEGMENT_CANCEL_POLL_MS);
+      const bridge = runBridge ?? runBirefnetBridge;
+      try {
+        if (engine === "birefnet") {
+          const staged = await stageInput({ stagingDir, jobId, bytes: sourceBytes, ext: probed.ext });
+          try {
+            const report = await bridge({
+              pythonBin: birefnet.pythonBin, bridgeScript: birefnet.bridgeScript,
+              codeDir: birefnet.codeDir, weightsPath: birefnet.weightsPath,
+              inputPath: staged.inputPath, outputMaskPath: staged.maskPath,
+              size: birefnet.size ?? 1024, device: birefnet.device ?? "cpu",
+              timeoutMs: birefnet.timeoutMs ?? 600000, signal: aborter.signal,
+              spawnFn: birefnet.spawnFn,
+            });
+            maskPng = await readFile(staged.maskPath);
+            if (sha256Hex(maskPng).toLowerCase() !== String(report.maskSha256 ?? "").toLowerCase()) {
+              await fail("deterministic", "segment_mask_integrity");
+            }
+            maskMeta = {
+              ...report, engine: "birefnet", model: birefnet.model ?? "BiRefNet",
+              weights_revision: birefnet.weightsRef ?? deployment.weightsSha256,
+              deployment,
+            };
+          } finally {
+            await cleanupPaths([staged.inputPath, staged.maskPath]);
+          }
+        } else {
+          const local = localEngine ?? segmentLocalDeterministic;
+          const result = await local({ bytes: sourceBytes, refine: request.refine });
+          maskPng = result.maskPng;
+          engineCutout = result.cutoutPng;
+          maskMeta = {
+            engine: "local-deterministic", width: result.width, height: result.height,
+            coverage: result.coverage, provenance: result.provenance,
+          };
+        }
+      } catch (error) {
+        if (error?.name === "AbortError" || /abort|cancel/i.test(error?.message ?? "")) {
+          await fail("cancelled", "segment_cancel_requested");
+        }
+        if (/timeout/i.test(error?.message ?? "")) {
+          await fail("transient", `segment_inference_timeout:${error.message}`.slice(0, 200));
+        }
+        await fail("transient", `segment_inference_failed:${error.message}`.slice(0, 200));
+      } finally {
+        clearInterval(cancelWatcher);
+      }
+      try {
+        const posted = await getSegmentState(db, { jobId, worker });
+        if (!posted || posted.status === "cancelled" || posted.cancel_requested) {
+          await fail("cancelled", "segment_cancel_requested");
+        }
+      } catch (error) {
+        if (error && error.errorClass) throw error;
+        await fail("transient", `segment_state_unreadable:${error.message}`.slice(0, 200));
+      }
+      // Original mask persists untouched; refinement (if any) shapes only
+      // the cutout alpha, reproducibly from v1 + recorded params.
+      assertPngImage(maskPng, { width: probed.width, height: probed.height });
+      if (maskRow && sha256Hex(maskPng).toLowerCase() !== String(maskRow.sha256).toLowerCase()) {
+        await fail("deterministic", "segment_mask_checksum_mismatch");
+      }
+      await putNew(maskKey, maskPng, "mask");
+    }
+    let cutoutPng = null;
+    let cutoutReusedObject = false;
+    if (cutoutRow) {
+      const existing = await readExisting(cutoutKey, "cutout");
+      if (existing) {
+        if (sha256Hex(existing).toLowerCase() !== String(cutoutRow.sha256).toLowerCase()) {
+          await fail("deterministic", "segment_cutout_checksum_mismatch");
+        }
+        cutoutPng = existing;
+        cutoutReusedObject = true;
+      }
+    } else {
+      const orphan = await readExisting(cutoutKey, "cutout");
+      if (orphan) {
+        cutoutPng = orphan;
+        cutoutReusedObject = true;
+      }
+    }
+    if (!cutoutPng) {
+      cutoutPng = engineCutout ?? await applyMask(sourceBytes, maskPng, request.refine, probed);
+      assertPngImage(cutoutPng, { width: probed.width, height: probed.height });
+      if (cutoutRow && sha256Hex(cutoutPng).toLowerCase() !== String(cutoutRow.sha256).toLowerCase()) {
+        await fail("deterministic", "segment_cutout_checksum_mismatch");
+      }
+      await putNew(cutoutKey, cutoutPng, "cutout");
     }
     const baseProvenance = {
       renderer: SEGMENT_RENDERER_ID,
       method: SEGMENT_RENDER_METHOD,
       operation: "segment",
       engine,
+      deployment,
       source_asset_version_id: ref,
       source: { width: probed.width, height: probed.height, mime: probed.mime },
       refine: request.refine,
       mask: maskMeta,
+      mask_reused_existing_object: maskReusedObject,
+      cutout_reused_existing_object: cutoutReusedObject,
       correlation_id: input.correlation_id,
       job_id: jobId,
     };
-    let maskVersionId = null;
-    try {
-      maskVersionId = await registerVersion(db, {
-        jobId, worker, assetId: null,
-        title: "Segmentation mask",
-        mime: "image/png", width: probed.width, height: probed.height,
-        bytes: maskPng.length, sha256: sha256Hex(maskPng), objectKey: maskKey,
-        provenance: { ...baseProvenance, kind: "mask" },
-        templateRef: null, method: SEGMENT_RENDER_METHOD,
-      });
-    } catch (error) {
-      await fail("transient", `segment_version_register_failed:mask:${error.message}`.slice(0, 200));
+    let maskVersionId = maskRow?.version_id ?? null;
+    let assetId = maskRow?.asset_id ?? null;
+    if (!maskVersionId) {
+      try {
+        maskVersionId = await registerVersion(db, {
+          jobId, worker, assetId: null,
+          title: "Segmentation mask",
+          mime: "image/png", width: probed.width, height: probed.height,
+          bytes: maskPng.length, sha256: sha256Hex(maskPng), objectKey: maskKey,
+          provenance: { ...baseProvenance, kind: "mask" },
+          templateRef: null, method: SEGMENT_RENDER_METHOD,
+        });
+      } catch (error) {
+        await fail("transient", `segment_version_register_failed:mask:${error.message}`.slice(0, 200));
+      }
+      try {
+        assetId = await getRenderVersionAsset(db, { jobId, worker, versionId: maskVersionId });
+      } catch (error) {
+        await fail("transient", `segment_asset_lookup_failed:${error.message}`.slice(0, 200));
+      }
     }
-    let assetId = null;
-    try {
-      assetId = await getRenderVersionAsset(db, { jobId, worker, versionId: maskVersionId });
-    } catch (error) {
-      await fail("transient", `segment_asset_lookup_failed:${error.message}`.slice(0, 200));
-    }
-    let cutoutVersionId = null;
-    try {
-      cutoutVersionId = await registerVersion(db, {
-        jobId, worker, assetId,
-        title: "Transparent cutout",
-        mime: "image/png", width: probed.width, height: probed.height,
-        bytes: cutoutPng.length, sha256: sha256Hex(cutoutPng), objectKey: cutoutKey,
-        provenance: { ...baseProvenance, kind: "cutout", mask_version_id: maskVersionId },
-        templateRef: null, method: SEGMENT_RENDER_METHOD,
-      });
-    } catch (error) {
-      await fail("transient", `segment_version_register_failed:cutout:${error.message}`.slice(0, 200));
+    let cutoutVersionId = cutoutRow?.version_id ?? null;
+    if (!cutoutVersionId) {
+      try {
+        cutoutVersionId = await registerVersion(db, {
+          jobId, worker, assetId,
+          title: "Transparent cutout",
+          mime: "image/png", width: probed.width, height: probed.height,
+          bytes: cutoutPng.length, sha256: sha256Hex(cutoutPng), objectKey: cutoutKey,
+          provenance: { ...baseProvenance, kind: "cutout", mask_version_id: maskVersionId },
+          templateRef: null, method: SEGMENT_RENDER_METHOD,
+        });
+      } catch (error) {
+        await fail("transient", `segment_version_register_failed:cutout:${error.message}`.slice(0, 200));
+      }
     }
     await completeJob(db, { jobId, worker, assetVersionId: cutoutVersionId });
     return {

@@ -11,6 +11,10 @@
 // beyond explicitly staged temp paths.
 import sharp from "sharp";
 import { spawn } from "node:child_process";
+import { createHash } from "node:crypto";
+import { createReadStream } from "node:fs";
+import { readFile, stat } from "node:fs/promises";
+import path from "node:path";
 
 export const SEGMENT_ENGINES = Object.freeze(["birefnet", "local-deterministic"]);
 export const SEGMENT_MIME_ALLOWLIST = Object.freeze(["image/png", "image/jpeg", "image/webp"]);
@@ -173,6 +177,68 @@ export async function segmentLocalDeterministic({ bytes, refine = {} }) {
   };
 }
 
+// Deployment verification: paths alone prove nothing. Before any
+// inference, the configured weights file must match its pinned SHA256
+// (+ byte size when configured) and every manifest-listed code file
+// must hash to its pinned value. Rejects BEFORE anything is imported
+// or loaded. Returns the verified identity for provenance.
+export async function verifyBirefnetDeployment({ codeDir, weightsPath, manifest }) {
+  if (!manifest || typeof manifest !== "object" || Array.isArray(manifest)) {
+    throw new Error("segment_deployment_manifest_required");
+  }
+  const { code_revision: codeRevision, files, weights_sha256: weightsSha, weights_bytes: weightsBytes } = manifest;
+  if (typeof codeRevision !== "string" || codeRevision.length < 1 || codeRevision.length > 200) {
+    throw new Error("segment_deployment_code_revision");
+  }
+  if (!files || typeof files !== "object" || Array.isArray(files) || Object.keys(files).length < 1) {
+    throw new Error("segment_deployment_code_manifest");
+  }
+  if (typeof weightsSha !== "string" || !/^[0-9a-f]{64}$/i.test(weightsSha)) {
+    throw new Error("segment_deployment_weights_pin");
+  }
+  for (const [relPath, expected] of Object.entries(files)) {
+    if (typeof relPath !== "string" || relPath.includes("..") || relPath.startsWith("/") || typeof expected !== "string") {
+      throw new Error("segment_deployment_manifest_shape");
+    }
+    const full = path.join(codeDir, relPath);
+    let bytes = null;
+    try {
+      bytes = await readFile(full);
+    } catch {
+      throw new Error(`segment_deployment_code_missing:${relPath}`);
+    }
+    const actual = createHash("sha256").update(bytes).digest("hex");
+    if (actual.toLowerCase() !== expected.toLowerCase()) {
+      throw new Error(`segment_deployment_code_mismatch:${relPath}`);
+    }
+  }
+  let st = null;
+  try {
+    st = await stat(weightsPath);
+  } catch {
+    throw new Error("segment_deployment_weights_missing");
+  }
+  if (Number.isInteger(weightsBytes) && st.size !== weightsBytes) {
+    throw new Error("segment_deployment_weights_size");
+  }
+  const digest = await new Promise((resolve, reject) => {
+    const hash = createHash("sha256");
+    const stream = createReadStream(weightsPath);
+    stream.on("data", (chunk) => hash.update(chunk));
+    stream.on("end", () => resolve(hash.digest("hex")));
+    stream.on("error", (error) => reject(error));
+  });
+  if (digest.toLowerCase() !== weightsSha.toLowerCase()) {
+    throw new Error("segment_deployment_weights_mismatch");
+  }
+  return {
+    codeRevision,
+    codeFiles: Object.keys(files).length,
+    weightsSha256: digest.toLowerCase(),
+    weightsBytes: st.size,
+  };
+}
+
 function assertSafePath(path, label) {
   if (typeof path !== "string" || path.length < 1 || path.length > 512 || path.includes("\0")) {
     throw new Error(`${label}_path_rejected`);
@@ -180,10 +246,12 @@ function assertSafePath(path, label) {
   return path;
 }
 
-// Fixed-argv BiRefNet bridge runner. No shell, no dynamic code, no
-// network: one pinned script, scalar-only validated arguments, a single
-// JSON line on stdout, timeout kill. Model/code/weights are
-// deployment-provisioned and validated here by shape only.
+// Fixed-argv BiRefNet bridge runner. No shell, no network: one pinned
+// script, scalar-only validated arguments, a single JSON line on stdout,
+// timeout kill. The spawned entry point is fixed and the code it imports
+// must already be revision/hash-verified by verifyBirefnetDeployment
+// (trusted pinned code only). Model/code/weights paths are validated
+// here by shape only.
 export async function runBirefnetBridge({
   pythonBin, bridgeScript, codeDir, weightsPath, inputPath, outputMaskPath,
   size = 1024, device = "cpu", timeoutMs = 600000, signal, spawnFn = spawn,

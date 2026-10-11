@@ -49,7 +49,7 @@ function segmentInput(params = {}) {
   };
 }
 
-function stubDb({ input = segmentInput(), source = null, calls = null, state = { status: "running", cancel_requested: false } } = {}) {
+function stubDb({ input = segmentInput(), source = null, outputs = [], calls = null, state = { status: "running", cancel_requested: false } } = {}) {
   const log = calls ?? { marks: [], registers: [], completes: [], fails: [] };
   return {
     log,
@@ -66,6 +66,9 @@ function stubDb({ input = segmentInput(), source = null, calls = null, state = {
       }
       if (text.includes("get_creative_segment_source")) {
         return { rows: source ? [{ source }] : [] };
+      }
+      if (text.includes("get_creative_segment_outputs")) {
+        return { rows: [{ outputs }] };
       }
       if (text.includes("get_creative_segment_state")) {
         return { rows: [{ state }] };
@@ -92,8 +95,13 @@ function stubDb({ input = segmentInput(), source = null, calls = null, state = {
 
 function memoryStorage() {
   const mem = createTestStorage();
+  const log = { puts: [] };
   return {
-    put: (key, bytes, mime) => mem.put({ key, bytes, mime }),
+    log,
+    put: (key, bytes, mime) => {
+      log.puts.push(key);
+      return mem.put({ key, bytes, mime });
+    },
     get: (key) => {
       try {
         return mem.get(key);
@@ -108,7 +116,7 @@ test("segmentation worker module stays EXECUTE-only: no direct table reads", asy
   const source = await readFile(new URL("../packages/creative-runtime/render/segment-worker.mjs", import.meta.url), "utf8");
   assert.doesNotMatch(source, /FROM tanaghom\./);
   assert.doesNotMatch(source, /db\.query/);
-  for (const name of ["getSegmentInput", "getSegmentSource", "getSegmentState", "claimSegmentJob", "markRunning", "registerVersion", "getRenderVersionAsset", "completeJob", "failJob"]) {
+  for (const name of ["getSegmentInput", "getSegmentSource", "getSegmentOutputs", "getSegmentState", "claimSegmentJob", "markRunning", "registerVersion", "getRenderVersionAsset", "completeJob", "failJob", "verifyBirefnetDeployment"]) {
     assert.match(source, new RegExp(`\\b${name}\\b`));
   }
 });
@@ -297,6 +305,152 @@ test("segment worker fails closed on bad engine, unknown source, and cancel", as
   );
   assert.equal(dbCancel.log.fails[0][2], "cancelled");
   assert.equal(dbCancel.log.completes.length, 0);
+});
+
+test("deployment verification pins weights and code before inference", async () => {
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { writeFileSync, appendFileSync } = await import("node:fs");
+  const { createHash } = await import("node:crypto");
+  const { verifyBirefnetDeployment } = await import("../packages/creative-runtime/adapters/segmentation.mjs");
+  const dir = mkdtempSync(join(tmpdir(), "seg-deploy-"));
+  const codeFile = join(dir, "models", "birefnet.py");
+  await import("node:fs/promises").then((fs) => fs.mkdir(join(dir, "models"), { recursive: true }));
+  writeFileSync(codeFile, Buffer.from("# pinned bridge code"));
+  const weightsFile = join(dir, "model.safetensors");
+  writeFileSync(weightsFile, Buffer.from("model-bytes-0123456789"));
+  const manifest = {
+    code_revision: "rev-1",
+    files: { "models/birefnet.py": createHash("sha256").update("# pinned bridge code").digest("hex") },
+    weights_sha256: createHash("sha256").update("model-bytes-0123456789").digest("hex"),
+    weights_bytes: 22,
+  };
+  const verified = await verifyBirefnetDeployment({ codeDir: dir, weightsPath: weightsFile, manifest });
+  assert.equal(verified.codeRevision, "rev-1");
+  assert.equal(verified.weightsBytes, 22);
+  appendFileSync(weightsFile, Buffer.from("tamper"));
+  await assert.rejects(
+    verifyBirefnetDeployment({ codeDir: dir, weightsPath: weightsFile, manifest }),
+    /weights_size|weights_mismatch/,
+  );
+  await import("node:fs/promises").then((fs) => fs.rm(dir, { recursive: true, force: true }));
+});
+
+test("restart recovery reuses verified outputs without duplicates", async () => {
+  const source = await productFixture();
+  const firstStorage = memoryStorage();
+  firstStorage.put(`t/${ORG}/image/${JOB}/v1.png`, source, "image/png");
+  const db = stubDb({
+    source: { version_id: SOURCE_VERSION, object_key: `t/${ORG}/image/${JOB}/v1.png`, mime: "image/png" },
+  });
+  // First pass: cutout object write fails transiently after the mask
+  // object landed.
+  const failingStorage = {
+    ...firstStorage,
+    put: (key, bytes, mime) => {
+      if (key.endsWith("/v2.png")) throw new Error("simulated cutout write failure");
+      return firstStorage.put(key, bytes, mime);
+    },
+  };
+  await assert.rejects(
+    executeSegmentJob({ db, storage: failingStorage, jobId: JOB, worker: WORKER }),
+    /segment_storage_failed:cutout/,
+  );
+  // Mask object exists, no rows: retry adopts the orphan and continues.
+  const retryStorage = memoryStorage();
+  const maskBytes = firstStorage.get(`t/${ORG}/product_shoot/${JOB}/v1.png`).bytes;
+  retryStorage.put(`t/${ORG}/image/${JOB}/v1.png`, source, "image/png");
+  retryStorage.put(`t/${ORG}/product_shoot/${JOB}/v1.png`, Buffer.from(maskBytes), "image/png");
+  const dbRetry = stubDb({
+    source: { version_id: SOURCE_VERSION, object_key: `t/${ORG}/image/${JOB}/v1.png`, mime: "image/png" },
+  });
+  const retryResult = await executeSegmentJob({ db: dbRetry, storage: retryStorage, jobId: JOB, worker: WORKER });
+  assert.equal(dbRetry.log.registers.length, 2);
+  assert.deepEqual(dbRetry.log.completes, [[JOB, WORKER, "50000000-0000-4000-8000-000000000002", null]]);
+  // Exactly one mask version + one cutout version, same lineage.
+  const versions = dbRetry.log.registers.map((params) => params[12].kind);
+  assert.deepEqual(versions, ["mask", "cutout"]);
+  assert.equal(retryResult.maskVersionId, "50000000-0000-4000-8000-000000000001");
+  assert.equal(retryResult.cutoutVersionId, "50000000-0000-4000-8000-000000000002");
+
+  // Second scenario: mask row exists, cutout missing everywhere.
+  const maskRow = {
+    version_id: "50000000-0000-4000-8000-000000000001", asset_id: "60000000-0000-4000-8000-000000000001",
+    version: 1, object_key: `t/${ORG}/product_shoot/${JOB}/v1.png`, sha256: retryStorage.get(`t/${ORG}/product_shoot/${JOB}/v1.png`).sha256,
+    mime: "image/png", kind: "mask",
+  };
+  // NOTE: test-adapter get returns sha; reuse it for the row fixture.
+  const dbResume = stubDb({
+    source: { version_id: SOURCE_VERSION, object_key: `t/${ORG}/image/${JOB}/v1.png`, mime: "image/png" },
+    outputs: [maskRow],
+  });
+  const resumeStorage = memoryStorage();
+  resumeStorage.put(`t/${ORG}/image/${JOB}/v1.png`, source, "image/png");
+  resumeStorage.put(`t/${ORG}/product_shoot/${JOB}/v1.png`, Buffer.from(maskBytes), "image/png");
+  const resumeResult = await executeSegmentJob({ db: dbResume, storage: resumeStorage, jobId: JOB, worker: WORKER });
+  assert.equal(dbResume.log.registers.length, 1);
+  assert.equal(dbResume.log.registers[0][12].kind, "cutout");
+  assert.equal(resumeResult.cutoutVersionId, "50000000-0000-4000-8000-000000000001");
+  assert.equal(resumeResult.maskVersionId, maskRow.version_id);
+
+  // Mismatched pre-existing checksum fails closed without overwrite.
+  const dbBad = stubDb({
+    source: { version_id: SOURCE_VERSION, object_key: `t/${ORG}/image/${JOB}/v1.png`, mime: "image/png" },
+    outputs: [{ ...maskRow, sha256: "0".repeat(64) }],
+  });
+  const badStorage = memoryStorage();
+  badStorage.put(`t/${ORG}/image/${JOB}/v1.png`, source, "image/png");
+  badStorage.put(`t/${ORG}/product_shoot/${JOB}/v1.png`, Buffer.from(maskBytes), "image/png");
+  await assert.rejects(
+    executeSegmentJob({ db: dbBad, storage: badStorage, jobId: JOB, worker: WORKER }),
+    /segment_mask_checksum_mismatch/,
+  );
+  assert.equal(dbBad.log.registers.length, 0);
+  assert.equal(dbBad.log.completes.length, 0);
+});
+
+test("forged bridge reports fail mask integrity", async () => {
+  const source = await productFixture();
+  const storage = memoryStorage();
+  storage.put(`t/${ORG}/image/${JOB}/v1.png`, source, "image/png");
+  const db = stubDb({
+    input: segmentInput({ engine: "birefnet" }),
+    source: { version_id: SOURCE_VERSION, object_key: `t/${ORG}/image/${JOB}/v1.png`, mime: "image/png" },
+  });
+  const { mkdtempSync } = await import("node:fs");
+  const { tmpdir } = await import("node:os");
+  const { join } = await import("node:path");
+  const { writeFileSync } = await import("node:fs");
+  const { createHash } = await import("node:crypto");
+  const deployDir = mkdtempSync(join(tmpdir(), "seg-forge-"));
+  writeFileSync(join(deployDir, "w.bin"), Buffer.from("weights-bytes"));
+  writeFileSync(join(deployDir, "m.py"), Buffer.from("# code"));
+  const manifest = {
+    code_revision: "rev-1",
+    files: { "m.py": createHash("sha256").update("# code").digest("hex") },
+    weights_sha256: createHash("sha256").update("weights-bytes").digest("hex"),
+    weights_bytes: 13,
+  };
+  const forgedBridge = async ({ outputMaskPath }) => {
+    const { maskPng } = await segmentLocalDeterministic({ bytes: source, refine: {} });
+    writeFileSync(outputMaskPath, maskPng);
+    return { maskSha256: "f".repeat(64), width: 256, height: 256, inferMs: 1, device: "cpu" };
+  };
+  await assert.rejects(
+    executeSegmentJob({
+      db, storage, jobId: JOB, worker: WORKER,
+      birefnet: {
+        pythonBin: "python", bridgeScript: "b.py", codeDir: deployDir, weightsPath: join(deployDir, "w.bin"),
+        manifest, size: 512, device: "cpu",
+      },
+      runBridge: forgedBridge,
+    }),
+    /segment_mask_integrity/,
+  );
+  assert.equal(db.log.fails[0][2], "deterministic");
+  assert.equal(db.log.completes.length, 0);
+  await import("node:fs/promises").then((fs) => fs.rm(deployDir, { recursive: true, force: true }));
 });
 
 test("segment claim helper uses the filtered claim", async () => {
