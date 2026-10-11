@@ -40,6 +40,8 @@ export function CreativeOverview({ locale, dir }: { locale: CreativeLocale; dir:
         <li className="creative-card"><h2>{t(locale, "designs.title")}</h2><Link href="/creative/designs">{t(locale, "designs.title")}</Link></li>
         <li className="creative-card"><h2>{t(locale, "motions.title")}</h2><Link href="/creative/motion">{t(locale, "motions.title")}</Link></li>
         <li className="creative-card"><h2>{t(locale, "video.title")}</h2><Link href="/creative/video">{t(locale, "video.title")}</Link></li>
+        <li className="creative-card"><h2>{locale === 'ar' ? 'استوديو المتحدث' : 'Talking Head Studio'}</h2><Link href="/creative/presenters">{locale === 'ar' ? 'متحدث ومزامنة الشفاه' : 'Talking head and lip sync'}</Link><p>{locale === 'ar' ? 'معطل افتراضيًا؛ قبول المزود قيد الانتظار' : 'Default off; provider acceptance pending'}</p></li>
+        <li className="creative-card"><h2>{locale === 'ar' ? 'إدارة الشخصيات' : 'Avatar Management'}</h2><Link href="/creative/avatars">{locale === 'ar' ? 'الهويات والربط والموافقة' : 'Identity, bindings and consent'}</Link></li>
         <li className="creative-card"><h2>{t(locale, "generate.title")}</h2><Link href="/creative/generate">{t(locale, "generate.title")}</Link></li>
         <li className="creative-card"><h2>{t(locale, "product.title")}</h2><Link href="/creative/product">{t(locale, "product.title")}</Link></li>
       </ul>

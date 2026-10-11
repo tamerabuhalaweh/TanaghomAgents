@@ -1,0 +1,11 @@
+{
+  "scope": "OFFLINE DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "suite": "contracts",
+      "exit": 0,
+      "baseline": "0046_creative_talking_head",
+      "passes": 52
+    }
+  ]
+}

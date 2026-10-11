@@ -1,0 +1,24 @@
+{
+  "snapshots": [
+    {
+      "registry": "iana-ipv6-unicast.xhtml",
+      "retrieved_raw": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\iana-ipv6-unicast.xhtml",
+      "raw_sha256": "61eac2b31750f353c092f75b256b03c1d80783b404239a50d9701a3f0871d7f5",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/references/iana-ipv6-unicast.xhtml",
+      "staged_sha256": "9014ed1661824ca6df0ce46e0a2639c0ef6ddf07cb58afc1d74738da8afcd078",
+      "representation": "Trailing-whitespace/CRLF normalization only; original retrieved bytes preserved",
+      "authority": "IANA IPv6 global-unicast allocations and IPv6 special-purpose registries; ordinary RIR allocations only; protocol ranges conservative deny",
+      "retrieval": "Public documentation-only curl; no vendor/private-address target"
+    },
+    {
+      "registry": "iana-ipv6-special.xhtml",
+      "retrieved_raw": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\iana-ipv6-special.xhtml",
+      "raw_sha256": "0c16bea322407c6f7851aa09950f7e5496744b2bc290a17e5e4ad4face05ec77",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/references/iana-ipv6-special.xhtml",
+      "staged_sha256": "bb02b510dc154d3df95fcb0fe279fdfa9f23eca4c2f9def0b2c973a48a05d41a",
+      "representation": "Trailing-whitespace/CRLF normalization only; original retrieved bytes preserved",
+      "authority": "IANA IPv6 global-unicast allocations and IPv6 special-purpose registries; ordinary RIR allocations only; protocol ranges conservative deny",
+      "retrieval": "Public documentation-only curl; no vendor/private-address target"
+    }
+  ]
+}

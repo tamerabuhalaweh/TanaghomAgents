@@ -6,7 +6,7 @@
   "required": ["contract_version", "capability", "lane", "params", "idempotency_key", "correlation_id"],
   "properties": {
     "contract_version": { "const": "creative.create-job-request.v1" },
-    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "voice", "music", "landing_page"] },
+    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "lip_sync", "voice", "music", "landing_page"] },
     "lane": { "enum": ["cpu", "gpu_image", "gpu_video", "gpu_audio"] },
     "params": { "type": "object", "minProperties": 1, "maxProperties": 64 },
     "idempotency_key": { "type": "string", "format": "uuid" },

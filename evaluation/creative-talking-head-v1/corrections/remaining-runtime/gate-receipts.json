@@ -1,0 +1,192 @@
+{
+  "scope": "Actual final-byte SOURCE gates, not independent approval",
+  "commands": [
+    {
+      "command": "npm test",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/unit.log.txt"
+    },
+    {
+      "command": "node --test tests/creative-presenter-review.test.mjs tests/creative-presenter-boundary.test.mjs tests/creative-talking-head.test.mjs tests/creative-motion.test.mjs tests/creative-video.test.mjs",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/targeted.log.txt"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/check-final.log.txt"
+    },
+    {
+      "command": "npm run build:dashboard",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/build.log.txt"
+    },
+    {
+      "command": "npm run typecheck:dashboard (built generated imports)",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/typecheck-build-generated.log.txt"
+    },
+    {
+      "command": "npm run typecheck:dashboard (restored original generated imports)",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/typecheck-restored.log.txt"
+    },
+    {
+      "command": "npm audit --audit-level=moderate --json",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/audit-moderate.json"
+    },
+    {
+      "command": "node scripts/creative-talking-head-acceptance.mjs --browser",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/acceptance.log.txt"
+    },
+    {
+      "command": "node scripts/creative-talking-head-regression.mjs contracts database foundation image",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/regression-a.log.txt"
+    },
+    {
+      "command": "node scripts/creative-talking-head-regression.mjs design motion",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/regression-b.log.txt"
+    },
+    {
+      "command": "node scripts/creative-talking-head-regression.mjs video segmentation",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/regression-c.log.txt"
+    },
+    {
+      "command": "node --test C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\security-probes.mjs C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\media-probes.mjs",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/oracles-final-green.log.txt"
+    }
+  ],
+  "unit_counts": {
+    "tests": 343,
+    "pass": 343,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "targeted_counts": {
+    "tests": 122,
+    "pass": 122,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "unchanged_oracle_counts": {
+    "tests": 19,
+    "pass": 19,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "unchanged_oracle_prior_red_counts": {
+    "tests": 19,
+    "pass": 10,
+    "fail": 9,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "unique_acceptance_cases": 82,
+  "loopback_creates": 39,
+  "loopback_queries": 41,
+  "migration_up_files": 43,
+  "wrapper_gates": 51,
+  "review_sql_pass_labels": 43,
+  "regression_suites": [
+    {
+      "suite": "contracts",
+      "exit": 0,
+      "baseline": "0046_creative_talking_head",
+      "passes": 52
+    },
+    {
+      "suite": "database",
+      "exit": 0,
+      "target": "0034_agency_pilot_integration",
+      "passes": 1,
+      "error": null
+    },
+    {
+      "suite": "foundation",
+      "exit": 0,
+      "target": null,
+      "passes": 18,
+      "error": null
+    },
+    {
+      "suite": "image",
+      "exit": 0,
+      "target": null,
+      "passes": 15,
+      "error": null
+    },
+    {
+      "suite": "design",
+      "exit": 0,
+      "target": "0039_creative_design_render",
+      "passes": 18,
+      "error": null
+    },
+    {
+      "suite": "motion",
+      "exit": 0,
+      "target": "0040_creative_motion_render",
+      "passes": 17,
+      "error": null
+    },
+    {
+      "suite": "video",
+      "exit": 0,
+      "target": "0044_creative_video_lane",
+      "passes": 21,
+      "error": null
+    },
+    {
+      "suite": "segmentation",
+      "exit": 0,
+      "target": "0045_creative_segmentation",
+      "passes": 14,
+      "error": null
+    }
+  ],
+  "native_runner": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/runs/78928303-f876-416f-803a-ddd3f656c485/runner.json",
+  "default_transport": {
+    "default_pinned_connections": 0,
+    "tls_client_hello_bytes": 0,
+    "port": 56929
+  },
+  "real_ffmpeg_positive": {
+    "metadata": {
+      "audio": {
+        "codec": "mp4a",
+        "channels": 1,
+        "sampleRate": 48000,
+        "metadata_source": "container_sample_entry"
+      },
+      "brand": "isom",
+      "codec": "avc1",
+      "width": 360,
+      "height": 640,
+      "durationSec": 5,
+      "fps": null,
+      "frames": null,
+      "bytes": 52247
+    },
+    "decode_exit": 0,
+    "decode_error": ""
+  },
+  "real_ffmpeg_invalid_description": {
+    "actual_entries": 1,
+    "declared_entries": 2,
+    "active_description": 2,
+    "accepted": false,
+    "error": "mp4_malformed_stsd",
+    "decode_exit": 3199971767,
+    "decode_error": "[vf#0:0 @ 000001cd9674f000] Cannot determine format of input 0:0 after EOF\\r\\n[vf#0:0 @ 000001cd9674f000] Task finished with error code: -1094995529 (Invalid data found when processing input)\\r\\n[vf#0:0 @ 000001cd9674f000] Terminating thread with return code -1094995529 (Invalid data found when processing input)\\r\\n[vost#0:0/wrapped_avframe @ 000001cd96758c40] [enc:wrapped_avframe @ 000001cd96742780] Could not open encoder before EOF\\r\\n[vost#0:0/wrapped_avframe @ 000001cd96758c40] Task finished with error code: -22 (Invalid argument)\\r\\n[vost#0:0/wrapped_avframe @ 000001cd96758c40] Terminating thread with return code -22 (Invalid argument)\\r\\n[out#0/null @ 000001cd966c33c0] Nothing was written into output file, because at least one of its streams received no packets.\\r\\n"
+  },
+  "independent_reviews": "BOTH PENDING required explicit PASS at new frozen hash; no publication"
+}

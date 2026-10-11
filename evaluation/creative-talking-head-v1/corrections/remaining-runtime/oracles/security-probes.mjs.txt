@@ -1,0 +1,15 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createServer} from 'node:net';
+import {once} from 'node:events';
+import {downloadArtifact,classifyIp} from '../tanaghom-p5-decision/packages/creative-runtime/adapters/http-image.mjs';
+const origin='https://artifact.example';
+test('positive exact approved HTTPS origin uses validated public pin',async()=>{let n=0;const r=await downloadArtifact({url:origin+'/x',exactOrigins:[origin],resolveHost:async()=>['8.8.8.8'],pinnedRequest:async p=>{n++;assert.equal(p.address,'8.8.8.8');return new Response('fixture');}});assert.equal(r.bytes.toString(),'fixture');assert.equal(n,1);});
+for(const address of ['127.0.0.1','10.0.0.1','169.254.169.254','::1','fe80::1','fd00::1','198.18.0.1','203.0.113.1'])test('negative known non-public '+address,async()=>{let n=0;await assert.rejects(()=>downloadArtifact({url:origin+'/x',exactOrigins:[origin],resolveHost:async()=>[address],pinnedRequest:async()=>{n++;return new Response('fixture');}}));assert.equal(n,0);});
+for(const address of ['fc01::1','fe90::1','::ffff:7f00:1','::ffff:a00:1','2001:2::1','100::1'])test('additional non-public AAAA must reject before transport '+address,async()=>{let n=0;let rejected=false;try{await downloadArtifact({url:origin+'/x',exactOrigins:[origin],resolveHost:async()=>[address],pinnedRequest:async()=>{n++;return new Response('fixture');}});}catch{rejected=true;}console.log(JSON.stringify({address,classification:classifyIp(address),rejected,transport_calls:n}));assert.equal(rejected,true);assert.equal(n,0);});
+test('mixed public and hex-mapped loopback AAAA must reject before transport',async()=>{let n=0;let rejected=false;try{await downloadArtifact({url:origin+'/x',exactOrigins:[origin],resolveHost:async()=>['8.8.8.8','::ffff:7f00:1'],pinnedRequest:async()=>{n++;return new Response('fixture');}});}catch{rejected=true;}console.log(JSON.stringify({mixed_rejected:rejected,transport_calls:n}));assert.equal(rejected,true);assert.equal(n,0);});
+test('REAL default pinned TLS transport must not reach mapped localhost',async()=>{
+ let connections=0,helloBytes=0;const server=createServer(socket=>{connections++;socket.on('data',b=>{helloBytes+=b.length;socket.destroy();});socket.on('error',()=>{});});server.listen(0,'127.0.0.1');await once(server,'listening');const port=server.address().port;const approved=`https://artifact.example:${port}`;
+ try{await assert.rejects(()=>downloadArtifact({url:approved+'/x',exactOrigins:[approved],resolveHost:async()=>['::ffff:7f00:1'],timeoutMs:2000}));}finally{server.close();await once(server,'close');}
+ console.log(JSON.stringify({default_pinned_connections:connections,tls_client_hello_bytes:helloBytes,port}));assert.equal(connections,0,'public-only gate must prevent localhost TCP connection');
+});

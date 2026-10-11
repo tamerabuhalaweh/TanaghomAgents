@@ -1,0 +1,193 @@
+{
+  "scope": "SOURCE SELF-REVIEW ONLY; not independent review or real-provider acceptance",
+  "gates": [
+    {
+      "gate": 1,
+      "name": "Bounded source-only scope and accepted provider decision",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "manifest.json"
+      ]
+    },
+    {
+      "gate": 2,
+      "name": "Full empty DB chain, unused and used-state down/up, append-only vocabulary and flags OFF",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/runner.json"
+      ]
+    },
+    {
+      "gate": 3,
+      "name": "Canonical immutable avatar/binding/consent schema; worker EXECUTE-only",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/runner.json",
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 4,
+      "name": "Five foreign avatar/binding/consent/visual/audio boundaries; no catalog leak",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 5,
+      "name": "Owner/operator generate; reviewer review; viewer read-only; governance owner-only",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 6,
+      "name": "Consent verified scope/expiry/revocation, queued recheck and no old-right resurrection",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 7,
+      "name": "Avatar and binding inactive/blocked/revoked after queue: zero provider creates",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 8,
+      "name": "Filtered claims; five video/motion/segment/image/compose decoys untouched",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 9,
+      "name": "Script hash/length/locale; no full scripts in generic/audit output",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json",
+        "npm-test-final.log"
+      ]
+    },
+    {
+      "gate": 10,
+      "name": "Controlled MIME/checksum/size/container/codec/dimensions/duration; WAV/MP3; MP4 audio metadata",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json",
+        "byte-boundary-red.log",
+        "byte-boundary-green.log"
+      ]
+    },
+    {
+      "gate": 11,
+      "name": "HeyGen IV stock look and approved voice; v3 contract; no enrollment",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "npm-test-final.log",
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 12,
+      "name": "Independent Sync v2 lipsync-2 multipart; approved bytes; image/text denied",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "npm-test-final.log",
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 13,
+      "name": "Immediate remote anchor; actual killed process/new worker; same call/task and create=1",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 14,
+      "name": "Create ambiguity fail-closed; poll timeout same row resumes; actual cost retained",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 15,
+      "name": "Remote success and synthetic actual cost before forced download failure; later retry same result/create=1",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json"
+      ]
+    },
+    {
+      "gate": 16,
+      "name": "Both adapters have no invented cancel endpoint; local intent differs from provider-reported cancellation",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json",
+        "npm-test-final.log"
+      ]
+    },
+    {
+      "gate": 17,
+      "name": "Reuse existing hardened downloader public DNS/IP pin/Host/SNI/HTTPS and unsafe host/redirect rejection",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "npm-test-final.log",
+        "../../tests/creative-image.test.mjs"
+      ]
+    },
+    {
+      "gate": 18,
+      "name": "Private authenticated range preview, decoded frames, provenance and approve/reject both lanes",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json",
+        "preview-talking_head.png",
+        "preview-lip_sync.png"
+      ]
+    },
+    {
+      "gate": 19,
+      "name": "Arabic/English/mixed/punctuation/numerals portrait desktop/mobile; owner/operator; viewer/reviewer read-only",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "native-receipts.json",
+        "rtl-1280.png",
+        "rtl-390.png"
+      ]
+    },
+    {
+      "gate": 20,
+      "name": "Current source tests, DB/Creative Studio/P2/P3/P4 regressions, security/build/type/repository check; handoff without commit/PR",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "manifest.json",
+        "regression/receipts-contracts-database-foundation-image.json",
+        "regression/receipts-design-motion.json",
+        "regression/receipts-video-segmentation.json",
+        "audit-final.json",
+        "build-final.log",
+        "typecheck-final.log",
+        "check-final.log"
+      ]
+    }
+  ],
+  "external_acceptance": "PENDING",
+  "limitations": [
+    "Synthetic pixels and tone audio prove byte/lifecycle contracts only, not spoken Arabic/English/mixed quality.",
+    "No authenticated real-provider execution, enrollment, uploads or spend.",
+    "Actual costs in fixtures are explicitly synthetic; real execution remains blocked without separately accepted authoritative charge source.",
+    "Sync image input is explicitly unavailable and rejected.",
+    "Crash recovery uses a controlled fixture requeue and a different worker identity; does not certify production lease orchestration.",
+    "Historical exact-baseline E2E assertions remain unchanged; only migration targets are set in task-owned ephemeral sibling runners. All current-head Creative SQL contracts separately run on full 0046."
+  ]
+}

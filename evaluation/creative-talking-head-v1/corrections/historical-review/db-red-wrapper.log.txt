@@ -1,0 +1,3 @@
+sql-red exit=1
+api-red exit=1
+owned cleanup verified

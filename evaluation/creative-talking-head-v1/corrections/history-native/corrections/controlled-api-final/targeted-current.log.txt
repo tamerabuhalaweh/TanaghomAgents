@@ -1,0 +1,358 @@
+TAP version 13
+# Subtest: motion worker module stays EXECUTE-only: no direct table reads
+ok 1 - motion worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 12.9853
+  type: 'test'
+  ...
+# Subtest: motion contract validates through JSON schema
+ok 2 - motion contract validates through JSON schema
+  ---
+  duration_ms: 238.819
+  type: 'test'
+  ...
+# Subtest: timeline plans totals and freezes frames deterministically with RTL entrances
+ok 3 - timeline plans totals and freezes frames deterministically with RTL entrances
+  ---
+  duration_ms: 2.4573
+  type: 'test'
+  ...
+# Subtest: malicious and oversized motion JSON is rejected
+ok 4 - malicious and oversized motion JSON is rejected
+  ---
+  duration_ms: 1.2643
+  type: 'test'
+  ...
+# Subtest: ffmpeg argv allowlist rejects codecs, dims, fps, and path injection
+ok 5 - ffmpeg argv allowlist rejects codecs, dims, fps, and path injection
+  ---
+  duration_ms: 0.6944
+  type: 'test'
+  ...
+# Subtest: pure-JS MP4 validator enforces container, codec, dims, and duration
+ok 6 - pure-JS MP4 validator enforces container, codec, dims, and duration
+  ---
+  duration_ms: 2.8555
+  type: 'test'
+  ...
+# Subtest: encode fails closed on timeout and spawn errors without shell
+ok 7 - encode fails closed on timeout and spawn errors without shell
+  ---
+  duration_ms: 21.9719
+  type: 'test'
+  ...
+# Subtest: streaming encoder cleans temp output on every exit path
+ok 8 - streaming encoder cleans temp output on every exit path
+  ---
+  duration_ms: 116.4795
+  type: 'test'
+  ...
+# Subtest: motion worker executes a job to one MP4 version and completes
+ok 9 - motion worker executes a job to one MP4 version and completes
+  ---
+  duration_ms: 62.4468
+  type: 'test'
+  ...
+# Subtest: 900-frame render never accumulates frame buffers
+ok 10 - 900-frame render never accumulates frame buffers
+  ---
+  duration_ms: 43.9107
+  type: 'test'
+  ...
+# Subtest: motion worker honors cancellation, timeouts, and duplicate guards
+ok 11 - motion worker honors cancellation, timeouts, and duplicate guards
+  ---
+  duration_ms: 18.461
+  type: 'test'
+  ...
+# Subtest: worker polls cancellation while encoder.finish() is pending
+ok 12 - worker polls cancellation while encoder.finish() is pending
+  ---
+  duration_ms: 139.8677
+  type: 'test'
+  ...
+# Subtest: motion claim helper uses the filtered claim
+ok 13 - motion claim helper uses the filtered claim
+  ---
+  duration_ms: 2.1039
+  type: 'test'
+  ...
+# Subtest: R1 actual runner hands approved configuration to downloader without network or loopback
+ok 14 - R1 actual runner hands approved configuration to downloader without network or loopback
+  ---
+  duration_ms: 30.2336
+  type: 'test'
+  ...
+# Subtest: R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+ok 15 - R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+  ---
+  duration_ms: 0.7154
+  type: 'test'
+  ...
+# Subtest: R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+ok 16 - R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+  ---
+  duration_ms: 2.0174
+  type: 'test'
+  ...
+# Subtest: R2 actual presenter fixture has media payload and sample extents
+ok 17 - R2 actual presenter fixture has media payload and sample extents
+  ---
+  duration_ms: 3.9006
+  type: 'test'
+  ...
+# Subtest: R1 exact origin downloader denies empty approvals and non-public/mixed A/AAAA before transport
+ok 18 - R1 exact origin downloader denies empty approvals and non-public/mixed A/AAAA before transport
+  ---
+  duration_ms: 1.5967
+  type: 'test'
+  ...
+# Subtest: R1 allowed HTTPS redirect re-resolves all answers and refuses mixed destination
+ok 19 - R1 allowed HTTPS redirect re-resolves all answers and refuses mixed destination
+  ---
+  duration_ms: 1.3606
+  type: 'test'
+  ...
+# Subtest: R1 bounded artifact bytes reject oversize response on exact origin
+ok 20 - R1 bounded artifact bytes reject oversize response on exact origin
+  ---
+  duration_ms: 0.8247
+  type: 'test'
+  ...
+# Subtest: R2 empty malformed truncated and missing track sample tables fail closed
+ok 21 - R2 empty malformed truncated and missing track sample tables fail closed
+  ---
+  duration_ms: 0.7269
+  type: 'test'
+  ...
+# Subtest: R2 rejects no-mdat of real encoded fixture
+ok 22 - R2 rejects no-mdat of real encoded fixture
+  ---
+  duration_ms: 0.7205
+  type: 'test'
+  ...
+# Subtest: R2 rejects empty-mdat of real encoded fixture
+ok 23 - R2 rejects empty-mdat of real encoded fixture
+  ---
+  duration_ms: 1.2323
+  type: 'test'
+  ...
+# Subtest: R2 rejects dummy-mdat of real encoded fixture
+ok 24 - R2 rejects dummy-mdat of real encoded fixture
+  ---
+  duration_ms: 0.977
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-offset of real encoded fixture
+ok 25 - R2 rejects bad-chunk-offset of real encoded fixture
+  ---
+  duration_ms: 0.6443
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-sample-size of real encoded fixture
+ok 26 - R2 rejects bad-sample-size of real encoded fixture
+  ---
+  duration_ms: 0.5641
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-map of real encoded fixture
+ok 27 - R2 rejects bad-chunk-map of real encoded fixture
+  ---
+  duration_ms: 0.7243
+  type: 'test'
+  ...
+# Subtest: R2 rejects out-of-bounds-audio of real encoded fixture
+ok 28 - R2 rejects out-of-bounds-audio of real encoded fixture
+  ---
+  duration_ms: 1.3272
+  type: 'test'
+  ...
+# Subtest: live runner refuses source-only even with feature flags ON; before DB/key/network
+ok 29 - live runner refuses source-only even with feature flags ON; before DB/key/network
+  ---
+  duration_ms: 149.315
+  type: 'test'
+  ...
+# Subtest: bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+ok 30 - bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+  ---
+  duration_ms: 1.8908
+  type: 'test'
+  ...
+# Subtest: binary signatures reject high-bit aliases rather than lossy ASCII matches
+ok 31 - binary signatures reject high-bit aliases rather than lossy ASCII matches
+  ---
+  duration_ms: 7.1884
+  type: 'test'
+  ...
+# Subtest: controlled encoded media rejects container, codec, dimensions, duration and bounds
+ok 32 - controlled encoded media rejects container, codec, dimensions, duration and bounds
+  ---
+  duration_ms: 3.5764
+  type: 'test'
+  ...
+# Subtest: actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+ok 33 - actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+  ---
+  duration_ms: 3.0413
+  type: 'test'
+  ...
+# Subtest: provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+ok 34 - provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+  ---
+  duration_ms: 34.801
+  type: 'test'
+  ...
+# Subtest: MP4 validator rejects trailing truncated box bytes
+ok 35 - MP4 validator rejects trailing truncated box bytes
+  ---
+  duration_ms: 2.2802
+  type: 'test'
+  ...
+# Subtest: presenter output must include a supported audio track
+ok 36 - presenter output must include a supported audio track
+  ---
+  duration_ms: 1.9733
+  type: 'test'
+  ...
+# Subtest: lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+ok 37 - lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+  ---
+  duration_ms: 7.9385
+  type: 'test'
+  ...
+# Subtest: HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+ok 38 - HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+  ---
+  duration_ms: 3.0971
+  type: 'test'
+  ...
+# Subtest: Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+ok 39 - Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+  ---
+  duration_ms: 2.2846
+  type: 'test'
+  ...
+# Subtest: video lane migration is additive, guarded, and reversible
+ok 40 - video lane migration is additive, guarded, and reversible
+  ---
+  duration_ms: 12.8055
+  type: 'test'
+  ...
+# Subtest: video worker module stays EXECUTE-only: no direct table reads
+ok 41 - video worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 3.9844
+  type: 'test'
+  ...
+# Subtest: video request normalization and cost estimates
+ok 42 - video request normalization and cost estimates
+  ---
+  duration_ms: 1.5506
+  type: 'test'
+  ...
+# Subtest: video adapter construction enforces https outside test loopback
+ok 43 - video adapter construction enforces https outside test loopback
+  ---
+  duration_ms: 1.2442
+  type: 'test'
+  ...
+# Subtest: MiniMax task lifecycle maps to worker vocabulary
+ok 44 - MiniMax task lifecycle maps to worker vocabulary
+  ---
+  duration_ms: 2.3554
+  type: 'test'
+  ...
+# Subtest: provider MP4s validate against the vendor codec allowlist, never MIME
+ok 45 - provider MP4s validate against the vendor codec allowlist, never MIME
+  ---
+  duration_ms: 2.818
+  type: 'test'
+  ...
+# Subtest: video worker executes text-to-video to a persisted version
+ok 46 - video worker executes text-to-video to a persisted version
+  ---
+  duration_ms: 7.7586
+  type: 'test'
+  ...
+# Subtest: video worker resolves private sources for image-to-video
+ok 47 - video worker resolves private sources for image-to-video
+  ---
+  duration_ms: 1.5252
+  type: 'test'
+  ...
+# Subtest: indeterminate attempts are never blindly retried
+ok 48 - indeterminate attempts are never blindly retried
+  ---
+  duration_ms: 1.0684
+  type: 'test'
+  ...
+# Subtest: restart resumes the SAME anchored task without a new create
+ok 49 - restart resumes the SAME anchored task without a new create
+  ---
+  duration_ms: 1.8393
+  type: 'test'
+  ...
+# Subtest: resume of a terminal-succeeded attempt re-downloads without recreate
+ok 50 - resume of a terminal-succeeded attempt re-downloads without recreate
+  ---
+  duration_ms: 2.5603
+  type: 'test'
+  ...
+# Subtest: provider success survives downstream artifact failure
+ok 51 - provider success survives downstream artifact failure
+  ---
+  duration_ms: 0.8565
+  type: 'test'
+  ...
+# Subtest: capacity rejection without a task allows exactly one new attempt
+ok 52 - capacity rejection without a task allows exactly one new attempt
+  ---
+  duration_ms: 1.9018
+  type: 'test'
+  ...
+# Subtest: transient poll errors keep reconciling the same task
+ok 53 - transient poll errors keep reconciling the same task
+  ---
+  duration_ms: 28.6304
+  type: 'test'
+  ...
+# Subtest: moderated provider failures are deterministic and terminal
+ok 54 - moderated provider failures are deterministic and terminal
+  ---
+  duration_ms: 0.6707
+  type: 'test'
+  ...
+# Subtest: provider-reported cancelled is the only path recording provider-cancelled
+ok 55 - provider-reported cancelled is the only path recording provider-cancelled
+  ---
+  duration_ms: 0.4409
+  type: 'test'
+  ...
+# Subtest: local cancel stops polling without a provider cancel call
+ok 56 - local cancel stops polling without a provider cancel call
+  ---
+  duration_ms: 0.2412
+  type: 'test'
+  ...
+# Subtest: cancel during provider polling reconciles truthfully, then records cancel
+ok 57 - cancel during provider polling reconciles truthfully, then records cancel
+  ---
+  duration_ms: 0.7757
+  type: 'test'
+  ...
+# Subtest: video claim helper uses the filtered claim
+ok 58 - video claim helper uses the filtered claim
+  ---
+  duration_ms: 0.334
+  type: 'test'
+  ...
+1..58
+# tests 58
+# suites 0
+# pass 58
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 820.2259

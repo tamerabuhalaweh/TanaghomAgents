@@ -1,0 +1,14 @@
+file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/creative-runtime/render/mp4.mjs:431
+  if (!payloads.length) throw new Error("mp4_missing_media_payload");
+                              ^
+
+Error: mp4_missing_media_payload
+    at validateMediaExtents (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/creative-runtime/render/mp4.mjs:431:31)
+    at validateMp4 (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/creative-runtime/render/mp4.mjs:364:3)
+    at file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/[eval1]:1:333
+    at ModuleJob.run (node:internal/modules/esm/module_job:343:25)
+    at async onImport.tracePromise.__proto__ (node:internal/modules/esm/loader:269:26)
+    at async ModuleLoader.executeModuleJob (node:internal/modules/esm/loader:265:20)
+    at async asyncRunEntryPointWithESMLoader (node:internal/modules/run_main:117:5)
+
+Node.js v22.18.0

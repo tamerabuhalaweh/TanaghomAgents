@@ -117,9 +117,15 @@ function craftedMp4({ width = 1080, height = 1080, timescale = 1000, duration = 
         header.write(fourcc, 4, "ascii");
         return Buffer.concat([header, Buffer.alloc(78)]);
       })()]));
-  const mdia = box("mdia", box("mdhd", Buffer.concat([u32(0), u32(0), u32(0), u32(timescale), u32(duration), Buffer.alloc(8)])), hdlr, box("minf", box("stbl", entry)));
+  // Structural fixture (not codec bytes): one sample inside actual mdat.
+  const stco = box("stco", u32(0), u32(1), u32(0));
+  const stsz = box("stsz", u32(0), u32(1), u32(1));
+  const stsc = box("stsc", u32(0), u32(1), u32(1), u32(1), u32(1));
+  const mdia = box("mdia", box("mdhd", Buffer.concat([u32(0), u32(0), u32(0), u32(timescale), u32(duration), Buffer.alloc(8)])), hdlr, box("minf", box("stbl", entry, stco, stsz, stsc)));
   const moov = box("moov", mvhd, box("trak", tkhd, mdia));
-  return Buffer.concat([ftyp, moov]);
+  const metadata = Buffer.concat([ftyp, moov]);
+  metadata.writeUInt32BE(metadata.length + 8, metadata.indexOf("stco") + 12);
+  return Buffer.concat([metadata, box("mdat", Buffer.from([1]))]);
 }
 
 function stubDb({ input, outputs = 0, state = { status: "running", cancel_requested: false }, stateFn = null, markStatus = "running", calls = null }) {

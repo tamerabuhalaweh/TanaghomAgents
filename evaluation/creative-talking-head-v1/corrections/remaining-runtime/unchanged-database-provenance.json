@@ -1,0 +1,91 @@
+{
+  "prior_freeze_sha256": "b2f09838bb5ffabcc62696c4d05622a71084553c1fa3e1ff4bc1f827b4037e06",
+  "prior_database_verdict": "PASS source-only at old digest; new database PASS still REQUIRED",
+  "retained_old_staged_count": 331,
+  "changed_old_staged_paths": [
+    "docs/evidence/2026-10-11-creative-talking-head.md",
+    "packages/creative-runtime/adapters/http-image.mjs",
+    "packages/creative-runtime/render/mp4.mjs"
+  ],
+  "protected_unchanged_files": [
+    {
+      "path": "apps/dashboard/app/api/creative/assets/versions/[id]/preview/route.ts",
+      "sha256": "f06e0b2a2d8e4935a9814d1496db7a31f2d743b58afbbad973215b16fc79346b"
+    },
+    {
+      "path": "apps/dashboard/app/api/creative/presenters/catalog/route.ts",
+      "sha256": "afe0d28eb35dc07b6129ce8b26b492b9b0a7bf2b212a621cd3f7fd867e298163"
+    },
+    {
+      "path": "apps/dashboard/app/api/creative/presenters/generate/route.ts",
+      "sha256": "73ba403c50208085bf4616c3cc94af6ea37639750df246775379203ef9dcfee2"
+    },
+    {
+      "path": "apps/dashboard/app/api/creative/presenters/manage/route.ts",
+      "sha256": "171f7dc30e8b7bc9d8d9697f6ab6af68efd4f87340a7a1a66c14b6b8673043c1"
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/avatar-governance.ts",
+      "sha256": "62aa485316c72c36f68d965a8fa22d9b65d31cbd5dbe7e09441d156a86ec5398"
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/jobs.ts",
+      "sha256": "fd8beed726d36f1a2aa08a72c6a4b1d31075f6a7bd4daed75db2407b6be53914"
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/presenters.ts",
+      "sha256": "7ff9d6d5fd99c73a1441a1d16659dbe0768f7e5bce2a4525528a469030955baa"
+    },
+    {
+      "path": "packages/database/migrations/0046_creative_talking_head.down.sql",
+      "sha256": "147cc5fe1a91f95f4b6c19c657c27ba7cd515692b3c83e10b472b74a6108af98"
+    },
+    {
+      "path": "packages/database/migrations/0046_creative_talking_head.up.sql",
+      "sha256": "14960e95e4f1529a39631846225fb6135d664d79505c15415a56b117aba1e6b3"
+    },
+    {
+      "path": "scripts/creative-foundation-integration.mjs",
+      "sha256": "2f5cce6369a783931c36285af929b2c12df53cd1c6f033cd7ef3746d3cc87496"
+    },
+    {
+      "path": "scripts/creative-presenter-review-sql.mjs",
+      "sha256": "7c78da32dc3bb819656fdc0b88e497133162f47aab094c2aa9b350a229f57257"
+    },
+    {
+      "path": "scripts/creative-presenter-worker.mjs",
+      "sha256": "a46c0774f821e1a588bf3fdc731a08757ee2644f24328207f0603173b7487dae"
+    },
+    {
+      "path": "scripts/creative-talking-head-acceptance.mjs",
+      "sha256": "9e503d1e366f3c7ce3327e762a579303587ea36efc20ab9975945f130f59699e"
+    },
+    {
+      "path": "scripts/creative-talking-head-browser.mjs",
+      "sha256": "cb96bfe72872315d642d99c61ee4fc00b3e007c3c0a86aaaa1d9de97c013069b"
+    },
+    {
+      "path": "scripts/creative-talking-head-crash-probe.mjs",
+      "sha256": "0ec2c81cc61a67df44e4736337659c186b8012a90c63d258c450eb3e7507e354"
+    },
+    {
+      "path": "scripts/creative-talking-head-integration.mjs",
+      "sha256": "391701f014865f236b0169720734b07351fa3f9a2b60ebf3094d21784cf92628"
+    },
+    {
+      "path": "scripts/creative-talking-head-regression.mjs",
+      "sha256": "75b5faba785cce674c54bf5ebb15d05b06479c672897f5a655806920042e1c79"
+    },
+    {
+      "path": "scripts/creative-talking-head-sql.mjs",
+      "sha256": "9f60a9c30615e9c78cf59ba21fb2c5d79b8768e1c357ed12dda90aff0c7987a4"
+    },
+    {
+      "path": "scripts/creative-video-integration.mjs",
+      "sha256": "e5c984396ca3e1730d1d831ec3c8b48c72e33d359079c8153e400c465c6db301"
+    }
+  ],
+  "new_test": "tests/creative-presenter-boundary.test.mjs",
+  "prior_freeze_receipt_sha256": "7b51dd34cc3d9b57b5d817a3c2330d38d6282c9e84926bdc49b45c776a46d7a7",
+  "prior_patch_sha256": "b2f09838bb5ffabcc62696c4d05622a71084553c1fa3e1ff4bc1f827b4037e06"
+}

@@ -2,7 +2,7 @@
 // foundation; the database CHECK constraints are the enforcement mirror.
 export const CAPABILITIES = Object.freeze([
   'image', 'edit', 'product_shoot', 'design', 'carousel', 'motion',
-  'video', 'talking_head', 'voice', 'music', 'landing_page',
+  'video', 'talking_head', 'lip_sync', 'voice', 'music', 'landing_page',
 ]);
 export const LANES = Object.freeze(['cpu', 'gpu_image', 'gpu_video', 'gpu_audio']);
 export const STATUSES = Object.freeze([

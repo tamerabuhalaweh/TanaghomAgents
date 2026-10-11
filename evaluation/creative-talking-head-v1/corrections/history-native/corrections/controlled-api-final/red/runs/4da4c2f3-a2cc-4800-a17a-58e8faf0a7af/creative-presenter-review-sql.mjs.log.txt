@@ -1,0 +1,90 @@
+FAIL D1 API direct SELECT denied creative_avatars Missing expected rejection.
+FAIL D1 API direct INSERT denied creative_avatars The validation function is expected to return "true". Received false
+
+Caught error:
+
+error: null value in column "organization_id" of relation "creative_avatars" violates not-null constraint
+FAIL D1 API direct UPDATE denied creative_avatars Missing expected rejection.
+PASS D1 API direct DELETE denied creative_avatars
+FAIL D1 API direct SELECT denied creative_avatar_provider_bindings Missing expected rejection.
+FAIL D1 API direct INSERT denied creative_avatar_provider_bindings The validation function is expected to return "true". Received false
+
+Caught error:
+
+error: null value in column "avatar_id" of relation "creative_avatar_provider_bindings" violates not-null constraint
+FAIL D1 API direct UPDATE denied creative_avatar_provider_bindings Missing expected rejection.
+PASS D1 API direct DELETE denied creative_avatar_provider_bindings
+FAIL D1 API direct SELECT denied creative_avatar_consents Missing expected rejection.
+FAIL D1 API direct INSERT denied creative_avatar_consents The validation function is expected to return "true". Received false
+
+Caught error:
+
+error: null value in column "avatar_id" of relation "creative_avatar_consents" violates not-null constraint
+FAIL D1 API direct UPDATE denied creative_avatar_consents Missing expected rejection.
+PASS D1 API direct DELETE denied creative_avatar_consents
+FAIL D1 API direct SELECT denied creative_presenter_controls Missing expected rejection.
+PASS D1 API direct INSERT denied creative_presenter_controls
+PASS D1 API direct UPDATE denied creative_presenter_controls
+PASS D1 API direct DELETE denied creative_presenter_controls
+PASS D1 API EXECUTE authorize_creative_presenter(uuid,uuid,uuid,text)
+PASS D1 API EXECUTE validate_creative_presenter_params(uuid,jsonb)
+PASS D1 worker SELECT denied creative_avatars
+PASS D1 worker INSERT denied creative_avatars
+PASS D1 worker UPDATE denied creative_avatars
+PASS D1 worker DELETE denied creative_avatars
+PASS D1 worker SELECT denied creative_avatar_provider_bindings
+PASS D1 worker INSERT denied creative_avatar_provider_bindings
+PASS D1 worker UPDATE denied creative_avatar_provider_bindings
+PASS D1 worker DELETE denied creative_avatar_provider_bindings
+PASS D1 worker SELECT denied creative_avatar_consents
+PASS D1 worker INSERT denied creative_avatar_consents
+PASS D1 worker UPDATE denied creative_avatar_consents
+PASS D1 worker DELETE denied creative_avatar_consents
+PASS D2 spoof-provider
+PASS D2 spoof-model
+PASS D2 spoof-version
+PASS D2 missing-version
+PASS D2 positive-binding
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: all review SQL oracles must pass
++ actual - expected
+
++ [
++   'D1 API direct SELECT denied creative_avatars',
++   'D1 API direct INSERT denied creative_avatars',
++   'D1 API direct UPDATE denied creative_avatars',
++   'D1 API direct SELECT denied creative_avatar_provider_bindings',
++   'D1 API direct INSERT denied creative_avatar_provider_bindings',
++   'D1 API direct UPDATE denied creative_avatar_provider_bindings',
++   'D1 API direct SELECT denied creative_avatar_consents',
++   'D1 API direct INSERT denied creative_avatar_consents',
++   'D1 API direct UPDATE denied creative_avatar_consents',
++   'D1 API direct SELECT denied creative_presenter_controls'
++ ]
+- []
+
+    at file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/scripts/creative-presenter-review-sql.mjs:32:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'D1 API direct SELECT denied creative_avatars',
+    'D1 API direct INSERT denied creative_avatars',
+    'D1 API direct UPDATE denied creative_avatars',
+    'D1 API direct SELECT denied creative_avatar_provider_bindings',
+    'D1 API direct INSERT denied creative_avatar_provider_bindings',
+    'D1 API direct UPDATE denied creative_avatar_provider_bindings',
+    'D1 API direct SELECT denied creative_avatar_consents',
+    'D1 API direct INSERT denied creative_avatar_consents',
+    'D1 API direct UPDATE denied creative_avatar_consents',
+    'D1 API direct SELECT denied creative_presenter_controls'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual'
+}
+
+Node.js v22.18.0

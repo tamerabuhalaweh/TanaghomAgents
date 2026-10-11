@@ -1,0 +1,19 @@
+{
+  "scope": "OFFLINE DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "suite": "video",
+      "exit": 0,
+      "target": "0044_creative_video_lane",
+      "passes": 21,
+      "error": null
+    },
+    {
+      "suite": "segmentation",
+      "exit": 0,
+      "target": "0045_creative_segmentation",
+      "passes": 14,
+      "error": null
+    }
+  ]
+}

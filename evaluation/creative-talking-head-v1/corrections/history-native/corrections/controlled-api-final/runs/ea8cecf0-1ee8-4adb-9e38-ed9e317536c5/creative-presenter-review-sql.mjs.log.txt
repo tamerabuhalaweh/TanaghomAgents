@@ -1,0 +1,36 @@
+PASS D1 API direct SELECT denied creative_avatars
+PASS D1 API direct INSERT denied creative_avatars
+PASS D1 API direct UPDATE denied creative_avatars
+PASS D1 API direct DELETE denied creative_avatars
+PASS D1 API direct SELECT denied creative_avatar_provider_bindings
+PASS D1 API direct INSERT denied creative_avatar_provider_bindings
+PASS D1 API direct UPDATE denied creative_avatar_provider_bindings
+PASS D1 API direct DELETE denied creative_avatar_provider_bindings
+PASS D1 API direct SELECT denied creative_avatar_consents
+PASS D1 API direct INSERT denied creative_avatar_consents
+PASS D1 API direct UPDATE denied creative_avatar_consents
+PASS D1 API direct DELETE denied creative_avatar_consents
+PASS D1 API direct SELECT denied creative_presenter_controls
+PASS D1 API direct INSERT denied creative_presenter_controls
+PASS D1 API direct UPDATE denied creative_presenter_controls
+PASS D1 API direct DELETE denied creative_presenter_controls
+PASS D1 API EXECUTE authorize_creative_presenter(uuid,uuid,uuid,text)
+PASS D1 API EXECUTE validate_creative_presenter_params(uuid,jsonb)
+PASS D1 worker SELECT denied creative_avatars
+PASS D1 worker INSERT denied creative_avatars
+PASS D1 worker UPDATE denied creative_avatars
+PASS D1 worker DELETE denied creative_avatars
+PASS D1 worker SELECT denied creative_avatar_provider_bindings
+PASS D1 worker INSERT denied creative_avatar_provider_bindings
+PASS D1 worker UPDATE denied creative_avatar_provider_bindings
+PASS D1 worker DELETE denied creative_avatar_provider_bindings
+PASS D1 worker SELECT denied creative_avatar_consents
+PASS D1 worker INSERT denied creative_avatar_consents
+PASS D1 worker UPDATE denied creative_avatar_consents
+PASS D1 worker DELETE denied creative_avatar_consents
+PASS D1 controlled API catalog/create/binding/status and actor-denial readback
+PASS D2 spoof-provider
+PASS D2 spoof-model
+PASS D2 spoof-version
+PASS D2 missing-version
+PASS D2 positive-binding

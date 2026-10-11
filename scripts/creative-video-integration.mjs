@@ -38,9 +38,9 @@ const ORG_B_ID = "84000000-0000-4000-8000-000000000041";
 const { privateKey, publicKey } = await generateKeyPair("RS256");
 const publicJwk = { ...await exportJWK(publicKey), kid: "creative-video-key", alg: "RS256", use: "sig" };
 
-// Minimal VALID vendor-style MP4 fixture (isom brand, mp4v video track,
-// 640x640, 5s) served by the loopback artifact stub. Real vendor bytes
-// would exercise the identical validator path at acceptance.
+// Synthetic structural MP4 fixture (isom, mp4v, 640x640, 5s) with
+// one bounded sample inside mdat; not decodable vendor-quality media.
+// Real vendor bytes would exercise the identical validator path.
 function box(type, ...payloads) {
   const body = Buffer.concat(payloads);
   const header = Buffer.alloc(8);
@@ -66,8 +66,13 @@ function fixtureMp4() {
   entryHeader.writeUInt32BE(86, 0);
   entryHeader.write("mp4v", 4, "ascii");
   const stsd = box("stsd", Buffer.concat([u32(0), u32(1), entryHeader, Buffer.alloc(78)]));
-  const mdia = box("mdia", box("mdhd", Buffer.concat([u32(0), u32(0), u32(0), u32(1000), u32(5000), Buffer.alloc(8)])), hdlr, box("minf", box("stbl", stsd)));
-  return Buffer.concat([ftyp, box("moov", mvhd, box("trak", tkhd, mdia))]);
+  const stco = box("stco", u32(0), u32(1), u32(0));
+  const stsz = box("stsz", u32(0), u32(1), u32(1));
+  const stsc = box("stsc", u32(0), u32(1), u32(1), u32(1), u32(1));
+  const mdia = box("mdia", box("mdhd", Buffer.concat([u32(0), u32(0), u32(0), u32(1000), u32(5000), Buffer.alloc(8)])), hdlr, box("minf", box("stbl", stsd, stco, stsz, stsc)));
+  const metadata = Buffer.concat([ftyp, box("moov", mvhd, box("trak", tkhd, mdia))]);
+  metadata.writeUInt32BE(metadata.length + 8, metadata.indexOf("stco") + 12);
+  return Buffer.concat([metadata, box("mdat", Buffer.from([1]))]);
 }
 const FIXTURE_MP4 = fixtureMp4();
 const GARBAGE = Buffer.from("this is not a video container at all, just text....");

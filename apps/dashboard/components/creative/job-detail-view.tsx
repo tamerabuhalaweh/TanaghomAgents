@@ -87,7 +87,7 @@ export function JobDetailView({ locale, dir, jobId }: { locale: CreativeLocale; 
               <dt>{t(locale, "jobs.correlation")}</dt><dd>{detail.data.job.correlation_id}</dd>
               <dt>{t(locale, "jobs.error")}</dt><dd>{detail.data.job.error_class ?? "—"}</dd>
               <dt>{t(locale, "jobs.outputs")}</dt>
-              <dd>{detail.data.job.output_asset_ids.length ? detail.data.job.output_asset_ids.join(", ") : "—"}</dd>
+              <dd>{detail.data.job.output_asset_ids.length ? detail.data.job.output_asset_ids.map(id => <Link key={id} href={`/creative/assets/${id}`}>{id}</Link>) : "—"}</dd>
             </dl>
             {canOperate && ["queued", "claimed", "running"].includes(detail.data.job.status) && (
               <div className="creative-row">

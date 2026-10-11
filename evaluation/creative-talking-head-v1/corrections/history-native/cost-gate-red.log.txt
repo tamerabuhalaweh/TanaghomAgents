@@ -1,0 +1,9 @@
+Error: Connection terminated unexpectedly
+    at Connection.<anonymous> (C:\Users\tamer\AppData\Local\hermes\cache\scratch\tanaghom-p5-decision\node_modules\pg\lib\client.js:136:73)
+    at Object.onceWrapper (node:events:632:28)
+    at Connection.emit (node:events:518:28)
+    at Socket.<anonymous> (C:\Users\tamer\AppData\Local\hermes\cache\scratch\tanaghom-p5-decision\node_modules\pg\lib\connection.js:62:12)
+    at Socket.emit (node:events:518:28)
+    at TCP.<anonymous> (node:net:346:12)
+PASS exact task-owned container cleanup
+RUN_RECEIPT evaluation/creative-talking-head-v1/runs/abeb2e14-f37e-43ef-b895-1687a76e6099/runner.json

@@ -1,0 +1,59 @@
+{
+  "scope": "OFFLINE DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "suite": "contracts",
+      "exit": 1,
+      "error": "syntax error at or near \"\\\""
+    },
+    {
+      "suite": "database",
+      "exit": 0,
+      "target": "0034_agency_pilot_integration",
+      "passes": 1,
+      "error": null
+    },
+    {
+      "suite": "foundation",
+      "exit": 1,
+      "target": null,
+      "passes": 12,
+      "error": null
+    },
+    {
+      "suite": "image",
+      "exit": 0,
+      "target": null,
+      "passes": 15,
+      "error": null
+    },
+    {
+      "suite": "design",
+      "exit": 0,
+      "target": "0039_creative_design_render",
+      "passes": 18,
+      "error": null
+    },
+    {
+      "suite": "motion",
+      "exit": 0,
+      "target": "0040_creative_motion_render",
+      "passes": 17,
+      "error": null
+    },
+    {
+      "suite": "video",
+      "exit": 0,
+      "target": "0044_creative_video_lane",
+      "passes": 21,
+      "error": null
+    },
+    {
+      "suite": "segmentation",
+      "exit": 0,
+      "target": "0045_creative_segmentation",
+      "passes": 14,
+      "error": null
+    }
+  ]
+}

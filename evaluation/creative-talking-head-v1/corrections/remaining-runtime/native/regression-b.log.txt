@@ -1,0 +1,2 @@
+PASS design exit=0
+PASS motion exit=0

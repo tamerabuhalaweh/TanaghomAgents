@@ -3,6 +3,8 @@
 // obtained from the environment at runtime. Tested against a localhost stub
 // that mimics the fal.ai schnell response shape; vendor pixels require a
 // real key and stay behind external acceptance.
+import { isIP } from "node:net";
+
 export class ProviderAdapterError extends Error {
   constructor(errorClass, message, options = {}) {
     super(message);
@@ -109,7 +111,7 @@ export function createHttpImageAdapter({ name, endpoint, apiKey, model, modelVer
   });
 }
 
-export function validateArtifactUrl(url, { allowedOrigins = [], testLoopback = false } = {}) {
+export function validateArtifactUrl(url, { allowedOrigins = [], exactOrigins = null, testLoopback = false } = {}) {
   let parsed;
   try {
     parsed = new URL(url ?? "");
@@ -129,6 +131,22 @@ export function validateArtifactUrl(url, { allowedOrigins = [], testLoopback = f
   const classification = classifyIp(host);
   if (classification !== "public" && classification !== "not-an-ip" && !(testLoopback && isLoopbackHost(host))) {
     throw new ProviderAdapterError("deterministic", "provider artifact host is not retrievable");
+  }
+  // Opt-in exact HTTPS origins for presenter configuration. Legacy image
+  // hostname policy remains unchanged; both policies reuse the same DNS,
+  // pinned TLS, byte caps and per-redirect validation below.
+  if (exactOrigins !== null) {
+    let approved;
+    try {
+      if (!Array.isArray(exactOrigins) || !exactOrigins.length) throw new Error();
+      approved = exactOrigins.map(origin => {
+        const u = new URL(origin);
+        if (typeof origin !== "string" || u.protocol !== "https:" || u.origin !== origin || u.username || u.password) throw new Error();
+        return u;
+      });
+    } catch { throw new ProviderAdapterError("deterministic", "approved artifact HTTPS origins required"); }
+    if (!approved.some(u => u.origin === parsed.origin)) throw new ProviderAdapterError("deterministic", "provider artifact exact origin is not allowlisted");
+    allowedOrigins = approved.map(u => u.hostname);
   }
   const allowlisted = (allowedOrigins ?? []).some((origin) => {
     const candidate = String(origin).toLowerCase();
@@ -152,39 +170,77 @@ export function isLoopbackHost(host) {
 // Everything else (loopback, private, link-local, unspecified, multicast,
 // reserved, documentation, benchmark, CGNAT, IPv4-mapped IPv6 unwrapped to
 // its v4 form) returns a reason string.
+// Compare normalized address bits, never textual spellings. Scoped addresses
+// are not provider destinations. isIP validates expansion/dotted-tail syntax.
+function ipBits(ip, family) {
+  if (family === 4) return ip.split(".").reduce((n, octet) => (n << 8n) | BigInt(octet), 0n);
+  let text = ip.toLowerCase();
+  if (text.includes(".")) {
+    const split = text.lastIndexOf(":");
+    const tail = ipBits(text.slice(split + 1), 4);
+    text = text.slice(0, split + 1) + (tail >> 16n).toString(16) + ":" + (tail & 65535n).toString(16);
+  }
+  const halves = text.split("::");
+  const left = halves[0] ? halves[0].split(":") : [];
+  const right = halves.length === 2 && halves[1] ? halves[1].split(":") : [];
+  const words = halves.length === 2 ? [...left, ...Array(8 - left.length - right.length).fill("0"), ...right] : left;
+  return words.reduce((n, word) => (n << 16n) | BigInt("0x" + word), 0n);
+}
+function inCidr(value, base, prefix, bits) {
+  const shift = BigInt(bits - prefix);
+  return value >> shift === base >> shift;
+}
+const IPV4_NONPUBLIC = [
+  ["0.0.0.0", 8, "unspecified"], ["10.0.0.0", 8, "rfc1918"],
+  ["100.64.0.0", 10, "cgnat"], ["127.0.0.0", 8, "loopback"],
+  ["169.254.0.0", 16, "link-local"], ["172.16.0.0", 12, "rfc1918"],
+  ["192.0.0.0", 24, "reserved"], ["192.0.2.0", 24, "reserved"],
+  ["192.88.99.0", 24, "reserved"], ["192.168.0.0", 16, "rfc1918"],
+  ["198.18.0.0", 15, "reserved"], ["198.51.100.0", 24, "reserved"],
+  ["203.0.113.0", 24, "documentation"], ["224.0.0.0", 4, "multicast"],
+  ["240.0.0.0", 4, "reserved"],
+].map(([base, prefix, reason]) => [ipBits(base, 4), prefix, reason]);
+const IPV6_NONPUBLIC = [
+  ["fc00::", 7, "ula"], ["fe80::", 10, "link-local"],
+  ["fec0::", 10, "site-local"], ["ff00::", 8, "multicast"],
+  ["2001::", 23, "reserved"], ["2001:db8::", 32, "documentation"],
+  ["2002::", 16, "reserved"], ["3fff::", 20, "documentation"],
+].map(([base, prefix, reason]) => [ipBits(base, 6), prefix, reason]);
+// Conservative IANA RIR global-unicast allocation snapshot (2026-10-11).
+// New/unlisted allocations fail closed until reviewed; 2000::/3 alone also
+// contains reserved and unallocated space. Protocol/transition ranges above
+// are deliberately excluded from ordinary provider artifact destinations.
+const IPV6_PUBLIC = [
+  "2001:200::/23", "2001:400::/23", "2001:600::/23", "2001:800::/22",
+  "2001:c00::/23", "2001:e00::/23", "2001:1200::/23", "2001:1400::/22",
+  "2001:1800::/23", "2001:1a00::/23", "2001:1c00::/22", "2001:2000::/19",
+  "2001:4000::/23", "2001:4200::/23", "2001:4400::/23", "2001:4600::/23",
+  "2001:4800::/23", "2001:4a00::/23", "2001:4c00::/23", "2001:5000::/20",
+  "2001:8000::/19", "2001:a000::/20", "2001:b000::/20", "2003::/18",
+  "2400::/12", "2410::/12", "2600::/12", "2610::/23",
+  "2620::/23", "2630::/12", "2800::/12", "2a00::/12",
+  "2a10::/12", "2c00::/12",
+].map(cidr => { const [base, prefix] = cidr.split("/"); return [ipBits(base, 6), Number(prefix)]; });
+function classifyV4(value) {
+  for (const [base, prefix, reason] of IPV4_NONPUBLIC) if (inCidr(value, base, prefix, 32)) return reason;
+  return "public";
+}
 export function classifyIp(ip) {
-  const lower = String(ip ?? "").toLowerCase();
-  if (isLoopbackHost(lower)) return "loopback";
-  const mapped = lower.startsWith("::ffff:") ? lower.slice("::ffff:".length) : null;
-  const v4 = mapped ?? lower;
-  if (/^\d+\.\d+\.\d+\.\d+$/.test(v4)) {
-    const [a, b, c, d] = v4.split(".").map(Number);
-    if ([a, b, c, d].some((n) => !Number.isInteger(n) || n < 0 || n > 255)) return "invalid";
-    if (a === 10) return "rfc1918";
-    if (a === 172 && b >= 16 && b <= 31) return "rfc1918";
-    if (a === 192 && b === 168) return "rfc1918";
-    if (a === 169 && b === 254) return "link-local";
-    if (a === 127) return "loopback";
-    if (a === 0) return "unspecified";
-    if (a === 100 && b >= 64 && b <= 127) return "cgnat";
-    if (a === 192 && b === 0 && (c === 0 || c === 2)) return "reserved";
-    if (a === 198 && ((b === 18 || b === 19) || (b === 51 && c === 100))) return "reserved";
-    if (a === 203 && b === 0 && c === 113) return "documentation";
-    if (a >= 224 && a <= 239) return "multicast";
-    if (a >= 240) return "reserved";
-    return "public";
-  }
-  if (lower.includes(":")) {
-    if (lower === "::") return "unspecified";
-    if (lower.startsWith("fe80:")) return "link-local";
-    if (lower.startsWith("fec0:")) return "site-local";
-    if (lower.startsWith("fc00:") || lower.split(":")[0].startsWith("fd")) return "ula";
-    if (lower.startsWith("ff")) return "multicast";
-    if (lower.startsWith("2001:db8")) return "documentation";
-    if (lower.startsWith("64:ff9b:")) return classifyIp(lower.slice("64:ff9b:".length));
-    return "public";
-  }
-  return "not-an-ip";
+  if (typeof ip !== "string" || ip.includes("%")) return "invalid";
+  const family = isIP(ip);
+  if (!family) return "not-an-ip";
+  const value = ipBits(ip, family);
+  if (family === 4) return classifyV4(value);
+  if (value === 0n) return "unspecified";
+  if (value === 1n) return "loopback";
+  // IPv4-mapped and RFC6052 well-known /96 translation addresses carry
+  // exactly the same destination IPv4 bits in dotted or hexadecimal form.
+  if (inCidr(value, ipBits("::ffff:0:0", 6), 96, 128) ||
+      inCidr(value, ipBits("64:ff9b::", 6), 96, 128)) return classifyV4(value & 0xffffffffn);
+  for (const [base, prefix, reason] of IPV6_NONPUBLIC) if (inCidr(value, base, prefix, 128)) return reason;
+  // Positive global-unicast gate. Other translation/compatible/discard/
+  // unallocated ranges fail closed; do not infer routability from a colon.
+  return IPV6_PUBLIC.some(([base, prefix]) => inCidr(value, base, prefix, 128)) ? "public" : "reserved";
 }
 
 // Resolves ALL A/AAAA answers through the injected resolver and rejects
@@ -319,15 +375,15 @@ async function fetchValidatedArtifact({ url, options, redirectBudget = 3 }) {
   return response;
 }
 
-export async function downloadArtifact({ url, maxBytes = MAX_RESPONSE_BYTES, timeoutMs = 120000, fetchImpl = fetch, allowedOrigins = [], testLoopback = false, resolveHost, pinnedRequest }) {
-  validateArtifactUrl(url, { allowedOrigins, testLoopback });
+export async function downloadArtifact({ url, maxBytes = MAX_RESPONSE_BYTES, timeoutMs = 120000, fetchImpl = fetch, allowedOrigins = [], exactOrigins = null, testLoopback = false, resolveHost, pinnedRequest }) {
+  validateArtifactUrl(url, { allowedOrigins, exactOrigins, testLoopback });
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), timeoutMs);
   try {
     const response = await fetchValidatedArtifact({
       url,
       options: {
-        fetchImpl, allowedOrigins, testLoopback, timeoutMs, maxBytes, resolveHost, pinnedRequest,
+        fetchImpl, allowedOrigins, exactOrigins, testLoopback, timeoutMs, maxBytes, resolveHost, pinnedRequest,
         init: { signal: controller.signal },
       },
     });

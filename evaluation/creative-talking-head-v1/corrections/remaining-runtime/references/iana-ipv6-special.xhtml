@@ -1,0 +1,538 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:iana="http://www.iana.org/assignments">
+<head>
+<meta content="text/html; charset=utf-8" http-equiv="Content-Type"/>
+<link href="/assignments/_support/iana-registry.css" rel="stylesheet" type="text/css"/>
+<script src="/assignments/_support/jquery.js" type="text/javascript"></script>
+<script src="/assignments/_support/sort.js" type="text/javascript"></script>
+<title>IPv6 Special-Purpose Address Space</title>
+</head>
+<body>
+<header>
+<div id="header">
+<div id="logo">
+<a href="/"><img alt="Homepage" src="/static/img/iana-logo-header.426b3ac01d35.svg"/></a>
+</div>
+<div class="navigation">
+<ul>
+<li><a href="/domains">Domains</a></li>
+<li><a href="/protocols">Protocols</a></li>
+<li><a href="/numbers">Numbers</a></li>
+<li><a href="/about">About</a></li>
+</ul>
+</div>
+</div>
+</header>
+<article>
+<h1>IPv6 Special-Purpose Address Space</h1>
+<dl>
+<dt>Created</dt>
+<dd>2006-01-10</dd>
+<dt>Last Updated</dt>
+<dd>2025-10-09</dd>
+<dt>Available Formats</dt>
+<dd>
+<a class="altformat" href="/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.xml"><img src="/assignments/_support/export-xml.png"/><br/>XML</a>
+<a class="altformat" href="/assignments/iana-ipv6-special-registry"><img src="/assignments/_support/export-html.png"/><br/>HTML</a>
+<a class="altformat" href="/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry.txt"><img src="/assignments/_support/export-plain.png"/><br/>TXT</a>
+</dd>
+</dl>
+<p class="registry-toc-heading">
+<b>Registry Included Below</b>
+</p>
+<ul>
+<li>
+<a href="#iana-ipv6-special-registry-1">IPv6 Special-Purpose Address Space</a>
+</li>
+</ul>
+<h2><a id="iana-ipv6-special-registry-1" name="iana-ipv6-special-registry-1"></a>IPv6 Special-Purpose Address Space</h2>
+<dl>
+<dt>Registration Procedure(s)</dt>
+<dd>
+<pre>IETF Review</pre>
+</dd>
+<dt>Reference</dt>
+<dd>[<a href="https://www.iana.org/go/rfc4773">RFC 4773</a>][<a href="https://www.iana.org/go/rfc6890">RFC 6890</a>][<a href="https://www.iana.org/go/rfc8190">RFC 8190</a>]</dd>
+<dt>Note</dt>
+<dd>
+<pre>Address prefixes listed in the Special-Purpose Address Registry are
+not guaranteed routability in any particular local or global context.
+
+The IPv4 and IPv6 Special-Purpose Address Registries maintain the following
+information regarding each entry:
+
+   o  Address Block - A block of IPv4 or IPv6 addresses that has been
+      registered for a special purpose.
+
+   o  Name - A descriptive name for the special-purpose address block.
+
+   o  RFC - The RFC through which the special-purpose address block was
+      requested.
+
+   o  Allocation Date - The date upon which the special-purpose address
+      block was allocated.
+
+   o  Termination Date - The date upon which the allocation is to be
+      terminated.  This field is applicable for limited-use allocations
+      only.
+
+   o  Source - A boolean value indicating whether an address from the
+      allocated special-purpose address block is valid when used as the
+      source address of an IP datagram that transits two devices.
+
+   o  Destination - A boolean value indicating whether an address from
+      the allocated special-purpose address block is valid when used as
+      the destination address of an IP datagram that transits two
+      devices.
+
+   o  Forwardable - A boolean value indicating whether a router may
+      forward an IP datagram whose destination address is drawn from the
+      allocated special-purpose address block between external
+      interfaces.
+
+   o  Globally Reachable - A boolean value indicating whether an IP
+      datagram whose destination address is drawn from the allocated
+      special-purpose address block is forwardable beyond a specified
+      administrative domain.
+
+   o  Reserved-by-Protocol - A boolean value indicating whether the
+      special-purpose address block is reserved by IP, itself.  This
+      value is "TRUE" if the RFC that created the special-purpose
+      address block requires all compliant IP implementations to behave
+      in a special way when processing packets either to or from
+      addresses contained by the address block.
+
+If the value of "Destination" is FALSE, the values of "Forwardable" and
+"Globally Reachable" must also be false.
+
+</pre>
+</dd>
+<dt>Formerly known as</dt>
+<dd>
+<pre>IANA IPv6 Special-Purpose Address Registry (pursuant to [<a href="https://datatracker.ietf.org/doc/narrative-minutes-interim-2025-iesg-18-202509181400/">IESG decision</a>])</pre>
+</dd>
+<dt>Available Formats</dt>
+<dd>
+<a class="altformat" href="/assignments/iana-ipv6-special-registry/iana-ipv6-special-registry-1.csv"><img src="/assignments/_support/export-csv.png"/><br/>CSV
+            </a>
+</dd>
+</dl>
+<table class="sortable" id="table-iana-ipv6-special-registry-1">
+<thead>
+<tr>
+<th class="sortIPv6">Address Block</th>
+<th>Name</th>
+<th>RFC</th>
+<th>Allocation Date</th>
+<th>Termination Date</th>
+<th>Source</th>
+<th>Destination</th>
+<th>Forwardable</th>
+<th>Globally Reachable</th>
+<th>Reserved-by-Protocol</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>::1/128</td>
+<td>Loopback Address</td>
+<td>[<a href="https://www.iana.org/go/rfc4291">RFC 4291</a>]</td>
+<td>2006-02</td>
+<td>N/A</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+<tr>
+<td>::/128</td>
+<td>Unspecified Address</td>
+<td>[<a href="https://www.iana.org/go/rfc4291">RFC 4291</a>]</td>
+<td>2006-02</td>
+<td>N/A</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+<tr>
+<td>::ffff:0:0/96</td>
+<td>IPv4-mapped Address</td>
+<td>[<a href="https://www.iana.org/go/rfc4291">RFC 4291</a>]</td>
+<td>2006-02</td>
+<td>N/A</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+<tr>
+<td>64:ff9b::/96</td>
+<td>IPv4-IPv6 Translat.</td>
+<td>[<a href="https://www.iana.org/go/rfc6052">RFC 6052</a>]</td>
+<td>2010-10</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>64:ff9b:1::/48</td>
+<td>IPv4-IPv6 Translat.</td>
+<td>[<a href="https://www.iana.org/go/rfc8215">RFC 8215</a>]</td>
+<td>2017-06</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>100::/64</td>
+<td>Discard-Only Address Block</td>
+<td>[<a href="https://www.iana.org/go/rfc6666">RFC 6666</a>]</td>
+<td>2012-06</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>100:0:0:1::/64</td>
+<td>Dummy IPv6 Prefix</td>
+<td>[<a href="https://www.iana.org/go/rfc9780">RFC 9780</a>]</td>
+<td>2025-04</td>
+<td>N/A</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001::/23</td>
+<td>IETF Protocol Assignments</td>
+<td>[<a href="https://www.iana.org/go/rfc2928">RFC 2928</a>]</td>
+<td>2000-09</td>
+<td>N/A</td>
+<td>False [<a href="#note1">1</a>]</td>
+<td>False [<a href="#note1">1</a>]</td>
+<td>False [<a href="#note1">1</a>]</td>
+<td>False [<a href="#note1">1</a>]</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001::/32</td>
+<td>TEREDO</td>
+<td>[<a href="https://www.iana.org/go/rfc4380">RFC 4380</a>]
+        [<a href="https://www.iana.org/go/rfc8190">RFC 8190</a>]</td>
+<td>2006-01</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>N/A [<a href="#note2">2</a>]</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:1::1/128</td>
+<td>Port Control Protocol Anycast</td>
+<td>[<a href="https://www.iana.org/go/rfc7723">RFC 7723</a>]</td>
+<td>2015-10</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:1::2/128</td>
+<td>Traversal Using Relays around NAT Anycast</td>
+<td>[<a href="https://www.iana.org/go/rfc8155">RFC 8155</a>]</td>
+<td>2017-02</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:1::3/128</td>
+<td>DNS-SD Service Registration Protocol Anycast</td>
+<td>[<a href="https://www.iana.org/go/rfc9665">RFC 9665</a>]</td>
+<td>2024-04</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:2::/48</td>
+<td>Benchmarking</td>
+<td>[<a href="https://www.iana.org/go/rfc5180">RFC 5180</a>][<a href="https://www.iana.org/go/eid1752">RFC Errata 1752</a>]</td>
+<td>2008-04</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:3::/32</td>
+<td>AMT</td>
+<td>[<a href="https://www.iana.org/go/rfc7450">RFC 7450</a>]</td>
+<td>2014-12</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:4:112::/48</td>
+<td>AS112-v6</td>
+<td>[<a href="https://www.iana.org/go/rfc7535">RFC 7535</a>]</td>
+<td>2014-12</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:10::/28</td>
+<td>Deprecated (previously ORCHID)</td>
+<td>[<a href="https://www.iana.org/go/rfc4843">RFC 4843</a>]</td>
+<td>2007-03</td>
+<td>2014-03</td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>2001:20::/28</td>
+<td>ORCHIDv2</td>
+<td>[<a href="https://www.iana.org/go/rfc7343">RFC 7343</a>]</td>
+<td>2014-07</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:30::/28 </td>
+<td>Drone Remote ID Protocol Entity Tags (DETs) Prefix</td>
+<td>[<a href="https://www.iana.org/go/rfc9374">RFC 9374</a>]</td>
+<td>2022-12</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2001:db8::/32</td>
+<td>Documentation</td>
+<td>[<a href="https://www.iana.org/go/rfc3849">RFC 3849</a>]</td>
+<td>2004-07</td>
+<td>N/A</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2002::/16 [<a href="#note3">3</a>]</td>
+<td>6to4</td>
+<td>[<a href="https://www.iana.org/go/rfc3056">RFC 3056</a>]</td>
+<td>2001-02</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>N/A [<a href="#note3">3</a>]</td>
+<td>False</td>
+</tr>
+<tr>
+<td>2620:4f:8000::/48</td>
+<td>Direct Delegation AS112 Service</td>
+<td>[<a href="https://www.iana.org/go/rfc7534">RFC 7534</a>]</td>
+<td>2011-05</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+</tr>
+<tr>
+<td>3fff::/20</td>
+<td>Documentation</td>
+<td>[<a href="https://www.iana.org/go/rfc9637">RFC 9637</a>]</td>
+<td>2024-07</td>
+<td>N/A</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>5f00::/16</td>
+<td>Segment Routing (SRv6) SIDs</td>
+<td>[<a href="https://www.iana.org/go/rfc9602">RFC 9602</a>]</td>
+<td>2024-04</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+</tr>
+<tr>
+<td>fc00::/7</td>
+<td>Unique-Local</td>
+<td>[<a href="https://www.iana.org/go/rfc4193">RFC 4193</a>]
+        [<a href="https://www.iana.org/go/rfc8190">RFC 8190</a>]</td>
+<td>2005-10</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>True</td>
+<td>False [<a href="#note4">4</a>]</td>
+<td>False</td>
+</tr>
+<tr>
+<td>fe80::/10</td>
+<td>Link-Local Unicast</td>
+<td>[<a href="https://www.iana.org/go/rfc4291">RFC 4291</a>]</td>
+<td>2006-02</td>
+<td>N/A</td>
+<td>True</td>
+<td>True</td>
+<td>False</td>
+<td>False</td>
+<td>True</td>
+</tr>
+</tbody>
+</table>
+<h1>Footnotes</h1>
+<table class="fn">
+<tr>
+<td class="fn" valign="top">
+<a id="note1" name="note1">[1]</a>
+</td>
+<td class="fn">
+<pre>Unless allowed by a more specific allocation.</pre>
+</td>
+</tr>
+<tr>
+<td class="fn" valign="top">
+<a id="note2" name="note2">[2]</a>
+</td>
+<td class="fn">
+<pre>See Section 5 of [<a href="https://www.iana.org/go/rfc4380">RFC 4380</a>] for details.</pre>
+</td>
+</tr>
+<tr>
+<td class="fn" valign="top">
+<a id="note3" name="note3">[3]</a>
+</td>
+<td class="fn">
+<pre>See [<a href="https://www.iana.org/go/rfc3056">RFC 3056</a>] for details.</pre>
+</td>
+</tr>
+<tr>
+<td class="fn" valign="top">
+<a id="note4" name="note4">[4]</a>
+</td>
+<td class="fn">
+<pre>See [<a href="https://www.iana.org/go/rfc4193">RFC 4193</a>] for more details on the routability of Unique-Local addresses.  The Unique-Local prefix is
+drawn from the IPv6 Global Unicast Address range, but is specified as not globally routed.</pre>
+</td>
+</tr>
+</table>
+</article>
+<footer>
+<div id="footer">
+<table class="navigation">
+<tr>
+<td class="section"><a href="/domains">Domain Names</a></td>
+<td class="subsection">
+<ul>
+<li><a href="/domains/root">Root Zone Registry</a></li>
+<li><a href="/domains/int">.INT Registry</a></li>
+<li><a href="/domains/arpa">.ARPA Registry</a></li>
+<li><a href="/domains/idn-tables">IDN Repository</a></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td class="section"><a href="/numbers">Number Resources</a></td>
+<td class="subsection">
+<ul>
+<li><a href="/numbers/registries">Number Registries</a></li>
+<li><a href="/numbers/allocations/">RIR Allocation Data</a></li>
+<li><a href="/help/abuse">Abuse Information</a></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td class="section"><a href="/protocols">Protocols</a></td>
+<td class="subsection">
+<ul>
+<li><a href="/protocols">Protocol Registries</a></li>
+<li><a href="/time-zones">Time Zone Database</a></li>
+</ul>
+</td>
+</tr>
+<tr>
+<td class="section"><a href="/about">About Us</a></td>
+<td class="subsection">
+<ul>
+<li><a href="/news">News</a></li>
+<li><a href="/performance">Performance</a></li>
+<li><a href="/about/organization">The Organization</a></li>
+<li><a href="/archive">Archive</a></li>
+<li><a href="/contact">Contact Us</a></li>
+</ul>
+</td>
+</tr>
+</table>
+<div id="custodian">
+<p>The IANA functions coordinate the Internet’s globally unique identifiers, and
+                are provided by <a href="https://pti.icann.org">Public Technical Identifiers</a>, an affiliate of
+                <a href="https://www.icann.org/">ICANN</a>.</p>
+</div>
+<div id="legalnotice">
+<ul>
+<li><a href="https://www.icann.org/privacy/policy">Privacy Policy</a></li>
+<li><a href="https://www.icann.org/privacy/tos">Terms of Service</a></li>
+<li><a href="/help/licensing-terms">Licensing Terms</a></li>
+</ul>
+</div>
+</div>
+</footer>
+</body>
+</html>

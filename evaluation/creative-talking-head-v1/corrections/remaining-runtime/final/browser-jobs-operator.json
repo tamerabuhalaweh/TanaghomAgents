@@ -1,0 +1,14 @@
+{
+  "fixture_only": true,
+  "jobs": [
+    {
+      "job_id": "ff0f3426-3d1d-457e-b6ad-5558dbbdf579",
+      "operation": "talking_head",
+      "language": "ar"
+    },
+    {
+      "job_id": "2ca1d86d-ca93-4406-bfc2-ac4ecbfed1ea",
+      "operation": "lip_sync"
+    }
+  ]
+}

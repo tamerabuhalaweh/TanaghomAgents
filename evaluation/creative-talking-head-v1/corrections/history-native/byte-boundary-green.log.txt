@@ -1,0 +1,76 @@
+TAP version 13
+# Subtest: live runner refuses source-only even with feature flags ON; before DB/key/network
+ok 1 - live runner refuses source-only even with feature flags ON; before DB/key/network
+  ---
+  duration_ms: 126.2438
+  type: 'test'
+  ...
+# Subtest: bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+ok 2 - bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+  ---
+  duration_ms: 1.5689
+  type: 'test'
+  ...
+# Subtest: binary signatures reject high-bit aliases rather than lossy ASCII matches
+ok 3 - binary signatures reject high-bit aliases rather than lossy ASCII matches
+  ---
+  duration_ms: 8.0475
+  type: 'test'
+  ...
+# Subtest: controlled encoded media rejects container, codec, dimensions, duration and bounds
+ok 4 - controlled encoded media rejects container, codec, dimensions, duration and bounds
+  ---
+  duration_ms: 3.233
+  type: 'test'
+  ...
+# Subtest: actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+ok 5 - actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+  ---
+  duration_ms: 2.0318
+  type: 'test'
+  ...
+# Subtest: provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+ok 6 - provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+  ---
+  duration_ms: 36.1477
+  type: 'test'
+  ...
+# Subtest: MP4 validator rejects trailing truncated box bytes
+ok 7 - MP4 validator rejects trailing truncated box bytes
+  ---
+  duration_ms: 1.5932
+  type: 'test'
+  ...
+# Subtest: presenter output must include a supported audio track
+ok 8 - presenter output must include a supported audio track
+  ---
+  duration_ms: 2.1744
+  type: 'test'
+  ...
+# Subtest: lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+ok 9 - lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+  ---
+  duration_ms: 7.3795
+  type: 'test'
+  ...
+# Subtest: HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+ok 10 - HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+  ---
+  duration_ms: 2.9855
+  type: 'test'
+  ...
+# Subtest: Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+ok 11 - Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+  ---
+  duration_ms: 2.494
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 11
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 299.9905

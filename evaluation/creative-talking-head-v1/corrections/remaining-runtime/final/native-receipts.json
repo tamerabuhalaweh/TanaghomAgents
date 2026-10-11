@@ -1,0 +1,384 @@
+{
+  "scope": "OFFLINE ONLY / LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING",
+  "private_storage_dir": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\p5-private-RRM2Ll",
+  "creates": 39,
+  "queries": 41,
+  "receipts": [
+    {
+      "case": "owner canonical avatar API registration readback",
+      "status": "PASS"
+    },
+    {
+      "case": "D1 restricted API binding insert and status update catalog readback",
+      "status": "PASS"
+    },
+    {
+      "case": "SQL rejects forged script provenance",
+      "status": "PASS"
+    },
+    {
+      "case": "authenticated Arabic stock submission",
+      "status": "PASS",
+      "job_id": "d22f79b8-99fb-4add-933e-349210e69ec1"
+    },
+    {
+      "case": "UNKNOWN actual cost blocks download; durable remote success retained",
+      "status": "PASS"
+    },
+    {
+      "case": "authenticated private validated MP4 preview and byte range",
+      "status": "PASS"
+    },
+    {
+      "case": "HeyGen-shaped durable job/claim/anchor/validated MP4/private version/provenance/review",
+      "status": "PASS",
+      "version_id": "d4240adf-c4ca-4bb8-ac8d-f4a8a95105e5"
+    },
+    {
+      "case": "D2 Sync canonical SQL tuple and identity persisted; mismatches zero ledger append",
+      "status": "PASS"
+    },
+    {
+      "case": "Sync independent video/audio MP4 draft approved",
+      "status": "PASS",
+      "version_id": "960f4080-af3d-4bba-9bde-86c9f81480c3"
+    },
+    {
+      "case": "Sync independent video/audio MP4 draft rejected",
+      "status": "PASS",
+      "version_id": "c7d08eda-cd40-4b79-9618-4e6c5c047d29"
+    },
+    {
+      "case": "HeyGen draft rejected",
+      "status": "PASS"
+    },
+    {
+      "case": "EN stock",
+      "status": "PASS",
+      "version_id": "d16a4657-5019-40fc-a805-a8ac382f0e6f",
+      "quality": "LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING"
+    },
+    {
+      "case": "AR stock",
+      "status": "PASS",
+      "version_id": "5514a39a-a4ca-45d6-80a9-416e81543253",
+      "quality": "LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING"
+    },
+    {
+      "case": "mixed stock",
+      "status": "PASS",
+      "version_id": "4414c9dc-ca5a-4814-b5bb-bac2590cfbbf",
+      "quality": "LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING"
+    },
+    {
+      "case": "Arabic punctuation",
+      "status": "PASS",
+      "version_id": "ec5667e5-78df-4058-b72f-7b63d36ee9ee",
+      "quality": "LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING"
+    },
+    {
+      "case": "Arabic numerals",
+      "status": "PASS",
+      "version_id": "765da10a-4a36-446a-8d34-5454061a62d5",
+      "quality": "LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING"
+    },
+    {
+      "case": "Arabic portrait Reel",
+      "status": "PASS",
+      "version_id": "6dda9ac6-192a-48c9-af17-6d0d42388613",
+      "quality": "LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING"
+    },
+    {
+      "case": "lip sync EN controlled audio/video",
+      "status": "PASS",
+      "version_id": "90ef5533-3e42-4154-a497-4df68b7cefeb",
+      "quality": "SINE FIXTURE NOT SPEECH QUALITY"
+    },
+    {
+      "case": "lip sync AR controlled audio/video",
+      "status": "PASS",
+      "version_id": "32987a33-2ff5-4c9d-92ac-08db35332906",
+      "quality": "SINE FIXTURE NOT SPEECH QUALITY"
+    },
+    {
+      "case": "lip sync mixed controlled audio/video",
+      "status": "PASS",
+      "version_id": "aba26aad-2eb0-4b82-a5f7-456a2994608e",
+      "quality": "SINE FIXTURE NOT SPEECH QUALITY"
+    },
+    {
+      "case": "five decoys video/motion/segment/image/compose untouched",
+      "status": "PASS"
+    },
+    {
+      "case": "18 actual SQL worker SELECT/UPDATE/DELETE permission denials",
+      "status": "PASS"
+    },
+    {
+      "case": "Sync image/text/mismatched media denied",
+      "status": "PASS"
+    },
+    {
+      "case": "approved MP3 actual byte parser and Sync multipart E2E",
+      "status": "PASS"
+    },
+    {
+      "case": "stored source mime rejects before provider create",
+      "status": "PASS"
+    },
+    {
+      "case": "stored source checksum rejects before provider create",
+      "status": "PASS"
+    },
+    {
+      "case": "stored source size rejects before provider create",
+      "status": "PASS"
+    },
+    {
+      "case": "approved source declared dimensions mismatch rejects before provider create",
+      "status": "PASS"
+    },
+    {
+      "case": "binding inactive after queue zero provider calls",
+      "status": "PASS"
+    },
+    {
+      "case": "binding blocked after queue zero provider calls",
+      "status": "PASS"
+    },
+    {
+      "case": "binding revoked after queue zero provider calls",
+      "status": "PASS"
+    },
+    {
+      "case": "custom unverified consent API denied",
+      "status": "PASS"
+    },
+    {
+      "case": "wrong consent scope API denied",
+      "status": "PASS"
+    },
+    {
+      "case": "valid consent queued then revoked zero provider requests",
+      "status": "PASS"
+    },
+    {
+      "case": "poll timeout indeterminate then same row/task resume exactly one create",
+      "status": "PASS"
+    },
+    {
+      "case": "moderated truthful provider ledger",
+      "status": "PASS"
+    },
+    {
+      "case": "cancelled truthful provider ledger",
+      "status": "PASS"
+    },
+    {
+      "case": "evil truthful provider ledger",
+      "status": "PASS"
+    },
+    {
+      "case": "malformed truthful provider ledger",
+      "status": "PASS"
+    },
+    {
+      "case": "poll-500 same task retry",
+      "status": "PASS"
+    },
+    {
+      "case": "remote success and fixture-settled actual cost BEFORE download; retry same succeeded row/task one create",
+      "status": "PASS"
+    },
+    {
+      "case": "actual process SIGKILL after task attachment; new worker controlled fixture requeue same row/task exactly one create",
+      "status": "PASS",
+      "crash_exit": [
+        null,
+        "SIGKILL"
+      ],
+      "call_id": "95826ac5-0621-4182-88d5-cf14eca9a88e",
+      "task_id": "fixture-23",
+      "actual_cost_usd": 0.125
+    },
+    {
+      "case": "create 5xx indeterminate no blind retry",
+      "status": "PASS"
+    },
+    {
+      "case": "local cancellation remains intent remote success retained",
+      "status": "PASS"
+    },
+    {
+      "case": "Sync local cancellation remains intent; remote success retained; no invented endpoint",
+      "status": "PASS"
+    },
+    {
+      "case": "Sync provider-reported CANCELLED truth settles same ledger",
+      "status": "PASS"
+    },
+    {
+      "case": "cross tenant avatar API denied",
+      "status": "PASS"
+    },
+    {
+      "case": "foreign binding alone API and forged queued worker denied no identity leak or create",
+      "status": "PASS"
+    },
+    {
+      "case": "cross tenant video/audio API denied",
+      "status": "PASS"
+    },
+    {
+      "case": "cross tenant consent API denied",
+      "status": "PASS"
+    },
+    {
+      "case": "cross tenant consent composite FK denied",
+      "status": "PASS"
+    },
+    {
+      "case": "cross tenant forged queued identity worker denied zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "avatar inactive API and post-queue worker zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "avatar blocked API and post-queue worker zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "avatar revoked API and post-queue worker zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "24 actual worker SQL SELECT INSERT UPDATE DELETE permission denials",
+      "status": "PASS"
+    },
+    {
+      "case": "latest scoped revocation blocks new and queued work despite older verified record; exact consent snapshot retained",
+      "status": "PASS"
+    },
+    {
+      "case": "expired verified consent API denied",
+      "status": "PASS"
+    },
+    {
+      "case": "expired consent worker denied zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "wrong usage scope consent worker denied zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "429 capacity attempt persisted no blind replacement",
+      "status": "PASS"
+    },
+    {
+      "case": "parallel real SQL SKIP LOCKED exactly one claim",
+      "status": "PASS"
+    },
+    {
+      "case": "real SQL full-reader permission error no provider create",
+      "status": "PASS"
+    },
+    {
+      "case": "actual foreign source_video_version_id API and worker denied zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "actual foreign source_audio_version_id API and worker denied zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "foreign consent evidence tenant denied",
+      "status": "PASS"
+    },
+    {
+      "case": "foreign consent ID API and forged queued snapshot worker denied zero create",
+      "status": "PASS"
+    },
+    {
+      "case": "tenant catalog leaks none of five foreign identity and media references",
+      "status": "PASS"
+    },
+    {
+      "case": "viewer both generation lanes and governance RBAC denied",
+      "status": "PASS"
+    },
+    {
+      "case": "reviewer both generation lanes and governance RBAC denied",
+      "status": "PASS"
+    },
+    {
+      "case": "operator governance RBAC denied",
+      "status": "PASS"
+    },
+    {
+      "case": "full Arabic script absent from audit payloads",
+      "status": "PASS"
+    },
+    {
+      "case": "worker feature OFF denied before any provider call",
+      "status": "PASS"
+    },
+    {
+      "case": "current tenant owner can block record after historical creator deactivated; history retained",
+      "status": "PASS"
+    },
+    {
+      "case": "three API feature flags OFF deny both lanes and custom enrollment with zero requests",
+      "status": "PASS"
+    },
+    {
+      "case": "three flags OFF browser both-lane controls disabled",
+      "status": "PASS"
+    },
+    {
+      "case": "actual Arabic/English/mixed/punctuation/numerals/9:16 RTL desktop/mobile submissions",
+      "status": "PASS",
+      "count": 7
+    },
+    {
+      "case": "operator Arabic stock and approved video/audio browser submissions",
+      "status": "PASS"
+    },
+    {
+      "case": "browser private decoded MP4/provenance/review talking_head",
+      "status": "PASS",
+      "jobId": "fe105487-80d6-4ce1-8e03-54c611818b64",
+      "versionId": "a617da3f-29cb-4a8e-a54a-de45a7661f00",
+      "assetId": "8d9843fb-7e58-4f6b-b6ef-c6cab7e18759",
+      "operation": "talking_head",
+      "decision": "approved",
+      "width": 360,
+      "height": 640,
+      "duration": 5,
+      "decodedFrames": 7
+    },
+    {
+      "case": "browser private decoded MP4/provenance/review lip_sync",
+      "status": "PASS",
+      "jobId": "8d13d69a-9a94-4689-858e-247d9bf3af3a",
+      "versionId": "8fed634c-84d4-487e-ba70-3952d83a0a70",
+      "assetId": "a41b9b96-dadd-451c-b91f-ee6c8827841d",
+      "operation": "lip_sync",
+      "decision": "rejected",
+      "width": 360,
+      "height": 640,
+      "duration": 5,
+      "decodedFrames": 7
+    },
+    {
+      "case": "viewer browser read-only private decoded preview; no generation/review/publish",
+      "status": "PASS"
+    },
+    {
+      "case": "reviewer browser generation read-only",
+      "status": "PASS"
+    }
+  ]
+}

@@ -1,0 +1,468 @@
+{
+  "scope": "Preserved native output; sanitization does not change assertions/verdicts",
+  "logs": [
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/acceptance.log",
+      "native_sha256": "b6f616342bbf1b8c7c9070bc88e9aea720c4369cd3b721a2709dd79dd5405822",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/acceptance.log.txt",
+      "staged_sha256": "b6f616342bbf1b8c7c9070bc88e9aea720c4369cd3b721a2709dd79dd5405822",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/audit-moderate.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/audit-moderate.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/build-current.log",
+      "native_sha256": "eb8145418e25ebc0e21832fe7dd305881118bfcfa5323195f1d8979e4ad4be68",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/build-current.log.txt",
+      "staged_sha256": "7c227f04ed074343cbcb8d4d53f0f8e570e449006d487019b9fca539a80759ad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/build.log",
+      "native_sha256": "0bda6301bc8afe776e33df2988b61f434227917ce8d345c6f511a26c492cb51d",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/build.log.txt",
+      "staged_sha256": "75a0425ecd96cb8dab4d307f57d77c531a0c2f6b169ad79fd7351411de09c3af",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/check.log",
+      "native_sha256": "4a35dd26eeaf47c8e51e58ec2f3f8f73fb1d7c24200a995680c1c26cf1eb4ab3",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/check.log.txt",
+      "staged_sha256": "4a35dd26eeaf47c8e51e58ec2f3f8f73fb1d7c24200a995680c1c26cf1eb4ab3",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/audit-moderate.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/native/audit-moderate.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/build.log",
+      "native_sha256": "abfed038a7b8abb06002bd9b841e9b81d8ff5a7d7e3a1e59137ea82882d52e71",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/native/build.log.txt",
+      "staged_sha256": "1726721436345ed1b3c83993c2df997d959392df717c43c5e316a1d4a4e834a7",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/check.log",
+      "native_sha256": "09f5f915fda67dee611cb76390d52d660b004f581dcff1d26ad5b2c3dfe9a208",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/native/check.log.txt",
+      "staged_sha256": "09f5f915fda67dee611cb76390d52d660b004f581dcff1d26ad5b2c3dfe9a208",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/targeted.log",
+      "native_sha256": "17930228eb6b7c13d77dc178059e21d2b26b4674373f85f4b9f33245071bc82e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/native/targeted.log.txt",
+      "staged_sha256": "17930228eb6b7c13d77dc178059e21d2b26b4674373f85f4b9f33245071bc82e",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/unit.log",
+      "native_sha256": "de36fc7831efa895e480a902bc148f2e2f0766863266a67573a65d09b99af0cf",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/current/native/unit.log.txt",
+      "staged_sha256": "de36fc7831efa895e480a902bc148f2e2f0766863266a67573a65d09b99af0cf",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/acceptance.log",
+      "native_sha256": "02d99d8f78ee1b7cdf14947b238ba7e4452498d601d887949fc3fe27db79ae57",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/acceptance.log.txt",
+      "staged_sha256": "02d99d8f78ee1b7cdf14947b238ba7e4452498d601d887949fc3fe27db79ae57",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/audit-moderate.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/audit-moderate.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/build.log",
+      "native_sha256": "da0602ce75fb3264e3dd31ed228705e0b4caa0fe098255b55321f95eab348ae0",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/build.log.txt",
+      "staged_sha256": "aedeef6da7554ce51b441d9664b574c3cad83e0d18818fe5629dc6d2c87ebe6c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/check-final.log",
+      "native_sha256": "923c8773d74afe5e0ec8315958c575fee45da68231778d7ce5e3e182c8a1b27c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/check-final.log.txt",
+      "staged_sha256": "923c8773d74afe5e0ec8315958c575fee45da68231778d7ce5e3e182c8a1b27c",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/check.log",
+      "native_sha256": "051ecb6df918140640ea1b1850de5b811f01236681856116030e874a656300a2",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/check.log.txt",
+      "staged_sha256": "051ecb6df918140640ea1b1850de5b811f01236681856116030e874a656300a2",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/contracts.log",
+      "native_sha256": "836ebcc1522781200244460c87a7e37cbab2ecff01e28ded2d1d58856d0fc676",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/contracts.log.txt",
+      "staged_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/database.log",
+      "native_sha256": "c4891bdec338b5faeb8b71f564d669d77dd5888542411616b409ed4680226d70",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/database.log.txt",
+      "staged_sha256": "37e31e3ef533d4553c176887f8c63ddb30da8712d950abee63ee25d99be49151",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/design.log",
+      "native_sha256": "d7c3066c1d5462ff0369f276d463eb85447b8ee7cdde07470cd7b278d34b6f5e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/design.log.txt",
+      "staged_sha256": "e99233882fbffd0993d6f30de9576890af5d929ea21bd60c29cafbf6ecd9252d",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/foundation.log",
+      "native_sha256": "e9bd148b712e4cb6fff63e3f9607820cc8889d6554fa48314eb5d88d845b42ae",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/foundation.log.txt",
+      "staged_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/image.log",
+      "native_sha256": "66ec40401a8a08795cd0a6c8795955733fa3718c98c361e85cccbea27bda3f14",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/image.log.txt",
+      "staged_sha256": "8ba7bdc7f0bf3abaa6a3d1e1c792ecdfe5c6b8002b27a2df12ced43cb1b60f72",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/motion.log",
+      "native_sha256": "aa9f5018bc05b0d6140b9db89624b131f7a50362a5881fb13c6db7455200f6f6",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/motion.log.txt",
+      "staged_sha256": "f39ec91bd0b72759cf342677b2bfb736fd1ab913726d4ddfc9178fcebaffabce",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/segmentation.log",
+      "native_sha256": "b19478a95fca9cc08e1da24e6d8e2c7bd8f1f58c723a65f51d2f9e03068928e8",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/segmentation.log.txt",
+      "staged_sha256": "5cdf743f1c667e8fad0f25d8bb13f49e5065db77985b375804084a517984022c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression/video.log",
+      "native_sha256": "e657b7f384c8bd27cae82dc480cb45e561b71fa612a60d789ae5279476327fdb",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/regression/video.log.txt",
+      "staged_sha256": "e1d05ed9715e12ef5a191f3aba132ec0d082ebeba3b3cecf51b86cae5b7c342a",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression-a.log",
+      "native_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/regression-a.log.txt",
+      "staged_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression-b.log",
+      "native_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/regression-b.log.txt",
+      "staged_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/regression-c.log",
+      "native_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/regression-c.log.txt",
+      "staged_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/runs/78928303-f876-416f-803a-ddd3f656c485/creative-presenter-review-sql.mjs.log",
+      "native_sha256": "6a994818f4c233b8515aed9a571927832bce421c6406a09814f282011a942a6e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/runs/78928303-f876-416f-803a-ddd3f656c485/creative-presenter-review-sql.mjs.log.txt",
+      "staged_sha256": "84abd7e8e911c479e694aec075218ec6c7adaeca0e97615044891e79c7ff546e",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/runs/78928303-f876-416f-803a-ddd3f656c485/creative-talking-head-integration.mjs.log",
+      "native_sha256": "ca6dc102beea164788f502e42c42a6e8d3f7352593330f4c82c0ee3205420afe",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/runs/78928303-f876-416f-803a-ddd3f656c485/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/runs/78928303-f876-416f-803a-ddd3f656c485/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/final/runs/78928303-f876-416f-803a-ddd3f656c485/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/targeted.log",
+      "native_sha256": "c411bbe1b1b3055ab818d4fb4918512bf765865310e8becc3d9a220c0aa75f84",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/targeted.log.txt",
+      "staged_sha256": "c411bbe1b1b3055ab818d4fb4918512bf765865310e8becc3d9a220c0aa75f84",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/typecheck-build-generated.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/typecheck-build-generated.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/typecheck-restored.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/typecheck-restored.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/unit.log",
+      "native_sha256": "4dbe8d607142a79a56591a35aa200716be564ef6ca76159876db5eb5fd98d6ce",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/final/native/unit.log.txt",
+      "staged_sha256": "4dbe8d607142a79a56591a35aa200716be564ef6ca76159876db5eb5fd98d6ce",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/contracts.log",
+      "native_sha256": "836ebcc1522781200244460c87a7e37cbab2ecff01e28ded2d1d58856d0fc676",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/contracts.log.txt",
+      "staged_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/database.log",
+      "native_sha256": "56de974b86f03b2edff7f7c5ce072669d395cb8614f1707d68294c126fde8e33",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/database.log.txt",
+      "staged_sha256": "ccd597cef8d0cefce3743876c0785d60147cef6a7b6351fad786e18fb7138dda",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/design.log",
+      "native_sha256": "1d8ce376a686bafef1f75ec949b75b95622ae5d833f024ce4fc58f5e41ce4fe9",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/design.log.txt",
+      "staged_sha256": "f392aa321f97b9afd1ff2cfaa29efd1bb6ee7eb15ca03c71be1f2ede355e4407",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/foundation.log",
+      "native_sha256": "e9bd148b712e4cb6fff63e3f9607820cc8889d6554fa48314eb5d88d845b42ae",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/foundation.log.txt",
+      "staged_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/image.log",
+      "native_sha256": "4d1b6d7721c8c937342ec612ba0b2a97a086d991f2e81a7427de5a0eb11001f9",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/image.log.txt",
+      "staged_sha256": "77ef97597fea0e3d0edb5d07ebcda5c63763cabf682c94b95a4863c7e698fc9d",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/motion.log",
+      "native_sha256": "7b6ce05ba4e60bc0a2dde16e9a61437a9eaa17eb18f015bb9137f173dee743ec",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/motion.log.txt",
+      "staged_sha256": "4e4b956d323b1e63b21b5741e7f44f3c474aeb4ed52711202e34b9a3634e562d",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/segmentation.log",
+      "native_sha256": "03e382d765231e700cb8e51a4baf04d8f4e2baae531d8f558c962fed579b8025",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/segmentation.log.txt",
+      "staged_sha256": "e47b02f26936e7e317c85a76b76d75d065a64163d2abd393b5dda66fad23ea23",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression/video.log",
+      "native_sha256": "3966f26c7b0ec29d8096bcfdab7288592720c3c3c0e79c62cc897fe76f2c29ef",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression/video.log.txt",
+      "staged_sha256": "92434a2dde09c33da871519a01a7dfdf4ba4f7e950b4cd2a2e9b4e48241580c9",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression-a.log",
+      "native_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression-a.log.txt",
+      "staged_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression-b.log",
+      "native_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression-b.log.txt",
+      "staged_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/regression-c.log",
+      "native_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/regression-c.log.txt",
+      "staged_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/runs/7cabf49c-7843-4344-b984-318251658ee3/creative-presenter-review-sql.mjs.log",
+      "native_sha256": "6a994818f4c233b8515aed9a571927832bce421c6406a09814f282011a942a6e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/runs/7cabf49c-7843-4344-b984-318251658ee3/creative-presenter-review-sql.mjs.log.txt",
+      "staged_sha256": "84abd7e8e911c479e694aec075218ec6c7adaeca0e97615044891e79c7ff546e",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/runs/7cabf49c-7843-4344-b984-318251658ee3/creative-talking-head-integration.mjs.log",
+      "native_sha256": "ca6dc102beea164788f502e42c42a6e8d3f7352593330f4c82c0ee3205420afe",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/runs/7cabf49c-7843-4344-b984-318251658ee3/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/runs/7cabf49c-7843-4344-b984-318251658ee3/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/runs/7cabf49c-7843-4344-b984-318251658ee3/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/targeted-current.log",
+      "native_sha256": "4816a614e03cd8e7593160d8acf2f7744a9c51ff4b49a37e2d90335994ee9e8c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/targeted-current.log.txt",
+      "staged_sha256": "4816a614e03cd8e7593160d8acf2f7744a9c51ff4b49a37e2d90335994ee9e8c",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/targeted.log",
+      "native_sha256": "15fceae23ec485daf8c8915e571e36ec69fd97601a21d655f3444fe84639e189",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/targeted.log.txt",
+      "staged_sha256": "15fceae23ec485daf8c8915e571e36ec69fd97601a21d655f3444fe84639e189",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/typecheck.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/typecheck.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/unit-reason-compatibility-red.log",
+      "native_sha256": "aa3fef8af977c0b0f8cf2ec1c601d5ec56e34b362942970e756357c0f61af877",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/unit-reason-compatibility-red.log.txt",
+      "staged_sha256": "b2d3eb2b273f5a812018bfd5c6568f0ee708cbafe64f102bdb15afb5e1c79b67",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/unit.log",
+      "native_sha256": "9b2a656be0150070b9163146342ad794e1c86c979c857905d4ba5a74015dbffc",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/unit.log.txt",
+      "staged_sha256": "9b2a656be0150070b9163146342ad794e1c86c979c857905d4ba5a74015dbffc",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\additional-track-red.log",
+      "native_sha256": "fb57bf19509f546e3db9630502a9aae9850b84f954232ea7d7668d234885a0a0",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/additional-track-red.log.txt",
+      "staged_sha256": "fb57bf19509f546e3db9630502a9aae9850b84f954232ea7d7668d234885a0a0",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\boundary-green.log",
+      "native_sha256": "c4812f9fc0b38e2545ceb3c4e62ee4839892463614494920bbf85f36e3962ac3",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/boundary-green.log.txt",
+      "staged_sha256": "c4812f9fc0b38e2545ceb3c4e62ee4839892463614494920bbf85f36e3962ac3",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\boundary-red-corrected-harness.log",
+      "native_sha256": "6f098487430d5462fd038d90c4339aa47cba402e027ec165e7424b4a121af04c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/boundary-red-corrected-harness.log.txt",
+      "staged_sha256": "e028b9cf8e87cf5bf0fb68ce6c2af53508a6953b13b8e1c5c0053bc4368e7d80",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\boundary-red.log",
+      "native_sha256": "43038756fc58643d134dda1116dcd20e23ec5b91efbf54f6e89aebd32af386ea",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/boundary-red.log.txt",
+      "staged_sha256": "f6ba74f67db80388f82e962de2a0c7e9eab8bd7bed04ae23191bac0e0f556f89",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\final-owned-cleanup-inspect.log",
+      "native_sha256": "91f0fb77c5dcfc6d0a13c41a267a27f9d7099fdc1343d542449351a59287cfae",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/final-owned-cleanup-inspect.log.txt",
+      "staged_sha256": "91f0fb77c5dcfc6d0a13c41a267a27f9d7099fdc1343d542449351a59287cfae",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\oracles-current-green.log",
+      "native_sha256": "e98fc7701eec44bef793d03d8a5da4949f04736b143d591755c2313e20f60a78",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/oracles-current-green.log.txt",
+      "staged_sha256": "e98fc7701eec44bef793d03d8a5da4949f04736b143d591755c2313e20f60a78",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\oracles-final-green.log",
+      "native_sha256": "d2c1ca3752785cc5b39e700347b88894b2ffcf5e4123c8ac1c0a4832da611f85",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/oracles-final-green.log.txt",
+      "staged_sha256": "d2c1ca3752785cc5b39e700347b88894b2ffcf5e4123c8ac1c0a4832da611f85",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\oracles-green.log",
+      "native_sha256": "6be6c7c9068f54880f40c6280d78dcba7828c6eade3eae221f691f2f2208d7b6",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/oracles-green.log.txt",
+      "staged_sha256": "6be6c7c9068f54880f40c6280d78dcba7828c6eade3eae221f691f2f2208d7b6",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\oracles-red.log",
+      "native_sha256": "6b98889667aebf14d4f3e308c4910ab9da6342bc6f126a2e9b948ec90165b830",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/oracles-red.log.txt",
+      "staged_sha256": "42dceb4b09799651439d9a10441c9290d6fb62145ae357a35329910bbd155e8a",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\owned-resource-list-after.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/owned-resource-list-after.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\unallocated-red.log",
+      "native_sha256": "ee9b207b812598c71845dc8c93b0d4d94d38fec8544d534f79b022d7788fd408",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/native/boundary-probes/unallocated-red.log.txt",
+      "staged_sha256": "933ae4f57027997591441333956f69ec1ebc0c6918df6d9d480b3fb0c2753108",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.log",
+      "native_sha256": "3568ff5de4b15c1ebfdc9f772524f617f28ae91e98b75685842b566656dddeed",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/historical-review/security-probes.log.txt",
+      "staged_sha256": "9222b1594cc8640735d92d9fb85001386f29c60096c16481a7f0d645cda80a7b",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\media-probes.log",
+      "native_sha256": "e0b26f538213ea6f1dbf6eef1aa89e7338c1f62be406e0279933279700cd60ba",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/historical-review/media-probes.log.txt",
+      "staged_sha256": "8fb3885cd1658e05f0f18fdab9510c2a9251806e3c458b58405019d1448bcfe9",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-parent-cycle1-negative.log",
+      "native_sha256": "dde3c7ad6c1bd888aa0c75d4ed3bd48d94d9a7355d65ae6c5eccc08f4b809a10",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/historical-review/p5-parent-cycle1-negative.log.txt",
+      "staged_sha256": "c3c67af151b32f738cadc7019a9a16b0533729b442ab6dc70e410dbf3103150f",
+      "sanitized": true
+    }
+  ],
+  "previous_native_logs_retained_in": "evaluation/creative-talking-head-v1/corrections/review-ready/native-log-digests.json"
+}

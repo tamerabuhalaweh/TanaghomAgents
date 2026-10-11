@@ -1,0 +1,12 @@
+{
+  "scope": "OFFLINE DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "suite": "segmentation",
+      "exit": 0,
+      "target": "0045_creative_segmentation",
+      "passes": 14,
+      "error": null
+    }
+  ]
+}

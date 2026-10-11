@@ -1,0 +1,1 @@
+{"audio":null,"brand":"isom","codec":"mp4v","width":640,"height":640,"durationSec":5,"fps":null,"frames":null,"bytes":505}

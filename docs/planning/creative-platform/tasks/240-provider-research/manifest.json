@@ -1,0 +1,36 @@
+{
+  "snapshotDate": "2026-10-11",
+  "scope": "Accepted official-source research reports; not a new provider or legal certification",
+  "files": [
+    {
+      "file": "p5-heygen.md",
+      "sha256": "49afdd79bf406ef67ce10715b7dc432cce6eb7578d24d8478c70f74c99cb1e95",
+      "bytes": 32681,
+      "sanitization": "Reviewed for credential patterns; no redactions required; verbatim source report/ledger."
+    },
+    {
+      "file": "p5-sync.md",
+      "sha256": "bc4893e94930956f6623d5667b7aaf1d109a0b455300ff5624219200fa24690a",
+      "bytes": 34251,
+      "sanitization": "Reviewed for credential patterns; no redactions required; verbatim source report/ledger."
+    },
+    {
+      "file": "p5-tavus.md",
+      "sha256": "bf8fae85947640fffabcd4f14c0924b61897f3161dd855169b60fe709a4fc56f",
+      "bytes": 28107,
+      "sanitization": "Reviewed for credential patterns; no redactions required; verbatim source report/ledger."
+    },
+    {
+      "file": "p5-synthesia.md",
+      "sha256": "f7b450ad85842a0bc5a65754213cfa81203ca8c8cd6ada25ab9a6062f5745936",
+      "bytes": 29483,
+      "sanitization": "Reviewed for credential patterns; no redactions required; verbatim source report/ledger."
+    },
+    {
+      "file": "p5-synthesia-ledger.json",
+      "sha256": "6a9a3aa96905823169ea57bec574f54c6ea38ad5a040749d7014dda5feaacb95",
+      "bytes": 7530,
+      "sanitization": "Reviewed for credential patterns; no redactions required; verbatim source report/ledger."
+    }
+  ]
+}

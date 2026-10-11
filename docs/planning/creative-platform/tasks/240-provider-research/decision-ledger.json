@@ -1,0 +1,521 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://developers.heygen.com/avatar-iii",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 2,
+      "url": "https://developers.heygen.com/avatar-iv",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 3,
+      "url": "https://developers.heygen.com/avatar-v",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 4,
+      "url": "https://developers.heygen.com/reference/create-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 5,
+      "url": "https://developers.heygen.com/reference/get-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 6,
+      "url": "https://developers.heygen.com/docs/usage-limits",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 7,
+      "url": "https://developers.heygen.com/docs/avatar-consent",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 8,
+      "url": "https://developers.heygen.com/docs/webhooks",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 9,
+      "url": "https://developers.heygen.com/docs/webhook-events",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 10,
+      "url": "https://developers.heygen.com/audio-to-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 13,
+      "url": "https://developers.heygen.com/docs/avatar-from-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 14,
+      "url": "https://developers.heygen.com/transparent-background-videos",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 15,
+      "url": "https://developers.heygen.com/video-details",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 16,
+      "url": "https://developers.heygen.com/reference/delete-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 17,
+      "url": "https://developers.heygen.com/reference/stop-video-agent-session",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 19,
+      "url": "https://developers.heygen.com/docs/avatar-from-photo",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 20,
+      "url": "https://developers.heygen.com/docs/avatars",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 21,
+      "url": "https://developers.heygen.com/docs/avatar-looks",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 22,
+      "url": "https://developers.heygen.com/docs/error-codes",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 23,
+      "url": "https://developers.heygen.com/docs/burst",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 27,
+      "url": "https://www.heygen.com/terms",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 28,
+      "url": "https://www.heygen.com/privacy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 29,
+      "url": "https://www.heygen.com/data-processing-addendum",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 30,
+      "url": "https://www.heygen.com/api-pricing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 31,
+      "url": "https://help.heygen.com/en/articles/10060327-heygen-api-pricing-explained",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 33,
+      "url": "https://www.heygen.com/biometric-privacy-notice",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 35,
+      "url": "https://developers.heygen.com/models",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 36,
+      "url": "https://developers.heygen.com/generate-avatar-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 37,
+      "url": "https://developers.heygen.com/docs/pricing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 38,
+      "url": "https://www.heygen.com/moderation-policy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 39,
+      "url": "https://help.heygen.com/en/articles/11391932-voice-languages-we-support",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 40,
+      "url": "https://developers.heygen.com/docs/api-key",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 41,
+      "url": "https://developers.heygen.com/docs/upload-assets",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 42,
+      "url": "https://help.heygen.com/en/articles/9655503-video-priority-processing-times",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 47,
+      "url": "https://sync.so/pricing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 48,
+      "url": "https://sync.so/docs/product/billing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 49,
+      "url": "https://sync.so/docs/models/lipsync",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 50,
+      "url": "https://sync.so/docs/models/sync-3",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 51,
+      "url": "https://sync.so/docs/api-reference/api/generate-api/create",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 52,
+      "url": "https://sync.so/docs/api-reference/api/generate-api/get",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 53,
+      "url": "https://sync.so/docs/api-reference/api/generate-api/download",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 54,
+      "url": "https://sync.so/docs/api-reference/api/generate-api/delete",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 55,
+      "url": "https://sync.so/docs/api-reference/guides/idempotency",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 56,
+      "url": "https://sync.so/docs/api-reference/guides/webhooks",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 57,
+      "url": "https://sync.so/docs/api-reference/api/generate-api/estimate-cost",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 59,
+      "url": "https://sync.so/docs/compatibility-and-tips/media-formats-support",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 60,
+      "url": "https://sync.so/docs/developer-guides/asset-uploads",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 61,
+      "url": "https://sync.so/terms",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 62,
+      "url": "https://sync.so/privacy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 63,
+      "url": "https://sync.so/docs/product/billing/v3",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 64,
+      "url": "https://support.sync.so/articles/2267102106-how-do-i-get-a-refund-for-failed-or-poor-quality-video-generations",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 65,
+      "url": "https://support.sync.so/articles/3861799718-what-are-your-data-retention-policies-and-can-we-opt-out-of-data-collection",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 66,
+      "url": "https://sync.so/docs/developer-guides/sync-mode",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 67,
+      "url": "https://sync.so/docs/api-reference/api/generate-api/create-with-files",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 68,
+      "url": "https://sync.so/docs/developer-guides/error-handling",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 69,
+      "url": "https://sync.so/docs/api-reference/api/assets-api/delete",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 70,
+      "url": "https://support.sync.so/articles/2618163041-commercial-usage-rights-across-sync-so-subscription-plans",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 71,
+      "url": "https://support.sync.so/articles/4079312867-what-languages-does-sync-support-for-lip-syncing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 72,
+      "url": "https://sync.so/docs/api-reference/api/webhooks-payload-reference/webhooks/generation-status-update",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 73,
+      "url": "https://sync.so/docs/api-reference/llms.txt",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 74,
+      "url": "https://docs.tavus.io/api-reference/video-request/create-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 75,
+      "url": "https://docs.tavus.io/api-reference/video-request/get-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 78,
+      "url": "https://docs.tavus.io/sections/webhooks-and-callbacks",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 79,
+      "url": "https://docs.tavus.io/api-reference/faces/create-face",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 83,
+      "url": "https://docs.tavus.io/sections/conversational-video-interface/language-support",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 87,
+      "url": "https://docs.tavus.io/api-reference/faces/list-faces",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 91,
+      "url": "https://docs.tavus.io/sections/errors-and-status-details",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 92,
+      "url": "https://www.tavus.io/terms-of-service",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 93,
+      "url": "https://www.tavus.io/enterprise-terms-of-service",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 94,
+      "url": "https://www.tavus.io/acceptable-use-policy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 99,
+      "url": "https://docs.tavus.io/api-reference/voices/delete-voice",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 100,
+      "url": "https://docs.tavus.io/sections/video/overview",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 102,
+      "url": "https://docs.tavus.io/llms.txt",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 103,
+      "url": "https://docs.synthesia.io/reference/create-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 106,
+      "url": "https://docs.synthesia.io/reference/video-api-introduction",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 116,
+      "url": "https://docs.synthesia.io/docs/personal-avatars",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 121,
+      "url": "https://www.synthesia.io/legal/privacy-policy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 122,
+      "url": "https://www.synthesia.io/legal/acceptable-use-policy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 124,
+      "url": "https://help.synthesia.io/en/articles/6341928-synthesia-video-licensing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 127,
+      "url": "https://help.synthesia.io/en/articles/13846500-photo-avatars-content-moderation",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 132,
+      "url": "https://docs.synthesia.io/reference/upload-script-audio",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 138,
+      "url": "https://docs.synthesia.io/docs/synthesia-avatars",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 140,
+      "url": "https://help.synthesia.io/en/articles/15197011-which-avatar-type-is-right-for-me",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 143,
+      "url": "https://help.synthesia.io/en/articles/15453102-avatar-policy-foundation",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 144,
+      "url": "https://cdn.prod.website-files.com/65e89895c5a4b8d764c0d710/6a60d5cc5118f1e8bd486899_2026.07.22_Synthesia_DPA.docx.pdf",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 148,
+      "url": "https://www.synthesia.io/legal/security-practices",
+      "title": "",
+      "accessed": "2026-10-11"
+    }
+  ]
+}

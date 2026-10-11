@@ -8,7 +8,7 @@
     "contract_version": { "const": "creative.adapter-envelope.v1" },
     "adapter": { "const": "mock" },
     "kind": { "enum": ["request", "result"] },
-    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "voice", "music", "landing_page"] },
+    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "lip_sync", "voice", "music", "landing_page"] },
     "job_id": { "type": "string", "format": "uuid" },
     "params": { "type": "object" },
     "mime": { "enum": ["image/png", "image/jpeg", "image/webp", "video/mp4", "audio/wav", "audio/mpeg", "text/html"] },

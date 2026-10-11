@@ -1,0 +1,39 @@
+{
+  "fixture_only": true,
+  "jobs": [
+    {
+      "job_id": "5c5e6b03-39f1-4c44-94d3-abd847854a1e",
+      "operation": "talking_head",
+      "language": "ar"
+    },
+    {
+      "job_id": "50de6911-32d5-4e87-b2e5-7125c6a53a39",
+      "operation": "talking_head",
+      "language": "en"
+    },
+    {
+      "job_id": "9653c1a2-7773-4570-814b-1a0933ac31b7",
+      "operation": "talking_head",
+      "language": "ar-EN"
+    },
+    {
+      "job_id": "d56168bc-2555-4856-827a-f22046ee03b6",
+      "operation": "talking_head",
+      "language": "ar"
+    },
+    {
+      "job_id": "8fb0fd5c-19ab-46a0-8a26-522da6147343",
+      "operation": "talking_head",
+      "language": "ar"
+    },
+    {
+      "job_id": "68c2264c-c2db-432d-a5f6-5368442d483f",
+      "operation": "lip_sync"
+    },
+    {
+      "job_id": "4e436a52-8a56-4cb1-8bf8-ef77b065eded",
+      "operation": "talking_head",
+      "language": "ar"
+    }
+  ]
+}

@@ -1,0 +1,700 @@
+TAP version 13
+# Subtest: motion worker module stays EXECUTE-only: no direct table reads
+ok 1 - motion worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 9.5487
+  type: 'test'
+  ...
+# Subtest: motion contract validates through JSON schema
+ok 2 - motion contract validates through JSON schema
+  ---
+  duration_ms: 200.3561
+  type: 'test'
+  ...
+# Subtest: timeline plans totals and freezes frames deterministically with RTL entrances
+ok 3 - timeline plans totals and freezes frames deterministically with RTL entrances
+  ---
+  duration_ms: 2.8913
+  type: 'test'
+  ...
+# Subtest: malicious and oversized motion JSON is rejected
+ok 4 - malicious and oversized motion JSON is rejected
+  ---
+  duration_ms: 1.3457
+  type: 'test'
+  ...
+# Subtest: ffmpeg argv allowlist rejects codecs, dims, fps, and path injection
+ok 5 - ffmpeg argv allowlist rejects codecs, dims, fps, and path injection
+  ---
+  duration_ms: 1.1211
+  type: 'test'
+  ...
+# Subtest: pure-JS MP4 validator enforces container, codec, dims, and duration
+ok 6 - pure-JS MP4 validator enforces container, codec, dims, and duration
+  ---
+  duration_ms: 3.2118
+  type: 'test'
+  ...
+# Subtest: encode fails closed on timeout and spawn errors without shell
+ok 7 - encode fails closed on timeout and spawn errors without shell
+  ---
+  duration_ms: 25.1173
+  type: 'test'
+  ...
+# Subtest: streaming encoder cleans temp output on every exit path
+ok 8 - streaming encoder cleans temp output on every exit path
+  ---
+  duration_ms: 129.2585
+  type: 'test'
+  ...
+# Subtest: motion worker executes a job to one MP4 version and completes
+ok 9 - motion worker executes a job to one MP4 version and completes
+  ---
+  duration_ms: 74.3634
+  type: 'test'
+  ...
+# Subtest: 900-frame render never accumulates frame buffers
+ok 10 - 900-frame render never accumulates frame buffers
+  ---
+  duration_ms: 46.5537
+  type: 'test'
+  ...
+# Subtest: motion worker honors cancellation, timeouts, and duplicate guards
+ok 11 - motion worker honors cancellation, timeouts, and duplicate guards
+  ---
+  duration_ms: 11.283
+  type: 'test'
+  ...
+# Subtest: worker polls cancellation while encoder.finish() is pending
+ok 12 - worker polls cancellation while encoder.finish() is pending
+  ---
+  duration_ms: 143.5126
+  type: 'test'
+  ...
+# Subtest: motion claim helper uses the filtered claim
+ok 13 - motion claim helper uses the filtered claim
+  ---
+  duration_ms: 0.9217
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fc01::1
+ok 14 - RC1 non-public/invalid binary destination fc01::1
+  ---
+  duration_ms: 13.574
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+ok 15 - RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+  ---
+  duration_ms: 1.8901
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fdff:ffff::1
+ok 16 - RC1 non-public/invalid binary destination fdff:ffff::1
+  ---
+  duration_ms: 2.2153
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fe90::1
+ok 17 - RC1 non-public/invalid binary destination fe90::1
+  ---
+  duration_ms: 2.1224
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination febf:ffff::1
+ok 18 - RC1 non-public/invalid binary destination febf:ffff::1
+  ---
+  duration_ms: 3.2535
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fec1::1
+ok 19 - RC1 non-public/invalid binary destination fec1::1
+  ---
+  duration_ms: 1.0517
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination feff::1
+ok 20 - RC1 non-public/invalid binary destination feff::1
+  ---
+  duration_ms: 1.2011
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:7f00:1
+ok 21 - RC1 non-public/invalid binary destination ::ffff:7f00:1
+  ---
+  duration_ms: 0.9057
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+ok 22 - RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+  ---
+  duration_ms: 0.9791
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+ok 23 - RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+  ---
+  duration_ms: 0.7435
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+ok 24 - RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+  ---
+  duration_ms: 0.4264
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:c0a8:101
+ok 25 - RC1 non-public/invalid binary destination ::ffff:c0a8:101
+  ---
+  duration_ms: 0.2933
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+ok 26 - RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+  ---
+  duration_ms: 0.2815
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:2::1
+ok 27 - RC1 non-public/invalid binary destination 2001:2::1
+  ---
+  duration_ms: 0.3113
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+ok 28 - RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+  ---
+  duration_ms: 0.3598
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 100::1
+ok 29 - RC1 non-public/invalid binary destination 100::1
+  ---
+  duration_ms: 0.3364
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:db8::1
+ok 30 - RC1 non-public/invalid binary destination 2001:db8::1
+  ---
+  duration_ms: 0.3077
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 3fff::1
+ok 31 - RC1 non-public/invalid binary destination 3fff::1
+  ---
+  duration_ms: 0.3323
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2002:7f00:1::1
+ok 32 - RC1 non-public/invalid binary destination 2002:7f00:1::1
+  ---
+  duration_ms: 0.3185
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::127.0.0.1
+ok 33 - RC1 non-public/invalid binary destination ::127.0.0.1
+  ---
+  duration_ms: 0.3799
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+ok 34 - RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+  ---
+  duration_ms: 0.2753
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+ok 35 - RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+  ---
+  duration_ms: 1.0495
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b:1::1
+ok 36 - RC1 non-public/invalid binary destination 64:ff9b:1::1
+  ---
+  duration_ms: 0.8337
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ff02::1
+ok 37 - RC1 non-public/invalid binary destination ff02::1
+  ---
+  duration_ms: 0.7381
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::
+ok 38 - RC1 non-public/invalid binary destination ::
+  ---
+  duration_ms: 0.4543
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+ok 39 - RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+  ---
+  duration_ms: 0.2334
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2606:4700::1%1
+ok 40 - RC1 non-public/invalid binary destination 2606:4700::1%1
+  ---
+  duration_ms: 0.2091
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination bogus:address
+ok 41 - RC1 non-public/invalid binary destination bogus:address
+  ---
+  duration_ms: 0.1958
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+ok 42 - RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+  ---
+  duration_ms: 0.206
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 1::2::3
+ok 43 - RC1 non-public/invalid binary destination 1::2::3
+  ---
+  duration_ms: 0.2079
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 8.8.8.8
+ok 44 - RC1 public normalized positive pin 8.8.8.8
+  ---
+  duration_ms: 27.179
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2606:4700:4700::1111
+ok 45 - RC1 public normalized positive pin 2606:4700:4700::1111
+  ---
+  duration_ms: 0.9602
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+ok 46 - RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+  ---
+  duration_ms: 0.5954
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin ::ffff:808:808
+ok 47 - RC1 public normalized positive pin ::ffff:808:808
+  ---
+  duration_ms: 0.3605
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+ok 48 - RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+  ---
+  duration_ms: 0.4642
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 64:ff9b::808:808
+ok 49 - RC1 public normalized positive pin 64:ff9b::808:808
+  ---
+  duration_ms: 0.3758
+  type: 'test'
+  ...
+# Subtest: RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+ok 50 - RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+  ---
+  duration_ms: 18.2532
+  type: 'test'
+  ...
+# Subtest: RC2 no additional active video track may hide an unsupported description
+ok 51 - RC2 no additional active video track may hide an unsupported description
+  ---
+  duration_ms: 2.0028
+  type: 'test'
+  ...
+# Subtest: RC2 unmodified provider-encoded H264 AAC facts preserved
+ok 52 - RC2 unmodified provider-encoded H264 AAC facts preserved
+  ---
+  duration_ms: 1.1398
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description declared-missing
+ok 53 - RC2 rejects sample description declared-missing
+  ---
+  duration_ms: 0.4554
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description undeclared-extra
+ok 54 - RC2 rejects sample description undeclared-extra
+  ---
+  duration_ms: 1.0434
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description zero-count
+ok 55 - RC2 rejects sample description zero-count
+  ---
+  duration_ms: 0.5275
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description zero-index
+ok 56 - RC2 rejects sample description zero-index
+  ---
+  duration_ms: 0.3462
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description missing-index
+ok 57 - RC2 rejects sample description missing-index
+  ---
+  duration_ms: 1.748
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description truncated-entry
+ok 58 - RC2 rejects sample description truncated-entry
+  ---
+  duration_ms: 0.1872
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description oversized-entry
+ok 59 - RC2 rejects sample description oversized-entry
+  ---
+  duration_ms: 0.1211
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description undersized-entry
+ok 60 - RC2 rejects sample description undersized-entry
+  ---
+  duration_ms: 0.1046
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description trailing-entry-byte
+ok 61 - RC2 rejects sample description trailing-entry-byte
+  ---
+  duration_ms: 0.2107
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description unsupported-active
+ok 62 - RC2 rejects sample description unsupported-active
+  ---
+  duration_ms: 0.5626
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description allowed-but-mismatched-active
+ok 63 - RC2 rejects sample description allowed-but-mismatched-active
+  ---
+  duration_ms: 0.4877
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description mismatched-visual
+ok 64 - RC2 rejects sample description mismatched-visual
+  ---
+  duration_ms: 0.4795
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-declared-missing
+ok 65 - RC2 rejects sample description audio-declared-missing
+  ---
+  duration_ms: 0.5281
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-missing-index
+ok 66 - RC2 rejects sample description audio-missing-index
+  ---
+  duration_ms: 0.5566
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-unsupported
+ok 67 - RC2 rejects sample description audio-unsupported
+  ---
+  duration_ms: 0.3796
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-mismatched
+ok 68 - RC2 rejects sample description audio-mismatched
+  ---
+  duration_ms: 0.3006
+  type: 'test'
+  ...
+# Subtest: RC2 real existing second consistent video description is valid
+ok 69 - RC2 real existing second consistent video description is valid
+  ---
+  duration_ms: 0.5064
+  type: 'test'
+  ...
+# Subtest: RC2 real existing second consistent audio description is valid
+ok 70 - RC2 real existing second consistent audio description is valid
+  ---
+  duration_ms: 0.385
+  type: 'test'
+  ...
+# Subtest: R1 actual runner hands approved configuration to downloader without network or loopback
+ok 71 - R1 actual runner hands approved configuration to downloader without network or loopback
+  ---
+  duration_ms: 61.5815
+  type: 'test'
+  ...
+# Subtest: R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+ok 72 - R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+  ---
+  duration_ms: 1.5834
+  type: 'test'
+  ...
+# Subtest: R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+ok 73 - R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+  ---
+  duration_ms: 4.3303
+  type: 'test'
+  ...
+# Subtest: R2 actual presenter fixture has media payload and sample extents
+ok 74 - R2 actual presenter fixture has media payload and sample extents
+  ---
+  duration_ms: 2.0322
+  type: 'test'
+  ...
+# Subtest: R1 exact origin downloader denies empty approvals and non-public/mixed A/AAAA before transport
+ok 75 - R1 exact origin downloader denies empty approvals and non-public/mixed A/AAAA before transport
+  ---
+  duration_ms: 4.4647
+  type: 'test'
+  ...
+# Subtest: R1 allowed HTTPS redirect re-resolves all answers and refuses mixed destination
+ok 76 - R1 allowed HTTPS redirect re-resolves all answers and refuses mixed destination
+  ---
+  duration_ms: 2.7444
+  type: 'test'
+  ...
+# Subtest: R1 bounded artifact bytes reject oversize response on exact origin
+ok 77 - R1 bounded artifact bytes reject oversize response on exact origin
+  ---
+  duration_ms: 2.0714
+  type: 'test'
+  ...
+# Subtest: R2 empty malformed truncated and missing track sample tables fail closed
+ok 78 - R2 empty malformed truncated and missing track sample tables fail closed
+  ---
+  duration_ms: 1.8078
+  type: 'test'
+  ...
+# Subtest: R2 rejects no-mdat of real encoded fixture
+ok 79 - R2 rejects no-mdat of real encoded fixture
+  ---
+  duration_ms: 1.7166
+  type: 'test'
+  ...
+# Subtest: R2 rejects empty-mdat of real encoded fixture
+ok 80 - R2 rejects empty-mdat of real encoded fixture
+  ---
+  duration_ms: 1.9781
+  type: 'test'
+  ...
+# Subtest: R2 rejects dummy-mdat of real encoded fixture
+ok 81 - R2 rejects dummy-mdat of real encoded fixture
+  ---
+  duration_ms: 0.9724
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-offset of real encoded fixture
+ok 82 - R2 rejects bad-chunk-offset of real encoded fixture
+  ---
+  duration_ms: 1.0135
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-sample-size of real encoded fixture
+ok 83 - R2 rejects bad-sample-size of real encoded fixture
+  ---
+  duration_ms: 0.8013
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-map of real encoded fixture
+ok 84 - R2 rejects bad-chunk-map of real encoded fixture
+  ---
+  duration_ms: 2.2598
+  type: 'test'
+  ...
+# Subtest: R2 rejects out-of-bounds-audio of real encoded fixture
+ok 85 - R2 rejects out-of-bounds-audio of real encoded fixture
+  ---
+  duration_ms: 0.8181
+  type: 'test'
+  ...
+# Subtest: live runner refuses source-only even with feature flags ON; before DB/key/network
+ok 86 - live runner refuses source-only even with feature flags ON; before DB/key/network
+  ---
+  duration_ms: 170.9252
+  type: 'test'
+  ...
+# Subtest: bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+ok 87 - bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+  ---
+  duration_ms: 1.453
+  type: 'test'
+  ...
+# Subtest: binary signatures reject high-bit aliases rather than lossy ASCII matches
+ok 88 - binary signatures reject high-bit aliases rather than lossy ASCII matches
+  ---
+  duration_ms: 5.3668
+  type: 'test'
+  ...
+# Subtest: controlled encoded media rejects container, codec, dimensions, duration and bounds
+ok 89 - controlled encoded media rejects container, codec, dimensions, duration and bounds
+  ---
+  duration_ms: 2.9995
+  type: 'test'
+  ...
+# Subtest: actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+ok 90 - actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+  ---
+  duration_ms: 2.5656
+  type: 'test'
+  ...
+# Subtest: provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+ok 91 - provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+  ---
+  duration_ms: 33.9172
+  type: 'test'
+  ...
+# Subtest: MP4 validator rejects trailing truncated box bytes
+ok 92 - MP4 validator rejects trailing truncated box bytes
+  ---
+  duration_ms: 0.6352
+  type: 'test'
+  ...
+# Subtest: presenter output must include a supported audio track
+ok 93 - presenter output must include a supported audio track
+  ---
+  duration_ms: 0.5173
+  type: 'test'
+  ...
+# Subtest: lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+ok 94 - lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+  ---
+  duration_ms: 5.5889
+  type: 'test'
+  ...
+# Subtest: HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+ok 95 - HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+  ---
+  duration_ms: 2.5168
+  type: 'test'
+  ...
+# Subtest: Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+ok 96 - Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+  ---
+  duration_ms: 2.1851
+  type: 'test'
+  ...
+# Subtest: video lane migration is additive, guarded, and reversible
+ok 97 - video lane migration is additive, guarded, and reversible
+  ---
+  duration_ms: 18.7177
+  type: 'test'
+  ...
+# Subtest: video worker module stays EXECUTE-only: no direct table reads
+ok 98 - video worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 4.7122
+  type: 'test'
+  ...
+# Subtest: video request normalization and cost estimates
+ok 99 - video request normalization and cost estimates
+  ---
+  duration_ms: 3.1676
+  type: 'test'
+  ...
+# Subtest: video adapter construction enforces https outside test loopback
+ok 100 - video adapter construction enforces https outside test loopback
+  ---
+  duration_ms: 1.0987
+  type: 'test'
+  ...
+# Subtest: MiniMax task lifecycle maps to worker vocabulary
+ok 101 - MiniMax task lifecycle maps to worker vocabulary
+  ---
+  duration_ms: 2.075
+  type: 'test'
+  ...
+# Subtest: provider MP4s validate against the vendor codec allowlist, never MIME
+ok 102 - provider MP4s validate against the vendor codec allowlist, never MIME
+  ---
+  duration_ms: 2.3455
+  type: 'test'
+  ...
+# Subtest: video worker executes text-to-video to a persisted version
+ok 103 - video worker executes text-to-video to a persisted version
+  ---
+  duration_ms: 4.0364
+  type: 'test'
+  ...
+# Subtest: video worker resolves private sources for image-to-video
+ok 104 - video worker resolves private sources for image-to-video
+  ---
+  duration_ms: 2.0687
+  type: 'test'
+  ...
+# Subtest: indeterminate attempts are never blindly retried
+ok 105 - indeterminate attempts are never blindly retried
+  ---
+  duration_ms: 2.4617
+  type: 'test'
+  ...
+# Subtest: restart resumes the SAME anchored task without a new create
+ok 106 - restart resumes the SAME anchored task without a new create
+  ---
+  duration_ms: 1.7471
+  type: 'test'
+  ...
+# Subtest: resume of a terminal-succeeded attempt re-downloads without recreate
+ok 107 - resume of a terminal-succeeded attempt re-downloads without recreate
+  ---
+  duration_ms: 1.0439
+  type: 'test'
+  ...
+# Subtest: provider success survives downstream artifact failure
+ok 108 - provider success survives downstream artifact failure
+  ---
+  duration_ms: 0.5108
+  type: 'test'
+  ...
+# Subtest: capacity rejection without a task allows exactly one new attempt
+ok 109 - capacity rejection without a task allows exactly one new attempt
+  ---
+  duration_ms: 0.6855
+  type: 'test'
+  ...
+# Subtest: transient poll errors keep reconciling the same task
+ok 110 - transient poll errors keep reconciling the same task
+  ---
+  duration_ms: 27.1262
+  type: 'test'
+  ...
+# Subtest: moderated provider failures are deterministic and terminal
+ok 111 - moderated provider failures are deterministic and terminal
+  ---
+  duration_ms: 1.1536
+  type: 'test'
+  ...
+# Subtest: provider-reported cancelled is the only path recording provider-cancelled
+ok 112 - provider-reported cancelled is the only path recording provider-cancelled
+  ---
+  duration_ms: 1.0649
+  type: 'test'
+  ...
+# Subtest: local cancel stops polling without a provider cancel call
+ok 113 - local cancel stops polling without a provider cancel call
+  ---
+  duration_ms: 0.5742
+  type: 'test'
+  ...
+# Subtest: cancel during provider polling reconciles truthfully, then records cancel
+ok 114 - cancel during provider polling reconciles truthfully, then records cancel
+  ---
+  duration_ms: 1.9542
+  type: 'test'
+  ...
+# Subtest: video claim helper uses the filtered claim
+ok 115 - video claim helper uses the filtered claim
+  ---
+  duration_ms: 0.7484
+  type: 'test'
+  ...
+1..115
+# tests 115
+# suites 0
+# pass 115
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 855.6686

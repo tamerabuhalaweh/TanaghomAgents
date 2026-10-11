@@ -1,0 +1,1153 @@
+{
+  "scope": "Native preserved outputs; sanitization never changes verdicts",
+  "logs": [
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-final.log",
+      "native_sha256": "b8c330ee66c2acffcd8f188f97da44cde9ed2a42ff18a98a354515f72ecf7bac",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final.log.txt",
+      "staged_sha256": "b8c330ee66c2acffcd8f188f97da44cde9ed2a42ff18a98a354515f72ecf7bac",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-final2.log",
+      "native_sha256": "479b5ff75a94a5229cc61706bbaf23b5b05bb69470b7192b079462a690521758",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final2.log.txt",
+      "staged_sha256": "479b5ff75a94a5229cc61706bbaf23b5b05bb69470b7192b079462a690521758",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-final3.log",
+      "native_sha256": "8028797cbefbb97b7aaa4a3da7494d3b68c4cdc2e92f5f182bf4a09788337312",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final3.log.txt",
+      "staged_sha256": "8028797cbefbb97b7aaa4a3da7494d3b68c4cdc2e92f5f182bf4a09788337312",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-final4.log",
+      "native_sha256": "ee372b559497a72a1c72bd14f94b9d73fcd24c3c249b37da63855c075ac0f3cc",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final4.log.txt",
+      "staged_sha256": "ee372b559497a72a1c72bd14f94b9d73fcd24c3c249b37da63855c075ac0f3cc",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-green1.log",
+      "native_sha256": "ea3884227479af55155508fc2fcd38be3ac781840366c60da600fb25c63761d7",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green1.log.txt",
+      "staged_sha256": "9ab42deeae6f4bfae26fd8082d68515578e0c4770558597bbb32bb17f4907fca",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-green2.log",
+      "native_sha256": "8bc45d7a7632fd410504d381138cb22f3501e91e12428688def1418fd01b1152",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green2.log.txt",
+      "staged_sha256": "6c5a066c4db0b3067345925e2825805e027ba5b3810e792fa432909b47e4fcca",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-green3.log",
+      "native_sha256": "50ef4b53acc15889237e3cd60290a2f979b64bdfd279a2b31091b2125cdf61a7",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green3.log.txt",
+      "staged_sha256": "98e72dda8df8da33447d9019301bf86d9583739bf58567b0192dc3d4c0ba7d75",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-green4.log",
+      "native_sha256": "281f3381a57a711580581f1da7fc08df4895ae514ad0ab56be7ef24c8310bf97",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green4.log.txt",
+      "staged_sha256": "244f5cf4f42f8c27e17ac44f4ea207adf90b157dad022fce09d070faa3c65265",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-green5.log",
+      "native_sha256": "b34ba47dcb693de4a7254120cd211f66375f7ba3a3a4e4b25d6025f8f91d17ef",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green5.log.txt",
+      "staged_sha256": "b34ba47dcb693de4a7254120cd211f66375f7ba3a3a4e4b25d6025f8f91d17ef",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/acceptance-red.log",
+      "native_sha256": "fe8fde5e86592e055d6647fe80e2ea0ee8adc81265cfd1c5a4bb2ec42a5782f7",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-red.log.txt",
+      "staged_sha256": "a2dffef7acf207ff81b6ffdcb97e17efb6c62e59af3a1ab2711f0a9307e7e44e",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/build-final.log",
+      "native_sha256": "a4b1796404441c295e31b4b8ffef2a4814761d1e1032855ce94ca0be04d5f74c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/build-final.log.txt",
+      "staged_sha256": "ffafa792d0a760880e645d7fcf0fc44ac7cb35fd544d8739e98eab574df879c2",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/build-final2.log",
+      "native_sha256": "95c32a81c7dccd770b66cfbb387d4772b0e1cc393791cdc51c47303e5ac29f1e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/build-final2.log.txt",
+      "staged_sha256": "498fe08cb2aa4a80d06135933cbb78896e8119639475fe643af129fe381e1fbc",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/build-initial.log",
+      "native_sha256": "7a14f94a2be618ef9902c61db6ab43bb1c14b7fdba7a5a25ab5654fff6ed14dd",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/build-initial.log.txt",
+      "staged_sha256": "1df06d38a328ae66fc17acea1516cc0382781ddbd02a0f375b2868158171669a",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/build-link.log",
+      "native_sha256": "18c8f29c71d1aee762d2116bb6f0909997ddeb1d0cd414dbda628e2691d478e9",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/build-link.log.txt",
+      "staged_sha256": "49a2b3d5933fc122b13c106f13122488d53c09b935c9c231163a50b06b2f7296",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/byte-boundary-green.log",
+      "native_sha256": "0e1998420889b9e61ce56becfb402db5051fb14c43e1ceddbdf00f1d6467d4c1",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/byte-boundary-green.log.txt",
+      "staged_sha256": "0e1998420889b9e61ce56becfb402db5051fb14c43e1ceddbdf00f1d6467d4c1",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/byte-boundary-red.log",
+      "native_sha256": "30f59a8ec5e66fcdc0207f3087f3472d86f141a9abee6bb370c482b30bce3010",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/byte-boundary-red.log.txt",
+      "staged_sha256": "30f59a8ec5e66fcdc0207f3087f3472d86f141a9abee6bb370c482b30bce3010",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/check-final.log",
+      "native_sha256": "1175663b5e09d0d24db404d53af625591c0e97e0670b8726bfe232de704162f6",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/check-final.log.txt",
+      "staged_sha256": "1175663b5e09d0d24db404d53af625591c0e97e0670b8726bfe232de704162f6",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/check.log",
+      "native_sha256": "507285f98e1b3099e4cdaac2c34d70a87866099a20281c2a1932d14f37937948",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/check.log.txt",
+      "staged_sha256": "507285f98e1b3099e4cdaac2c34d70a87866099a20281c2a1932d14f37937948",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/contracts-final.log",
+      "native_sha256": "03f345cca19701f356c53a216298463acba2fe7990ed9dd1e0297aac7cb70d9c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/contracts-final.log.txt",
+      "staged_sha256": "03f345cca19701f356c53a216298463acba2fe7990ed9dd1e0297aac7cb70d9c",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/cost-gate-red.log",
+      "native_sha256": "0cbf253c04d6e7c454d7f1279c90cc91feb0f2a61c1b8534ba335562f637b6ee",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/cost-gate-red.log.txt",
+      "staged_sha256": "0cbf253c04d6e7c454d7f1279c90cc91feb0f2a61c1b8534ba335562f637b6ee",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/cost-gate-red2.log",
+      "native_sha256": "0fcd8b92fb23f7419cbc99867b637f2ff27c95a4968de065c9c5949e33570747",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/cost-gate-red2.log.txt",
+      "staged_sha256": "9173c2fb2c4708a2fbb08fa69ed3b9813e2141e1cac63dec0133ae9f62e72934",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/migrate-initial.log",
+      "native_sha256": "0e3139f2e9df5a91c36d8d8941eb78b3a53fef2710bd68f04b86f33df9caaf6d",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/migrate-initial.log.txt",
+      "staged_sha256": "72af7035c12eedb7a61c2ffa8d4737725108159572e871bdcf2f51a89c77ce86",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/npm-test-final.log",
+      "native_sha256": "a325f0df3c709aa519a29f56e8147cf4ead301d586bb811ed4c6db83e306d800",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/npm-test-final.log.txt",
+      "staged_sha256": "a325f0df3c709aa519a29f56e8147cf4ead301d586bb811ed4c6db83e306d800",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/npm-test-green.log",
+      "native_sha256": "b9474f1a08bc27e6c4d9d9bb3c2c5d7d23ef3ff9dcd61947e5e2924db705390a",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/npm-test-green.log.txt",
+      "staged_sha256": "b9474f1a08bc27e6c4d9d9bb3c2c5d7d23ef3ff9dcd61947e5e2924db705390a",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/npm-test.log",
+      "native_sha256": "5787c8155cb981e86e903930f535c658a80734353ee3113970c69f2e5973655e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/npm-test.log.txt",
+      "staged_sha256": "b85f8ed51f17ee756f74df64fa821ec2a9b27f5b9eb787807745c4ee3ba9394c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/preview-ui-red.log",
+      "native_sha256": "c3d16530a08fba8869bfb05dfdf5e010b07138161ab0a55bb328818fb59c72d9",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/preview-ui-red.log.txt",
+      "staged_sha256": "e5e405b738cc30b8c5f0076489621f2e5bb46d8a18f16101f90be28081b420ba",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression-extra.log",
+      "native_sha256": "cec74e25d63dfc88c3fb7a29baadedd0925433b00e99382c05a159a2ec6c71b8",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-extra.log.txt",
+      "staged_sha256": "cec74e25d63dfc88c3fb7a29baadedd0925433b00e99382c05a159a2ec6c71b8",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression-final-a.log",
+      "native_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-final-a.log.txt",
+      "staged_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression-final-b.log",
+      "native_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-final-b.log.txt",
+      "staged_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression-final-c.log",
+      "native_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-final-c.log.txt",
+      "staged_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/typecheck-final.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/typecheck-final.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/typecheck-final2.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/typecheck-final2.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/acceptance.log",
+      "native_sha256": "223973a9ca2150e46fe18e96716e4b1593db0928f7250d0e334bed6887c9697e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/acceptance.log.txt",
+      "staged_sha256": "223973a9ca2150e46fe18e96716e4b1593db0928f7250d0e334bed6887c9697e",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/audit-moderate.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/audit-moderate.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/build.log",
+      "native_sha256": "b88b27642be620e18db6361d1d605f7100eb65fc711dd4291aed1aa84250bedf",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/build.log.txt",
+      "staged_sha256": "f423533b8e085093136553dc6fb85fef99ca2bcfe7a6173c92509104ee51f6c4",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/check.log",
+      "native_sha256": "65497d24ab394c59b87c32a89781fcff0de425eb902741ce7de7660586cc3ab7",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/check.log.txt",
+      "staged_sha256": "65497d24ab394c59b87c32a89781fcff0de425eb902741ce7de7660586cc3ab7",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/direct-api-red.log",
+      "native_sha256": "5a8f86b295bad9918f2366d731bec1aa55fcb10302ed0787636b3927ef2765c2",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/direct-api-red.log.txt",
+      "staged_sha256": "ca0b64119fa89a50b5a98faac18d826b8099f7c0cced3f1da3efcfc9cc38160d",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression-a.log",
+      "native_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression-a.log.txt",
+      "staged_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression-b.log",
+      "native_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression-b.log.txt",
+      "staged_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression-c.log",
+      "native_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression-c.log.txt",
+      "staged_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/targeted-current.log",
+      "native_sha256": "9e4b06d98569b35e08fb9c1894d9fb9235ac395dcb5e22adba8e369f40131df7",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/targeted-current.log.txt",
+      "staged_sha256": "9e4b06d98569b35e08fb9c1894d9fb9235ac395dcb5e22adba8e369f40131df7",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/typecheck-restored.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/typecheck-restored.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/typecheck.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/typecheck.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/unit-current.log",
+      "native_sha256": "5cc45653376279f49240df79cfc5bf0c3aa60e135ee4dc13ad148b7acdbe429b",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/unit-current.log.txt",
+      "staged_sha256": "5cc45653376279f49240df79cfc5bf0c3aa60e135ee4dc13ad148b7acdbe429b",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/unit.log",
+      "native_sha256": "1b210c43b2c2c82f25fb0addc6f73d81719bdee891b036cbda507c05af32e835",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/unit.log.txt",
+      "staged_sha256": "1b210c43b2c2c82f25fb0addc6f73d81719bdee891b036cbda507c05af32e835",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/red/runs/4da4c2f3-a2cc-4800-a17a-58e8faf0a7af/creative-presenter-review-sql.mjs.log",
+      "native_sha256": "a147942dd1f28488e05a7182db9aa818ffa110d8ec43df8c179b5b93e4d28036",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/red/runs/4da4c2f3-a2cc-4800-a17a-58e8faf0a7af/creative-presenter-review-sql.mjs.log.txt",
+      "staged_sha256": "ca51b04945bdf1bcdb8b681ac7e39d90c539d68ea974d6177c08d2df7be65dfb",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/contracts.log",
+      "native_sha256": "836ebcc1522781200244460c87a7e37cbab2ecff01e28ded2d1d58856d0fc676",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/contracts.log.txt",
+      "staged_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/database.log",
+      "native_sha256": "512405de685d9be93c08b1651d3df847613906daa96bd48572d3f260f0ead9de",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/database.log.txt",
+      "staged_sha256": "4e4965b1effa8d94b38668e33d8ebe630f714c66567f989985cead80029615f4",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/design.log",
+      "native_sha256": "c7a7be37ed20f2a35bd435aea14b6827269c3e06261dad5dfa882373fa6dcf4b",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/design.log.txt",
+      "staged_sha256": "0ded8d5df5883454e36f478572ab1b92c0ea5a49226a911862c6a851d440ecea",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/foundation.log",
+      "native_sha256": "e9bd148b712e4cb6fff63e3f9607820cc8889d6554fa48314eb5d88d845b42ae",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/foundation.log.txt",
+      "staged_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/image.log",
+      "native_sha256": "9f3108ba6921d4b45be03d409177e65cbcc531bce9c982695bbbe68c7169820b",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/image.log.txt",
+      "staged_sha256": "8d049e6474f874b5166b334148b8a07a80ab9a961d1ff1b7427b26144dd10f99",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/motion.log",
+      "native_sha256": "dab3c51a44d7ac8b250d6c1b3e3f02734b1db34a19df9f1069c3648a4afc8fc9",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/motion.log.txt",
+      "staged_sha256": "4b12b2e43cfe67828818a5b893045c8e19e5055bd2fbf1c1d69ddf514005e5c4",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/segmentation.log",
+      "native_sha256": "bea51df4abf542a894b63fd1b2a4ba31713e7f380230d6c362867602fa7d4278",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/segmentation.log.txt",
+      "staged_sha256": "2942c503f71a99cbbdb65528b9127ebbfca612bbb4c8463ea2ba7983b037593c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/video.log",
+      "native_sha256": "1e6e278adb7aaa317ddbc3ff0fc822732e5a78e5272004a23eccbc731d4a34db",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/video.log.txt",
+      "staged_sha256": "dd2b445a406cc210682c307574d38ae80e988a615e3b4db25618176f05aae17e",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-presenter-review-sql.mjs.log",
+      "native_sha256": "ef81c451688be8718292bce6080f7da43c8e12bb11bb1a41e043394756b43903",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-presenter-review-sql.mjs.log.txt",
+      "staged_sha256": "6a58cbb497339b4151e37cadacf09d3b8c4adf587a168049905bcb2a887d2f90",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-talking-head-integration.mjs.log",
+      "native_sha256": "ca6dc102beea164788f502e42c42a6e8d3f7352593330f4c82c0ee3205420afe",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/acceptance.log",
+      "native_sha256": "9e85a7fb5a7e4bf3b08f95050678ea020a854e6f1c5f4d8a0d56257b6af74199",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/acceptance.log.txt",
+      "staged_sha256": "9e85a7fb5a7e4bf3b08f95050678ea020a854e6f1c5f4d8a0d56257b6af74199",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/audit-moderate.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/audit-moderate.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/build.log",
+      "native_sha256": "8d879735edd141b05a4baa714ba58c8e669ce7313455469326b2dc31ab03fd28",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/build.log.txt",
+      "staged_sha256": "88a226404550d79642cabc0ecd6e91301fc36a3f2850f18de2a2ef33180ee4e2",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/check-current.log",
+      "native_sha256": "87ad6426c274a416f989361528a459eac2906d41dc8ab86f7c3ec42b5b83a72c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/check-current.log.txt",
+      "staged_sha256": "87ad6426c274a416f989361528a459eac2906d41dc8ab86f7c3ec42b5b83a72c",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/check.log",
+      "native_sha256": "5ac5ee8909ea28886f63aa760ef1c089d83c615fe32115aa71483ab6b9ae3312",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/check.log.txt",
+      "staged_sha256": "5ac5ee8909ea28886f63aa760ef1c089d83c615fe32115aa71483ab6b9ae3312",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression-segmentation-wrapper.log",
+      "native_sha256": "b88f69dbee06889c657f1748cb9135e1ef948fd5f5d1dae3260e4767b0d1eb7f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression-segmentation-wrapper.log.txt",
+      "staged_sha256": "b88f69dbee06889c657f1748cb9135e1ef948fd5f5d1dae3260e4767b0d1eb7f",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression-wrapper.log",
+      "native_sha256": "ab6c774514d4fd99fb31021cb255717b1b4f39759707c74ba4735ff0029eb78e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression-wrapper.log.txt",
+      "staged_sha256": "ab6c774514d4fd99fb31021cb255717b1b4f39759707c74ba4735ff0029eb78e",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/typecheck-restored.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/typecheck-restored.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/typecheck.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/typecheck.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/unit-current.log",
+      "native_sha256": "5f15f7056554813d5d3a6335a9e431a7781e99955bfc34b4a0d047c48644c35c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/unit-current.log.txt",
+      "staged_sha256": "5f15f7056554813d5d3a6335a9e431a7781e99955bfc34b4a0d047c48644c35c",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/unit.log",
+      "native_sha256": "1152f3ce52a7eb6fcccfc444125bc3ef517d04bbaf0d08ed4a69d1ca00cef6d4",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/unit.log.txt",
+      "staged_sha256": "1152f3ce52a7eb6fcccfc444125bc3ef517d04bbaf0d08ed4a69d1ca00cef6d4",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/video-fixture-green.log",
+      "native_sha256": "5e88373fd9ecc8a4242b71fd959e876d45fd6953efe39da5ef884894e674d233",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/video-fixture-green.log.txt",
+      "staged_sha256": "5e88373fd9ecc8a4242b71fd959e876d45fd6953efe39da5ef884894e674d233",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/video-fixture-red.log",
+      "native_sha256": "5f076d9b4a6b25ca2ce408882b97524601dc0fa0de60cf7a5b6c481040bb77e8",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/video-fixture-red.log.txt",
+      "staged_sha256": "241db3a014277ed4d4079efd455bc3c1c11e960c0b7e5c5041ace32f4e101196",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/contracts.log",
+      "native_sha256": "836ebcc1522781200244460c87a7e37cbab2ecff01e28ded2d1d58856d0fc676",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/contracts.log.txt",
+      "staged_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/database.log",
+      "native_sha256": "8c933a637bebd9ea31e4e79048bfe3f83661544d97ab2d4af48271688e2ea1f4",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/database.log.txt",
+      "staged_sha256": "35970a871d7de8f24a99eb28237840c66c216a38bdfe948e437be5321db72287",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/design.log",
+      "native_sha256": "71062c7895a3b8e4638a7bbddcc0baff44b9f63b8d9ed5a514e6106e03560207",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/design.log.txt",
+      "staged_sha256": "7729d3cf831ef5ac039db4a9a122f754bb87454bc21b6cffcb3c4632916a6c6f",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/foundation.log",
+      "native_sha256": "a66f009f498f47f63a58285e8601272e1715e43d878a87b774f9ce5445a0ac1a",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/foundation.log.txt",
+      "staged_sha256": "77a1fb24825472582701d16ca92c5b1b7711f331a5fed46fff5de187c8c24485",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/image.log",
+      "native_sha256": "2da77f9ed5c9c0012a07d1cc6b3cb6c3c5fd916dd67d894920f082d7b8fc36d3",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/image.log.txt",
+      "staged_sha256": "6f6c3ad417cd53911ef16230445f75eadca733b676cae1cd0bcce3d478b856e1",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/motion.log",
+      "native_sha256": "3f4047034424e4b0d580a29043fe9be94aefce61dd7d9a30bb8657e81e870898",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/motion.log.txt",
+      "staged_sha256": "3e0e1b5080d1c2606930b4ead7fac566d37f337e54cca03c199e3d3d853b9a4f",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/segmentation.log",
+      "native_sha256": "847cc4867cc233ddd1ddbacda16f6651e50993f0fbcc052c11dd31d136bc45a3",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/segmentation.log.txt",
+      "staged_sha256": "4acc7bb58945c73ca3bf73c9655172fb15056325a3b2b991484d4bce18fe5aca",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/video.log",
+      "native_sha256": "1457350a90a6ec9632aa50b28ac3596992bde1822e11ca12e4508f6f3a7df916",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/video.log.txt",
+      "staged_sha256": "09b027b58da0543bc809eb953f8ab1e58c38f837520dbf2f513ec048f7486026",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-presenter-review-sql.mjs.log",
+      "native_sha256": "7586a205ddf485d57a2b612fc03c2a053258947fa2e4ad4b807f6e5a1579430e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-presenter-review-sql.mjs.log.txt",
+      "staged_sha256": "e1cad7ad516a29ae3a22b70964c33b76ba07065a7474253e758cf00aa660db3a",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-talking-head-integration.mjs.log",
+      "native_sha256": "d38f080ba598300e90edb04786724157354392f04a21646674a25ecda14a6530",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "8a5d99905f9c03cd32b3248133e778a47e722ec43a1926f7768411050847231d",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/acceptance-attempt1.log",
+      "native_sha256": "23ede4f649a8e8ed9fb31344ca0775137e009fffd37b509c490ccfb7849b07a1",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/acceptance-attempt1.log.txt",
+      "staged_sha256": "23ede4f649a8e8ed9fb31344ca0775137e009fffd37b509c490ccfb7849b07a1",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/audit-moderate.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/audit-moderate.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/build.log",
+      "native_sha256": "254b60168e0af2652148d3132923a7cb339217bae6b5135916cb81b589da5d5b",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/build.log.txt",
+      "staged_sha256": "5721f2f4303de6e79d8ee4c1096f919edd3f2568c7f14ebf753fcb41462f5971",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/check.log",
+      "native_sha256": "52c03a01bfc99d5872a7ed140e2b90b0324ef0c8506701a5facb1f9fafa9c9c7",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/check.log.txt",
+      "staged_sha256": "52c03a01bfc99d5872a7ed140e2b90b0324ef0c8506701a5facb1f9fafa9c9c7",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression-wrapper.log",
+      "native_sha256": "a34ef841a6c2d17f0ec1d8306c978281568e873545bdd6603d33b7bfb3aa377d",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression-wrapper.log.txt",
+      "staged_sha256": "a34ef841a6c2d17f0ec1d8306c978281568e873545bdd6603d33b7bfb3aa377d",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/typecheck.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/typecheck.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/unit.log",
+      "native_sha256": "f0bba9e9bb4927ce97b4a6b6b974d9ffa70947650be56289b4f57e8cf979686f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/unit.log.txt",
+      "staged_sha256": "f0bba9e9bb4927ce97b4a6b6b974d9ffa70947650be56289b4f57e8cf979686f",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/contracts.log",
+      "native_sha256": "836ebcc1522781200244460c87a7e37cbab2ecff01e28ded2d1d58856d0fc676",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/contracts.log.txt",
+      "staged_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/database.log",
+      "native_sha256": "0c0416deedbc994bf2945afa242012d857b66d548f7903540c14fe8c36a99240",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/database.log.txt",
+      "staged_sha256": "91d05f78533ae01d6b492a1ed641966d789b74502bc75c96a499af6ca4203e29",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/design.log",
+      "native_sha256": "87383aa694d5c595150353a49f4b4b7ffe4dab3fd09a89e4eaaf08b287a49d7e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/design.log.txt",
+      "staged_sha256": "67bac30312243b606162bfa95712553eb676709b73b638bccb2f5e4dc365116e",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/foundation.log",
+      "native_sha256": "a66f009f498f47f63a58285e8601272e1715e43d878a87b774f9ce5445a0ac1a",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/foundation.log.txt",
+      "staged_sha256": "77a1fb24825472582701d16ca92c5b1b7711f331a5fed46fff5de187c8c24485",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/image.log",
+      "native_sha256": "5b4fd9a5c432ac7098e6f49d52f965243b2d680d6e5a2a84ec1ef99954ce9e25",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/image.log.txt",
+      "staged_sha256": "1e132573e4228bb607a5c9806cb818e33683b64d33c491730b05dcdf0bb28c58",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/motion.log",
+      "native_sha256": "3b50f09fa202d230f7b44d44720a5fa99294c2a3ee3c6d61b8f047bee8a247dd",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/motion.log.txt",
+      "staged_sha256": "039a35c025b6f3395d04ec19bb4fc98c2822a5ef3cbb81dde35242ba657cb3d7",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/segmentation.log",
+      "native_sha256": "08c2b656847595eb9ce2d909cbbe6a2e08d7467e9b63798a4fa845b6f0d2a070",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/segmentation.log.txt",
+      "staged_sha256": "d9031489023fea5484eda4cae0e3cd877162d0b3ecab98955eed580a4fef5208",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/video.log",
+      "native_sha256": "d8000c4d746d46a35af29676368a55645ec98759560f3497c8f886ece263309f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/video.log.txt",
+      "staged_sha256": "57afa714b5de1e21a0249a26ba0876549d583bff775edcc95c9b17c112f143b3",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-presenter-review-sql.mjs.log",
+      "native_sha256": "7586a205ddf485d57a2b612fc03c2a053258947fa2e4ad4b807f6e5a1579430e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-presenter-review-sql.mjs.log.txt",
+      "staged_sha256": "e1cad7ad516a29ae3a22b70964c33b76ba07065a7474253e758cf00aa660db3a",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-talking-head-integration.mjs.log",
+      "native_sha256": "352d272467bed38f3f5085abfcc2ecbd120f9bea7acba7b3a55f536dc8ffd1b2",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "de217aea07bf564dbb09124c0c393c908201d99593383bdbc35a00adacb84f61",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/acceptance.log",
+      "native_sha256": "00919ff3b10f432d987b4e24662858c74ec7c67c964672cd954e062393132bed",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/acceptance.log.txt",
+      "staged_sha256": "00919ff3b10f432d987b4e24662858c74ec7c67c964672cd954e062393132bed",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/audit-moderate.log",
+      "native_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/audit-moderate.log.txt",
+      "staged_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/build.log",
+      "native_sha256": "5bf2dbd3116141c2f513a6448fcc6475a6b01bef09f0883832668b04fd078dce",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/build.log.txt",
+      "staged_sha256": "4c187762954990e2a8838f698d1aa65a7a11adfc781d46e197988d1aea6d5fa7",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/check-final.log",
+      "native_sha256": "c11e8742f30b07824d960f3148684f9d83ff256e0c5cbabfb08fbd4ab3bf4c5d",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/check-final.log.txt",
+      "staged_sha256": "c11e8742f30b07824d960f3148684f9d83ff256e0c5cbabfb08fbd4ab3bf4c5d",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/check.log",
+      "native_sha256": "2e84c6bc220397b79cea6b25d18ae2a3bb04d5a5e5f219cf3589e4c22008bd10",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/check.log.txt",
+      "staged_sha256": "2e84c6bc220397b79cea6b25d18ae2a3bb04d5a5e5f219cf3589e4c22008bd10",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression-a.log",
+      "native_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-a.log.txt",
+      "staged_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression-b.log",
+      "native_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-b.log.txt",
+      "staged_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression-c.log",
+      "native_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-c.log.txt",
+      "staged_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/targeted.log",
+      "native_sha256": "b4543ae4076df1a9b1c01a8e9ff921f564d80f2f6b4ddd6fd6bc5d68e2db9986",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/targeted.log.txt",
+      "staged_sha256": "b4543ae4076df1a9b1c01a8e9ff921f564d80f2f6b4ddd6fd6bc5d68e2db9986",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/typecheck-restored.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck-restored.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/typecheck.log",
+      "native_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck.log.txt",
+      "staged_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/unit.log",
+      "native_sha256": "77860b838b65b45b816f027030971a0d4b98c8a12d7fd0ada21aed83a8b3023a",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/unit.log.txt",
+      "staged_sha256": "77860b838b65b45b816f027030971a0d4b98c8a12d7fd0ada21aed83a8b3023a",
+      "sanitized": false
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/contracts.log",
+      "native_sha256": "836ebcc1522781200244460c87a7e37cbab2ecff01e28ded2d1d58856d0fc676",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/contracts.log.txt",
+      "staged_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/database.log",
+      "native_sha256": "24ca24ed7d238002566eb6b5b72ead50d1ee7d601c9557e63a7b473c46df34c4",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/database.log.txt",
+      "staged_sha256": "f843be12b829b506665cd4b3a2e414aee149be104c0b6ff403d6e55c80534977",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/design.log",
+      "native_sha256": "98af51e27d58b5a203359fb6c369af3932eb3e8baaa4c1ab0bf2d438078da807",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/design.log.txt",
+      "staged_sha256": "79a28db6469de893fe2de5f705d6f6c752113cf4191c3babfc09f961e43d5366",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/foundation.log",
+      "native_sha256": "e9bd148b712e4cb6fff63e3f9607820cc8889d6554fa48314eb5d88d845b42ae",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/foundation.log.txt",
+      "staged_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/image.log",
+      "native_sha256": "b76225717331c8ed39c6306fd51e43fec57914741d25b740f6a50e26da0d0d00",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/image.log.txt",
+      "staged_sha256": "25c0dead428019a2ae1298015136b2156bea32f0d271be27ee0c60c74582db68",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/motion.log",
+      "native_sha256": "0a1ff28480c05338874677b85553e6cc4d1885a9f77611ff06c386be973a2968",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/motion.log.txt",
+      "staged_sha256": "4ed48d1a9de085bf15312d1fa295171c938fde870bdd9459bd275cafebf6f5d7",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/segmentation.log",
+      "native_sha256": "3644bab746520fac78b1aeccb6aaf7e45ff4800f8d73ae1aa1e50dd23acb8d2c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/segmentation.log.txt",
+      "staged_sha256": "64740ba53ab1d5e5c735d0c8d59bd056b42a4f334cf947b4b1e36f98d4501dc9",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/video.log",
+      "native_sha256": "62acc9d1f915ba20337efa9c36fb6da5ab9be81cc6adaa09d7a21466c407cb9c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/video.log.txt",
+      "staged_sha256": "707365d9df6d2bff14d60483531a0801b29751c2d59e593cec4036a00bf1fe7f",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-presenter-review-sql.mjs.log",
+      "native_sha256": "6a994818f4c233b8515aed9a571927832bce421c6406a09814f282011a942a6e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-presenter-review-sql.mjs.log.txt",
+      "staged_sha256": "84abd7e8e911c479e694aec075218ec6c7adaeca0e97615044891e79c7ff546e",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-talking-head-integration.mjs.log",
+      "native_sha256": "ca6dc102beea164788f502e42c42a6e8d3f7352593330f4c82c0ee3205420afe",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/contracts-red.log",
+      "native_sha256": "eacee91fe17720476450f14be45fb78f7f347d73bb2533f1d61aa2eda17e625c",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/contracts-red.log.txt",
+      "staged_sha256": "e08b1fade724aada6a579b0d8d8dee0c11c02eda2dcabcdf52dd53fda6fabbb7",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/contracts-red2.log",
+      "native_sha256": "75d8792214f6bc1e8c1955088b5b670244008e39e2f647d52a135fbf56a16c2d",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/contracts-red2.log.txt",
+      "staged_sha256": "deaa897666b09e32d0bd07a839624661d9dfd1d2d15edae2d4980945fa4c800d",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/contracts.log",
+      "native_sha256": "836ebcc1522781200244460c87a7e37cbab2ecff01e28ded2d1d58856d0fc676",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/contracts.log.txt",
+      "staged_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/database.log",
+      "native_sha256": "03243bffe365bf27f56a0c9db1abe988dbf1f5bde8f11f82d294bc3fc69e3f7a",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/database.log.txt",
+      "staged_sha256": "d6675a3ac929bb5da84cb98bbc0d4e9beebc75507fc1f67748cff35c9115889d",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/design.log",
+      "native_sha256": "e3ec0fb247be36efb7f67426e82927da0cdf59e0ace5f3ae4b606f45ebc3647e",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/design.log.txt",
+      "staged_sha256": "3e4d7097cb2b9c197dac6bd930fad5241437a6322e5dd33aaa7800ee40244c88",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/foundation-red.log",
+      "native_sha256": "f045d93b7d2bfcf198a9e594330819c54cdb9b41b5c6aae58e8c0356845125a3",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/foundation-red.log.txt",
+      "staged_sha256": "22aedaea3f0bfc78df51c39a0364ce7f23e68ad7b661bf6187fb7c0590514653",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/foundation.log",
+      "native_sha256": "84322ada61bfdc78654cefa892f0ea0059a5be27f641966c486b9c55e8bfca8b",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/foundation.log.txt",
+      "staged_sha256": "999e32c0853b70325f8c91be86a5b67f2a4482e158f3d27de9d0ac6f3b80ef7f",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/image.log",
+      "native_sha256": "1c36cfa384fab8e343c6c6b3fed5d057e2b675aac0c4c672303218c91bd80f96",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/image.log.txt",
+      "staged_sha256": "1f592ba4fdf51b6455a231f283c35ae587709444a3e4f8c7e1fca2af6d433563",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/motion.log",
+      "native_sha256": "3e819cf4f403884ee0b6d7ae319eb16f1f4a309f8088a4f66826775d5f5226c2",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/motion.log.txt",
+      "staged_sha256": "1d73c81f01b0dad932db8c5e707e98e4100bcbfeb0b003312672096f1f87ef8f",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/segmentation.log",
+      "native_sha256": "07f03fbcf16445d1ccfd5363dd25d4b29c6a98dcaa6cc7db1e287686f7db652f",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/segmentation.log.txt",
+      "staged_sha256": "955749754b2a06d2dbf59b4c5a816a9e99afdbc3fdb13a0c1cb2368912712d6e",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/regression/video.log",
+      "native_sha256": "9a322fd8626bfe5c55e4294ed9f6f74445df70c3f9c771d4249998637ebc84cb",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/video.log.txt",
+      "staged_sha256": "c54484d254a2fd49c66c35ef43120e1af76c8b9ad26b3ed29ad0489940938f0c",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/29953993-d1d0-43d3-aef4-5ad7b0c29d65/creative-talking-head-integration.mjs.log",
+      "native_sha256": "0ea75866d05656e52a3e11aea11a18c69c639127ac722f9eff7852ed6fb0a3bd",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/29953993-d1d0-43d3-aef4-5ad7b0c29d65/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "37fb2fd9d954ff7adfe379aa692308b25dac5643570a74852ebdbda90fc83467",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/29953993-d1d0-43d3-aef4-5ad7b0c29d65/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/29953993-d1d0-43d3-aef4-5ad7b0c29d65/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/5f069ad0-4616-4fa6-97eb-0bd0fde7eaee/creative-talking-head-integration.mjs.log",
+      "native_sha256": "e51479b93b95ed8f2ac857951cc5512f168f954871adefba197a0700128bff16",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/5f069ad0-4616-4fa6-97eb-0bd0fde7eaee/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/5f069ad0-4616-4fa6-97eb-0bd0fde7eaee/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/5f069ad0-4616-4fa6-97eb-0bd0fde7eaee/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/6751629f-eddb-4c52-9318-ace3b33469f1/creative-talking-head-integration.mjs.log",
+      "native_sha256": "e51479b93b95ed8f2ac857951cc5512f168f954871adefba197a0700128bff16",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/6751629f-eddb-4c52-9318-ace3b33469f1/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/6751629f-eddb-4c52-9318-ace3b33469f1/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/6751629f-eddb-4c52-9318-ace3b33469f1/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/a5da98c2-2304-4ac7-83a5-6cac05329acd/creative-talking-head-integration.mjs.log",
+      "native_sha256": "ba1c2eb0b7f35f6c0aff3f41c77e72b81c77b2430ff8a2b709117186e10411c0",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/a5da98c2-2304-4ac7-83a5-6cac05329acd/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "345fdfbd51152ce18a8a4175cd821836f1e014cdcbe7164bcbd2303212412d30",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/a5da98c2-2304-4ac7-83a5-6cac05329acd/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/a5da98c2-2304-4ac7-83a5-6cac05329acd/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/aad377c6-3517-440e-a2b3-37f134d3ad5a/creative-talking-head-integration.mjs.log",
+      "native_sha256": "0ea75866d05656e52a3e11aea11a18c69c639127ac722f9eff7852ed6fb0a3bd",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/aad377c6-3517-440e-a2b3-37f134d3ad5a/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "37fb2fd9d954ff7adfe379aa692308b25dac5643570a74852ebdbda90fc83467",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/aad377c6-3517-440e-a2b3-37f134d3ad5a/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/aad377c6-3517-440e-a2b3-37f134d3ad5a/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/bcef9d09-d633-48cd-b3d6-2e896dfc53da/creative-talking-head-integration.mjs.log",
+      "native_sha256": "302684399700352abd901e7e2058c5921e407ea507fea2df39bf924979e3e460",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bcef9d09-d633-48cd-b3d6-2e896dfc53da/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "5b4feaea017c5b238c10a31c9cfaab54a175e78cf6ba7bdd4213399063296568",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/bcef9d09-d633-48cd-b3d6-2e896dfc53da/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bcef9d09-d633-48cd-b3d6-2e896dfc53da/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/bf230bed-1122-4632-91da-e5d37b7d7b73/creative-talking-head-integration.mjs.log",
+      "native_sha256": "6fd8ee0e48d9e9d075bd11e1654021d159f6eb7cc27454c6ab4acb29d35e31b9",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bf230bed-1122-4632-91da-e5d37b7d7b73/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "f70d8a1c723fc8074768fba89cc9e96e838ebfa7f05c3f8e05af66c992022214",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/bf230bed-1122-4632-91da-e5d37b7d7b73/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bf230bed-1122-4632-91da-e5d37b7d7b73/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/c2238772-15bb-448c-8f4e-4a9229fc3b7d/creative-talking-head-integration.mjs.log",
+      "native_sha256": "14dfeb851b0544af93010e4d9a95fa278457aede5af75bdd587e5f7ad92d5609",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c2238772-15bb-448c-8f4e-4a9229fc3b7d/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "18cac88f5ec65230db650c8b9b850643aa39b3aec6c3ccc1fd4bfe34181cfbfa",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/c2238772-15bb-448c-8f4e-4a9229fc3b7d/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c2238772-15bb-448c-8f4e-4a9229fc3b7d/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/creative-talking-head-integration.mjs.log",
+      "native_sha256": "352d272467bed38f3f5085abfcc2ecbd120f9bea7acba7b3a55f536dc8ffd1b2",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "de217aea07bf564dbb09124c0c393c908201d99593383bdbc35a00adacb84f61",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/ce432ed6-ac22-4628-9782-227da56ea5d0/creative-talking-head-integration.mjs.log",
+      "native_sha256": "e51479b93b95ed8f2ac857951cc5512f168f954871adefba197a0700128bff16",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/ce432ed6-ac22-4628-9782-227da56ea5d0/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/ce432ed6-ac22-4628-9782-227da56ea5d0/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/ce432ed6-ac22-4628-9782-227da56ea5d0/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/d567a118-9548-4fe7-a125-ddd36d549249/creative-talking-head-integration.mjs.log",
+      "native_sha256": "8b0b0e1f992cf9da82fdce89665640aa5619959e625c8c59c84addd9d8856f94",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/d567a118-9548-4fe7-a125-ddd36d549249/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "4931ba6c922a52b2c767134be804f930e852cb77368063055c149439078e0684",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/d567a118-9548-4fe7-a125-ddd36d549249/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/d567a118-9548-4fe7-a125-ddd36d549249/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/e8eed474-e302-434f-9f49-860a6bf8c90d/creative-talking-head-integration.mjs.log",
+      "native_sha256": "e51479b93b95ed8f2ac857951cc5512f168f954871adefba197a0700128bff16",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/e8eed474-e302-434f-9f49-860a6bf8c90d/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/e8eed474-e302-434f-9f49-860a6bf8c90d/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/e8eed474-e302-434f-9f49-860a6bf8c90d/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/f9f34640-009f-4d29-bc01-499b7c306d12/creative-talking-head-integration.mjs.log",
+      "native_sha256": "6f0330545c708cdd66ba4a85fe134c11fd20dcd2e3ef74980f79d5164ff76258",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/f9f34640-009f-4d29-bc01-499b7c306d12/creative-talking-head-integration.mjs.log.txt",
+      "staged_sha256": "f1f04a2ab1869d96ccb8858a6b3d48c936054bccc1ab5032cd41f37f5bf6c132",
+      "sanitized": true
+    },
+    {
+      "native_path": "evaluation/creative-talking-head-v1/runs/f9f34640-009f-4d29-bc01-499b7c306d12/creative-talking-head-sql.mjs.log",
+      "native_sha256": "5ad914bbc364376b20226a2fa1ebfbcaab6f769f413fb7b54a989b6f1eabda43",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/f9f34640-009f-4d29-bc01-499b7c306d12/creative-talking-head-sql.mjs.log.txt",
+      "staged_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-correction-20261011-1\\runtime-red.log",
+      "native_sha256": "ac914d34fe784e10ef14067956b34c028634d560abef3c68683f55242a094d06",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/historical-review/runtime-red.log.txt",
+      "staged_sha256": "7ed62923308911a529c780e935b50c7dca6ef70e867d4ea96774dfa68044c409",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-correction-20261011-1\\runtime-green.log",
+      "native_sha256": "8d51dfed335b7e4e672167b127deb7794b188d33acc718700ec7f290ab296030",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/historical-review/runtime-green.log.txt",
+      "staged_sha256": "8d51dfed335b7e4e672167b127deb7794b188d33acc718700ec7f290ab296030",
+      "sanitized": false
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-correction-20261011-1\\sql-red.log",
+      "native_sha256": "ff3d663583dc6d7077334a567a55f060165b4f5727937c6d68a7b0178610a791",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/historical-review/sql-red.log.txt",
+      "staged_sha256": "c00669d100d019cdd0e689ceebf543ee34090e22bf64578591cb3b2bb7d862b9",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-correction-20261011-1\\api-red.log",
+      "native_sha256": "14987733cd35f4c1cea126fc87737bbf20840f384db3734a84cb917e0bb166b0",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/historical-review/api-red.log.txt",
+      "staged_sha256": "b311f1853e51b60f5c46fbf54b507fba3a4c59d23081067353d01c404ca99008",
+      "sanitized": true
+    },
+    {
+      "native_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-correction-20261011-1\\db-red-wrapper.log",
+      "native_sha256": "1a4bde1647f3560fc0befc3d0a2ddcd12c8046e40c6e1effc964e15c13b5838a",
+      "staged_path": "evaluation/creative-talking-head-v1/corrections/historical-review/db-red-wrapper.log.txt",
+      "staged_sha256": "1a4bde1647f3560fc0befc3d0a2ddcd12c8046e40c6e1effc964e15c13b5838a",
+      "sanitized": false
+    }
+  ]
+}
