@@ -192,6 +192,18 @@ const en = {
   "video.jobs": "Video jobs",
   "video.empty": "No video jobs yet.",
   "video.noPublish": "Exports stay private. Nothing here publishes.",
+  "segment.title": "Remove background",
+  "segment.submit": "Segment product",
+  "segment.submitted": "Segmentation queued.",
+  "segment.disabled": "ML segmentation is disabled.",
+  "segment.engine": "Engine",
+  "segment.localEngine": "Local deterministic (fixtures and tests)",
+  "segment.mlEngine": "BiRefNet ML (deployment-gated)",
+  "segment.feather": "Edge feather (px)",
+  "segment.jobs": "Segmentation jobs",
+  "segment.useCutout": "Use cutout as product source",
+  "segment.cutoutReady": "Cutout ready.",
+  "segment.noPublish": "Exports stay private. Nothing here publishes.",
 } as const;
 
 export type CreativeStringKey = keyof typeof en;
@@ -373,6 +385,18 @@ const ar: Record<CreativeStringKey, string> = {
   "video.jobs": "مهام الفيديو",
   "video.empty": "لا مهام فيديو بعد.",
   "video.noPublish": "تبقى الصادرات خاصة. لا شيء هنا يُنشر.",
+  "segment.title": "إزالة الخلفية",
+  "segment.submit": "استخلاص المنتج",
+  "segment.submitted": "تم إرسال مهمة الاستخلاص.",
+  "segment.disabled": "استخلاص ML معطّل.",
+  "segment.engine": "المحرك",
+  "segment.localEngine": "محلي حتمي (للعينات والاختبارات)",
+  "segment.mlEngine": "BiRefNet (مقيّد بالنشر)",
+  "segment.feather": "تنعيم الحواف (بكسل)",
+  "segment.jobs": "مهام الاستخلاص",
+  "segment.useCutout": "استخدام المقصوص كمصدر للمنتج",
+  "segment.cutoutReady": "المقصوص جاهز.",
+  "segment.noPublish": "تبقى الصادرات خاصة. لا شيء هنا يُنشر.",
 };
 
 export const creativeStrings: Record<CreativeLocale, Record<CreativeStringKey, string>> = { en, ar };

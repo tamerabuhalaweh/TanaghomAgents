@@ -1,0 +1,36 @@
+{
+  "contract_version": "creative.segmentation.v1",
+  "operation": "segment",
+  "engines": {
+    "birefnet": {
+      "description": "BiRefNet dichotomous segmentation via a pinned local Python bridge. Deployment-provisioned code+weights, never bundled. Legal acceptance gate applies to production weights (see tasks/231-segmentation-decision.md).",
+      "code_repository": "https://github.com/ZhengPeng7/BiRefNet",
+      "code_license": "MIT (verified 2026-10-09)",
+      "weights_repository": "ZhengPeng7/BiRefNet (Hugging Face)",
+      "weights_revision": "e2bf8e4460fc8fa32bba5ea4d94b3233d367b0e4",
+      "weights_file": "model.safetensors",
+      "weights_license_tag": "mit (verified 2026-10-09; DIS5K dataset caveat recorded)",
+      "weights_sha256_measured": "9ab37426bf4de0567af6b5d21b16151357149139362e6e8992021b8ce356a154",
+      "weights_bytes_measured": 444473596,
+      "model_input": 1024,
+      "backbone": "swin_v1_large",
+      "timeout_ms": 600000,
+      "device_allowlist": ["cpu", "cuda"]
+    },
+    "local-deterministic": {
+      "description": "Deterministic sharp-based segmentation for fixtures, tests, and bounded refinement. No model weights, no network, no credentials.",
+      "timeout_ms": 60000
+    }
+  },
+  "limits": {
+    "max_long_edge_px": 2048,
+    "max_pixels": 16777216,
+    "max_bytes": 20971520,
+    "input_mime_allowlist": ["image/png", "image/jpeg", "image/webp"],
+    "refine": {
+      "feather_px": { "min": 0, "max": 8 },
+      "erode_px": { "min": 0, "max": 3 },
+      "threshold": { "min": 1, "max": 254 }
+    }
+  }
+}
