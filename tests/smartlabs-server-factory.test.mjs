@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {readFileSync,existsSync} from 'node:fs';
 import {createRequire} from 'node:module';
+import {tmpdir} from 'node:os';
 import {createServer} from 'node:http';
 import {runInNewContext} from 'node:vm';
 import * as smartlabs from '../packages/agent-runtime/providers/smartlabs.mjs';
@@ -34,7 +35,7 @@ for(const status of ['draft','rejected','archived','approved'])test(`ASR require
 
 test('actual private storage reader refuses oversize file before unbounded allocation',async t=>{
  const ts=process.env.SMARTLABS_TEST_TYPESCRIPT?require(process.env.SMARTLABS_TEST_TYPESCRIPT):require('typescript');const {mkdtemp,rm}=await import('node:fs/promises');const path=require('node:path');
- const directory=await mkdtemp(path.join(process.env.TMPDIR??path.join(process.cwd(),'tmp'),'sl-audio-'));t.after(()=>rm(directory,{recursive:true,force:true}));
+ const directory=await mkdtemp(path.join(process.env.TMPDIR??tmpdir(),'sl-audio-'));t.after(()=>rm(directory,{recursive:true,force:true}));
  const output=ts.transpileModule(readFileSync(new URL('../apps/dashboard/lib/server/creative/storage.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
  const exports={};runInNewContext(output,{exports,require:name=>name==='server-only'?{}:require(name),Buffer,process:{env:{},cwd:()=>process.cwd()}});const storage=exports.localStorage(directory),key=`t/${id}/voice/${id}/v1.wav`;
  await storage.put(key,audio(),'audio/wav');assert.deepEqual((await storage.get(key,5000)).bytes,audio());await assert.rejects(storage.get(key,100),e=>e.message==='object_size_exceeded');

@@ -2,12 +2,13 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
 import {join} from 'node:path';
+import {tmpdir} from 'node:os';
 import {readSmartLabsConfig} from '../packages/agent-runtime/providers/smartlabs.mjs';
 import {spawnSync} from 'node:child_process';
 import {fileURLToPath} from 'node:url';
 
 test('server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only',t=>{
- const dir=mkdtempSync(join(process.env.TMPDIR,'smartlabs-242-key-'));
+ const dir=mkdtempSync(join(process.env.TMPDIR??tmpdir(),'smartlabs-242-key-'));
  t.after(()=>rmSync(dir,{recursive:true,force:true}));
  const file=join(dir,'fake-key');
  for(const suffix of ['', '\n', '\r\n']){
@@ -18,7 +19,7 @@ test('server config loads exact fake key bytes from _FILE, allowing one terminal
 });
 
 test('server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure',t=>{
- const dir=mkdtempSync(join(process.env.TMPDIR,'smartlabs-242-invalid-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
+ const dir=mkdtempSync(join(process.env.TMPDIR??tmpdir(),'smartlabs-242-invalid-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
  const file=join(dir,'fake-key');
  const reject=env=>assert.throws(()=>readSmartLabsConfig(env),e=>{
   assert.equal(e.code,'credentials_configuration_invalid');assert.equal(e.status,503);
@@ -37,7 +38,7 @@ test('server config refuses malformed, ambiguous, empty, missing and unreadable 
 });
 
 test('explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt',t=>{
- const dir=mkdtempSync(join(process.env.TMPDIR,'smartlabs-242-cli-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
+ const dir=mkdtempSync(join(process.env.TMPDIR??tmpdir(),'smartlabs-242-cli-'));t.after(()=>rmSync(dir,{recursive:true,force:true}));
  const file=join(dir,'fake-key'),context=join(dir,'context.mjs');writeFileSync(file,'fake-secret-cli\n');
  const run=()=>spawnSync(process.execPath,[fileURLToPath(new URL('../scripts/smartlabs-smoke.mjs',import.meta.url)),'--confirm=ISSUE242_ONE_ATTEMPT','--trusted-context='+context],{encoding:'utf8',env:{PATH:process.env.PATH,SystemRoot:process.env.SystemRoot,SMARTLABS_GEMMA_ENABLED:'true',SMARTLABS_TTS_ENABLED:'true',SMARTLABS_ASR_ENABLED:'true',SMARTLABS_GEMMA_API_KEY_FILE:file,SMARTLABS_API_KEY_FILE:file},timeout:10000});
  const source=leak=>`export async function createSmokeContext(){return {sourceGatesPassed:true,providerAuthorization:'ISSUE242_G1_T1_A1',jobId:'fixture',runtime:{smoke:async()=>({status:'REVIEW_REQUIRED',T1:{status:'draft',assetVersionId:'fixture'},A1:{status:'NOT_RUN_REQUIRES_APPROVED_SOURCE',sourceVersionId:'fixture'},issue:242,quality_certified:false,production_activated:false,fixture:${JSON.stringify(leak)}})}}}`;

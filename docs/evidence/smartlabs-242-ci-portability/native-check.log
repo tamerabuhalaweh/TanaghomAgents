@@ -1,0 +1,7 @@
+Command: npm.cmd run check
+Exit: 0
+
+> tanaghom-agents@0.1.0 check
+> node scripts/verify-repository.mjs
+
+Repository verification passed (1788 files checked).

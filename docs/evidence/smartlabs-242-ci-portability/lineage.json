@@ -1,0 +1,1254 @@
+{
+  "baseline": "b81e01e5c9d3b5486632569014008aabf11a01f1",
+  "head": "046dfa3ec051e1407210af658fcaef7f1133bcee",
+  "original_approved_full_freeze_sha256": "0408e5154688479d31b10f240316683252da4922fcaa4fd35375e8febabaf428",
+  "prior_commit_parity_receipt_sha256": "f81a730efe1bf521125e2878f6b8460c9f54fa869f8160b89af0fa252fd4d900",
+  "prior_177_blob_parity_verified": true,
+  "unchanged_original_entries": 175,
+  "permitted_changed_entries": [
+    "tests/smartlabs-secret-config.test.mjs",
+    "tests/smartlabs-server-factory.test.mjs"
+  ],
+  "previous_postgres_browser_security_results": "historically valid at byte-identical production sources; not rerun here",
+  "entries": [
+    {
+      "path": ".env.example",
+      "approved_index_sha256": "fa0990157e0d38d6495a398a8b349c35a5be1960a56dd1b40246b80d76ec41c7",
+      "head_sha256": "fa0990157e0d38d6495a398a8b349c35a5be1960a56dd1b40246b80d76ec41c7",
+      "current_index_sha256": "fa0990157e0d38d6495a398a8b349c35a5be1960a56dd1b40246b80d76ec41c7",
+      "unchanged": true
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/object-keys.ts",
+      "approved_index_sha256": "004efb9abe5169c435cdee1bd482d6962780b770f4b970324b74dd6f68b848f9",
+      "head_sha256": "004efb9abe5169c435cdee1bd482d6962780b770f4b970324b74dd6f68b848f9",
+      "current_index_sha256": "004efb9abe5169c435cdee1bd482d6962780b770f4b970324b74dd6f68b848f9",
+      "unchanged": true
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/storage.ts",
+      "approved_index_sha256": "a083e22b19428236b9144f5e7bc1814573b83c2af28d34bbd9f9af4b8f7140c4",
+      "head_sha256": "a083e22b19428236b9144f5e7bc1814573b83c2af28d34bbd9f9af4b8f7140c4",
+      "current_index_sha256": "a083e22b19428236b9144f5e7bc1814573b83c2af28d34bbd9f9af4b8f7140c4",
+      "unchanged": true
+    },
+    {
+      "path": "apps/dashboard/lib/server/smartlabs-runtime.ts",
+      "approved_index_sha256": "13b8746ddd3b18124f991bc2c4fdaa90b02524bd91bc1f5d4647f435943d2e77",
+      "head_sha256": "13b8746ddd3b18124f991bc2c4fdaa90b02524bd91bc1f5d4647f435943d2e77",
+      "current_index_sha256": "13b8746ddd3b18124f991bc2c4fdaa90b02524bd91bc1f5d4647f435943d2e77",
+      "unchanged": true
+    },
+    {
+      "path": "docs/architecture/adr-smartlabs-server-adapters.md",
+      "approved_index_sha256": "98335f46f1438f43dbe2162305009627730c12cd4d67693be0bbe8389705d7ac",
+      "head_sha256": "98335f46f1438f43dbe2162305009627730c12cd4d67693be0bbe8389705d7ac",
+      "current_index_sha256": "98335f46f1438f43dbe2162305009627730c12cd4d67693be0bbe8389705d7ac",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/.gitattributes",
+      "approved_index_sha256": "ea911ca4f0e8529a9a0fb94d48a9bffa8e7327f8b3fbc7021273e3a427af6971",
+      "head_sha256": "ea911ca4f0e8529a9a0fb94d48a9bffa8e7327f8b3fbc7021273e3a427af6971",
+      "current_index_sha256": "ea911ca4f0e8529a9a0fb94d48a9bffa8e7327f8b3fbc7021273e3a427af6971",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/A-green.log",
+      "approved_index_sha256": "64ff84b569209776445f04bf7615e03ad586a89bd29893616bca4b2d02ca1f67",
+      "head_sha256": "64ff84b569209776445f04bf7615e03ad586a89bd29893616bca4b2d02ca1f67",
+      "current_index_sha256": "64ff84b569209776445f04bf7615e03ad586a89bd29893616bca4b2d02ca1f67",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/A-red.log",
+      "approved_index_sha256": "bf405454e5c3edd5bbc8ea142e0d8581d5a497cd0ac1d18b2124cd588bb82be4",
+      "head_sha256": "bf405454e5c3edd5bbc8ea142e0d8581d5a497cd0ac1d18b2124cd588bb82be4",
+      "current_index_sha256": "bf405454e5c3edd5bbc8ea142e0d8581d5a497cd0ac1d18b2124cd588bb82be4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/B-green.log",
+      "approved_index_sha256": "caa919a7210099f2c3d651107455d54352d67d7a240b960ed77cc73ba82d05f7",
+      "head_sha256": "caa919a7210099f2c3d651107455d54352d67d7a240b960ed77cc73ba82d05f7",
+      "current_index_sha256": "caa919a7210099f2c3d651107455d54352d67d7a240b960ed77cc73ba82d05f7",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/B-red.log",
+      "approved_index_sha256": "91406b5bbee5fa2fb06ea27e386120a163981e01e3df85fe4ac7ea3aa0327e40",
+      "head_sha256": "91406b5bbee5fa2fb06ea27e386120a163981e01e3df85fe4ac7ea3aa0327e40",
+      "current_index_sha256": "91406b5bbee5fa2fb06ea27e386120a163981e01e3df85fe4ac7ea3aa0327e40",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/C-green.log",
+      "approved_index_sha256": "3c3ffc9a4e9f0a4623122b6445a3778b85d7fc4127ae4f71b4361b28148520b6",
+      "head_sha256": "3c3ffc9a4e9f0a4623122b6445a3778b85d7fc4127ae4f71b4361b28148520b6",
+      "current_index_sha256": "3c3ffc9a4e9f0a4623122b6445a3778b85d7fc4127ae4f71b4361b28148520b6",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/C-red.log",
+      "approved_index_sha256": "5c2b3effaead8c1be7abd0d82c8aec60c33fa62682f2b86d412d8c847c759b1d",
+      "head_sha256": "5c2b3effaead8c1be7abd0d82c8aec60c33fa62682f2b86d412d8c847c759b1d",
+      "current_index_sha256": "5c2b3effaead8c1be7abd0d82c8aec60c33fa62682f2b86d412d8c847c759b1d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/D-green.log",
+      "approved_index_sha256": "cad580fd2f7a70d44f3fe93cd1698d62786ebc2aed8f8f0e3ce3d17d074fa427",
+      "head_sha256": "cad580fd2f7a70d44f3fe93cd1698d62786ebc2aed8f8f0e3ce3d17d074fa427",
+      "current_index_sha256": "cad580fd2f7a70d44f3fe93cd1698d62786ebc2aed8f8f0e3ce3d17d074fa427",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/D-red.log",
+      "approved_index_sha256": "0243ef106983c3a050873cf086add10c5d624e7fb754b2594d94bd07416e719a",
+      "head_sha256": "0243ef106983c3a050873cf086add10c5d624e7fb754b2594d94bd07416e719a",
+      "current_index_sha256": "0243ef106983c3a050873cf086add10c5d624e7fb754b2594d94bd07416e719a",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/README.md",
+      "approved_index_sha256": "60651bcfe320792e7a52ddfabe7f13678994804c2f5d34ef0a45369e8289b3bc",
+      "head_sha256": "60651bcfe320792e7a52ddfabe7f13678994804c2f5d34ef0a45369e8289b3bc",
+      "current_index_sha256": "60651bcfe320792e7a52ddfabe7f13678994804c2f5d34ef0a45369e8289b3bc",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/audit-online-final.log",
+      "approved_index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "head_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "current_index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/build-final.log",
+      "approved_index_sha256": "9f6865c43bb87a3b9d75ca30768ce9df1a291731050105c2c49b81bc654f7955",
+      "head_sha256": "9f6865c43bb87a3b9d75ca30768ce9df1a291731050105c2c49b81bc654f7955",
+      "current_index_sha256": "9f6865c43bb87a3b9d75ca30768ce9df1a291731050105c2c49b81bc654f7955",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/build-isolation.json",
+      "approved_index_sha256": "dfae8bbde7252fbe0cba8411a2cea93d6c91df3668a5f7d4456794fbb12e60be",
+      "head_sha256": "dfae8bbde7252fbe0cba8411a2cea93d6c91df3668a5f7d4456794fbb12e60be",
+      "current_index_sha256": "dfae8bbde7252fbe0cba8411a2cea93d6c91df3668a5f7d4456794fbb12e60be",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/check-evidence-final.json",
+      "approved_index_sha256": "4f7de6e8a5af60082fda22cf66065973fb68214f658d11816c529a65e838454d",
+      "head_sha256": "4f7de6e8a5af60082fda22cf66065973fb68214f658d11816c529a65e838454d",
+      "current_index_sha256": "4f7de6e8a5af60082fda22cf66065973fb68214f658d11816c529a65e838454d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/check-evidence-final.log",
+      "approved_index_sha256": "98f14815816cc6cf4c0ea5f31e8decb4240ee449c7731da9ca6150c7ca0a7018",
+      "head_sha256": "98f14815816cc6cf4c0ea5f31e8decb4240ee449c7731da9ca6150c7ca0a7018",
+      "current_index_sha256": "98f14815816cc6cf4c0ea5f31e8decb4240ee449c7731da9ca6150c7ca0a7018",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/check-final.log",
+      "approved_index_sha256": "6dcfc6693d1910e4594ba79cfe7e606ded810b11da92edbbef0f7bf437a49f62",
+      "head_sha256": "6dcfc6693d1910e4594ba79cfe7e606ded810b11da92edbbef0f7bf437a49f62",
+      "current_index_sha256": "6dcfc6693d1910e4594ba79cfe7e606ded810b11da92edbbef0f7bf437a49f62",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/full-final.log",
+      "approved_index_sha256": "3938f484346683158cc81a6a20f091e2c98131c8173025aaf9a20ab8a06c40a9",
+      "head_sha256": "3938f484346683158cc81a6a20f091e2c98131c8173025aaf9a20ab8a06c40a9",
+      "current_index_sha256": "3938f484346683158cc81a6a20f091e2c98131c8173025aaf9a20ab8a06c40a9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-audio-contract.log",
+      "approved_index_sha256": "db993625a2ed8e7eb00130951989de6ee319ca39d77ff90b2cb407d74363778e",
+      "head_sha256": "db993625a2ed8e7eb00130951989de6ee319ca39d77ff90b2cb407d74363778e",
+      "current_index_sha256": "db993625a2ed8e7eb00130951989de6ee319ca39d77ff90b2cb407d74363778e",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-baseline-worker-job-update.log",
+      "approved_index_sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "head_sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "current_index_sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-baseline-worker-truncate.log",
+      "approved_index_sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "head_sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "current_index_sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-combined-native.log",
+      "approved_index_sha256": "1970a020a1910af508e2e4f76d666ec046ad17a37c6fe4caedb850ffe826c1c9",
+      "head_sha256": "1970a020a1910af508e2e4f76d666ec046ad17a37c6fe4caedb850ffe826c1c9",
+      "current_index_sha256": "1970a020a1910af508e2e4f76d666ec046ad17a37c6fe4caedb850ffe826c1c9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-create-db.log",
+      "approved_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "head_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-cleanup-absence.log",
+      "approved_index_sha256": "b80ff3187d98ecbd51131dfbc7578755a091aadb12780568c1d00335c02ca097",
+      "head_sha256": "b80ff3187d98ecbd51131dfbc7578755a091aadb12780568c1d00335c02ca097",
+      "current_index_sha256": "b80ff3187d98ecbd51131dfbc7578755a091aadb12780568c1d00335c02ca097",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-cleanup-census.log",
+      "approved_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "head_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-cleanup-owner.log",
+      "approved_index_sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "head_sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "current_index_sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-cleanup.log",
+      "approved_index_sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "head_sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "current_index_sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-create.log",
+      "approved_index_sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "head_sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "current_index_sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-owner.log",
+      "approved_index_sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "head_sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "current_index_sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-ready-0.log",
+      "approved_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "head_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "current_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-ready-1.log",
+      "approved_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "head_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "current_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-ready-2.log",
+      "approved_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "head_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "current_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-ready-3.log",
+      "approved_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "head_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "current_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-database-ready-4.log",
+      "approved_index_sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "head_sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "current_index_sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-cleanup-absence.log",
+      "approved_index_sha256": "392599b7a248fa29ca032be73ef8890ea7005ff9e7973f9522beee23f039f3ce",
+      "head_sha256": "392599b7a248fa29ca032be73ef8890ea7005ff9e7973f9522beee23f039f3ce",
+      "current_index_sha256": "392599b7a248fa29ca032be73ef8890ea7005ff9e7973f9522beee23f039f3ce",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-cleanup-census.log",
+      "approved_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "head_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-cleanup-owner.log",
+      "approved_index_sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "head_sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "current_index_sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-cleanup.log",
+      "approved_index_sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "head_sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "current_index_sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-create.log",
+      "approved_index_sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "head_sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "current_index_sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-db.log",
+      "approved_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "head_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "current_index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-native.log",
+      "approved_index_sha256": "9149dcb5603962fc780981c121e13ac5c0c92891ff7bb64710bdc52c907e0399",
+      "head_sha256": "9149dcb5603962fc780981c121e13ac5c0c92891ff7bb64710bdc52c907e0399",
+      "current_index_sha256": "9149dcb5603962fc780981c121e13ac5c0c92891ff7bb64710bdc52c907e0399",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-owner.log",
+      "approved_index_sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "head_sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "current_index_sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-ready-0.log",
+      "approved_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "head_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "current_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-ready-1.log",
+      "approved_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "head_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "current_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-ready-2.log",
+      "approved_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "head_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "current_index_sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-foundation-ready-3.log",
+      "approved_index_sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "head_sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "current_index_sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-full-chain-through46.log",
+      "approved_index_sha256": "c0ee8feb76c2c46c9226e7650d8c4aef57506db01fc0469b558cb512e99b0c18",
+      "head_sha256": "c0ee8feb76c2c46c9226e7650d8c4aef57506db01fc0469b558cb512e99b0c18",
+      "current_index_sha256": "c0ee8feb76c2c46c9226e7650d8c4aef57506db01fc0469b558cb512e99b0c18",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-marker.log",
+      "approved_index_sha256": "b47e6e0919e856285dde34a45a4c3baf763e4c224617ac64f17dc810dd4774b2",
+      "head_sha256": "b47e6e0919e856285dde34a45a4c3baf763e4c224617ac64f17dc810dd4774b2",
+      "current_index_sha256": "b47e6e0919e856285dde34a45a4c3baf763e4c224617ac64f17dc810dd4774b2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-migration-verification.log",
+      "approved_index_sha256": "0ce7be70982d7923cf1a10899514021d75bea7eac46eb9948e80e89fd3bbd32d",
+      "head_sha256": "0ce7be70982d7923cf1a10899514021d75bea7eac46eb9948e80e89fd3bbd32d",
+      "current_index_sha256": "0ce7be70982d7923cf1a10899514021d75bea7eac46eb9948e80e89fd3bbd32d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-privileges.log",
+      "approved_index_sha256": "237e0e5ab168b033de06ae820ce1755550b49d0f5f4131af3f7d259a37b7ecc0",
+      "head_sha256": "237e0e5ab168b033de06ae820ce1755550b49d0f5f4131af3f7d259a37b7ecc0",
+      "current_index_sha256": "237e0e5ab168b033de06ae820ce1755550b49d0f5f4131af3f7d259a37b7ecc0",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-raw-receipts.json",
+      "approved_index_sha256": "1307da45dccabaaedf4e2bc56ceb08924a794cda937850a74707ffd2ceed10b1",
+      "head_sha256": "1307da45dccabaaedf4e2bc56ceb08924a794cda937850a74707ffd2ceed10b1",
+      "current_index_sha256": "1307da45dccabaaedf4e2bc56ceb08924a794cda937850a74707ffd2ceed10b1",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native-receipts.json",
+      "approved_index_sha256": "5dac450279bf0901e1e4fa1c080066bfa5d238a039ffff3df25819498c6e4f86",
+      "head_sha256": "5dac450279bf0901e1e4fa1c080066bfa5d238a039ffff3df25819498c6e4f86",
+      "current_index_sha256": "5dac450279bf0901e1e4fa1c080066bfa5d238a039ffff3df25819498c6e4f86",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/native.py.txt",
+      "approved_index_sha256": "dafa549611281a34161f075c149059acbb747b98b9c85d5f1efd387845a1b542",
+      "head_sha256": "dafa549611281a34161f075c149059acbb747b98b9c85d5f1efd387845a1b542",
+      "current_index_sha256": "dafa549611281a34161f075c149059acbb747b98b9c85d5f1efd387845a1b542",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/post-native-artifact-scan.json",
+      "approved_index_sha256": "3eb09b0ec2839f0a74d0091d0aee4df8204767d727d38c7887392205a5d9689a",
+      "head_sha256": "3eb09b0ec2839f0a74d0091d0aee4df8204767d727d38c7887392205a5d9689a",
+      "current_index_sha256": "3eb09b0ec2839f0a74d0091d0aee4df8204767d727d38c7887392205a5d9689a",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/runtime-probes.log",
+      "approved_index_sha256": "f76bb057695575b30946178443419aceebf2bdda4c36443f8845a963e8bbd20c",
+      "head_sha256": "f76bb057695575b30946178443419aceebf2bdda4c36443f8845a963e8bbd20c",
+      "current_index_sha256": "f76bb057695575b30946178443419aceebf2bdda4c36443f8845a963e8bbd20c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/runtime-probes.mjs.txt",
+      "approved_index_sha256": "931f910aba3c0c48db90abe21c98d50999ebc22f044b5f9bb1adb55252b569e9",
+      "head_sha256": "931f910aba3c0c48db90abe21c98d50999ebc22f044b5f9bb1adb55252b569e9",
+      "current_index_sha256": "931f910aba3c0c48db90abe21c98d50999ebc22f044b5f9bb1adb55252b569e9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/smoke-red.log",
+      "approved_index_sha256": "3784fa5e20a636a8e4d74f918836cb12951842e95d84754b870eb6741113ba7c",
+      "head_sha256": "3784fa5e20a636a8e4d74f918836cb12951842e95d84754b870eb6741113ba7c",
+      "current_index_sha256": "3784fa5e20a636a8e4d74f918836cb12951842e95d84754b870eb6741113ba7c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/source-receipts.json",
+      "approved_index_sha256": "b528b3e12390196d368e00a03a328fbe3ea449ecfc06cd9a1468178bead07a3c",
+      "head_sha256": "b528b3e12390196d368e00a03a328fbe3ea449ecfc06cd9a1468178bead07a3c",
+      "current_index_sha256": "b528b3e12390196d368e00a03a328fbe3ea449ecfc06cd9a1468178bead07a3c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/source.py.txt",
+      "approved_index_sha256": "d6be7187cc0f98075327370f4d77b5fd0c18b38c3b462242cf478df5d7d3c198",
+      "head_sha256": "d6be7187cc0f98075327370f4d77b5fd0c18b38c3b462242cf478df5d7d3c198",
+      "current_index_sha256": "d6be7187cc0f98075327370f4d77b5fd0c18b38c3b462242cf478df5d7d3c198",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/targeted-attempt1.log",
+      "approved_index_sha256": "dc96e2f3ce8928893453706da7e5bee2a4f778295878cc155c7db8be30f151e3",
+      "head_sha256": "dc96e2f3ce8928893453706da7e5bee2a4f778295878cc155c7db8be30f151e3",
+      "current_index_sha256": "dc96e2f3ce8928893453706da7e5bee2a4f778295878cc155c7db8be30f151e3",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/targeted-attempt2-old-cli-fixture.log",
+      "approved_index_sha256": "b4eb568cea5095ef4b8ec7a13601d52c1a28b824afe64ab7ede2128585d94932",
+      "head_sha256": "b4eb568cea5095ef4b8ec7a13601d52c1a28b824afe64ab7ede2128585d94932",
+      "current_index_sha256": "b4eb568cea5095ef4b8ec7a13601d52c1a28b824afe64ab7ede2128585d94932",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/targeted-final.log",
+      "approved_index_sha256": "972a4ed6b12b2506a08d97a556581e5941af78ab6e471aadc7aab812f69c65f7",
+      "head_sha256": "972a4ed6b12b2506a08d97a556581e5941af78ab6e471aadc7aab812f69c65f7",
+      "current_index_sha256": "972a4ed6b12b2506a08d97a556581e5941af78ab6e471aadc7aab812f69c65f7",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/typecheck-final.log",
+      "approved_index_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "head_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "current_index_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-correction1/verified-source-bytes.json",
+      "approved_index_sha256": "a5336944d9cfd9ee19d00315c5781f899c84b28003b9a522318289f5f2a57087",
+      "head_sha256": "a5336944d9cfd9ee19d00315c5781f899c84b28003b9a522318289f5f2a57087",
+      "current_index_sha256": "a5336944d9cfd9ee19d00315c5781f899c84b28003b9a522318289f5f2a57087",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/.gitattributes",
+      "approved_index_sha256": "f26ad69dc2be78bda2486bb0a4fad87b07f3a38de3b325348e4b1b349ada040e",
+      "head_sha256": "f26ad69dc2be78bda2486bb0a4fad87b07f3a38de3b325348e4b1b349ada040e",
+      "current_index_sha256": "f26ad69dc2be78bda2486bb0a4fad87b07f3a38de3b325348e4b1b349ada040e",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/README.md",
+      "approved_index_sha256": "7196ea493fa065782ff4cff3616d66dc67f9950766d47c518189ac3d9c1569b8",
+      "head_sha256": "7196ea493fa065782ff4cff3616d66dc67f9950766d47c518189ac3d9c1569b8",
+      "current_index_sha256": "7196ea493fa065782ff4cff3616d66dc67f9950766d47c518189ac3d9c1569b8",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/audit-online-final-before-eof-policy.json",
+      "approved_index_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "head_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "current_index_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/audit-online-final-before-eof-policy.log",
+      "approved_index_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "head_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "current_index_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/audit-online-final.json",
+      "approved_index_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "head_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "current_index_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/audit-online-final.log",
+      "approved_index_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "head_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "current_index_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/audit-online.json",
+      "approved_index_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "head_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "current_index_sha256": "16c34ae7a1abe46584bae66d406cb17246cc4a5f00f07da361173e9146c00c03",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/audit-online.log",
+      "approved_index_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "head_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "current_index_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/build-isolation.json",
+      "approved_index_sha256": "3f5708d72a5e371d2fd18a75dea6333595ca94caa27ec93ba8fbc4e697672168",
+      "head_sha256": "3f5708d72a5e371d2fd18a75dea6333595ca94caa27ec93ba8fbc4e697672168",
+      "current_index_sha256": "3f5708d72a5e371d2fd18a75dea6333595ca94caa27ec93ba8fbc4e697672168",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/build.json",
+      "approved_index_sha256": "5d58115e598d65740dd308d61d1634fdb19cf8046005c8f08ac1dc626d4a9609",
+      "head_sha256": "5d58115e598d65740dd308d61d1634fdb19cf8046005c8f08ac1dc626d4a9609",
+      "current_index_sha256": "5d58115e598d65740dd308d61d1634fdb19cf8046005c8f08ac1dc626d4a9609",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/build.log",
+      "approved_index_sha256": "df101b590d27781fc7b46e353f85d6aa96ce84bc51e0d51655841e2c905ae616",
+      "head_sha256": "df101b590d27781fc7b46e353f85d6aa96ce84bc51e0d51655841e2c905ae616",
+      "current_index_sha256": "df101b590d27781fc7b46e353f85d6aa96ce84bc51e0d51655841e2c905ae616",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/check-final.json",
+      "approved_index_sha256": "a046bf922b03db01662b37e9135ae8f8c02ce7496dfdb967b0789d60ab8cd75f",
+      "head_sha256": "a046bf922b03db01662b37e9135ae8f8c02ce7496dfdb967b0789d60ab8cd75f",
+      "current_index_sha256": "a046bf922b03db01662b37e9135ae8f8c02ce7496dfdb967b0789d60ab8cd75f",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/check-final.log",
+      "approved_index_sha256": "c0ef7cb382e3ab27d7d1319ccab31fb0cb1271374a0066cf8ee5122a785fd305",
+      "head_sha256": "c0ef7cb382e3ab27d7d1319ccab31fb0cb1271374a0066cf8ee5122a785fd305",
+      "current_index_sha256": "c0ef7cb382e3ab27d7d1319ccab31fb0cb1271374a0066cf8ee5122a785fd305",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/check.json",
+      "approved_index_sha256": "89fcea491fba7f3535b98950b456f55a73112f35ac67393740ac9123f824effe",
+      "head_sha256": "89fcea491fba7f3535b98950b456f55a73112f35ac67393740ac9123f824effe",
+      "current_index_sha256": "89fcea491fba7f3535b98950b456f55a73112f35ac67393740ac9123f824effe",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/check.log",
+      "approved_index_sha256": "2b527a56a81fe7d388edacea119652c0750b2c2344e994c7d421bb83608214bc",
+      "head_sha256": "2b527a56a81fe7d388edacea119652c0750b2c2344e994c7d421bb83608214bc",
+      "current_index_sha256": "2b527a56a81fe7d388edacea119652c0750b2c2344e994c7d421bb83608214bc",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/cleanup-issue242-b1f2263da8354c02a6f3f13edfd706e8.json",
+      "approved_index_sha256": "bd8604b752b41f0a742d18cdefa0f5559015fd8d14a628c6be20a0a9e8c84c74",
+      "head_sha256": "bd8604b752b41f0a742d18cdefa0f5559015fd8d14a628c6be20a0a9e8c84c74",
+      "current_index_sha256": "bd8604b752b41f0a742d18cdefa0f5559015fd8d14a628c6be20a0a9e8c84c74",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/cleanup-issue242-b1f2263da8354c02a6f3f13edfd706e8.log",
+      "approved_index_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "head_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "current_index_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/cleanup-issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29.json",
+      "approved_index_sha256": "9b7843d5a4a19aadf2f4611403f9266c2d2234e1e5bca122360e4f98849999d8",
+      "head_sha256": "9b7843d5a4a19aadf2f4611403f9266c2d2234e1e5bca122360e4f98849999d8",
+      "current_index_sha256": "9b7843d5a4a19aadf2f4611403f9266c2d2234e1e5bca122360e4f98849999d8",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/cleanup-issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29.log",
+      "approved_index_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "head_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "current_index_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/combined-attempt1.log",
+      "approved_index_sha256": "0b0ee28eaab8b16352c6ec6c930197fbff0cf393bb9325715b78d24aa60fb54b",
+      "head_sha256": "0b0ee28eaab8b16352c6ec6c930197fbff0cf393bb9325715b78d24aa60fb54b",
+      "current_index_sha256": "0b0ee28eaab8b16352c6ec6c930197fbff0cf393bb9325715b78d24aa60fb54b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/combined-attempt2.log",
+      "approved_index_sha256": "8dcee3ecb7a50ea884e8d077b18db3b150e7a9c43a5ff20f757d1a79647523e9",
+      "head_sha256": "8dcee3ecb7a50ea884e8d077b18db3b150e7a9c43a5ff20f757d1a79647523e9",
+      "current_index_sha256": "8dcee3ecb7a50ea884e8d077b18db3b150e7a9c43a5ff20f757d1a79647523e9",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/combined-final.json",
+      "approved_index_sha256": "dd0fdf36436d12f0f81bcc62509cbb47270941a8792f37441676bb94517a50fc",
+      "head_sha256": "dd0fdf36436d12f0f81bcc62509cbb47270941a8792f37441676bb94517a50fc",
+      "current_index_sha256": "dd0fdf36436d12f0f81bcc62509cbb47270941a8792f37441676bb94517a50fc",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/combined-final.log",
+      "approved_index_sha256": "4e8ca880559c274017258a313afe235574a91d9ab8da25239e86404f4e79a2c2",
+      "head_sha256": "4e8ca880559c274017258a313afe235574a91d9ab8da25239e86404f4e79a2c2",
+      "current_index_sha256": "4e8ca880559c274017258a313afe235574a91d9ab8da25239e86404f4e79a2c2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/decoder-pin.json",
+      "approved_index_sha256": "250b78a755e46a623559a2120fbc235da8b22f947d7f125637b1d675e55bd380",
+      "head_sha256": "250b78a755e46a623559a2120fbc235da8b22f947d7f125637b1d675e55bd380",
+      "current_index_sha256": "250b78a755e46a623559a2120fbc235da8b22f947d7f125637b1d675e55bd380",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/file-green.json",
+      "approved_index_sha256": "3026fc814b83847c2fe5d26682010495df7b615b30c9830bde480ace40dc5416",
+      "head_sha256": "3026fc814b83847c2fe5d26682010495df7b615b30c9830bde480ace40dc5416",
+      "current_index_sha256": "3026fc814b83847c2fe5d26682010495df7b615b30c9830bde480ace40dc5416",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/file-green.log",
+      "approved_index_sha256": "c74ec88c69d8ab6764b0db1b9a24f57c4c2bd092b2bf7a030b2a813c1f937791",
+      "head_sha256": "c74ec88c69d8ab6764b0db1b9a24f57c4c2bd092b2bf7a030b2a813c1f937791",
+      "current_index_sha256": "c74ec88c69d8ab6764b0db1b9a24f57c4c2bd092b2bf7a030b2a813c1f937791",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation-create-db.json",
+      "approved_index_sha256": "ac805f2e0302d7ca8c52c7535901a521795728d947a8804daa2b6e9b1fba4352",
+      "head_sha256": "ac805f2e0302d7ca8c52c7535901a521795728d947a8804daa2b6e9b1fba4352",
+      "current_index_sha256": "ac805f2e0302d7ca8c52c7535901a521795728d947a8804daa2b6e9b1fba4352",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation-create-db.log",
+      "approved_index_sha256": "af73d38e4cb084b02cd07c61bf5614f4aed80ac7e2cff8a2cf86a923cdd5eb1f",
+      "head_sha256": "af73d38e4cb084b02cd07c61bf5614f4aed80ac7e2cff8a2cf86a923cdd5eb1f",
+      "current_index_sha256": "af73d38e4cb084b02cd07c61bf5614f4aed80ac7e2cff8a2cf86a923cdd5eb1f",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation-fresh.json",
+      "approved_index_sha256": "6d2175223749edef9b6d7cebc40e6604dbf0a60efc984c48363e0314a36a21e5",
+      "head_sha256": "6d2175223749edef9b6d7cebc40e6604dbf0a60efc984c48363e0314a36a21e5",
+      "current_index_sha256": "6d2175223749edef9b6d7cebc40e6604dbf0a60efc984c48363e0314a36a21e5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation-fresh.log",
+      "approved_index_sha256": "bff8f9ef6ef102b75a953b75c9ab9ad4388cd0435d3f40f9a443dc42d05fdeb5",
+      "head_sha256": "bff8f9ef6ef102b75a953b75c9ab9ad4388cd0435d3f40f9a443dc42d05fdeb5",
+      "current_index_sha256": "bff8f9ef6ef102b75a953b75c9ab9ad4388cd0435d3f40f9a443dc42d05fdeb5",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation-pg-create.json",
+      "approved_index_sha256": "9bbd80c325e6019422d5f7afce7117aeb1378fbb9fdcd207db41958ef1d707d1",
+      "head_sha256": "9bbd80c325e6019422d5f7afce7117aeb1378fbb9fdcd207db41958ef1d707d1",
+      "current_index_sha256": "9bbd80c325e6019422d5f7afce7117aeb1378fbb9fdcd207db41958ef1d707d1",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation-pg-create.log",
+      "approved_index_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "head_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "current_index_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation-pg-ownership.json",
+      "approved_index_sha256": "4fef3fe2f15f45ca9786d982ad57ce3bdc9079fcb81f714ad79faa246bc3538a",
+      "head_sha256": "4fef3fe2f15f45ca9786d982ad57ce3bdc9079fcb81f714ad79faa246bc3538a",
+      "current_index_sha256": "4fef3fe2f15f45ca9786d982ad57ce3bdc9079fcb81f714ad79faa246bc3538a",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation.json",
+      "approved_index_sha256": "c153458db71350b56bccceda0d6705f10654ce1b3d4fd0918ea2380264f49c3c",
+      "head_sha256": "c153458db71350b56bccceda0d6705f10654ce1b3d4fd0918ea2380264f49c3c",
+      "current_index_sha256": "c153458db71350b56bccceda0d6705f10654ce1b3d4fd0918ea2380264f49c3c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/foundation.log",
+      "approved_index_sha256": "b2fda8e05fcd7ff9acead57e69383f373cc88f99e17bab7b2e09cd8dda78e2ff",
+      "head_sha256": "b2fda8e05fcd7ff9acead57e69383f373cc88f99e17bab7b2e09cd8dda78e2ff",
+      "current_index_sha256": "b2fda8e05fcd7ff9acead57e69383f373cc88f99e17bab7b2e09cd8dda78e2ff",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/full-final-before-eof-policy.json",
+      "approved_index_sha256": "c49b909ed770a73ca71cd719991ef4084ccb33507e9df0559aa30ecd4686ff09",
+      "head_sha256": "c49b909ed770a73ca71cd719991ef4084ccb33507e9df0559aa30ecd4686ff09",
+      "current_index_sha256": "c49b909ed770a73ca71cd719991ef4084ccb33507e9df0559aa30ecd4686ff09",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/full-final-before-eof-policy.log",
+      "approved_index_sha256": "5e4a5cd229d6880870701c352dd29ab6c9df92e2c41e51671427075016f47a27",
+      "head_sha256": "5e4a5cd229d6880870701c352dd29ab6c9df92e2c41e51671427075016f47a27",
+      "current_index_sha256": "5e4a5cd229d6880870701c352dd29ab6c9df92e2c41e51671427075016f47a27",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/full-final.json",
+      "approved_index_sha256": "d62de0f934f170416b4c13360a63376349c5405a734cff8bafaf933b869195de",
+      "head_sha256": "d62de0f934f170416b4c13360a63376349c5405a734cff8bafaf933b869195de",
+      "current_index_sha256": "d62de0f934f170416b4c13360a63376349c5405a734cff8bafaf933b869195de",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/full-final.log",
+      "approved_index_sha256": "32c607455cb85192792202fbba539eb77dfe5d94453dd21d77b5d462ab902843",
+      "head_sha256": "32c607455cb85192792202fbba539eb77dfe5d94453dd21d77b5d462ab902843",
+      "current_index_sha256": "32c607455cb85192792202fbba539eb77dfe5d94453dd21d77b5d462ab902843",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/full.json",
+      "approved_index_sha256": "3ca4fd1edf565a9895ac728c97d7c6f3f6fcf57f0f9702f6d18667bf747069d3",
+      "head_sha256": "3ca4fd1edf565a9895ac728c97d7c6f3f6fcf57f0f9702f6d18667bf747069d3",
+      "current_index_sha256": "3ca4fd1edf565a9895ac728c97d7c6f3f6fcf57f0f9702f6d18667bf747069d3",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/full.log",
+      "approved_index_sha256": "17e37c72f8fd7063e6706f12d0d81345cb47a4ca1be3d3a2c6c18ba7b455a7f2",
+      "head_sha256": "17e37c72f8fd7063e6706f12d0d81345cb47a4ca1be3d3a2c6c18ba7b455a7f2",
+      "current_index_sha256": "17e37c72f8fd7063e6706f12d0d81345cb47a4ca1be3d3a2c6c18ba7b455a7f2",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/local-native-runner.py.txt",
+      "approved_index_sha256": "50c1b2386d9c217ca17c7a707e361f9d584af52896747062e3a277c3ab40b32f",
+      "head_sha256": "50c1b2386d9c217ca17c7a707e361f9d584af52896747062e3a277c3ab40b32f",
+      "current_index_sha256": "50c1b2386d9c217ca17c7a707e361f9d584af52896747062e3a277c3ab40b32f",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/marker-combined.json",
+      "approved_index_sha256": "8a754e64e436b6eb26e8deb915fe6fd7e38fdec1a1058c990bda1f5fa2312d62",
+      "head_sha256": "8a754e64e436b6eb26e8deb915fe6fd7e38fdec1a1058c990bda1f5fa2312d62",
+      "current_index_sha256": "8a754e64e436b6eb26e8deb915fe6fd7e38fdec1a1058c990bda1f5fa2312d62",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/marker-combined.log",
+      "approved_index_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "head_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "current_index_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/marker-foundation.json",
+      "approved_index_sha256": "0e9e80c2b9001c4eff3fc772334176980e45c47a5cc3bbe879dfc25985c6bfda",
+      "head_sha256": "0e9e80c2b9001c4eff3fc772334176980e45c47a5cc3bbe879dfc25985c6bfda",
+      "current_index_sha256": "0e9e80c2b9001c4eff3fc772334176980e45c47a5cc3bbe879dfc25985c6bfda",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/marker-foundation.log",
+      "approved_index_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "head_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "current_index_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migrate-through0046.json",
+      "approved_index_sha256": "6d1175bcb5a739d5ce99c4343b4cd046eaa6758d45343e7fbbf5717cb463e669",
+      "head_sha256": "6d1175bcb5a739d5ce99c4343b4cd046eaa6758d45343e7fbbf5717cb463e669",
+      "current_index_sha256": "6d1175bcb5a739d5ce99c4343b4cd046eaa6758d45343e7fbbf5717cb463e669",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migrate-through0046.log",
+      "approved_index_sha256": "11f3b35647c8459033df4026a8c56d297f22233bbe82e18f640ba96594be1ffd",
+      "head_sha256": "11f3b35647c8459033df4026a8c56d297f22233bbe82e18f640ba96594be1ffd",
+      "current_index_sha256": "11f3b35647c8459033df4026a8c56d297f22233bbe82e18f640ba96594be1ffd",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migrate.log",
+      "approved_index_sha256": "87a739531d28e6fe85734b7b219508f845af5641e4ec6045a196944bc9933a4d",
+      "head_sha256": "87a739531d28e6fe85734b7b219508f845af5641e4ec6045a196944bc9933a4d",
+      "current_index_sha256": "87a739531d28e6fe85734b7b219508f845af5641e4ec6045a196944bc9933a4d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-cycle-green.log",
+      "approved_index_sha256": "9118db314be7dfe0b2731be7773c569dc2bdd2292884228b87fbdab8fd52e224",
+      "head_sha256": "9118db314be7dfe0b2731be7773c569dc2bdd2292884228b87fbdab8fd52e224",
+      "current_index_sha256": "9118db314be7dfe0b2731be7773c569dc2bdd2292884228b87fbdab8fd52e224",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-cycle-red.log",
+      "approved_index_sha256": "4f0eb8b61734dee3e4df70be18f531f4436c23c7fd1f1d0fc4358a66706bcb59",
+      "head_sha256": "4f0eb8b61734dee3e4df70be18f531f4436c23c7fd1f1d0fc4358a66706bcb59",
+      "current_index_sha256": "4f0eb8b61734dee3e4df70be18f531f4436c23c7fd1f1d0fc4358a66706bcb59",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-final-prepare.json",
+      "approved_index_sha256": "0210e2343830c4b7a0f8c752379b4b737a815885b470b78e5219f5cd58927483",
+      "head_sha256": "0210e2343830c4b7a0f8c752379b4b737a815885b470b78e5219f5cd58927483",
+      "current_index_sha256": "0210e2343830c4b7a0f8c752379b4b737a815885b470b78e5219f5cd58927483",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-final-prepare.log",
+      "approved_index_sha256": "097a4505da5fc4851b2ed7d5a48300f964ac39318a7d0ff2d6829093f1ac0440",
+      "head_sha256": "097a4505da5fc4851b2ed7d5a48300f964ac39318a7d0ff2d6829093f1ac0440",
+      "current_index_sha256": "097a4505da5fc4851b2ed7d5a48300f964ac39318a7d0ff2d6829093f1ac0440",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-final.json",
+      "approved_index_sha256": "4e3b15823aa8c37e331873cc60cd5fff40cdc4c6387f186bbed575051abc317e",
+      "head_sha256": "4e3b15823aa8c37e331873cc60cd5fff40cdc4c6387f186bbed575051abc317e",
+      "current_index_sha256": "4e3b15823aa8c37e331873cc60cd5fff40cdc4c6387f186bbed575051abc317e",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-final.log",
+      "approved_index_sha256": "99e0cfd6c0b1bb3b67b43e040cf0f802525556f895e8ce07c20317ab2ac64c7d",
+      "head_sha256": "99e0cfd6c0b1bb3b67b43e040cf0f802525556f895e8ce07c20317ab2ac64c7d",
+      "current_index_sha256": "99e0cfd6c0b1bb3b67b43e040cf0f802525556f895e8ce07c20317ab2ac64c7d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-role-green.log",
+      "approved_index_sha256": "139a0625bbdfed97018d20fb91cda9ff58bd1a5121fbf2f82bf919d5137bdca0",
+      "head_sha256": "139a0625bbdfed97018d20fb91cda9ff58bd1a5121fbf2f82bf919d5137bdca0",
+      "current_index_sha256": "139a0625bbdfed97018d20fb91cda9ff58bd1a5121fbf2f82bf919d5137bdca0",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/migration-role-red.log",
+      "approved_index_sha256": "af86a674473a0eaf4ca75ad15993654a221828a4f98b223aad06c2ff045ae16f",
+      "head_sha256": "af86a674473a0eaf4ca75ad15993654a221828a4f98b223aad06c2ff045ae16f",
+      "current_index_sha256": "af86a674473a0eaf4ca75ad15993654a221828a4f98b223aad06c2ff045ae16f",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/native-receipts.json",
+      "approved_index_sha256": "9ff3f0779202e78323b882470140b0dbde2cfda73617b8d292e231edbca15d46",
+      "head_sha256": "9ff3f0779202e78323b882470140b0dbde2cfda73617b8d292e231edbca15d46",
+      "current_index_sha256": "9ff3f0779202e78323b882470140b0dbde2cfda73617b8d292e231edbca15d46",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/pg-create.json",
+      "approved_index_sha256": "6c8a52b792a14877f314b5ff689b9fabdc0c0eca18c2bff91afeadde1a1d9b1e",
+      "head_sha256": "6c8a52b792a14877f314b5ff689b9fabdc0c0eca18c2bff91afeadde1a1d9b1e",
+      "current_index_sha256": "6c8a52b792a14877f314b5ff689b9fabdc0c0eca18c2bff91afeadde1a1d9b1e",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/pg-create.log",
+      "approved_index_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "head_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "current_index_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/pg-ownership.json",
+      "approved_index_sha256": "ac4b8ea4dfbd1c87ecdc8fe095dfee3a495568a1231a688a00f5a49c72059461",
+      "head_sha256": "ac4b8ea4dfbd1c87ecdc8fe095dfee3a495568a1231a688a00f5a49c72059461",
+      "current_index_sha256": "ac4b8ea4dfbd1c87ecdc8fe095dfee3a495568a1231a688a00f5a49c72059461",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/restricted-current-grants.json",
+      "approved_index_sha256": "75b98fa82699e1c3df3dd64fcc7c67d92a9ce5a54bbb286599b1b07732532cc4",
+      "head_sha256": "75b98fa82699e1c3df3dd64fcc7c67d92a9ce5a54bbb286599b1b07732532cc4",
+      "current_index_sha256": "75b98fa82699e1c3df3dd64fcc7c67d92a9ce5a54bbb286599b1b07732532cc4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/restricted-current-grants.log",
+      "approved_index_sha256": "fda9711b6f446db7a35dd8236d9cad4e9bd5240f19f1211249504ae8c724587c",
+      "head_sha256": "fda9711b6f446db7a35dd8236d9cad4e9bd5240f19f1211249504ae8c724587c",
+      "current_index_sha256": "fda9711b6f446db7a35dd8236d9cad4e9bd5240f19f1211249504ae8c724587c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/smartlabs-242-file-cli-red.log",
+      "approved_index_sha256": "7aa46d0d149b48ebe018172d68c63c616d429c3c938683d13c5221b040485d08",
+      "head_sha256": "7aa46d0d149b48ebe018172d68c63c616d429c3c938683d13c5221b040485d08",
+      "current_index_sha256": "7aa46d0d149b48ebe018172d68c63c616d429c3c938683d13c5221b040485d08",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/smartlabs-242-file-green.log",
+      "approved_index_sha256": "71635cb923605412641d7f091fe7a67757332b76231677f4cba4a52f214a9f6d",
+      "head_sha256": "71635cb923605412641d7f091fe7a67757332b76231677f4cba4a52f214a9f6d",
+      "current_index_sha256": "71635cb923605412641d7f091fe7a67757332b76231677f4cba4a52f214a9f6d",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/smartlabs-242-file-missing-green.log",
+      "approved_index_sha256": "8240f72906f294f7640436074fa69ca8f135413bf3d01ae42eeb278fd2fbab6f",
+      "head_sha256": "8240f72906f294f7640436074fa69ca8f135413bf3d01ae42eeb278fd2fbab6f",
+      "current_index_sha256": "8240f72906f294f7640436074fa69ca8f135413bf3d01ae42eeb278fd2fbab6f",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/smartlabs-242-file-missing-red.log",
+      "approved_index_sha256": "d98dcee4971105516f66b336b1e9f07bf3af4d304eb7f6f30dc4662797edacb4",
+      "head_sha256": "d98dcee4971105516f66b336b1e9f07bf3af4d304eb7f6f30dc4662797edacb4",
+      "current_index_sha256": "d98dcee4971105516f66b336b1e9f07bf3af4d304eb7f6f30dc4662797edacb4",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/smartlabs-242-file-red.log",
+      "approved_index_sha256": "18e01119006a5cc79671cbe4219ea355877860f5856e9138146082203bc39e8b",
+      "head_sha256": "18e01119006a5cc79671cbe4219ea355877860f5856e9138146082203bc39e8b",
+      "current_index_sha256": "18e01119006a5cc79671cbe4219ea355877860f5856e9138146082203bc39e8b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/smartlabs-242-normal-preflight.log",
+      "approved_index_sha256": "9d24d1c4937eef20c1fb4871ef5d982d7180b4b182e4c753e2379e3a15fcbe41",
+      "head_sha256": "9d24d1c4937eef20c1fb4871ef5d982d7180b4b182e4c753e2379e3a15fcbe41",
+      "current_index_sha256": "9d24d1c4937eef20c1fb4871ef5d982d7180b4b182e4c753e2379e3a15fcbe41",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/targeted-final-before-eof-policy.json",
+      "approved_index_sha256": "23a0c132134fdb90cf6c8d800bdd32e61ee215bb986d6d78645743bed94b4744",
+      "head_sha256": "23a0c132134fdb90cf6c8d800bdd32e61ee215bb986d6d78645743bed94b4744",
+      "current_index_sha256": "23a0c132134fdb90cf6c8d800bdd32e61ee215bb986d6d78645743bed94b4744",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/targeted-final-before-eof-policy.log",
+      "approved_index_sha256": "8f42657c0a5d41eecbde0a40e72429d220365ba85a910cfb1a188788fbd9c0fd",
+      "head_sha256": "8f42657c0a5d41eecbde0a40e72429d220365ba85a910cfb1a188788fbd9c0fd",
+      "current_index_sha256": "8f42657c0a5d41eecbde0a40e72429d220365ba85a910cfb1a188788fbd9c0fd",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/targeted-final.json",
+      "approved_index_sha256": "6ca910df682f3809ac09e38c4668d54633780bf68247e079eea8c425be7b4d3b",
+      "head_sha256": "6ca910df682f3809ac09e38c4668d54633780bf68247e079eea8c425be7b4d3b",
+      "current_index_sha256": "6ca910df682f3809ac09e38c4668d54633780bf68247e079eea8c425be7b4d3b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/targeted-final.log",
+      "approved_index_sha256": "1eebaa6cfe5685a0a2af15220e40802aa76c562365c107488562a9d9b1441fbe",
+      "head_sha256": "1eebaa6cfe5685a0a2af15220e40802aa76c562365c107488562a9d9b1441fbe",
+      "current_index_sha256": "1eebaa6cfe5685a0a2af15220e40802aa76c562365c107488562a9d9b1441fbe",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/targeted.json",
+      "approved_index_sha256": "c86404905ebb6e99a2703853d538ec143554160ff272c01fd1e9e02cabfa4684",
+      "head_sha256": "c86404905ebb6e99a2703853d538ec143554160ff272c01fd1e9e02cabfa4684",
+      "current_index_sha256": "c86404905ebb6e99a2703853d538ec143554160ff272c01fd1e9e02cabfa4684",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/targeted.log",
+      "approved_index_sha256": "c06ac7381fa6477676a8fa20e26ef4f9162010e5e4bd850f75b948ff92703b1b",
+      "head_sha256": "c06ac7381fa6477676a8fa20e26ef4f9162010e5e4bd850f75b948ff92703b1b",
+      "current_index_sha256": "c06ac7381fa6477676a8fa20e26ef4f9162010e5e4bd850f75b948ff92703b1b",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/typecheck.json",
+      "approved_index_sha256": "4a136bcbe0a8b94fba3067c8a87c6c1775356b3324cc3e7c906f7f8d6ea97496",
+      "head_sha256": "4a136bcbe0a8b94fba3067c8a87c6c1775356b3324cc3e7c906f7f8d6ea97496",
+      "current_index_sha256": "4a136bcbe0a8b94fba3067c8a87c6c1775356b3324cc3e7c906f7f8d6ea97496",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/typecheck.log",
+      "approved_index_sha256": "fb55b926ae5fd70788a94fc4e48b6a2c057e5496358ba7ae17c00629eb3efa85",
+      "head_sha256": "fb55b926ae5fd70788a94fc4e48b6a2c057e5496358ba7ae17c00629eb3efa85",
+      "current_index_sha256": "fb55b926ae5fd70788a94fc4e48b6a2c057e5496358ba7ae17c00629eb3efa85",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/unreadable-native-harness.mjs.txt",
+      "approved_index_sha256": "c958742d599195f0871084d350cdace2a8097c6f11deecc4d55205ce7f70355c",
+      "head_sha256": "c958742d599195f0871084d350cdace2a8097c6f11deecc4d55205ce7f70355c",
+      "current_index_sha256": "c958742d599195f0871084d350cdace2a8097c6f11deecc4d55205ce7f70355c",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/unreadable-native.json",
+      "approved_index_sha256": "53d8cbaa2f198b9b49cc5f4baf00d8f563b61053618515ece00e3e5c800c54bb",
+      "head_sha256": "53d8cbaa2f198b9b49cc5f4baf00d8f563b61053618515ece00e3e5c800c54bb",
+      "current_index_sha256": "53d8cbaa2f198b9b49cc5f4baf00d8f563b61053618515ece00e3e5c800c54bb",
+      "unchanged": true
+    },
+    {
+      "path": "docs/evidence/smartlabs-242-local/unreadable-native.log",
+      "approved_index_sha256": "b0f411f6339fccbae1df521ebe77263780c95e136d718c2a4ab25a681eedf607",
+      "head_sha256": "b0f411f6339fccbae1df521ebe77263780c95e136d718c2a4ab25a681eedf607",
+      "current_index_sha256": "b0f411f6339fccbae1df521ebe77263780c95e136d718c2a4ab25a681eedf607",
+      "unchanged": true
+    },
+    {
+      "path": "docs/runbooks/smartlabs-server-adapters.md",
+      "approved_index_sha256": "d9d6ec3113ff8a711f7cabb02dc69b891a2a371f710f419ee520c7f185316a90",
+      "head_sha256": "d9d6ec3113ff8a711f7cabb02dc69b891a2a371f710f419ee520c7f185316a90",
+      "current_index_sha256": "d9d6ec3113ff8a711f7cabb02dc69b891a2a371f710f419ee520c7f185316a90",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/asr.mjs",
+      "approved_index_sha256": "81a6760df3e1b74f2afa8ed7a4a39d4305eb3c1567dcbbb5f8171f15d978a89a",
+      "head_sha256": "81a6760df3e1b74f2afa8ed7a4a39d4305eb3c1567dcbbb5f8171f15d978a89a",
+      "current_index_sha256": "81a6760df3e1b74f2afa8ed7a4a39d4305eb3c1567dcbbb5f8171f15d978a89a",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/audio.mjs",
+      "approved_index_sha256": "7ee5d8e998ec1e4f21d1b7be1fe0292411b0643d35e80c92a0e6595709edee38",
+      "head_sha256": "7ee5d8e998ec1e4f21d1b7be1fe0292411b0643d35e80c92a0e6595709edee38",
+      "current_index_sha256": "7ee5d8e998ec1e4f21d1b7be1fe0292411b0643d35e80c92a0e6595709edee38",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/decode-audio.d.ts",
+      "approved_index_sha256": "a72025d17bd76840fbda59ff74eefe1949ac73226e6eb07b37866506bb1419b2",
+      "head_sha256": "a72025d17bd76840fbda59ff74eefe1949ac73226e6eb07b37866506bb1419b2",
+      "current_index_sha256": "a72025d17bd76840fbda59ff74eefe1949ac73226e6eb07b37866506bb1419b2",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/decode-audio.mjs",
+      "approved_index_sha256": "01085faeb83168af7d281ccb24fdfdd1f433cc176c83ab0d5745b7294819e81c",
+      "head_sha256": "01085faeb83168af7d281ccb24fdfdd1f433cc176c83ab0d5745b7294819e81c",
+      "current_index_sha256": "01085faeb83168af7d281ccb24fdfdd1f433cc176c83ab0d5745b7294819e81c",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/gemma.mjs",
+      "approved_index_sha256": "736e9063cac6343e7a3489acd7cfd550d04d869d4bc60d6cd4887d0cc5f653c8",
+      "head_sha256": "736e9063cac6343e7a3489acd7cfd550d04d869d4bc60d6cd4887d0cc5f653c8",
+      "current_index_sha256": "736e9063cac6343e7a3489acd7cfd550d04d869d4bc60d6cd4887d0cc5f653c8",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/http.mjs",
+      "approved_index_sha256": "a4069d08b35094f46e6ec9e774d3e25189e2a5c7c64e2b7c1578c7b3b7183654",
+      "head_sha256": "a4069d08b35094f46e6ec9e774d3e25189e2a5c7c64e2b7c1578c7b3b7183654",
+      "current_index_sha256": "a4069d08b35094f46e6ec9e774d3e25189e2a5c7c64e2b7c1578c7b3b7183654",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/index.d.ts",
+      "approved_index_sha256": "47d1364874d34460cf041c68641742b65c34f72d41aed88d3cf980397011b229",
+      "head_sha256": "47d1364874d34460cf041c68641742b65c34f72d41aed88d3cf980397011b229",
+      "current_index_sha256": "47d1364874d34460cf041c68641742b65c34f72d41aed88d3cf980397011b229",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/index.mjs",
+      "approved_index_sha256": "a657d8009735b2c806368e74eff34a01d6da9fe04700a6b5156f17d7551f89fc",
+      "head_sha256": "a657d8009735b2c806368e74eff34a01d6da9fe04700a6b5156f17d7551f89fc",
+      "current_index_sha256": "a657d8009735b2c806368e74eff34a01d6da9fe04700a6b5156f17d7551f89fc",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/adapters/tts.mjs",
+      "approved_index_sha256": "3eb2f3a80aff19752721c79f0b470511b522d7c8f679ca8655e5379f5fc53025",
+      "head_sha256": "3eb2f3a80aff19752721c79f0b470511b522d7c8f679ca8655e5379f5fc53025",
+      "current_index_sha256": "3eb2f3a80aff19752721c79f0b470511b522d7c8f679ca8655e5379f5fc53025",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/package.json",
+      "approved_index_sha256": "ba188931349b8f2c6e746ac8ab4968681d5e042112c1929adccbbf3657ac3c76",
+      "head_sha256": "ba188931349b8f2c6e746ac8ab4968681d5e042112c1929adccbbf3657ac3c76",
+      "current_index_sha256": "ba188931349b8f2c6e746ac8ab4968681d5e042112c1929adccbbf3657ac3c76",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/providers/smartlabs.d.ts",
+      "approved_index_sha256": "8a0e69a1b4c999ffe09f9b66942a22ef7cffb477369ae1af4882456c49384016",
+      "head_sha256": "8a0e69a1b4c999ffe09f9b66942a22ef7cffb477369ae1af4882456c49384016",
+      "current_index_sha256": "8a0e69a1b4c999ffe09f9b66942a22ef7cffb477369ae1af4882456c49384016",
+      "unchanged": true
+    },
+    {
+      "path": "packages/agent-runtime/providers/smartlabs.mjs",
+      "approved_index_sha256": "fded6ecf8f103f897c72fa455cefa1587cb92afb3611f4358e69eccd2a548c7b",
+      "head_sha256": "fded6ecf8f103f897c72fa455cefa1587cb92afb3611f4358e69eccd2a548c7b",
+      "current_index_sha256": "fded6ecf8f103f897c72fa455cefa1587cb92afb3611f4358e69eccd2a548c7b",
+      "unchanged": true
+    },
+    {
+      "path": "packages/contracts/schemas/creative/adapter-envelope.v1.schema.json",
+      "approved_index_sha256": "a01c1d056451bc91118be057380e8be4854a53ef76bf73e9d4887fbbdfb95208",
+      "head_sha256": "a01c1d056451bc91118be057380e8be4854a53ef76bf73e9d4887fbbdfb95208",
+      "current_index_sha256": "a01c1d056451bc91118be057380e8be4854a53ef76bf73e9d4887fbbdfb95208",
+      "unchanged": true
+    },
+    {
+      "path": "packages/contracts/schemas/creative/asset-version-metadata.v1.schema.json",
+      "approved_index_sha256": "1d2569a101eb858127a1e4bc8bd15cda1b244db881ed971c7061bcf2d2e65619",
+      "head_sha256": "1d2569a101eb858127a1e4bc8bd15cda1b244db881ed971c7061bcf2d2e65619",
+      "current_index_sha256": "1d2569a101eb858127a1e4bc8bd15cda1b244db881ed971c7061bcf2d2e65619",
+      "unchanged": true
+    },
+    {
+      "path": "packages/creative-runtime/capabilities.mjs",
+      "approved_index_sha256": "1fe2d77e85c873d68cb640df214d4ca334fe53eaf982082ed312db5d7576955e",
+      "head_sha256": "1fe2d77e85c873d68cb640df214d4ca334fe53eaf982082ed312db5d7576955e",
+      "current_index_sha256": "1fe2d77e85c873d68cb640df214d4ca334fe53eaf982082ed312db5d7576955e",
+      "unchanged": true
+    },
+    {
+      "path": "packages/creative-runtime/storage/keys.mjs",
+      "approved_index_sha256": "610fb45509ad85258e7e76527ffc16a9e44eb639b51741031e9d9e921b456a19",
+      "head_sha256": "610fb45509ad85258e7e76527ffc16a9e44eb639b51741031e9d9e921b456a19",
+      "current_index_sha256": "610fb45509ad85258e7e76527ffc16a9e44eb639b51741031e9d9e921b456a19",
+      "unchanged": true
+    },
+    {
+      "path": "packages/creative-runtime/storage/local-fs.mjs",
+      "approved_index_sha256": "e7965e2454a2701bac042a82485c187972abde9aff6975d19b9851a8ae4e10ba",
+      "head_sha256": "e7965e2454a2701bac042a82485c187972abde9aff6975d19b9851a8ae4e10ba",
+      "current_index_sha256": "e7965e2454a2701bac042a82485c187972abde9aff6975d19b9851a8ae4e10ba",
+      "unchanged": true
+    },
+    {
+      "path": "packages/creative-runtime/storage/s3.mjs",
+      "approved_index_sha256": "feabf2d239eaddcb1bd62784b21eb217bf1210b718e42fa61edce12943903008",
+      "head_sha256": "feabf2d239eaddcb1bd62784b21eb217bf1210b718e42fa61edce12943903008",
+      "current_index_sha256": "feabf2d239eaddcb1bd62784b21eb217bf1210b718e42fa61edce12943903008",
+      "unchanged": true
+    },
+    {
+      "path": "packages/database/migrations/0047_smartlabs_audio.down.sql",
+      "approved_index_sha256": "c6d23464f7f49479297c5b61d2f07786ea94071042922358ac94ba9bb6c705ce",
+      "head_sha256": "c6d23464f7f49479297c5b61d2f07786ea94071042922358ac94ba9bb6c705ce",
+      "current_index_sha256": "c6d23464f7f49479297c5b61d2f07786ea94071042922358ac94ba9bb6c705ce",
+      "unchanged": true
+    },
+    {
+      "path": "packages/database/migrations/0047_smartlabs_audio.up.sql",
+      "approved_index_sha256": "57d4b7becc1dd92c99ea5e72326b785d421aa6d1585c2bfe26f1a8934e9e0f7e",
+      "head_sha256": "57d4b7becc1dd92c99ea5e72326b785d421aa6d1585c2bfe26f1a8934e9e0f7e",
+      "current_index_sha256": "57d4b7becc1dd92c99ea5e72326b785d421aa6d1585c2bfe26f1a8934e9e0f7e",
+      "unchanged": true
+    },
+    {
+      "path": "packages/database/tests/smartlabs_audio.sql",
+      "approved_index_sha256": "e8983bcd8162b9fab5d5090061b9c602d0b71835994cc4e790d0f60888a17963",
+      "head_sha256": "e8983bcd8162b9fab5d5090061b9c602d0b71835994cc4e790d0f60888a17963",
+      "current_index_sha256": "e8983bcd8162b9fab5d5090061b9c602d0b71835994cc4e790d0f60888a17963",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/creative-foundation-integration.mjs",
+      "approved_index_sha256": "ccbffad558ac84e7f59d8eda4ee4acf4963d63a7ad7b991167e47386286580a4",
+      "head_sha256": "ccbffad558ac84e7f59d8eda4ee4acf4963d63a7ad7b991167e47386286580a4",
+      "current_index_sha256": "ccbffad558ac84e7f59d8eda4ee4acf4963d63a7ad7b991167e47386286580a4",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/smartlabs-local-integration.mjs",
+      "approved_index_sha256": "5761fb03ed8c46d979e953e5d04e841863bae4c570161c5703dc6933a48e2a02",
+      "head_sha256": "5761fb03ed8c46d979e953e5d04e841863bae4c570161c5703dc6933a48e2a02",
+      "current_index_sha256": "5761fb03ed8c46d979e953e5d04e841863bae4c570161c5703dc6933a48e2a02",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/smartlabs-migration-verification.mjs",
+      "approved_index_sha256": "d630bf6dd9277468a763f30102cb6523e75f7591eecd0f89cbf35f9bf37281f1",
+      "head_sha256": "d630bf6dd9277468a763f30102cb6523e75f7591eecd0f89cbf35f9bf37281f1",
+      "current_index_sha256": "d630bf6dd9277468a763f30102cb6523e75f7591eecd0f89cbf35f9bf37281f1",
+      "unchanged": true
+    },
+    {
+      "path": "scripts/smartlabs-smoke.mjs",
+      "approved_index_sha256": "8f4231697d7402eb17841ebcda070dc2a7c4103521f08f5ec25f1bab6599bc97",
+      "head_sha256": "8f4231697d7402eb17841ebcda070dc2a7c4103521f08f5ec25f1bab6599bc97",
+      "current_index_sha256": "8f4231697d7402eb17841ebcda070dc2a7c4103521f08f5ec25f1bab6599bc97",
+      "unchanged": true
+    },
+    {
+      "path": "tests/smartlabs-adapters.test.mjs",
+      "approved_index_sha256": "c3210eee591a6eb75a714503328ce2fd29428d7872bd2d2b9c670dca9e6f2644",
+      "head_sha256": "c3210eee591a6eb75a714503328ce2fd29428d7872bd2d2b9c670dca9e6f2644",
+      "current_index_sha256": "c3210eee591a6eb75a714503328ce2fd29428d7872bd2d2b9c670dca9e6f2644",
+      "unchanged": true
+    },
+    {
+      "path": "tests/smartlabs-secret-config.test.mjs",
+      "approved_index_sha256": "9fa105693eda1b42eb48bb01b70b0c61722fb3c3afa5232be5f272b3e666efce",
+      "head_sha256": "9fa105693eda1b42eb48bb01b70b0c61722fb3c3afa5232be5f272b3e666efce",
+      "current_index_sha256": "2bbe61e66bfe096dea711e38d2a9ee87c866180a656bdbff037b30e56aed88b0",
+      "unchanged": false
+    },
+    {
+      "path": "tests/smartlabs-server-factory.test.mjs",
+      "approved_index_sha256": "3a76854234309e9b9ddbef60c7649336d612d5bcaabc02eac96eebc0b3163678",
+      "head_sha256": "3a76854234309e9b9ddbef60c7649336d612d5bcaabc02eac96eebc0b3163678",
+      "current_index_sha256": "d6f61c25856bfc2055f2193bf50be00dfc63bb9dc2ff1e1be083275180015e38",
+      "unchanged": false
+    }
+  ]
+}

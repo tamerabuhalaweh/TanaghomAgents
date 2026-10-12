@@ -1,0 +1,12 @@
+diff --git a/apps/dashboard/next-env.d.ts b/apps/dashboard/next-env.d.ts
+index 9edff1c..ce4e94a 100644
+--- a/apps/dashboard/next-env.d.ts
++++ b/apps/dashboard/next-env.d.ts
+@@ -1,6 +1,7 @@
+ /// <reference types="next" />
+ /// <reference types="next/image-types/global" />
+ import "./.next/types/routes.d.ts";
++import "./.next/types/root-params.d.ts";
+ 
+ // NOTE: This file should not be edited
+ // see https://nextjs.org/docs/app/api-reference/config/typescript for more information.

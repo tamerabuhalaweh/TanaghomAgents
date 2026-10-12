@@ -1,0 +1,35 @@
+Command: docker exec ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c sh -lc export TMPDIR=/owned/fixtures; node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs
+Exit: 0
+✔ server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only (5.876047ms)
+✔ server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure (9.434038ms)
+✔ explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt (105.861576ms)
+✔ server config refuses enabled capability without its key before dispatch (0.336885ms)
+✔ actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only (313.150671ms)
+✔ ASR requires current SQL approved source: draft (28.936751ms)
+✔ ASR requires current SQL approved source: rejected (24.259834ms)
+✔ ASR requires current SQL approved source: archived (21.111616ms)
+✔ ASR requires current SQL approved source: approved (27.781043ms)
+✔ actual private storage reader refuses oversize file before unbounded allocation (31.807958ms)
+✔ TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend (23.982145ms)
+✔ controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs (2.147185ms)
+✔ Creative schema MIME mirrors include controlled compressed audio (0.514997ms)
+✔ guarded server smoke preserves draft, pauses for human approval before A1 and cannot re-spend G1 T1 (26.329746ms)
+✔ smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything (50.071808ms)
+✔ owned active voice prerequisites reject invalid lease and foreign smoke job before spending (18.838115ms)
+✔ tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false} (16.290116ms)
+✔ asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false} (13.905251ms)
+✔ tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true} (20.553534ms)
+✔ asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true} (12.532801ms)
+✔ tts current Creative execution gate fails closed null (15.479585ms)
+✔ asr current Creative execution gate fails closed null (21.610344ms)
+✔ tts current Creative execution gate fails closed "error" (29.179828ms)
+✔ asr current Creative execution gate fails closed "error" (11.188656ms)
+✔ compiled server factory authenticates request; default OFF health exposes presence only without network (12.196382ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 25
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 846.713085

@@ -1,0 +1,4 @@
+Command: docker exec ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c sh -lc git init -q && git config core.autocrlf false && git add -f --pathspec-from-file=/owned/tracked-paths.nul --pathspec-file-nul && git ls-files --stage deployment/phase7c-agent-studio/scripts/common.sh deployment/phase7d-runtime-production-update/scripts/common.sh && test -z "$(git ls-files --others --exclude-standard)"
+Exit: 0
+100755 6794e98add84d58efc42950f4aa46c0648928f5c 0	deployment/phase7c-agent-studio/scripts/common.sh
+100755 2875be4a6338754c4bf012eaec286b1be34ad50c 0	deployment/phase7d-runtime-production-update/scripts/common.sh

@@ -1,0 +1,90 @@
+Command: docker exec ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c sh -lc unset TMPDIR; export TEMP=/owned/fixtures TMP=/owned/fixtures; test ! -e /owned/source/tmp && node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs
+Exit: 1
+✖ server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only (1.323641ms)
+✖ server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure (0.32692ms)
+✖ explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt (0.224407ms)
+✔ server config refuses enabled capability without its key before dispatch (0.91544ms)
+✔ actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only (460.335517ms)
+✔ ASR requires current SQL approved source: draft (46.087262ms)
+✔ ASR requires current SQL approved source: rejected (36.110968ms)
+✔ ASR requires current SQL approved source: archived (25.542823ms)
+✔ ASR requires current SQL approved source: approved (41.641305ms)
+✖ actual private storage reader refuses oversize file before unbounded allocation (2.776989ms)
+✔ TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend (47.293458ms)
+✔ controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs (4.684601ms)
+✔ Creative schema MIME mirrors include controlled compressed audio (0.816917ms)
+✔ guarded server smoke preserves draft, pauses for human approval before A1 and cannot re-spend G1 T1 (35.16615ms)
+✔ smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything (60.367049ms)
+✔ owned active voice prerequisites reject invalid lease and foreign smoke job before spending (21.395401ms)
+✔ tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false} (21.598652ms)
+✔ asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false} (15.587961ms)
+✔ tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true} (15.60638ms)
+✔ asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true} (15.965807ms)
+✔ tts current Creative execution gate fails closed null (18.465282ms)
+✔ asr current Creative execution gate fails closed null (15.103517ms)
+✔ tts current Creative execution gate fails closed "error" (14.924896ms)
+✔ asr current Creative execution gate fails closed "error" (19.988643ms)
+✔ compiled server factory authenticates request; default OFF health exposes presence only without network (11.170479ms)
+ℹ tests 25
+ℹ suites 0
+ℹ pass 21
+ℹ fail 4
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1114.03826
+
+✖ failing tests:
+
+test at tests/smartlabs-secret-config.test.mjs:9:1
+✖ server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only (1.323641ms)
+  TypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received undefined
+      at join (node:path:1339:7)
+      at TestContext.<anonymous> (file:///owned/source/tests/smartlabs-secret-config.test.mjs:10:24)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.start (node:internal/test_runner/test:1191:17)
+      at startSubtestAfterBootstrap (node:internal/test_runner/harness:385:17) {
+    code: 'ERR_INVALID_ARG_TYPE'
+  }
+
+test at tests/smartlabs-secret-config.test.mjs:20:1
+✖ server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure (0.32692ms)
+  TypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received undefined
+      at join (node:path:1339:7)
+      at TestContext.<anonymous> (file:///owned/source/tests/smartlabs-secret-config.test.mjs:21:24)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    code: 'ERR_INVALID_ARG_TYPE'
+  }
+
+test at tests/smartlabs-secret-config.test.mjs:39:1
+✖ explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt (0.224407ms)
+  TypeError [ERR_INVALID_ARG_TYPE]: The "path" argument must be of type string. Received undefined
+      at join (node:path:1339:7)
+      at TestContext.<anonymous> (file:///owned/source/tests/smartlabs-secret-config.test.mjs:40:24)
+      at Test.runInAsyncScope (node:async_hooks:227:14)
+      at Test.run (node:internal/test_runner/test:1325:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:911:18)
+      at Test.postRun (node:internal/test_runner/test:1465:19)
+      at Test.run (node:internal/test_runner/test:1390:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    code: 'ERR_INVALID_ARG_TYPE'
+  }
+
+test at tests/smartlabs-server-factory.test.mjs:35:1
+✖ actual private storage reader refuses oversize file before unbounded allocation (2.776989ms)
+  Error: ENOENT: no such file or directory, mkdtemp '/owned/source/tmp/sl-audio-P8DbKn'
+      at async mkdtemp (node:internal/fs/promises:1197:10)
+      at async TestContext.<anonymous> (file:///owned/source/tests/smartlabs-server-factory.test.mjs:37:18)
+      at async Test.run (node:internal/test_runner/test:1332:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:911:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'mkdtemp',
+    path: '/owned/source/tmp/sl-audio-P8DbKn'
+  }
