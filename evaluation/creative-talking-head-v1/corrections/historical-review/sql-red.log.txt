@@ -1,0 +1,92 @@
+FAIL D1 API SELECT creative_avatars permission denied for table creative_avatars
+FAIL D1 API SELECT creative_avatar_provider_bindings permission denied for table creative_avatar_provider_bindings
+FAIL D1 API SELECT creative_avatar_consents permission denied for table creative_avatar_consents
+FAIL D1 API SELECT creative_presenter_controls permission denied for table creative_presenter_controls
+FAIL D1 API EXECUTE authorize_creative_presenter(uuid,uuid,uuid,text) Expected values to be strictly equal:
+
+false !== true
+
+FAIL D1 API EXECUTE validate_creative_presenter_params(uuid,jsonb) Expected values to be strictly equal:
+
+false !== true
+
+PASS D1 worker SELECT denied creative_avatars
+PASS D1 worker INSERT denied creative_avatars
+PASS D1 worker UPDATE denied creative_avatars
+PASS D1 worker DELETE denied creative_avatars
+PASS D1 worker SELECT denied creative_avatar_provider_bindings
+PASS D1 worker INSERT denied creative_avatar_provider_bindings
+PASS D1 worker UPDATE denied creative_avatar_provider_bindings
+PASS D1 worker DELETE denied creative_avatar_provider_bindings
+PASS D1 worker SELECT denied creative_avatar_consents
+PASS D1 worker INSERT denied creative_avatar_consents
+PASS D1 worker UPDATE denied creative_avatar_consents
+PASS D1 worker DELETE denied creative_avatar_consents
+FAIL D2 spoof-provider must deny spoof at SQL boundary
++ actual - expected
+
++ undefined
+- 'P0001'
+
+FAIL D2 spoof-model must deny spoof at SQL boundary
++ actual - expected
+
++ undefined
+- 'P0001'
+
+FAIL D2 spoof-version must deny spoof at SQL boundary
++ actual - expected
+
++ undefined
+- 'P0001'
+
+FAIL D2 missing-version must deny spoof at SQL boundary
++ actual - expected
+
++ undefined
+- 'P0001'
+
+PASS D2 positive-binding
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: all review SQL oracles must pass
++ actual - expected
+
++ [
++   'D1 API SELECT creative_avatars',
++   'D1 API SELECT creative_avatar_provider_bindings',
++   'D1 API SELECT creative_avatar_consents',
++   'D1 API SELECT creative_presenter_controls',
++   'D1 API EXECUTE authorize_creative_presenter(uuid,uuid,uuid,text)',
++   'D1 API EXECUTE validate_creative_presenter_params(uuid,jsonb)',
++   'D2 spoof-provider',
++   'D2 spoof-model',
++   'D2 spoof-version',
++   'D2 missing-version'
++ ]
+- []
+
+    at file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/scripts/creative-presenter-review-sql.mjs:32:9
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: [
+    'D1 API SELECT creative_avatars',
+    'D1 API SELECT creative_avatar_provider_bindings',
+    'D1 API SELECT creative_avatar_consents',
+    'D1 API SELECT creative_presenter_controls',
+    'D1 API EXECUTE authorize_creative_presenter(uuid,uuid,uuid,text)',
+    'D1 API EXECUTE validate_creative_presenter_params(uuid,jsonb)',
+    'D2 spoof-provider',
+    'D2 spoof-model',
+    'D2 spoof-version',
+    'D2 missing-version'
+  ],
+  expected: [],
+  operator: 'deepStrictEqual'
+}
+
+Node.js v22.18.0

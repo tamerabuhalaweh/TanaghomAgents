@@ -1,0 +1,207 @@
+{
+  "scope": "SOURCE SELF-REVIEW ONLY; both independent reviews pending",
+  "gates": [
+    {
+      "gate": 1,
+      "name": "Bounded source-only scope and accepted provider decision",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 2,
+      "name": "Full empty DB chain, unused and used-state down/up, append-only vocabulary and flags OFF",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/runner.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-presenter-review-sql.mjs.log.txt"
+      ]
+    },
+    {
+      "gate": 3,
+      "name": "Canonical governed identity; restricted API controlled functions with zero direct table CRUD; worker EXECUTE-only",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/runner.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-presenter-review-sql.mjs.log.txt"
+      ]
+    },
+    {
+      "gate": 4,
+      "name": "Five foreign avatar/binding/consent/visual/audio boundaries; no catalog leak",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 5,
+      "name": "Owner/operator generate; reviewer review; viewer read-only; governance owner-only",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 6,
+      "name": "Consent verified scope/expiry/revocation, queued recheck and no old-right resurrection",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 7,
+      "name": "Avatar and binding inactive/blocked/revoked after queue: zero provider creates",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 8,
+      "name": "Filtered claims; five video/motion/segment/image/compose decoys untouched",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 9,
+      "name": "Script hash/length/locale; no full scripts in generic/audit output",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 10,
+      "name": "Controlled media integrity including actual mdat video/audio sample extents, bounded WAV/MP3",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native/targeted.log.txt",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native/unit.log.txt"
+      ]
+    },
+    {
+      "gate": 11,
+      "name": "HeyGen IV stock look and approved voice; v3 contract; no enrollment",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 12,
+      "name": "Independent Sync v2 lipsync-2 multipart; approved bytes; image/text denied",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 13,
+      "name": "Immediate remote anchor; actual killed process/new worker; same call/task and create=1",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 14,
+      "name": "Create ambiguity fail-closed; poll timeout same row resumes; actual cost retained",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 15,
+      "name": "Remote success and synthetic actual cost before forced download failure; later retry same result/create=1",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 16,
+      "name": "Both adapters have no invented cancel endpoint; local intent differs from provider-reported cancellation",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 17,
+      "name": "Reuse existing hardened downloader public DNS/IP pin/Host/SNI/HTTPS and unsafe host/redirect rejection",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native/targeted.log.txt",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native/unit.log.txt"
+      ]
+    },
+    {
+      "gate": 18,
+      "name": "Private authenticated range preview, decoded frames, provenance and approve/reject both lanes",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 19,
+      "name": "Arabic/English/mixed/punctuation/numerals portrait desktop/mobile; owner/operator; viewer/reviewer read-only",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json"
+      ]
+    },
+    {
+      "gate": 20,
+      "name": "Current source tests, DB/Creative Studio/P2/P3/P4 regressions, security/build/type/repository check; handoff without commit/PR",
+      "status": "PASS_SOURCE_ONLY",
+      "evidence": [
+        "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json",
+        "evaluation/creative-talking-head-v1/corrections/review-ready/manifest.json"
+      ]
+    }
+  ],
+  "external_acceptance": "PENDING",
+  "independent_runtime_review": "PENDING",
+  "independent_database_review": "PENDING",
+  "limitations": [
+    "Synthetic pixels and tone audio prove byte/lifecycle contracts only, not spoken Arabic/English/mixed quality.",
+    "No authenticated real-provider execution, enrollment, uploads or spend.",
+    "Actual costs in fixtures are explicitly synthetic; real execution remains blocked without separately accepted authoritative charge source.",
+    "Sync image input is explicitly unavailable and rejected.",
+    "Crash recovery uses a controlled fixture requeue and a different worker identity; does not certify production lease orchestration.",
+    "Historical exact-baseline E2E assertions remain unchanged; only migration targets are set in task-owned ephemeral sibling runners. All current-head Creative SQL contracts separately run on full 0046.",
+    "All prior/root-level receipt totals are historical checkpoints.",
+    "Offline DNS/transport doubles do not certify live vendor HTTPS or spoken media quality."
+  ]
+}

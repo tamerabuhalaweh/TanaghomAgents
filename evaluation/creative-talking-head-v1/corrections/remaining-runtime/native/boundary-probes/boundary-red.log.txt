@@ -1,0 +1,1115 @@
+TAP version 13
+# Subtest: RC1 non-public/invalid binary destination fc01::1
+not ok 1 - RC1 non-public/invalid binary destination fc01::1
+  ---
+  duration_ms: 2.2685
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+not ok 2 - RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+  ---
+  duration_ms: 0.3412
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: RC1 non-public/invalid binary destination fdff:ffff::1
+ok 3 - RC1 non-public/invalid binary destination fdff:ffff::1
+  ---
+  duration_ms: 1.6173
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fe90::1
+not ok 4 - RC1 non-public/invalid binary destination fe90::1
+  ---
+  duration_ms: 0.285
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination febf:ffff::1
+not ok 5 - RC1 non-public/invalid binary destination febf:ffff::1
+  ---
+  duration_ms: 0.2418
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination fec1::1
+not ok 6 - RC1 non-public/invalid binary destination fec1::1
+  ---
+  duration_ms: 0.1655
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination feff::1
+not ok 7 - RC1 non-public/invalid binary destination feff::1
+  ---
+  duration_ms: 0.2039
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:7f00:1
+not ok 8 - RC1 non-public/invalid binary destination ::ffff:7f00:1
+  ---
+  duration_ms: 0.2075
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+not ok 9 - RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+  ---
+  duration_ms: 0.3728
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+not ok 10 - RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+  ---
+  duration_ms: 0.6146
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+ok 11 - RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+  ---
+  duration_ms: 0.5587
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:c0a8:101
+not ok 12 - RC1 non-public/invalid binary destination ::ffff:c0a8:101
+  ---
+  duration_ms: 0.1957
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+not ok 13 - RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+  ---
+  duration_ms: 0.127
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:2::1
+not ok 14 - RC1 non-public/invalid binary destination 2001:2::1
+  ---
+  duration_ms: 0.1081
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+not ok 15 - RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+  ---
+  duration_ms: 0.0981
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 100::1
+not ok 16 - RC1 non-public/invalid binary destination 100::1
+  ---
+  duration_ms: 0.0919
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:db8::1
+ok 17 - RC1 non-public/invalid binary destination 2001:db8::1
+  ---
+  duration_ms: 2.1721
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 3fff::1
+not ok 18 - RC1 non-public/invalid binary destination 3fff::1
+  ---
+  duration_ms: 0.3202
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2002:7f00:1::1
+not ok 19 - RC1 non-public/invalid binary destination 2002:7f00:1::1
+  ---
+  duration_ms: 0.1417
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::127.0.0.1
+not ok 20 - RC1 non-public/invalid binary destination ::127.0.0.1
+  ---
+  duration_ms: 0.2467
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+not ok 21 - RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+  ---
+  duration_ms: 0.1584
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+not ok 22 - RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+  ---
+  duration_ms: 0.1064
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b:1::1
+not ok 23 - RC1 non-public/invalid binary destination 64:ff9b:1::1
+  ---
+  duration_ms: 0.0958
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination ff02::1
+ok 24 - RC1 non-public/invalid binary destination ff02::1
+  ---
+  duration_ms: 0.3891
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::
+ok 25 - RC1 non-public/invalid binary destination ::
+  ---
+  duration_ms: 0.231
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+not ok 26 - RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+  ---
+  duration_ms: 0.1336
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2606:4700::1%1
+not ok 27 - RC1 non-public/invalid binary destination 2606:4700::1%1
+  ---
+  duration_ms: 0.1092
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination bogus:address
+not ok 28 - RC1 non-public/invalid binary destination bogus:address
+  ---
+  duration_ms: 0.0933
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+ok 29 - RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+  ---
+  duration_ms: 0.2371
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 1::2::3
+not ok 30 - RC1 non-public/invalid binary destination 1::2::3
+  ---
+  duration_ms: 0.1973
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:11:29'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected "actual" to be strictly unequal to:
+
+    'public'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'public'
+  actual: 'public'
+  operator: 'notStrictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:12:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC1 public normalized positive pin 8.8.8.8
+ok 31 - RC1 public normalized positive pin 8.8.8.8
+  ---
+  duration_ms: 22.9014
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2606:4700:4700::1111
+ok 32 - RC1 public normalized positive pin 2606:4700:4700::1111
+  ---
+  duration_ms: 0.5705
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+ok 33 - RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+  ---
+  duration_ms: 0.4056
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin ::ffff:808:808
+ok 34 - RC1 public normalized positive pin ::ffff:808:808
+  ---
+  duration_ms: 0.2886
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+ok 35 - RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+  ---
+  duration_ms: 0.4068
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 64:ff9b::808:808
+ok 36 - RC1 public normalized positive pin 64:ff9b::808:808
+  ---
+  duration_ms: 0.2826
+  type: 'test'
+  ...
+# Subtest: RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+not ok 37 - RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+  ---
+  duration_ms: 90.6756
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:23:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+
+    Caught error:
+
+    ProviderAdapterError: artifact download failed before a verdict: Client network socket disconnected before secure TLS connection was established
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:26:84)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 unmodified provider-encoded H264 AAC facts preserved
+ok 38 - RC2 unmodified provider-encoded H264 AAC facts preserved
+  ---
+  duration_ms: 3.1383
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description declared-missing
+not ok 39 - RC2 rejects sample description declared-missing
+  ---
+  duration_ms: 1.0148
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:50:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description undeclared-extra
+not ok 40 - RC2 rejects sample description undeclared-extra
+  ---
+  duration_ms: 0.5713
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:48:127)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description zero-count
+ok 41 - RC2 rejects sample description zero-count
+  ---
+  duration_ms: 0.1908
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description zero-index
+ok 42 - RC2 rejects sample description zero-index
+  ---
+  duration_ms: 0.2619
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description missing-index
+ok 43 - RC2 rejects sample description missing-index
+  ---
+  duration_ms: 0.2014
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description truncated-entry
+not ok 44 - RC2 rejects sample description truncated-entry
+  ---
+  duration_ms: 0.5415
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:50:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description oversized-entry
+not ok 45 - RC2 rejects sample description oversized-entry
+  ---
+  duration_ms: 0.4472
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:50:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description undersized-entry
+not ok 46 - RC2 rejects sample description undersized-entry
+  ---
+  duration_ms: 0.3684
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:50:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description trailing-entry-byte
+not ok 47 - RC2 rejects sample description trailing-entry-byte
+  ---
+  duration_ms: 0.3803
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:50:9)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description unsupported-active
+not ok 48 - RC2 rejects sample description unsupported-active
+  ---
+  duration_ms: 0.1615
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:48:127)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description allowed-but-mismatched-active
+not ok 49 - RC2 rejects sample description allowed-but-mismatched-active
+  ---
+  duration_ms: 0.1359
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:48:127)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description mismatched-visual
+not ok 50 - RC2 rejects sample description mismatched-visual
+  ---
+  duration_ms: 0.165
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:48:127)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description audio-declared-missing
+not ok 51 - RC2 rejects sample description audio-declared-missing
+  ---
+  duration_ms: 0.1515
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:49:44)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description audio-missing-index
+not ok 52 - RC2 rejects sample description audio-missing-index
+  ---
+  duration_ms: 0.1116
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:49:44)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description audio-unsupported
+not ok 53 - RC2 rejects sample description audio-unsupported
+  ---
+  duration_ms: 0.12
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:49:44)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 rejects sample description audio-mismatched
+not ok 54 - RC2 rejects sample description audio-mismatched
+  ---
+  duration_ms: 0.1173
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:38:341'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:49:44)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 real existing second consistent video description is valid
+not ok 55 - RC2 real existing second consistent video description is valid
+  ---
+  duration_ms: 0.3283
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:52:33'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:52:146)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: RC2 real existing second consistent audio description is valid
+not ok 56 - RC2 real existing second consistent audio description is valid
+  ---
+  duration_ms: 0.1207
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-presenter-boundary.test.mjs:52:33'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    5252 !== 52247
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 52247
+  actual: 5252
+  operator: 'strictEqual'
+  stack: |-
+    addEntry (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:35:86)
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-presenter-boundary.test.mjs:52:146)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..56
+# tests 56
+# suites 0
+# pass 16
+# fail 40
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 262.4043

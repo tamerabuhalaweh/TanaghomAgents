@@ -1,0 +1,10 @@
+import type {ChildProcess,spawn} from 'node:child_process';
+export const MAX_MP4_BYTES:number;
+export const MAX_MP4_DURATION_SEC:number;
+export const MAX_MP4_DIMENSION:number;
+export function resolveFfmpegPath(value?:string):string;
+export function assertSafeOutputPath(value:string):void;
+export function buildFfmpegArgs(options:{width:number;height:number;fps?:number;durationSec:number;outputPath:string}):string[];
+export function beginMotionEncode(options:{width:number;height:number;fps?:number;durationSec:number;outputPath:string;ffmpegPath?:string;spawnFn?:typeof spawn;timeoutMs?:number;maxOutputBytes?:number;maxStderrBytes?:number;onFrame?:(frame:number)=>void}):Promise<{writeFrame(bytes:Buffer):Promise<void>;finish():Promise<{outputPath:string;bytes:number;frameCount:number;width:number;height:number;fps:number;durationSec:number}>;abort():Promise<void>;child:ChildProcess}>;
+export function readAndValidateMp4(outputPath:string,options?:Parameters<typeof validateMp4>[1]):Buffer;
+export function validateMp4(bytes:Buffer,options?:{width?:number;height?:number;expectedDurationSec?:number;allowedCodecs?:string[];requireAudio?:boolean}):{bytes:number;durationSec:number;width:number;height:number;codec:string;audio:null|{codec:string;channels:number;sampleRate:number}};

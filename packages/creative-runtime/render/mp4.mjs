@@ -295,13 +295,14 @@ export async function encodeMp4({ ffmpegPath, args, frames, outputPath, timeoutM
 // provider lanes pass their own vendor allowlist (e.g. mp4v+avc1) while
 // still rejecting everything else. Never trust provider MIME/filenames:
 // this walk is the verdict.
-export function validateMp4(bytes, { width = null, height = null, fps = null, frames = null, expectedDurationSec = null, allowedCodecs = ["mp4v"] }) {
+export function validateMp4(bytes, { width = null, height = null, fps = null, frames = null, expectedDurationSec = null, allowedCodecs = ["mp4v"], requireAudio = false }) {
   if (!Buffer.isBuffer(bytes) || bytes.length < 32) throw new Error("mp4_empty");
   if (bytes.length > MAX_MP4_BYTES) throw new Error("mp4_too_large");
   const top = readBoxes(bytes, 0, bytes.length);
   const ftyp = top.find((box) => box.type === "ftyp");
   if (!ftyp) throw new Error("mp4_missing_ftyp");
-  const brand = bytes.toString("ascii", ftyp.start + 8, ftyp.start + 12);
+  if (top.at(-1)?.end !== bytes.length) throw new Error("mp4_truncated");
+  const brand = bytes.toString("latin1", ftyp.start + 8, ftyp.start + 12);
   if (!["isom", "mp42", "mp41", "avc1", "iso2", "iso5", "iso6"].includes(brand)) {
     throw new Error(`mp4_brand:${brand}`);
   }
@@ -358,7 +359,11 @@ export function validateMp4(bytes, { width = null, height = null, fps = null, fr
   if (!allowedCodecs.includes(codec)) {
     throw new Error(`mp4_codec:${printable}`);
   }
+  const audio = audioSampleEntry(bytes, moov);
+  if (requireAudio && !audio) throw new Error("mp4_audio_required");
+  validateMediaExtents(bytes, moov, top.filter(box => box.type === "mdat"), {codec, audio});
   return {
+    audio,
     brand,
     codec,
     width: trackDims.width,
@@ -370,9 +375,20 @@ export function validateMp4(bytes, { width = null, height = null, fps = null, fr
   };
 }
 
-// Walk trak -> mdia/hdlr (vide) -> minf/stbl/stsd and return the first
-// video sample entry fourcc. Every level is bounds-checked against its
-// parent box so truncated files fail closed instead of over-reading.
+// Establish actual entries before trusting the declared count or stsc indices.
+// readBoxes stops at malformed tails, so exact coverage is mandatory here.
+function sampleDescriptions(bytes, stsd, error = "mp4_malformed_stsd") {
+  if (!stsd || stsd.start + 16 > stsd.end || bytes.readUInt32BE(stsd.start + 8) !== 0) throw new Error(error);
+  const count = bytes.readUInt32BE(stsd.start + 12);
+  if (!count || count > 4096) throw new Error(error);
+  const entries = readBoxes(bytes, stsd.start + 16, stsd.end);
+  if (entries.length !== count || entries.at(-1)?.end !== stsd.end ||
+      entries.some(entry => bytes.readUInt32BE(entry.start) === 1)) throw new Error(error);
+  return entries;
+}
+
+// The reported codec must represent every actual description; switching to a
+// different codec or visual layout cannot hide behind the first entry.
 function videoSampleEntry(bytes, moov) {
   const inner = readBoxes(bytes, moov.start + 8, moov.end);
   for (const trak of inner.filter((box) => box.type === "trak")) {
@@ -380,20 +396,117 @@ function videoSampleEntry(bytes, moov) {
     if (!mdia) continue;
     const hdlr = childBox(bytes, mdia, "hdlr");
     if (!hdlr || hdlr.start + 20 > hdlr.end) continue;
-    if (bytes.toString("ascii", hdlr.start + 16, hdlr.start + 20) !== "vide") continue;
+    if (bytes.toString("latin1", hdlr.start + 16, hdlr.start + 20) !== "vide") continue;
     const minf = childBox(bytes, mdia, "minf");
     if (!minf) throw new Error("mp4_malformed_track:minf");
     const stbl = childBox(bytes, minf, "stbl");
     if (!stbl) throw new Error("mp4_malformed_track:stbl");
     const stsd = childBox(bytes, stbl, "stsd");
     if (!stsd) throw new Error("mp4_malformed_track:stsd");
-    if (stsd.start + 16 > stsd.end) throw new Error("mp4_malformed_stsd");
-    const entryCount = bytes.readUInt32BE(stsd.start + 12);
-    if (entryCount < 1) throw new Error("mp4_empty_stsd");
-    if (stsd.start + 24 > stsd.end) throw new Error("mp4_malformed_stsd");
-    return bytes.toString("ascii", stsd.start + 20, stsd.start + 24);
+    const entries = sampleDescriptions(bytes, stsd);
+    if (entries.some(entry => entry.start + 86 > entry.end)) throw new Error("mp4_malformed_stsd");
+    const first = entries[0];
+    for (const entry of entries) {
+      if (entry.type !== first.type ||
+          bytes.readUInt16BE(entry.start + 32) !== bytes.readUInt16BE(first.start + 32) ||
+          bytes.readUInt16BE(entry.start + 34) !== bytes.readUInt16BE(first.start + 34)) throw new Error("mp4_inconsistent_sample_descriptions");
+    }
+    return first.type;
   }
   throw new Error("mp4_no_video_track");
+}
+
+// Recover container sample-entry fields; not an AAC bitstream decoder.
+function audioSampleEntry(bytes, moov) {
+  for (const trak of readBoxes(bytes, moov.start + 8, moov.end).filter(b => b.type === "trak")) {
+    const mdia = childBox(bytes, trak, "mdia");
+    if (!mdia) continue;
+    const hdlr = childBox(bytes, mdia, "hdlr");
+    if (!hdlr || hdlr.start + 20 > hdlr.end || bytes.toString("latin1", hdlr.start + 16, hdlr.start + 20) !== "soun") continue;
+    const minf = childBox(bytes, mdia, "minf");
+    const stbl = minf && childBox(bytes, minf, "stbl");
+    const stsd = stbl && childBox(bytes, stbl, "stsd");
+    const entries = sampleDescriptions(bytes, stsd, "mp4_audio_malformed");
+    let audio = null;
+    for (const entry of entries) {
+      if (entry.start + 36 > entry.end || !["mp4a", "sowt", "twos"].includes(entry.type)) throw new Error("mp4_audio_codec");
+      const channels = bytes.readUInt16BE(entry.start + 24);
+      const sampleRate = bytes.readUInt32BE(entry.start + 32) / 65536;
+      if (channels < 1 || channels > 8 || sampleRate < 8000 || sampleRate > 192000) throw new Error("mp4_audio_metadata");
+      if (audio && (audio.codec !== entry.type || audio.channels !== channels || audio.sampleRate !== sampleRate)) throw new Error("mp4_audio_inconsistent_sample_descriptions");
+      audio = {codec: entry.type, channels, sampleRate, metadata_source: "container_sample_entry"};
+    }
+    return audio;
+  }
+  return null;
+}
+
+// Bounded non-fragmented sample-table validation, not a codec decoder.
+// Every declared video/audio sample must occupy actual mdat payload, not
+// headers/metadata/EOF. Missing tables fail closed (including fragmented
+// layouts which this existing validator does not support).
+function validateMediaExtents(bytes, moov, media, reported) {
+  const payloads = media.map(box => ({start: box.start + (bytes.readUInt32BE(box.start) === 1 ? 16 : 8), end: box.end})).filter(box => box.end > box.start);
+  if (!payloads.length) throw new Error("mp4_missing_media_payload");
+  const fail = () => { throw new Error("mp4_invalid_sample_extents"); };
+  let budget = 1000000;
+  for (const trak of readBoxes(bytes, moov.start + 8, moov.end).filter(box => box.type === "trak")) {
+    const mdia = childBox(bytes, trak, "mdia");
+    const hdlr = mdia && childBox(bytes, mdia, "hdlr");
+    if (!hdlr || hdlr.start + 20 > hdlr.end) continue;
+    if (!["vide", "soun"].includes(bytes.toString("latin1", hdlr.start + 16, hdlr.start + 20))) continue;
+    const minf = childBox(bytes, mdia, "minf");
+    const stbl = minf && childBox(bytes, minf, "stbl");
+    if (!stbl) fail();
+    const tables = readBoxes(bytes, stbl.start + 8, stbl.end);
+    const single = types => {
+      const matched = tables.filter(box => types.includes(box.type));
+      if (matched.length !== 1) fail();
+      return matched[0];
+    };
+    const stsz = single(["stsz"]), stsc = single(["stsc"]), offsets = single(["stco", "co64"]), stsd = single(["stsd"]);
+    if (stsz.start + 20 > stsz.end || stsc.start + 16 > stsc.end || offsets.start + 16 > offsets.end || stsd.start + 16 > stsd.end) fail();
+    const fixedSize = bytes.readUInt32BE(stsz.start + 12), samples = bytes.readUInt32BE(stsz.start + 16);
+    const chunks = bytes.readUInt32BE(offsets.start + 12), mappings = bytes.readUInt32BE(stsc.start + 12);
+    const entries = sampleDescriptions(bytes, stsd), descriptions = entries.length, stride = offsets.type === "co64" ? 8 : 4;
+    const handler = bytes.toString("latin1", hdlr.start + 16, hdlr.start + 20);
+    // Check ALL tracks, not just the first track supplying reported metadata.
+    for (const entry of entries) {
+      if (handler === "vide") {
+        if (entry.start + 86 > entry.end || entry.type !== reported.codec) fail();
+      } else if (!reported.audio || entry.start + 36 > entry.end ||
+                 entry.type !== reported.audio.codec ||
+                 bytes.readUInt16BE(entry.start + 24) !== reported.audio.channels ||
+                 bytes.readUInt32BE(entry.start + 32) / 65536 !== reported.audio.sampleRate) fail();
+    }
+    if (!samples || !chunks || chunks > samples || !mappings || mappings > chunks || samples > budget) fail();
+    budget -= samples;
+    if (stsz.start + 20 + (fixedSize ? 0 : samples * 4) !== stsz.end || stsc.start + 16 + mappings * 12 !== stsc.end || offsets.start + 16 + chunks * stride !== offsets.end) fail();
+    const map = [];
+    for (let i = 0; i < mappings; i++) {
+      const p = stsc.start + 16 + i * 12;
+      const first = bytes.readUInt32BE(p), count = bytes.readUInt32BE(p + 4), description = bytes.readUInt32BE(p + 8);
+      if (!count || count > samples || !description || description > descriptions || first > chunks || (i === 0 ? first !== 1 : first <= map[i - 1].first)) fail();
+      map.push({first, count});
+    }
+    let sample = 0, mapping = 0;
+    for (let chunk = 1; chunk <= chunks; chunk++) {
+      if (mapping + 1 < map.length && chunk >= map[mapping + 1].first) mapping++;
+      const count = map[mapping].count;
+      if (sample + count > samples) fail();
+      const p = offsets.start + 16 + (chunk - 1) * stride;
+      let position = stride === 8 ? Number(bytes.readBigUInt64BE(p)) : bytes.readUInt32BE(p);
+      if (!Number.isSafeInteger(position)) fail();
+      const payload = payloads.find(box => position >= box.start && position < box.end);
+      if (!payload) fail();
+      for (let i = 0; i < count; i++, sample++) {
+        const size = fixedSize || bytes.readUInt32BE(stsz.start + 20 + sample * 4);
+        if (!size || position + size > payload.end) fail();
+        position += size;
+      }
+    }
+    if (sample !== samples) fail();
+  }
 }
 
 function childBox(bytes, parent, type) {
@@ -405,7 +518,7 @@ function readBoxes(bytes, start, end) {
   let offset = start;
   while (offset + 8 <= end) {
     let size = bytes.readUInt32BE(offset);
-    const type = bytes.toString("ascii", offset + 4, offset + 8);
+    const type = bytes.toString("latin1", offset + 4, offset + 8);
     let header = 8;
     if (size === 1) {
       if (offset + 16 > end) break;

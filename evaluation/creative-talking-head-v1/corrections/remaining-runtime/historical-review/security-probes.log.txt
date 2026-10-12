@@ -1,0 +1,249 @@
+TAP version 13
+# {"address":"fc01::1","classification":"public","rejected":false,"transport_calls":1}
+# {"address":"fe90::1","classification":"public","rejected":false,"transport_calls":1}
+# {"address":"::ffff:7f00:1","classification":"public","rejected":false,"transport_calls":1}
+# {"address":"::ffff:a00:1","classification":"public","rejected":false,"transport_calls":1}
+# {"address":"2001:2::1","classification":"public","rejected":false,"transport_calls":1}
+# {"address":"100::1","classification":"public","rejected":false,"transport_calls":1}
+# {"mixed_rejected":false,"transport_calls":1}
+# Subtest: positive exact approved HTTPS origin uses validated public pin
+ok 1 - positive exact approved HTTPS origin uses validated public pin
+  ---
+  duration_ms: 43.9605
+  type: 'test'
+  ...
+# Subtest: negative known non-public 127.0.0.1
+ok 2 - negative known non-public 127.0.0.1
+  ---
+  duration_ms: 1.1379
+  type: 'test'
+  ...
+# Subtest: negative known non-public 10.0.0.1
+ok 3 - negative known non-public 10.0.0.1
+  ---
+  duration_ms: 0.3728
+  type: 'test'
+  ...
+# Subtest: negative known non-public 169.254.169.254
+ok 4 - negative known non-public 169.254.169.254
+  ---
+  duration_ms: 0.4622
+  type: 'test'
+  ...
+# Subtest: negative known non-public ::1
+ok 5 - negative known non-public ::1
+  ---
+  duration_ms: 0.4126
+  type: 'test'
+  ...
+# Subtest: negative known non-public fe80::1
+ok 6 - negative known non-public fe80::1
+  ---
+  duration_ms: 0.8082
+  type: 'test'
+  ...
+# Subtest: negative known non-public fd00::1
+ok 7 - negative known non-public fd00::1
+  ---
+  duration_ms: 0.5877
+  type: 'test'
+  ...
+# Subtest: negative known non-public 198.18.0.1
+ok 8 - negative known non-public 198.18.0.1
+  ---
+  duration_ms: 0.4477
+  type: 'test'
+  ...
+# Subtest: negative known non-public 203.0.113.1
+ok 9 - negative known non-public 203.0.113.1
+  ---
+  duration_ms: 0.9687
+  type: 'test'
+  ...
+# Subtest: additional non-public AAAA must reject before transport fc01::1
+not ok 10 - additional non-public AAAA must reject before transport fc01::1
+  ---
+  duration_ms: 3.6072
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:9:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:9:495)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: additional non-public AAAA must reject before transport fe90::1
+not ok 11 - additional non-public AAAA must reject before transport fe90::1
+  ---
+  duration_ms: 1.2587
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:9:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:9:495)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: additional non-public AAAA must reject before transport ::ffff:7f00:1
+not ok 12 - additional non-public AAAA must reject before transport ::ffff:7f00:1
+  ---
+  duration_ms: 0.9601
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:9:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:9:495)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: additional non-public AAAA must reject before transport ::ffff:a00:1
+not ok 13 - additional non-public AAAA must reject before transport ::ffff:a00:1
+  ---
+  duration_ms: 0.9434
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:9:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:9:495)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: additional non-public AAAA must reject before transport 2001:2::1
+not ok 14 - additional non-public AAAA must reject before transport 2001:2::1
+  ---
+  duration_ms: 0.8082
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:9:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:9:495)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: additional non-public AAAA must reject before transport 100::1
+not ok 15 - additional non-public AAAA must reject before transport 100::1
+  ---
+  duration_ms: 0.8127
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:9:96'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:9:495)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: mixed public and hex-mapped loopback AAAA must reject before transport
+not ok 16 - mixed public and hex-mapped loopback AAAA must reject before transport
+  ---
+  duration_ms: 1.1113
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:10:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+
+    false !== true
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: true
+  actual: false
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:10:396)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# {"default_pinned_connections":1,"tls_client_hello_bytes":374,"port":62256}
+# Subtest: REAL default pinned TLS transport must not reach mapped localhost
+not ok 17 - REAL default pinned TLS transport must not reach mapped localhost
+  ---
+  duration_ms: 140.9585
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs:11:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    public-only gate must prevent localhost TCP connection
+
+    1 !== 0
+
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 1
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/p5-runtime-cycle1-review/security-probes.mjs:14:118)
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..17
+# tests 17
+# suites 0
+# pass 9
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 369.833

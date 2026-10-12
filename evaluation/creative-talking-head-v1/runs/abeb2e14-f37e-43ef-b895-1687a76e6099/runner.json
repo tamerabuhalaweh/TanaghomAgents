@@ -1,0 +1,12 @@
+{
+  "run_id": "abeb2e14-f37e-43ef-b895-1687a76e6099",
+  "container_id": "015a8d75b8c4c9abfa07d8e01a84d3791d723f23791aaef8904f3198661f034d",
+  "scope": "DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "gate": "acceptance",
+      "exit": 1,
+      "error": "Connection terminated unexpectedly"
+    }
+  ]
+}

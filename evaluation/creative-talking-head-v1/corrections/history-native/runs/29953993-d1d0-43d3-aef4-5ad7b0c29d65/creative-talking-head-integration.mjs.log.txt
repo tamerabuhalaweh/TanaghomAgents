@@ -1,0 +1,75 @@
+PASS owner canonical avatar API registration readback
+PASS SQL rejects forged script provenance
+PASS authenticated Arabic stock submission
+PASS UNKNOWN actual cost blocks download; durable remote success retained
+PASS authenticated private validated MP4 preview and byte range
+PASS HeyGen-shaped durable job/claim/anchor/validated MP4/private version/provenance/review
+PASS Sync independent video/audio MP4 draft approved
+PASS Sync independent video/audio MP4 draft rejected
+PASS HeyGen draft rejected
+PASS EN stock
+PASS AR stock
+PASS mixed stock
+PASS Arabic punctuation
+PASS Arabic numerals
+PASS Arabic portrait Reel
+PASS lip sync EN controlled audio/video
+PASS lip sync AR controlled audio/video
+PASS lip sync mixed controlled audio/video
+PASS five decoys video/motion/segment/image/compose untouched
+PASS 18 actual SQL worker SELECT/UPDATE/DELETE permission denials
+PASS Sync image/text/mismatched media denied
+PASS approved MP3 actual byte parser and Sync multipart E2E
+PASS stored source mime rejects before provider create
+PASS stored source checksum rejects before provider create
+PASS stored source size rejects before provider create
+PASS approved source declared dimensions mismatch rejects before provider create
+PASS binding inactive after queue zero provider calls
+PASS binding blocked after queue zero provider calls
+PASS binding revoked after queue zero provider calls
+PASS custom unverified consent API denied
+PASS wrong consent scope API denied
+PASS valid consent queued then revoked zero provider requests
+PASS poll timeout indeterminate then same row/task resume exactly one create
+PASS moderated truthful provider ledger
+PASS cancelled truthful provider ledger
+PASS evil truthful provider ledger
+PASS malformed truthful provider ledger
+PASS poll-500 same task retry
+PASS remote success and fixture-settled actual cost BEFORE download; retry same succeeded row/task one create
+PASS actual process SIGKILL after task attachment; new worker controlled fixture requeue same row/task exactly one create
+PASS create 5xx indeterminate no blind retry
+PASS local cancellation remains intent remote success retained
+PASS cross tenant avatar API denied
+PASS cross tenant video/audio API denied
+PASS cross tenant consent API denied
+PASS cross tenant consent composite FK denied
+PASS cross tenant forged queued identity worker denied zero requests
+PASS avatar inactive API and post-queue worker zero requests
+PASS avatar blocked API and post-queue worker zero requests
+PASS avatar revoked API and post-queue worker zero requests
+PASS 24 actual worker SQL SELECT INSERT UPDATE DELETE permission denials
+PASS latest scoped revocation blocks new and queued work despite older verified record; exact consent snapshot retained
+PASS expired verified consent API denied
+PASS expired consent worker denied zero requests
+PASS wrong usage scope consent worker denied zero requests
+PASS 429 capacity attempt persisted no blind replacement
+PASS parallel real SQL SKIP LOCKED exactly one claim
+PASS real SQL full-reader permission error no provider create
+PASS actual foreign source_video_version_id API and worker denied zero requests
+PASS actual foreign source_audio_version_id API and worker denied zero requests
+PASS foreign consent evidence tenant denied
+PASS viewer both generation lanes and governance RBAC denied
+PASS reviewer both generation lanes and governance RBAC denied
+PASS operator governance RBAC denied
+PASS full Arabic script absent from audit payloads
+PASS worker feature OFF denied before any provider call
+PASS current tenant owner can block record after historical creator deactivated; history retained
+PASS three API feature flags OFF deny both lanes and custom enrollment with zero requests
+PASS three flags OFF browser both-lane controls disabled
+PASS actual Arabic/English/mixed/punctuation/numerals/9:16 RTL desktop/mobile submissions
+PASS operator Arabic stock and approved video/audio browser submissions
+PASS browser private decoded MP4/provenance/review talking_head
+PASS browser private decoded MP4/provenance/review lip_sync
+PASS viewer browser read-only private decoded preview; no generation/review/publish
+PASS reviewer browser generation read-only

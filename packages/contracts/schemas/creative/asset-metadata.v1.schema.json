@@ -8,7 +8,7 @@
     "contract_version": { "const": "creative.asset-metadata.v1" },
     "asset_id": { "type": "string", "format": "uuid" },
     "organization_id": { "type": "string", "format": "uuid" },
-    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "voice", "music", "landing_page"] },
+    "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "lip_sync", "voice", "music", "landing_page"] },
     "title": { "type": ["string", "null"], "minLength": 1, "maxLength": 200 },
     "originating_job_id": { "type": "string", "format": "uuid" }
   }

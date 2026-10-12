@@ -1,0 +1,19 @@
+{
+  "scope": "OFFLINE DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "suite": "image",
+      "exit": 0,
+      "target": null,
+      "passes": 15,
+      "error": null
+    },
+    {
+      "suite": "segmentation",
+      "exit": 0,
+      "target": "0045_creative_segmentation",
+      "passes": 14,
+      "error": null
+    }
+  ]
+}

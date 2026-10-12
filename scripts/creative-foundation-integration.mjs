@@ -502,7 +502,7 @@ try {
   assert.match(preview.headers.get("content-type") ?? "", /image\/png/);
   assert.deepEqual(Buffer.from(await preview.arrayBuffer()), png1x1);
   const uploadKey = uploadedBody.object_key;
-  const uploadPath = joinPath(process.cwd(), "tmp", "creative-uploads", ...uploadKey.split("/"));
+  const uploadPath = joinPath(process.env.CREATIVE_UPLOAD_DIR || joinPath(process.cwd(), "tmp", "creative-uploads"), ...uploadKey.split("/"));
   const hiddenPath = `${uploadPath}.hidden-e2e`;
   renameSync(uploadPath, hiddenPath);
   try {

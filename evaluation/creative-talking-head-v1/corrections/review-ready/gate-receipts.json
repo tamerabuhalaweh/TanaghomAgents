@@ -1,0 +1,139 @@
+{
+  "scope": "Actual recovered current-byte executions; no independent approval",
+  "commands": [
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/check-final.log.txt"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/unit.log.txt"
+    },
+    {
+      "command": "npm run typecheck:dashboard",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck.log.txt"
+    },
+    {
+      "command": "npm run build:dashboard",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/build.log.txt"
+    },
+    {
+      "command": "npm audit --audit-level=moderate --json",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/audit-moderate.json"
+    },
+    {
+      "command": "npm run typecheck:dashboard (after generated import restoration)",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck-restored.log.txt"
+    },
+    {
+      "command": "node --test tests/creative-presenter-review.test.mjs tests/creative-talking-head.test.mjs tests/creative-motion.test.mjs tests/creative-video.test.mjs",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/targeted.log.txt"
+    },
+    {
+      "command": "node scripts/creative-talking-head-acceptance.mjs --browser",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/acceptance.log.txt"
+    },
+    {
+      "command": "node scripts/creative-talking-head-regression.mjs contracts database foundation image",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-a.log.txt"
+    },
+    {
+      "command": "node scripts/creative-talking-head-regression.mjs design motion",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-b.log.txt"
+    },
+    {
+      "command": "node scripts/creative-talking-head-regression.mjs video segmentation",
+      "exit": 0,
+      "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-c.log.txt"
+    }
+  ],
+  "unit_counts": {
+    "tests": 279,
+    "pass": 279,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "targeted_counts": {
+    "tests": 58,
+    "pass": 58,
+    "fail": 0,
+    "cancelled": 0,
+    "skipped": 0
+  },
+  "unique_acceptance_cases": 82,
+  "loopback_creates": 39,
+  "loopback_queries": 42,
+  "migration_up_files": 43,
+  "wrapper_gates": 51,
+  "review_sql_pass_labels": 43,
+  "regression_suites": [
+    {
+      "suite": "contracts",
+      "exit": 0,
+      "baseline": "0046_creative_talking_head",
+      "passes": 52
+    },
+    {
+      "suite": "database",
+      "exit": 0,
+      "target": "0034_agency_pilot_integration",
+      "passes": 1,
+      "error": null
+    },
+    {
+      "suite": "foundation",
+      "exit": 0,
+      "target": null,
+      "passes": 18,
+      "error": null
+    },
+    {
+      "suite": "image",
+      "exit": 0,
+      "target": null,
+      "passes": 15,
+      "error": null
+    },
+    {
+      "suite": "design",
+      "exit": 0,
+      "target": "0039_creative_design_render",
+      "passes": 18,
+      "error": null
+    },
+    {
+      "suite": "motion",
+      "exit": 0,
+      "target": "0040_creative_motion_render",
+      "passes": 17,
+      "error": null
+    },
+    {
+      "suite": "video",
+      "exit": 0,
+      "target": "0044_creative_video_lane",
+      "passes": 21,
+      "error": null
+    },
+    {
+      "suite": "segmentation",
+      "exit": 0,
+      "target": "0045_creative_segmentation",
+      "passes": 14,
+      "error": null
+    }
+  ],
+  "native_runner": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/runner.json",
+  "historical_monolithic_timeout": "Tool deadline; no successful wrapper exit claimed. Labeled leftover removed; all suites rerun in bounded final batches."
+}

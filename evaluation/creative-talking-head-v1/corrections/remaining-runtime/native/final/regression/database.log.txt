@@ -1,0 +1,3345 @@
+BEGIN
+CREATE TABLE
+CREATE SCHEMA
+CREATE FUNCTION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+CREATE FUNCTION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE INDEX
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE INDEX
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 1
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+INSERT 0 1
+CREATE TABLE
+INSERT 0 1
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+GRANT
+ALTER TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TRIGGER
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+INSERT 0 1
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE VIEW
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 0
+INSERT 0 0
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TRIGGER
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE TABLE
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+REVOKE
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TRIGGER
+INSERT 0 1
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TABLE
+ALTER TABLE
+UPDATE 0
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+UPDATE 0
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE VIEW
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 1
+CREATE TABLE
+CREATE TRIGGER
+CREATE VIEW
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 1
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE TRIGGER
+INSERT 0 4
+INSERT 0 7
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+INSERT 0 1
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+INSERT 0 8
+INSERT 0 8
+INSERT 0 8
+INSERT 0 24
+INSERT 0 8
+REVOKE
+GRANT
+REVOKE
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+REVOKE
+INSERT 0 0
+CREATE FUNCTION
+UPDATE 0
+DROP FUNCTION
+CREATE FUNCTION
+ALTER TABLE
+REVOKE
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+INSERT 0 3
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE EXTENSION
+DO
+GRANT
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+INSERT 0 1
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 3
+CREATE TABLE
+CREATE TRIGGER
+INSERT 0 3
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+ALTER TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+INSERT 0 1
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+CREATE FUNCTION
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+CREATE ROLE
+GRANT
+CREATE TABLE
+INSERT 0 1
+CREATE TABLE
+INSERT 0 6
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+GRANT
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+SKIP: 0001_shared_foundation is already applied.
+SKIP: 0002_auth_subjects is already applied.
+SKIP: 0003_api_idempotency is already applied.
+SKIP: 0004_least_privilege_roles is already applied.
+SKIP: 0005_controlled_worker_functions is already applied.
+SKIP: 0006_team_invitations is already applied.
+SKIP: 0007_postiz_draft_handoff is already applied.
+SKIP: 0008_customer_integrations is already applied.
+SKIP: 0009_postiz_automation_controls is already applied.
+SKIP: 0010_postiz_performance_monitoring is already applied.
+SKIP: 0011_ghl_contact_sync is already applied.
+SKIP: 0012_ghl_inbound_event_inbox is already applied.
+SKIP: 0013_sales_knowledge_intelligence is already applied.
+SKIP: 0014_supervised_conversation_ownership is already applied.
+SKIP: 0015_governed_ghl_actions is already applied.
+SKIP: 0016_ghl_action_review_reconciliation is already applied.
+SKIP: 0017_ghl_service_action_audit_attribution is already applied.
+SKIP: 0018_conversation_capacity_backpressure is already applied.
+SKIP: 0019_notification_monitoring_destinations is already applied.
+SKIP: 0020_quality_rollout_control is already applied.
+SKIP: 0021_quality_baseline_shadow_pipeline is already applied.
+SKIP: 0022_agent_registry is already applied.
+SKIP: 0023_campaign_lifecycle is already applied.
+SKIP: 0024_conversation_intelligence_worker_registry is already applied.
+SKIP: 0025_runtime_agent_reconciliation is already applied.
+SKIP: 0026_skill_registry is already applied.
+SKIP: 0027_governed_skill_library is already applied.
+SKIP: 0028_strategy_cadence_integrity is already applied.
+SKIP: 0029_organization_agent_studio is already applied.
+SKIP: 0030_policy_resolved_agent_runtime is already applied.
+SKIP: 0031_policy_runtime_executors_certification is already applied.
+SKIP: 0032_gemma_served_model_profile is already applied.
+SKIP: 0033_agent_runtime_certification_evidence is already applied.
+SKIP: 0034_agency_pilot_integration is already applied.
+BEGIN
+INSERT 0 1
+INSERT 0 4
+INSERT 0 1
+COMMIT
+DO
+                   result
+---------------------------------------------
+ PASS: Phase 1 database invariants enforced.
+(1 row)
+
+DO
+SET
+ count
+-------
+     0
+(1 row)
+
+ count
+-------
+     1
+(1 row)
+
+DO
+RESET
+SET
+DO
+RESET
+SET
+ count
+-------
+     1
+(1 row)
+
+DO
+RESET
+DO
+                     result
+-------------------------------------------------
+ PASS: least-privilege role boundaries enforced.
+(1 row)
+
+INSERT 0 1
+SET
+DO
+       persist_strategy_result
+--------------------------------------
+ 58940870-bd5e-4019-bab7-19ab42503ad3
+(1 row)
+
+RESET
+DO
+INSERT 0 1
+SET
+                job_id
+--------------------------------------
+ 50000000-0000-4000-8000-000000000002
+(1 row)
+
+ persist_content_result
+------------------------
+                      1
+(1 row)
+
+DO
+RESET
+DO
+SET
+DO
+RESET
+SET
+DO
+RESET
+INSERT 0 1
+SET
+                job_id
+--------------------------------------
+ 50000000-0000-4000-8000-000000000003
+(1 row)
+
+DO
+                job_id
+--------------------------------------
+ 50000000-0000-4000-8000-000000000003
+(1 row)
+
+DO
+RESET
+INSERT 0 1
+INSERT 0 1
+SET
+                job_id
+--------------------------------------
+ 50000000-0000-4000-8000-000000000004
+(1 row)
+
+ persist_strategy_result
+-------------------------
+
+(1 row)
+
+RESET
+SET
+DO
+RESET
+DO
+                             result
+----------------------------------------------------------------
+ PASS: controlled worker functions preserve Phase 3 boundaries.
+(1 row)
+
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+DO
+SET
+DO
+RESET
+SET
+DO
+RESET
+DO
+DELETE 1
+DELETE 1
+DELETE 1
+UPDATE 1
+                                result
+----------------------------------------------------------------------
+ PASS: guarded Postiz draft handoff is idempotent and approval-bound.
+(1 row)
+
+DO
+INSERT 0 1
+SET
+ provider |    status
+----------+--------------
+ postiz   | disconnected
+(1 row)
+
+RESET
+                          result
+----------------------------------------------------------
+ PASS: customer integration credential boundary enforced.
+(1 row)
+
+DO
+UPDATE 1
+SET
+DO
+RESET
+UPDATE 1
+SET
+ postiz_draft_mode |          changed_at
+-------------------+-------------------------------
+ automatic         | 2026-10-11 15:33:08.938205+00
+(1 row)
+
+RESET
+DO
+SET
+DO
+RESET
+SET
+ postiz_draft_mode |          changed_at
+-------------------+------------------------------
+ paused            | 2026-10-11 15:33:08.96416+00
+(1 row)
+
+RESET
+SET
+DO
+RESET
+SET
+ postiz_draft_mode |          changed_at
+-------------------+-------------------------------
+ automatic         | 2026-10-11 15:33:08.975628+00
+(1 row)
+
+RESET
+SET
+DO
+RESET
+DO
+UPDATE 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+                               result
+---------------------------------------------------------------------
+ PASS: customer automation modes and platform safety gates enforced.
+(1 row)
+
+DO
+UPDATE 1
+UPDATE 1
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+INSERT 0 1
+SET
+RESET
+DO
+SET
+                job_id                |             operation_id             |               post_id                |           organization_id            |                     idempotency_key                     |                          request_body
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------------------------------------------------+----------------------------------------------------------------
+ e1c69800-53dd-4e74-983f-cc5b0e188ba1 | 9299bcf7-3583-4b4e-92a7-c0cdc666060f | 71000000-0000-4000-8000-000000000003 | 10000000-0000-4000-8000-000000000001 | postiz-analytics:e1c69800-53dd-4e74-983f-cc5b0e188ba1:1 | {"date": 30, "provider_post_id": "postiz-performance-fixture"}
+(1 row)
+
+ complete_postiz_performance_sync
+----------------------------------
+                                4
+(1 row)
+
+RESET
+SET
+RESET
+SET
+                job_id                |             operation_id             |               post_id                |           organization_id            |                     idempotency_key                     |                          request_body
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------------------------------------------------+----------------------------------------------------------------
+ e8bb80aa-bcd9-40fc-8777-a99c2281d4ad | f53344d5-402c-474f-9174-3627ca8d9d03 | 71000000-0000-4000-8000-000000000003 | 10000000-0000-4000-8000-000000000001 | postiz-analytics:e8bb80aa-bcd9-40fc-8777-a99c2281d4ad:1 | {"date": 30, "provider_post_id": "postiz-performance-fixture"}
+(1 row)
+
+ record_postiz_performance_failure
+-----------------------------------
+ queued
+(1 row)
+
+                job_id                |             operation_id             |               post_id                |           organization_id            |                     idempotency_key                     |                          request_body
+--------------------------------------+--------------------------------------+--------------------------------------+--------------------------------------+---------------------------------------------------------+----------------------------------------------------------------
+ e8bb80aa-bcd9-40fc-8777-a99c2281d4ad | 0ee73001-d50d-43a1-bdf3-39bfcf2f57e2 | 71000000-0000-4000-8000-000000000003 | 10000000-0000-4000-8000-000000000001 | postiz-analytics:e8bb80aa-bcd9-40fc-8777-a99c2281d4ad:2 | {"date": 30, "provider_post_id": "postiz-performance-fixture"}
+(1 row)
+
+ complete_postiz_performance_sync
+----------------------------------
+                                4
+(1 row)
+
+RESET
+DO
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+SET
+DO
+RESET
+DELETE 2
+DELETE 1
+DELETE 4
+DELETE 1
+DELETE 4
+DELETE 3
+ALTER TABLE
+ALTER TABLE
+DELETE 5
+ALTER TABLE
+ALTER TABLE
+DELETE 2
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+                                                      result
+------------------------------------------------------------------------------------------------------------------
+ PASS: Phase 4H performance history, replay safety, attribution quarantine, and organization boundaries enforced.
+(1 row)
+
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+SET
+DO
+RESET
+SET
+DO
+RESET
+UPDATE 1
+SET
+DO
+RESET
+UPDATE 1
+UPDATE 1
+SET
+DO
+RESET
+DO
+UPDATE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+                                   result
+----------------------------------------------------------------------------
+ PASS: GHL contact sync is contact-only, replay-safe, and least-privileged.
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+SET
+DO
+RESET
+DO
+SET
+DO
+RESET
+UPDATE 1
+UPDATE 1
+SET
+DO
+RESET
+UPDATE 1
+SET
+DO
+RESET
+SET
+DO
+RESET
+UPDATE 1
+SET
+ record_ghl_inbound_event_failure
+----------------------------------
+ dead_letter
+(1 row)
+
+RESET
+DO
+SET
+DO
+RESET
+DELETE 1
+DELETE 1
+SET
+DO
+RESET
+DO
+UPDATE 1
+UPDATE 1
+                                        result
+---------------------------------------------------------------------------------------
+ PASS: signed GHL events are durable, deduplicated, recoverable, and least-privileged.
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ 3d7c1517-bcea-45bd-999c-81a2ab3f56ef | reviewed   |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ 3d7c1517-bcea-45bd-999c-81a2ab3f56ef | approved   |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ 3d7c1517-bcea-45bd-999c-81a2ab3f56ef | active     |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ d47c9090-595f-4ff0-ad4f-46b60cbf9e07 | reviewed   |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ d47c9090-595f-4ff0-ad4f-46b60cbf9e07 | approved   |
+(1 row)
+
+              version_id              | new_status |         replaced_version_id
+--------------------------------------+------------+--------------------------------------
+ d47c9090-595f-4ff0-ad4f-46b60cbf9e07 | active     | 3d7c1517-bcea-45bd-999c-81a2ab3f56ef
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+GRANT
+DO
+              version_id              | new_status |         replaced_version_id
+--------------------------------------+------------+--------------------------------------
+ 3d7c1517-bcea-45bd-999c-81a2ab3f56ef | active     | d47c9090-595f-4ff0-ad4f-46b60cbf9e07
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ f3a74f84-60bf-4bef-9ff5-1d927d02aea0 | reviewed   |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ f3a74f84-60bf-4bef-9ff5-1d927d02aea0 | approved   |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ f3a74f84-60bf-4bef-9ff5-1d927d02aea0 | active     |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ f3a74f84-60bf-4bef-9ff5-1d927d02aea0 | revoked    |
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+SET
+               event_id               |           organization_id            | event_status | duplicate | delivery_count
+--------------------------------------+--------------------------------------+--------------+-----------+----------------
+ 8b5e59cd-9e62-48aa-be68-a0047531e971 | 10000000-0000-4000-8000-000000000001 | pending      | f         |              1
+(1 row)
+
+RESET
+SET
+RESET
+UPDATE 1
+SET
+DO
+DO
+RESET
+DO
+DELETE 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+                                               result
+-----------------------------------------------------------------------------------------------------
+ PASS: versioned knowledge, tenant-bound retrieval, grounded proposals, and bounded memory enforced.
+(1 row)
+
+INSERT 0 3
+INSERT 0 1
+INSERT 0 1
+UPDATE 1
+DO
+DO
+SET
+ sweep_conversation_supervisor_alerts
+--------------------------------------
+                                    4
+(1 row)
+
+RESET
+DO
+                                    result
+-------------------------------------------------------------------------------
+ PASS: supervisor inbox, role, SLA, and worker privilege foundations enforced.
+(1 row)
+
+UPDATE 1
+INSERT 0 1
+ set_ghl_action_emergency_stop
+-------------------------------
+                             0
+(1 row)
+
+DO
+UPDATE 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+DO
+DELETE 1
+ALTER TABLE
+ALTER TABLE
+DELETE 2
+ALTER TABLE
+ALTER TABLE
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+DELETE 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+                                                   result
+------------------------------------------------------------------------------------------------------------
+ PASS: GHL actions are consent-aware, replay-safe, takeover-safe, indeterminate-safe, and least-privileged.
+(1 row)
+
+UPDATE 1
+INSERT 0 1
+ set_ghl_action_emergency_stop
+-------------------------------
+                             0
+(1 row)
+
+ set_ghl_action_automation_mode
+--------------------------------
+ assisted
+(1 row)
+
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+DO
+DO
+ALTER TABLE
+DELETE 2
+ALTER TABLE
+ALTER TABLE
+DELETE 3
+ALTER TABLE
+DELETE 3
+DELETE 1
+DELETE 1
+UPDATE 1
+UPDATE 1
+UPDATE 1
+                                                result
+------------------------------------------------------------------------------------------------------
+ PASS: GHL action approval and idempotent human reconciliation are tenant-bound and least-privileged.
+(1 row)
+
+INSERT 0 1
+UPDATE 1
+UPDATE 1
+SET
+           organization_id
+--------------------------------------
+ 10000000-0000-4000-8000-000000000001
+(1 row)
+
+DO
+               event_id               |           organization_id            | event_status | duplicate | delivery_count
+--------------------------------------+--------------------------------------+--------------+-----------+----------------
+ a268c2ab-e32a-4cff-878b-397fbdf59631 | 10000000-0000-4000-8000-000000000001 | pending      | f         |              1
+(1 row)
+
+               event_id               |           organization_id            | event_status | duplicate | delivery_count
+--------------------------------------+--------------------------------------+--------------+-----------+----------------
+ 0a34d118-9612-4c45-8cff-69595ab7f005 | 10000000-0000-4000-8000-000000000001 | pending      | f         |              1
+(1 row)
+
+RESET
+SET
+RESET
+DO
+SET
+DO
+ complete_ghl_inbound_event
+----------------------------
+ succeeded
+(1 row)
+
+ complete_ghl_inbound_event
+----------------------------
+ succeeded
+(1 row)
+
+RESET
+SET
+               event_id               |           organization_id            | event_status | duplicate | delivery_count
+--------------------------------------+--------------------------------------+--------------+-----------+----------------
+ 1edd5faf-dcb5-467e-9a60-4e3275971e8a | 10000000-0000-4000-8000-000000000001 | pending      | f         |              1
+(1 row)
+
+               event_id               |           organization_id            | event_status | duplicate | delivery_count
+--------------------------------------+--------------------------------------+--------------+-----------+----------------
+ c1a9383a-6a34-4b52-9007-f9a6f1f6f22f | 10000000-0000-4000-8000-000000000001 | pending      | f         |              1
+(1 row)
+
+RESET
+SET
+ record_ghl_inbound_event_failure
+----------------------------------
+ pending
+(1 row)
+
+DO
+ pg_sleep
+----------
+
+(1 row)
+
+ complete_ghl_inbound_event
+----------------------------
+ succeeded
+(1 row)
+
+ complete_ghl_inbound_event
+----------------------------
+ succeeded
+(1 row)
+
+RESET
+DO
+UPDATE 1
+UPDATE 1
+                                                    result
+---------------------------------------------------------------------------------------------------------------
+ PASS: priority, bounded concurrency, dependency cooldown, recovery, visibility, and least privilege enforced.
+(1 row)
+
+DO
+INSERT 0 1
+DO
+DELETE 1
+                                     result
+--------------------------------------------------------------------------------
+ PASS: customer notification destination and locked delivery boundary enforced.
+(1 row)
+
+DO
+INSERT 0 1
+      set_quality_rollout_stage
+--------------------------------------
+ d4cd1c07-fdb4-4563-a4a8-abeff62b5ac8
+(1 row)
+
+DO
+      set_quality_rollout_stage
+--------------------------------------
+ 7d42e820-9c03-4a41-84b9-40a3e513be42
+(1 row)
+
+TRUNCATE TABLE
+                                      result
+----------------------------------------------------------------------------------
+ PASS: quality rollout requires sequential, owner-approved, append-only evidence.
+(1 row)
+
+DO
+TRUNCATE TABLE
+UPDATE 1
+                                                          result
+---------------------------------------------------------------------------------------------------------------------------
+ PASS: approved metrics, de-identified baseline, proposal-only shadow, evidence aggregation, and least privilege verified.
+(1 row)
+
+DO
+                              result
+------------------------------------------------------------------
+ PASS: agent registry inventory and least privilege are enforced.
+(1 row)
+
+INSERT 0 2
+SET
+             campaign_id              | campaign_status |          created_at
+--------------------------------------+-----------------+-------------------------------
+ 768844cf-b3be-45d1-b0e7-fa0d676ef24c | draft           | 2026-10-11 15:33:13.206894+00
+(1 row)
+
+DO
+RESET
+BEGIN
+INSERT 0 1
+INSERT 0 1
+SET
+             campaign_id              | campaign_status |          created_at
+--------------------------------------+-----------------+-------------------------------
+ 6f0e0351-a144-4d51-9a8b-715494088425 | draft           | 2026-10-11 15:33:13.224014+00
+(1 row)
+
+DO
+RESET
+ROLLBACK
+SET
+                job_id                |            correlation_id            | job_status
+--------------------------------------+--------------------------------------+------------
+ 02f16978-53d9-4ba1-8bad-c6ccebe2cc0c | db011fb3-d36f-4d06-a162-0aa08f596a86 | queued
+(1 row)
+
+                job_id                |            correlation_id            | job_status
+--------------------------------------+--------------------------------------+------------
+ 02f16978-53d9-4ba1-8bad-c6ccebe2cc0c | db011fb3-d36f-4d06-a162-0aa08f596a86 | queued
+(1 row)
+
+RESET
+DO
+SET
+DO
+RESET
+SET
+                job_id                |            correlation_id            | job_status
+--------------------------------------+--------------------------------------+------------
+ 1cdbd654-ff14-44eb-9ec5-e1490e0ce80f | 2bbe8be2-b6ef-4a4d-b15f-23128b1d4710 | queued
+(1 row)
+
+                job_id                |            correlation_id            | job_status
+--------------------------------------+--------------------------------------+------------
+ 1cdbd654-ff14-44eb-9ec5-e1490e0ce80f | 2bbe8be2-b6ef-4a4d-b15f-23128b1d4710 | queued
+(1 row)
+
+RESET
+DO
+SET
+DO
+RESET
+SET
+DO
+RESET
+DO
+                                            result
+----------------------------------------------------------------------------------------------
+ PASS: controlled campaign lifecycle is tenant-bound, idempotent, audited, and provider-free.
+(1 row)
+
+DO
+                             result
+----------------------------------------------------------------
+ PASS: four unique enabled business runtime agents are present.
+(1 row)
+
+DO
+DO
+INSERT 0 1
+DO
+INSERT 0 1
+DO
+DELETE 1
+DELETE 1
+SET
+ count
+-------
+     8
+(1 row)
+
+DO
+RESET
+SET
+DO
+RESET
+DO
+                                                 result
+--------------------------------------------------------------------------------------------------------
+ PASS: Skill Registry reconciliation, immutability, tenant isolation, and role boundaries are enforced.
+(1 row)
+
+BEGIN
+               skill_id               |           skill_version_id           | version_number | lifecycle_state
+--------------------------------------+--------------------------------------+----------------+-----------------
+ 28852934-a9e4-4fa8-b9bb-c1893c5ec1a9 | 725c4515-a982-439e-9a9b-bdfc54202100 |              1 | draft
+(1 row)
+
+DO
+           skill_version_id           | lifecycle_state |                              content_hash
+--------------------------------------+-----------------+-------------------------------------------------------------------------
+ 725c4515-a982-439e-9a9b-bdfc54202100 | validated       | sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+(1 row)
+
+           skill_version_id           | lifecycle_state |                              content_hash
+--------------------------------------+-----------------+-------------------------------------------------------------------------
+ 725c4515-a982-439e-9a9b-bdfc54202100 | published       | sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+(1 row)
+
+DO
+INSERT 0 1
+INSERT 0 1
+DO
+SET
+ count
+-------
+     1
+(1 row)
+
+DO
+RESET
+SET
+DO
+RESET
+DO
+ROLLBACK
+                                                           result
+----------------------------------------------------------------------------------------------------------------------------
+ PASS: governed Skill Library tenant isolation, safe content, immutable lifecycle, audit, and role boundaries are enforced.
+(1 row)
+
+DO
+                                     result
+---------------------------------------------------------------------------------
+ PASS: strategist channel/cadence equality is enforced at the database boundary.
+(1 row)
+
+BEGIN
+              source_id               |              version_id              | version_number | status
+--------------------------------------+--------------------------------------+----------------+--------
+ ab339363-0916-4d39-8888-1caede30f00b | e653bb1b-fccc-489a-9426-26fcbc5ac478 |              1 | draft
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ e653bb1b-fccc-489a-9426-26fcbc5ac478 | reviewed   |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ e653bb1b-fccc-489a-9426-26fcbc5ac478 | approved   |
+(1 row)
+
+              version_id              | new_status | replaced_version_id
+--------------------------------------+------------+---------------------
+ e653bb1b-fccc-489a-9426-26fcbc5ac478 | active     |
+(1 row)
+
+               agent_id               |           agent_version_id           | version_number | lifecycle_state
+--------------------------------------+--------------------------------------+----------------+-----------------
+ 6459b9c5-f466-4bee-8d82-f3affd27e066 | d4fca79e-e566-492b-8333-7451b1ab532f |              1 | draft
+(1 row)
+
+DO
+           agent_version_id           | lifecycle_state |                              content_hash
+--------------------------------------+-----------------+-------------------------------------------------------------------------
+ d4fca79e-e566-492b-8333-7451b1ab532f | validated       | sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+(1 row)
+
+DO
+               agent_id               |           agent_version_id           | version_number | lifecycle_state
+--------------------------------------+--------------------------------------+----------------+-----------------
+ 6459b9c5-f466-4bee-8d82-f3affd27e066 | 6e97f40f-7169-4e5d-b6d0-15d971c51bce |              2 | draft
+(1 row)
+
+DO
+INSERT 0 1
+INSERT 0 1
+DO
+SET
+ count
+-------
+     2
+(1 row)
+
+DO
+RESET
+SET
+DO
+RESET
+DO
+ROLLBACK
+                                                                result
+--------------------------------------------------------------------------------------------------------------------------------------
+ PASS: Agent Studio tenant isolation, immutable versioning, bounded modes, lifecycle gating, audit, and role boundaries are enforced.
+(1 row)
+
+BEGIN
+INSERT 0 1
+INSERT 0 1
+               agent_id               |           agent_version_id           | version_number | lifecycle_state
+--------------------------------------+--------------------------------------+----------------+-----------------
+ 6815f82b-1023-4ab2-85f9-b2bc17449270 | a689719d-8fe8-46f4-806a-39067cdfd460 |              1 | draft
+(1 row)
+
+           agent_version_id           | lifecycle_state |                              content_hash
+--------------------------------------+-----------------+-------------------------------------------------------------------------
+ a689719d-8fe8-46f4-806a-39067cdfd460 | validated       | sha256:d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1d1
+(1 row)
+
+               agent_id               |           agent_version_id           | version_number | lifecycle_state
+--------------------------------------+--------------------------------------+----------------+-----------------
+ b7462390-7d94-4ce8-a3ea-183f418a7f75 | fad9d7aa-cf1d-45cf-927f-d40e95dbbf7c |              1 | draft
+(1 row)
+
+           agent_version_id           | lifecycle_state |                              content_hash
+--------------------------------------+-----------------+-------------------------------------------------------------------------
+ fad9d7aa-cf1d-45cf-927f-d40e95dbbf7c | validated       | sha256:d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2
+(1 row)
+
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+DO
+DO
+DO
+UPDATE 1
+UPDATE 1
+UPDATE 1
+DO
+                                  record_agent_runtime_plan
+----------------------------------------------------------------------------------------------
+ {"run_id": "e4c6795a-7cf2-4534-8f75-df9d20e8a631", "status": "authorizing", "step_count": 2}
+(1 row)
+
+                                  record_agent_runtime_plan
+----------------------------------------------------------------------------------------------
+ {"run_id": "7dd93574-2653-4fcd-a053-cd63125fe3c2", "status": "authorizing", "step_count": 4}
+(1 row)
+
+            invocation_id             | authorization_status |      status      | denial_reason | executor_class | simulation_only
+--------------------------------------+----------------------+------------------+---------------+----------------+-----------------
+ 6bf4ddda-39a7-48c1-93d0-717334c72b2d | authorized           | simulation_ready |               | proposal       | t
+(1 row)
+
+            invocation_id             | authorization_status | status  |            denial_reason             | executor_class | simulation_only
+--------------------------------------+----------------------+---------+--------------------------------------+----------------+-----------------
+ c3504155-bb2f-4e3d-b80b-9cfb1464dab5 | denied               | refused | skill_not_assigned_or_not_executable |                | t
+(1 row)
+
+            invocation_id             | authorization_status |      status      | denial_reason | executor_class | simulation_only
+--------------------------------------+----------------------+------------------+---------------+----------------+-----------------
+ 6621d39b-086c-4ca4-84dd-e40d332be318 | authorized           | simulation_ready |               | proposal       | t
+(1 row)
+
+            invocation_id             | authorization_status | status  |     denial_reason     | executor_class | simulation_only
+--------------------------------------+----------------------+---------+-----------------------+----------------+-----------------
+ a0595b36-2987-42d9-843c-84e680d8cce2 | denied               | refused | channel_not_permitted | proposal       | t
+(1 row)
+
+            invocation_id             | authorization_status | status  |  denial_reason  | executor_class | simulation_only
+--------------------------------------+----------------------+---------+-----------------+----------------+-----------------
+ 0bde3fcf-8d70-461e-a554-a60a81aadbe2 | denied               | refused | consent_missing | proposal       | t
+(1 row)
+
+UPDATE 1
+            invocation_id             | authorization_status | status  |     denial_reason      | executor_class | simulation_only
+--------------------------------------+----------------------+---------+------------------------+----------------+-----------------
+ 6eaf595c-883e-44a2-b5ec-f38e16b1a0a9 | denied               | refused | runtime_emergency_stop | proposal       | t
+(1 row)
+
+UPDATE 1
+DO
+DO
+DO
+ finalize_agent_runtime_run
+----------------------------
+ succeeded
+(1 row)
+
+ finalize_agent_runtime_run
+----------------------------
+ succeeded
+(1 row)
+
+DO
+INSERT 0 1
+INSERT 0 1
+DO
+ reconcile_agent_dependency_block
+----------------------------------
+ reconciled
+(1 row)
+
+UPDATE 1
+ fail_agent_runtime_run
+------------------------
+ queued
+(1 row)
+
+DO
+UPDATE 1
+UPDATE 1
+UPDATE 1
+DO
+ fail_agent_runtime_run
+------------------------
+ failed
+(1 row)
+
+INSERT 0 1
+           agent_version_id           | lifecycle_state |                              content_hash
+--------------------------------------+-----------------+-------------------------------------------------------------------------
+ fad9d7aa-cf1d-45cf-927f-d40e95dbbf7c | retired         | sha256:d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2d2
+(1 row)
+
+DO
+SET
+DO
+RESET
+SET
+DO
+RESET
+DO
+ROLLBACK
+                                                                                            result
+-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------
+ PASS: two tenants used one shared runtime with progressive disclosure, bilingual simulations, policy denials, idempotency, emergency stop, immutable evidence, and least-privilege executors.
+(1 row)
+
+BEGIN
+DO
+DO
+SET
+DO
+RESET
+ set_agent_runtime_executor_adapter
+------------------------------------
+ enabled
+(1 row)
+
+DO
+ROLLBACK
+                                                     result
+----------------------------------------------------------------------------------------------------------------
+ PASS: executor adapters default disabled, remain immutable, and expose only least-privilege runtime functions.
+(1 row)
+
+DO
+DO
+DO
+BEGIN
+DO
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP TABLE
+DROP FUNCTION
+DROP OWNED
+DROP ROLE
+DELETE 1
+COMMIT
+DO
+PASS: simultaneous takeover, duplicate clicks, assignment isolation, lost leases, reconnects, and dispatch-time authority checks enforced.
+BEGIN
+DO
+CREATE FUNCTION
+REVOKE
+GRANT
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+ALTER TABLE
+DELETE 1
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP TRIGGER
+DROP FUNCTION
+ALTER TABLE
+DROP TRIGGER
+DROP FUNCTION
+DROP FUNCTION
+DROP TRIGGER
+DROP TABLE
+DROP TABLE
+ALTER TABLE
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP OWNED
+DROP OWNED
+DROP OWNED
+DROP OWNED
+DROP ROLE
+DROP ROLE
+DROP ROLE
+DROP ROLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+DROP FUNCTION
+DROP FUNCTION
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DELETE 1
+COMMIT
+DO
+BEGIN
+ALTER TABLE
+UPDATE 0
+DROP TABLE
+DROP FUNCTION
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP TABLE
+DROP TABLE
+DROP TRIGGER
+DROP TRIGGER
+DROP TABLE
+DROP TABLE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+DELETE 0
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+DELETE 1
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP INDEX
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DROP TRIGGER
+DROP TRIGGER
+DROP TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP TRIGGER
+DROP FUNCTION
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+DROP FUNCTION
+DROP TRIGGER
+DROP TRIGGER
+DROP FUNCTION
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+REVOKE
+REVOKE
+DROP VIEW
+DROP TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+DROP VIEW
+DROP FUNCTION
+DROP TRIGGER
+DROP FUNCTION
+DROP TRIGGER
+DROP FUNCTION
+UPDATE 6
+DROP TRIGGER
+DROP FUNCTION
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+DROP INDEX
+ALTER TABLE
+DROP TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+CREATE FUNCTION
+REVOKE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+DROP FUNCTION
+DROP TRIGGER
+DROP TRIGGER
+DROP FUNCTION
+DROP TABLE
+DROP TRIGGER
+DROP FUNCTION
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP TRIGGER
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP VIEW
+DROP TRIGGER
+DROP TRIGGER
+DROP FUNCTION
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TRIGGER
+DROP TABLE
+DROP TABLE
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP TRIGGER
+DROP FUNCTION
+DROP TRIGGER
+DROP FUNCTION
+DROP TRIGGER
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP VIEW
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP TABLE
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP VIEW
+DROP TABLE
+DROP TABLE
+DROP TRIGGER
+DROP FUNCTION
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP VIEW
+DROP INDEX
+DROP TABLE
+DROP TABLE
+ALTER TABLE
+REVOKE
+DROP ROLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP INDEX
+DROP TABLE
+DROP TRIGGER
+DROP FUNCTION
+DROP TABLE
+DROP FUNCTION
+DELETE 1
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP INDEX
+DROP TABLE
+DROP TABLE
+DROP TABLE
+DROP FUNCTION
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP TRIGGER
+DROP TRIGGER
+DROP FUNCTION
+DROP FUNCTION
+DROP VIEW
+DROP TRIGGER
+DROP FUNCTION
+DROP TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+REVOKE
+REVOKE
+DROP VIEW
+DROP TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+DROP INDEX
+DROP INDEX
+DROP INDEX
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+DROP TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+DO
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP INDEX
+DROP TABLE
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+ALTER TABLE
+DELETE 1
+COMMIT
+DO
+BEGIN
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DROP FUNCTION
+DELETE 1
+COMMIT
+DO
+BEGIN
+GRANT
+ALTER DEFAULT PRIVILEGES
+DROP OWNED
+DROP OWNED
+DROP OWNED
+DROP ROLE
+DROP ROLE
+DROP ROLE
+DELETE 1
+COMMIT
+BEGIN
+DROP TABLE
+DELETE 1
+COMMIT
+BEGIN
+DROP INDEX
+ALTER TABLE
+DELETE 1
+COMMIT
+BEGIN
+DROP SCHEMA
+DELETE 1
+COMMIT
+DO
+DO
+BEGIN
+CREATE TABLE
+CREATE SCHEMA
+CREATE FUNCTION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+CREATE FUNCTION
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE INDEX
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE INDEX
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+ALTER DEFAULT PRIVILEGES
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 1
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+UPDATE 0
+ALTER TABLE
+ALTER TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+INSERT 0 1
+INSERT 0 1
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+INSERT 0 1
+CREATE TABLE
+INSERT 0 1
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+GRANT
+ALTER TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TRIGGER
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+INSERT 0 1
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE VIEW
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 0
+INSERT 0 0
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TRIGGER
+CREATE TABLE
+CREATE TRIGGER
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE VIEW
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE TABLE
+CREATE FUNCTION
+REVOKE
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+REVOKE
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TRIGGER
+INSERT 0 1
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TABLE
+ALTER TABLE
+UPDATE 0
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+UPDATE 0
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE VIEW
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 1
+CREATE TABLE
+CREATE TRIGGER
+CREATE VIEW
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 1
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE TRIGGER
+INSERT 0 4
+INSERT 0 7
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+ALTER TABLE
+CREATE INDEX
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+INSERT 0 1
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+INSERT 0 1
+DO
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TABLE
+CREATE INDEX
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+INSERT 0 8
+INSERT 0 8
+INSERT 0 8
+INSERT 0 24
+INSERT 0 8
+REVOKE
+GRANT
+REVOKE
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+REVOKE
+INSERT 0 0
+CREATE FUNCTION
+UPDATE 0
+DROP FUNCTION
+CREATE FUNCTION
+ALTER TABLE
+REVOKE
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+INSERT 0 3
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE EXTENSION
+DO
+GRANT
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE INDEX
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+INSERT 0 1
+INSERT 0 1
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+GRANT
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+CREATE TABLE
+INSERT 0 3
+CREATE TABLE
+CREATE TRIGGER
+INSERT 0 3
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+ALTER TABLE
+CREATE FUNCTION
+CREATE TRIGGER
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+INSERT 0 1
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+CREATE FUNCTION
+REVOKE
+GRANT
+INSERT 0 1
+COMMIT
+BEGIN
+DO
+CREATE ROLE
+GRANT
+CREATE TABLE
+INSERT 0 1
+CREATE TABLE
+INSERT 0 6
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TABLE
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+REVOKE
+REVOKE
+REVOKE
+GRANT
+REVOKE
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+                        result
+-------------------------------------------------------
+ PASS: migration rollback and clean reapply succeeded.
+(1 row)
+
+
+psql:C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/database/tests/quality_rollout_control.sql:72: NOTICE:  truncate cascades to table "quality_evaluation_datasets"
+psql:C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/database/tests/quality_rollout_control.sql:72: NOTICE:  truncate cascades to table "quality_evaluation_cases"
+psql:C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/database/tests/quality_rollout_control.sql:72: NOTICE:  truncate cascades to table "quality_shadow_jobs"
+psql:C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/database/tests/quality_rollout_control.sql:72: NOTICE:  truncate cascades to table "quality_shadow_results"
+psql:C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/database/migrations/0001_shared_foundation.down.sql:3: NOTICE:  drop cascades to 22 other objects
+DETAIL:  drop cascades to function tanaghom.set_updated_at()
+drop cascades to table tanaghom.app_users
+drop cascades to table tanaghom.campaigns
+drop cascades to table tanaghom.campaign_strategies
+drop cascades to table tanaghom.agents
+drop cascades to table tanaghom.agent_jobs
+drop cascades to table tanaghom.content_items
+drop cascades to table tanaghom.content_approvals
+drop cascades to function tanaghom.enforce_human_content_decision()
+drop cascades to function tanaghom.enforce_campaign_status_transition()
+drop cascades to function tanaghom.enforce_content_status_transition()
+drop cascades to function tanaghom.enforce_job_status_transition()
+drop cascades to table tanaghom.posts
+drop cascades to function tanaghom.enforce_publishable_content()
+drop cascades to table tanaghom.leads
+drop cascades to table tanaghom.message_templates
+drop cascades to table tanaghom.sales_activities
+drop cascades to table tanaghom.external_operations
+drop cascades to table tanaghom.outbox_events
+drop cascades to table tanaghom.notifications
+drop cascades to table tanaghom.agent_actions_log
+drop cascades to function tanaghom.prevent_audit_mutation()
+psql:C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/database/migrations/0001_shared_foundation.up.sql:6: NOTICE:  relation "schema_migrations" already exists, skipping
+psql:C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/database/migrations/0030_policy_resolved_agent_runtime.up.sql:3: NOTICE:  extension "pgcrypto" already exists, skipping

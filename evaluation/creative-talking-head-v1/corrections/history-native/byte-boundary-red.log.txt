@@ -1,0 +1,91 @@
+TAP version 13
+# Subtest: live runner refuses source-only even with feature flags ON; before DB/key/network
+ok 1 - live runner refuses source-only even with feature flags ON; before DB/key/network
+  ---
+  duration_ms: 156.6046
+  type: 'test'
+  ...
+# Subtest: bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+ok 2 - bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+  ---
+  duration_ms: 1.5306
+  type: 'test'
+  ...
+# Subtest: binary signatures reject high-bit aliases rather than lossy ASCII matches
+not ok 3 - binary signatures reject high-bit aliases rather than lossy ASCII matches
+  ---
+  duration_ms: 1.9499
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\tests\\creative-talking-head.test.mjs:8:1'
+  failureType: 'testCodeFailure'
+  error: 'Missing expected exception.'
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected:
+  operator: 'throws'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/tests/creative-talking-head.test.mjs:8:267)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: controlled encoded media rejects container, codec, dimensions, duration and bounds
+ok 4 - controlled encoded media rejects container, codec, dimensions, duration and bounds
+  ---
+  duration_ms: 3.5223
+  type: 'test'
+  ...
+# Subtest: actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+ok 5 - actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+  ---
+  duration_ms: 2.1346
+  type: 'test'
+  ...
+# Subtest: provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+ok 6 - provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+  ---
+  duration_ms: 38.7421
+  type: 'test'
+  ...
+# Subtest: MP4 validator rejects trailing truncated box bytes
+ok 7 - MP4 validator rejects trailing truncated box bytes
+  ---
+  duration_ms: 1.5711
+  type: 'test'
+  ...
+# Subtest: presenter output must include a supported audio track
+ok 8 - presenter output must include a supported audio track
+  ---
+  duration_ms: 1.2622
+  type: 'test'
+  ...
+# Subtest: lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+ok 9 - lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+  ---
+  duration_ms: 5.8346
+  type: 'test'
+  ...
+# Subtest: HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+ok 10 - HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+  ---
+  duration_ms: 2.88
+  type: 'test'
+  ...
+# Subtest: Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+ok 11 - Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+  ---
+  duration_ms: 2.5093
+  type: 'test'
+  ...
+1..11
+# tests 11
+# suites 0
+# pass 10
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 358.5953

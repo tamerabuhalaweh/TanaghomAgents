@@ -20,7 +20,7 @@ import {
 
 const CAPABILITIES = new Set([
   "image", "edit", "product_shoot", "design", "carousel", "motion",
-  "video", "talking_head", "voice", "music", "landing_page",
+  "video", "voice", "music", "landing_page",
 ]);
 const LANES = new Set(["cpu", "gpu_image", "gpu_video", "gpu_audio"]);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;

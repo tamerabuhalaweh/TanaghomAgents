@@ -1,0 +1,52 @@
+{
+  "scope": "SOURCE SELF-REVIEW ONLY; not independent review or real-provider acceptance",
+  "commands": [
+    {
+      "command": "npm run build:dashboard",
+      "exit": 0,
+      "native_output": "build-final.log"
+    },
+    {
+      "command": "npm run typecheck:dashboard",
+      "exit": 0,
+      "native_output": "typecheck-final.log"
+    },
+    {
+      "command": "npm run check",
+      "exit": 0,
+      "native_output": "check-final.log"
+    },
+    {
+      "command": "npm test",
+      "exit": 0,
+      "native_output": "npm-test-final.log"
+    },
+    {
+      "command": "npm audit --audit-level=high --json",
+      "exit": 0,
+      "native_output": "audit-final.json"
+    },
+    {
+      "command": "P5_SCRATCH_DIR='<scratch>' node scripts/creative-talking-head-acceptance.mjs --browser",
+      "exit": 0,
+      "native_output": "acceptance-final.log"
+    },
+    {
+      "command": "P5_SCRATCH_DIR='<scratch>' node scripts/creative-talking-head-regression.mjs contracts database foundation image",
+      "exit": 0,
+      "native_output": "regression-final-a.log"
+    },
+    {
+      "command": "P5_SCRATCH_DIR='<scratch>' node scripts/creative-talking-head-regression.mjs design motion",
+      "exit": 0,
+      "native_output": "regression-final-b.log"
+    },
+    {
+      "command": "P5_SCRATCH_DIR='<scratch>' node scripts/creative-talking-head-regression.mjs video segmentation",
+      "exit": 0,
+      "native_output": "regression-final-c.log"
+    }
+  ],
+  "working_tree_baseline": "04eb35a4bf14ff98efd0023a182f0e1c9f578d60",
+  "run_receipt": "evaluation/creative-talking-head-v1/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/runner.json"
+}

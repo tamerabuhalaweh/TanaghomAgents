@@ -1,0 +1,17 @@
+{
+  "scope": "OFFLINE DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "suite": "contracts",
+      "exit": 1,
+      "error": "SQL packages/database/tests/creative_foundation.sql psql:packages/database/tests/creative_foundation.sql:28: ERROR:  creative controls are not safe by default\r\nCONTEXT:  PL/pgSQL function inline_code_block line 3 at RAISE\r\n\n\n3 !== 0\n"
+    },
+    {
+      "suite": "foundation",
+      "exit": 0,
+      "target": null,
+      "passes": 18,
+      "error": null
+    }
+  ]
+}

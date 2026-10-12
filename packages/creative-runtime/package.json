@@ -27,7 +27,13 @@
       "types": "./render/motion.d.ts",
       "default": "./render/motion.mjs"
     },
-    "./render/mp4": "./render/mp4.mjs",
+    "./render/mp4": {
+      "types": "./render/mp4.d.ts",
+      "default": "./render/mp4.mjs"
+    },
+    "./adapters/heygen": "./adapters/heygen.mjs",
+    "./adapters/sync": "./adapters/sync.mjs",
+    "./render/presenter-worker": "./render/presenter-worker.mjs",
     "./render/motion-worker": "./render/motion-worker.mjs"
   },
   "dependencies": {

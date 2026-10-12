@@ -77,8 +77,14 @@ function craftedMp4({ width = 640, height = 640, timescale = 1000, duration = 50
   entryHeader.writeUInt32BE(86, 0);
   entryHeader.write(fourcc, 4, "ascii");
   const stsd = box("stsd", Buffer.concat([u32(0), u32(1), entryHeader, Buffer.alloc(78)]));
-  const mdia = box("mdia", box("mdhd", Buffer.concat([u32(0), u32(0), u32(0), u32(timescale), u32(duration), Buffer.alloc(8)])), hdlr, box("minf", box("stbl", stsd)));
-  return Buffer.concat([ftyp, box("moov", mvhd, box("trak", tkhd, mdia))]);
+  // Structural fixture (not codec bytes): one sample inside actual mdat.
+  const stco = box("stco", u32(0), u32(1), u32(0));
+  const stsz = box("stsz", u32(0), u32(1), u32(1));
+  const stsc = box("stsc", u32(0), u32(1), u32(1), u32(1), u32(1));
+  const mdia = box("mdia", box("mdhd", Buffer.concat([u32(0), u32(0), u32(0), u32(timescale), u32(duration), Buffer.alloc(8)])), hdlr, box("minf", box("stbl", stsd, stco, stsz, stsc)));
+  const metadata = Buffer.concat([ftyp, box("moov", mvhd, box("trak", tkhd, mdia))]);
+  metadata.writeUInt32BE(metadata.length + 8, metadata.indexOf("stco") + 12);
+  return Buffer.concat([metadata, box("mdat", Buffer.from([1]))]);
 }
 
 function videoInput(operation = "text_to_video") {

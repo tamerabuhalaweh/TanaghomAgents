@@ -1,0 +1,281 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": 1,
+      "url": "https://docs.synthesia.io/reference/create-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 2,
+      "url": "https://docs.synthesia.io/reference/retrieve-a-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 3,
+      "url": "https://docs.synthesia.io/reference/create-a-video-from-a-template",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 4,
+      "url": "https://docs.synthesia.io/reference/video-api-introduction",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 5,
+      "url": "https://docs.synthesia.io/reference/synthesia-api-quickstart",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 6,
+      "url": "https://docs.synthesia.io/reference/webhooks",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 7,
+      "url": "https://docs.synthesia.io/reference/create-a-webhook",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 8,
+      "url": "https://docs.synthesia.io/reference/retrieve-a-webhook",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 9,
+      "url": "https://docs.synthesia.io/reference/delete-a-webhook",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 10,
+      "url": "https://docs.synthesia.io/reference/verifying-synthesia-signatures",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 11,
+      "url": "https://docs.synthesia.io/reference/create-an-asset",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 12,
+      "url": "https://docs.synthesia.io/docs/supported-languages",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 13,
+      "url": "https://docs.synthesia.io/reference/voices",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 14,
+      "url": "https://docs.synthesia.io/docs/personal-avatars",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 15,
+      "url": "https://www.synthesia.io/pricing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 16,
+      "url": "https://help.synthesia.io/en/articles/6341327-how-do-i-use-the-synthesia-api",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 17,
+      "url": "https://help.synthesia.io/en/articles/17217419-what-s-changing-in-synthesia-plans-on-october-1-2026",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 18,
+      "url": "https://www.synthesia.io/legal/customer-terms-of-service",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 19,
+      "url": "https://www.synthesia.io/legal/privacy-policy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 20,
+      "url": "https://www.synthesia.io/legal/acceptable-use-policy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 21,
+      "url": "https://www.synthesia.io/legal/data-processing-agreement",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 22,
+      "url": "https://help.synthesia.io/en/articles/6341928-synthesia-video-licensing",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 23,
+      "url": "https://help.synthesia.io/en/articles/8417043-content-moderation-faqs",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 24,
+      "url": "https://help.synthesia.io/en/articles/13603121-how-do-i-create-a-personal-avatar-from-a-photo",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 25,
+      "url": "https://help.synthesia.io/en/articles/13846500-photo-avatars-content-moderation",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 26,
+      "url": "https://help.synthesia.io/en/articles/15394563-impersonation",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 27,
+      "url": "https://docs.synthesia.io/reference/delete-a-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 28,
+      "url": "https://docs.synthesia.io/reference/list-webhooks",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 29,
+      "url": "https://docs.synthesia.io/reference/webhook-events",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 30,
+      "url": "https://docs.synthesia.io/reference/upload-script-audio",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 31,
+      "url": "https://docs.synthesia.io/reference/get-user-media-asset",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 32,
+      "url": "https://docs.synthesia.io/reference/avatars",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 33,
+      "url": "https://docs.synthesia.io/docs/custom-voices",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 34,
+      "url": "https://docs.synthesia.io/llms.txt",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 35,
+      "url": "https://docs.synthesia.io/docs/video-creation",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 36,
+      "url": "https://docs.synthesia.io/docs/synthesia-avatars",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 37,
+      "url": "https://docs.synthesia.io/reference/videos",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 38,
+      "url": "https://help.synthesia.io/en/articles/15197011-which-avatar-type-is-right-for-me",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 39,
+      "url": "https://help.synthesia.io/en/articles/9680757-how-do-i-create-a-studio-express-1-avatar",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 40,
+      "url": "https://help.synthesia.io/en/articles/9902620-what-happens-when-i-delete-a-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 41,
+      "url": "https://help.synthesia.io/en/articles/15453102-avatar-policy-foundation",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 42,
+      "url": "https://cdn.prod.website-files.com/65e89895c5a4b8d764c0d710/6a60d5cc5118f1e8bd486899_2026.07.22_Synthesia_DPA.docx.pdf",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 43,
+      "url": "https://help.synthesia.io/en/articles/9490158-what-is-the-time-frame-to-complete-a-deletion-request",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 44,
+      "url": "https://help.synthesia.io/en/articles/9317524-how-do-i-download-my-synthesia-video",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 45,
+      "url": "https://help.synthesia.io/en/articles/15972602-what-is-synthesia-s-refund-and-billing-policy",
+      "title": "",
+      "accessed": "2026-10-11"
+    },
+    {
+      "id": 46,
+      "url": "https://www.synthesia.io/legal/security-practices",
+      "title": "",
+      "accessed": "2026-10-11"
+    }
+  ]
+}

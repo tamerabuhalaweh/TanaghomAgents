@@ -1,0 +1,3505 @@
+{
+  "created_at": "2026-10-11T14:32:51.773997+00:00",
+  "task": "P5 correction cycle 1 interrupted-worker recovery; no restart",
+  "repository": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision",
+  "baseline_head": "04eb35a4bf14ff98efd0023a182f0e1c9f578d60",
+  "branch": "feature/creative-p5-talking-head",
+  "frozen_patch_sha256": "b2f09838bb5ffabcc62696c4d05622a71084553c1fa3e1ff4bc1f827b4037e06",
+  "patch_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-correction-20261011-1\\review-ready-b2f09838bb5ffabcc62696c4d05622a71084553c1fa3e1ff4bc1f827b4037e06.patch",
+  "patch_bytes": 9297739,
+  "staged_file_count": 334,
+  "files": [
+    {
+      "path": "apps/dashboard/app/api/creative/assets/versions/[id]/preview/route.ts",
+      "mode": "100644",
+      "index_blob_oid": "3868634fa827bac5b1a528111e7b8849dda75d40",
+      "index_sha256": "05640ab8673902d17832a64cf6964e9e7387b5c3731fbc63cb1d2947d27d609c",
+      "worktree_sha256": "f06e0b2a2d8e4935a9814d1496db7a31f2d743b58afbbad973215b16fc79346b",
+      "index_bytes": 4317,
+      "worktree_bytes": 4387,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "apps/dashboard/app/api/creative/presenters/catalog/route.ts",
+      "mode": "100644",
+      "index_blob_oid": "a162b7d813609b12cd7b196271e31804b6d06c6d",
+      "index_sha256": "afe0d28eb35dc07b6129ce8b26b492b9b0a7bf2b212a621cd3f7fd867e298163",
+      "worktree_sha256": "afe0d28eb35dc07b6129ce8b26b492b9b0a7bf2b212a621cd3f7fd867e298163",
+      "index_bytes": 327,
+      "worktree_bytes": 327,
+      "representation": "exact"
+    },
+    {
+      "path": "apps/dashboard/app/api/creative/presenters/generate/route.ts",
+      "mode": "100644",
+      "index_blob_oid": "f5953efef4c0630d1527790f111aa3a1e76ec220",
+      "index_sha256": "73ba403c50208085bf4616c3cc94af6ea37639750df246775379203ef9dcfee2",
+      "worktree_sha256": "73ba403c50208085bf4616c3cc94af6ea37639750df246775379203ef9dcfee2",
+      "index_bytes": 326,
+      "worktree_bytes": 326,
+      "representation": "exact"
+    },
+    {
+      "path": "apps/dashboard/app/api/creative/presenters/manage/route.ts",
+      "mode": "100644",
+      "index_blob_oid": "2e745336f60caad6c2e9633511f9267302a59371",
+      "index_sha256": "171f7dc30e8b7bc9d8d9697f6ab6af68efd4f87340a7a1a66c14b6b8673043c1",
+      "worktree_sha256": "171f7dc30e8b7bc9d8d9697f6ab6af68efd4f87340a7a1a66c14b6b8673043c1",
+      "index_bytes": 333,
+      "worktree_bytes": 333,
+      "representation": "exact"
+    },
+    {
+      "path": "apps/dashboard/app/creative/avatars/page.tsx",
+      "mode": "100644",
+      "index_blob_oid": "b783bed72cac7156d94fe626a258f77b06d3a772",
+      "index_sha256": "34934cbc313567cad838363544640c70bbb61234ef63e66899c166742290efc0",
+      "worktree_sha256": "34934cbc313567cad838363544640c70bbb61234ef63e66899c166742290efc0",
+      "index_bytes": 373,
+      "worktree_bytes": 373,
+      "representation": "exact"
+    },
+    {
+      "path": "apps/dashboard/app/creative/presenters/page.tsx",
+      "mode": "100644",
+      "index_blob_oid": "84d55e8e08ba68d4fa86a1a60f84350acbf5b3e8",
+      "index_sha256": "389b10b853f58216c8df1389f3c4fc45e1aa8971df27be5ecffd9046a5ea45ce",
+      "worktree_sha256": "389b10b853f58216c8df1389f3c4fc45e1aa8971df27be5ecffd9046a5ea45ce",
+      "index_bytes": 374,
+      "worktree_bytes": 374,
+      "representation": "exact"
+    },
+    {
+      "path": "apps/dashboard/components/creative/asset-views.tsx",
+      "mode": "100644",
+      "index_blob_oid": "f9847cf62c3cc89af84c4b428fd87baff2409316",
+      "index_sha256": "8177ac4aa8b3c75f5401def2df427716544cdcabb342b8890a2c0d4a6909f99b",
+      "worktree_sha256": "7cdc93daf2026ea59d796249bfe716ce97cf64c9e1b6e7218317cd6eeb1b0fba",
+      "index_bytes": 12118,
+      "worktree_bytes": 12360,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "apps/dashboard/components/creative/creative-overview.tsx",
+      "mode": "100644",
+      "index_blob_oid": "504e0ff93f60e89373da0e05946e6c45ed511f48",
+      "index_sha256": "5725efa6a16c6e3456fa8b1c48ebd7281e4f91ee7a4d65ad96514cc952f2cfb5",
+      "worktree_sha256": "43d9deb5d4c0f335ac1c1924dfaf78cfb2186d7f2223ddd37ac3d08c99874f8a",
+      "index_bytes": 4600,
+      "worktree_bytes": 4680,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "apps/dashboard/components/creative/job-detail-view.tsx",
+      "mode": "100644",
+      "index_blob_oid": "f4d3ffe98309dd51a38b7d0f8a3327b5b07f666b",
+      "index_sha256": "21cfca4b5b18b061704b142c0699ee5d5e559f229f66ad9a12f44373066413e1",
+      "worktree_sha256": "00a39a79d0725f0fb97b50d15ac4b7bb6b8a4a76511e5a14ad864a720aefd053",
+      "index_bytes": 5977,
+      "worktree_bytes": 6120,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "apps/dashboard/components/creative/presenter-view.tsx",
+      "mode": "100644",
+      "index_blob_oid": "5c7912c7bcc12565e822a1daa89025373f69573d",
+      "index_sha256": "7a8e701e70b8c3b4289873a61cd902a52027361ed28ad220015809620335e680",
+      "worktree_sha256": "7a8e701e70b8c3b4289873a61cd902a52027361ed28ad220015809620335e680",
+      "index_bytes": 12506,
+      "worktree_bytes": 12506,
+      "representation": "exact"
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/avatar-governance.ts",
+      "mode": "100644",
+      "index_blob_oid": "06f449c081d363ca467b4f4b7af9eb75f4e0d7fd",
+      "index_sha256": "62aa485316c72c36f68d965a8fa22d9b65d31cbd5dbe7e09441d156a86ec5398",
+      "worktree_sha256": "62aa485316c72c36f68d965a8fa22d9b65d31cbd5dbe7e09441d156a86ec5398",
+      "index_bytes": 5398,
+      "worktree_bytes": 5398,
+      "representation": "exact"
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/jobs.ts",
+      "mode": "100644",
+      "index_blob_oid": "71cb914f50f984325fde6c950a0d3107f9aa88c1",
+      "index_sha256": "ddbf0e6b804839f15ce209a148133bfc181cd466fdb56fcef200ea9fee18316b",
+      "worktree_sha256": "fd8beed726d36f1a2aa08a72c6a4b1d31075f6a7bd4daed75db2407b6be53914",
+      "index_bytes": 14248,
+      "worktree_bytes": 14583,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "apps/dashboard/lib/server/creative/presenters.ts",
+      "mode": "100644",
+      "index_blob_oid": "3666d5b440b6df137de651e3ad604dfaec930589",
+      "index_sha256": "7ff9d6d5fd99c73a1441a1d16659dbe0768f7e5bce2a4525528a469030955baa",
+      "worktree_sha256": "7ff9d6d5fd99c73a1441a1d16659dbe0768f7e5bce2a4525528a469030955baa",
+      "index_bytes": 5522,
+      "worktree_bytes": 5522,
+      "representation": "exact"
+    },
+    {
+      "path": "docs/architecture/0026-creative-talking-head.md",
+      "mode": "100644",
+      "index_blob_oid": "394935aa4d65e505bed274ee3080d2db445aea9c",
+      "index_sha256": "242efc6a55b62d2e04e7f7b82f4f9c0b8476fb1e7d06e26043e8dc49a1d0f161",
+      "worktree_sha256": "242efc6a55b62d2e04e7f7b82f4f9c0b8476fb1e7d06e26043e8dc49a1d0f161",
+      "index_bytes": 4668,
+      "worktree_bytes": 4668,
+      "representation": "exact"
+    },
+    {
+      "path": "docs/evidence/2026-10-11-creative-talking-head.md",
+      "mode": "100644",
+      "index_blob_oid": "e84a404904f89cb73fee5fda442b5a0a63f69017",
+      "index_sha256": "826d0f0c875a6ba02e8c89cf39014fd00c369c663f3b3d6fe4a0e088ebbf4922",
+      "worktree_sha256": "826d0f0c875a6ba02e8c89cf39014fd00c369c663f3b3d6fe4a0e088ebbf4922",
+      "index_bytes": 12140,
+      "worktree_bytes": 12140,
+      "representation": "exact"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-decision.md",
+      "mode": "100644",
+      "index_blob_oid": "9b671c2d7cc3bee2f011c49e4e1d9c9d48b2ae75",
+      "index_sha256": "fbdd8a030050dd591f0a37f9a08d38888e324303eb549185255ec8bc6f79f923",
+      "worktree_sha256": "e3ec5f75ed67e10909c8ad2c237ec122e660561f62ecc4fa918343452d6d39e1",
+      "index_bytes": 36051,
+      "worktree_bytes": 36366,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/README.md",
+      "mode": "100644",
+      "index_blob_oid": "213a706ba9c55799110466dda675f65239735a7b",
+      "index_sha256": "b51160943b9b3f31cbc1c3f84879e9ea2a2dc0dcd9aa9723e4d7dc32f187a7ac",
+      "worktree_sha256": "b51160943b9b3f31cbc1c3f84879e9ea2a2dc0dcd9aa9723e4d7dc32f187a7ac",
+      "index_bytes": 3308,
+      "worktree_bytes": 3308,
+      "representation": "exact"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/decision-ledger.json",
+      "mode": "100644",
+      "index_blob_oid": "8c1af26888e648eabccf4e8f220264c8f283d907",
+      "index_sha256": "9b6063646f5917688bd5fe64281dadd6b5118bc66f0f2bdb9f86dcdfe8c91c01",
+      "worktree_sha256": "b52998a2b1ea70ffb6f66a5da9bbedfa0a205c6a14f498fe2ee12b26d710fae8",
+      "index_bytes": 12916,
+      "worktree_bytes": 13437,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/manifest.json",
+      "mode": "100644",
+      "index_blob_oid": "86681c5404aa227ed740f8c487ab708ec017470f",
+      "index_sha256": "200d01d45bdfee1aeebd3b4d5d97a273e39987259b7b676fba41f174e9d7d0ba",
+      "worktree_sha256": "200d01d45bdfee1aeebd3b4d5d97a273e39987259b7b676fba41f174e9d7d0ba",
+      "index_bytes": 1472,
+      "worktree_bytes": 1472,
+      "representation": "exact"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/p5-heygen.md",
+      "mode": "100644",
+      "index_blob_oid": "1402c2b9ea8db2790523cc657c9804320b10bd5b",
+      "index_sha256": "634fe23664f56be3c0db5c8f42c858331e2337f2fb445e06d6a1b4010f7efe08",
+      "worktree_sha256": "49afdd79bf406ef67ce10715b7dc432cce6eb7578d24d8478c70f74c99cb1e95",
+      "index_bytes": 32359,
+      "worktree_bytes": 32681,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/p5-sync.md",
+      "mode": "100644",
+      "index_blob_oid": "a2eb73a613e8a95d7206f1c7e82d48ceea344c01",
+      "index_sha256": "4f1335a8754dfc1afd3054c81b0db57cb2e38b3bab898889558448e5801e299f",
+      "worktree_sha256": "bc4893e94930956f6623d5667b7aaf1d109a0b455300ff5624219200fa24690a",
+      "index_bytes": 33946,
+      "worktree_bytes": 34251,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/p5-synthesia-ledger.json",
+      "mode": "100644",
+      "index_blob_oid": "cd2268e5052c8d0d5a7ef8eb8a786330ca2db115",
+      "index_sha256": "727cc1e4de4932a3bfb063d894c47fee2d9c3e2e0b743def574a6750db17d6fa",
+      "worktree_sha256": "6a9a3aa96905823169ea57bec574f54c6ea38ad5a040749d7014dda5feaacb95",
+      "index_bytes": 7249,
+      "worktree_bytes": 7530,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/p5-synthesia.md",
+      "mode": "100644",
+      "index_blob_oid": "eedefea3edacf25bfaf31f32ca3c2cb1094552fa",
+      "index_sha256": "f7b450ad85842a0bc5a65754213cfa81203ca8c8cd6ada25ab9a6062f5745936",
+      "worktree_sha256": "f7b450ad85842a0bc5a65754213cfa81203ca8c8cd6ada25ab9a6062f5745936",
+      "index_bytes": 29483,
+      "worktree_bytes": 29483,
+      "representation": "exact"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-provider-research/p5-tavus.md",
+      "mode": "100644",
+      "index_blob_oid": "73c1db3f304db5d8b9f858cc9cd61796d258145b",
+      "index_sha256": "e33439f0375f9c1e4834a6a2861cbc977bf32d0ad32062e59701b7aca0b88c67",
+      "worktree_sha256": "bf8fae85947640fffabcd4f14c0924b61897f3161dd855169b60fe709a4fc56f",
+      "index_bytes": 27858,
+      "worktree_bytes": 28107,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "docs/planning/creative-platform/tasks/240-talking-head.md",
+      "mode": "100644",
+      "index_blob_oid": "fa466a26b53e9a93314e6c9ce68c152df47969fa",
+      "index_sha256": "659342ea9b8dbaf7f1e47b4baeb376245cca411ca3dc12b53aa4e79241dda822",
+      "worktree_sha256": "659342ea9b8dbaf7f1e47b4baeb376245cca411ca3dc12b53aa4e79241dda822",
+      "index_bytes": 9627,
+      "worktree_bytes": 9627,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/README.md",
+      "mode": "100644",
+      "index_blob_oid": "17d51f5ba9a4a10ab66a8839184bc70e208ad822",
+      "index_sha256": "498cf7947433be1024e426047d77b15509611add564abc90724d2e9a4e72dcc9",
+      "worktree_sha256": "498cf7947433be1024e426047d77b15509611add564abc90724d2e9a4e72dcc9",
+      "index_bytes": 3398,
+      "worktree_bytes": 3398,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/audit-final.json",
+      "mode": "100644",
+      "index_blob_oid": "f4cd8f27dd3be490e29dd67d35de483cd78f1a0c",
+      "index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "worktree_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "index_bytes": 362,
+      "worktree_bytes": 362,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/audit.json",
+      "mode": "100644",
+      "index_blob_oid": "f4cd8f27dd3be490e29dd67d35de483cd78f1a0c",
+      "index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "worktree_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "index_bytes": 362,
+      "worktree_bytes": 362,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/avatars-rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "fcdf40356d9401c77ea3a480b0876d5d19c6d5c0",
+      "index_sha256": "9219c0725035ca38a4449f646b5379280e15786fb4997e818d8f3ee4bb658ee7",
+      "worktree_sha256": "9219c0725035ca38a4449f646b5379280e15786fb4997e818d8f3ee4bb658ee7",
+      "index_bytes": 130384,
+      "worktree_bytes": 130384,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/avatars-rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "b39320b54263fca9fec3f2861758d1063a195b88",
+      "index_sha256": "0463b3a88cf1861f7287dfb0a80e75c0d8f6c5e8c75baf380fa62360e45d5c70",
+      "worktree_sha256": "0463b3a88cf1861f7287dfb0a80e75c0d8f6c5e8c75baf380fa62360e45d5c70",
+      "index_bytes": 155771,
+      "worktree_bytes": 155771,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/browser-jobs-operator.json",
+      "mode": "100644",
+      "index_blob_oid": "d0e8bbb343ed603219df4712152457c14b9aa442",
+      "index_sha256": "3986ef2047161b97082055cee32c8e8420a0172c90c0d72ea5d8901667b0fd07",
+      "worktree_sha256": "3986ef2047161b97082055cee32c8e8420a0172c90c0d72ea5d8901667b0fd07",
+      "index_bytes": 268,
+      "worktree_bytes": 268,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/browser-jobs.json",
+      "mode": "100644",
+      "index_blob_oid": "0a0fac1412929bb2f368b5df5fd4963c1198c45f",
+      "index_sha256": "791526bbaf4ca582cb85fe9ad29a13b4cde43e923343ae8e094b74bb455bb351",
+      "worktree_sha256": "791526bbaf4ca582cb85fe9ad29a13b4cde43e923343ae8e094b74bb455bb351",
+      "index_bytes": 906,
+      "worktree_bytes": 906,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/cases.json",
+      "mode": "100644",
+      "index_blob_oid": "060ec15f3a8033fbe957dbea1d5101fe906cb2c6",
+      "index_sha256": "a53116895a999f7c0daccf2c053b46287b8dbaa34ef8b8de9a0359aed8f885c4",
+      "worktree_sha256": "a53116895a999f7c0daccf2c053b46287b8dbaa34ef8b8de9a0359aed8f885c4",
+      "index_bytes": 10651,
+      "worktree_bytes": 10651,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/audit-moderate.json",
+      "mode": "100644",
+      "index_blob_oid": "f4cd8f27dd3be490e29dd67d35de483cd78f1a0c",
+      "index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "worktree_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "index_bytes": 362,
+      "worktree_bytes": 362,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/avatars-rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "425d8e3d4719b798a71f0f493c7a01a00cef4e6f",
+      "index_sha256": "9ef12a1d8eafc2d89403014e2890024ea9e3f40a51567dabc4c4671d703b28d1",
+      "worktree_sha256": "9ef12a1d8eafc2d89403014e2890024ea9e3f40a51567dabc4c4671d703b28d1",
+      "index_bytes": 131318,
+      "worktree_bytes": 131318,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/avatars-rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "3480829468ce464221777a5565cff560774554cb",
+      "index_sha256": "dc0760bfa66ad41097c0bdddd041e4328546dbace6021c2f31e49a33f6c3368a",
+      "worktree_sha256": "dc0760bfa66ad41097c0bdddd041e4328546dbace6021c2f31e49a33f6c3368a",
+      "index_bytes": 159748,
+      "worktree_bytes": 159748,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/browser-jobs-operator.json",
+      "mode": "100644",
+      "index_blob_oid": "172821ad85c02ac4b084a456744188702f13e79f",
+      "index_sha256": "31bfeef8ec7c8c0b9a01e0fbf9d7a18ce05ed970c40de91d9f438efb4311e28c",
+      "worktree_sha256": "31bfeef8ec7c8c0b9a01e0fbf9d7a18ce05ed970c40de91d9f438efb4311e28c",
+      "index_bytes": 268,
+      "worktree_bytes": 268,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/browser-jobs.json",
+      "mode": "100644",
+      "index_blob_oid": "590edef92a1baabbb1e55d967a4e09e4c1a74781",
+      "index_sha256": "e3aa8e66e90099bf52edd39bedb1dcebcfa5b74413bb6ce56c53f3e8955f4dd9",
+      "worktree_sha256": "e3aa8e66e90099bf52edd39bedb1dcebcfa5b74413bb6ce56c53f3e8955f4dd9",
+      "index_bytes": 906,
+      "worktree_bytes": 906,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/native-receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "d39e0401d15ce4b23edb61c2339253cfe674dd12",
+      "index_sha256": "1cc2e3d5271ab400a8ed7142eb57f5399069718c14182343df84a14c14a623dc",
+      "worktree_sha256": "1cc2e3d5271ab400a8ed7142eb57f5399069718c14182343df84a14c14a623dc",
+      "index_bytes": 11085,
+      "worktree_bytes": 11085,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/preview-lip_sync.png",
+      "mode": "100644",
+      "index_blob_oid": "84b02f9d0cc8f64e3b1627037f9af1c0c3b0bd8e",
+      "index_sha256": "906f0e06496a3bf687534d5fecad749e0850135816a08e80b7340784be8d891a",
+      "worktree_sha256": "906f0e06496a3bf687534d5fecad749e0850135816a08e80b7340784be8d891a",
+      "index_bytes": 150743,
+      "worktree_bytes": 150743,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/preview-talking_head.png",
+      "mode": "100644",
+      "index_blob_oid": "790bd7669d64aed5f40648466cadd4d1667c1d02",
+      "index_sha256": "555ea9205c2c8cbf15193addacfa511ead923399c132c654036c820ee40bda50",
+      "worktree_sha256": "555ea9205c2c8cbf15193addacfa511ead923399c132c654036c820ee40bda50",
+      "index_bytes": 150079,
+      "worktree_bytes": 150079,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/red/runs/4da4c2f3-a2cc-4800-a17a-58e8faf0a7af/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "d5a1e64880ea061adfb22d1fce5edad3777f2f0d",
+      "index_sha256": "5208316b829d3ca5f91b990e7d29e22eedfb65a89c4dca80b550e72284866a14",
+      "worktree_sha256": "5208316b829d3ca5f91b990e7d29e22eedfb65a89c4dca80b550e72284866a14",
+      "index_bytes": 6368,
+      "worktree_bytes": 6368,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/receipts-contracts-database-foundation-image.json",
+      "mode": "100644",
+      "index_blob_oid": "4f5a2a2a976fca9acef6c9efd6ca4e276c91c51f",
+      "index_sha256": "431b4aef2bc3f0848d71442cad72f328a5a1e8d36dff957f7faea59dad01aeca",
+      "worktree_sha256": "431b4aef2bc3f0848d71442cad72f328a5a1e8d36dff957f7faea59dad01aeca",
+      "index_bytes": 574,
+      "worktree_bytes": 574,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/receipts-design-motion.json",
+      "mode": "100644",
+      "index_blob_oid": "8e8d158d5228406a91e62473b0229a536630a219",
+      "index_sha256": "2b6a0bf4969d7cf89127f18cbc6821059b1ad5f3a1ad5f6bee32ec15e64fc18f",
+      "worktree_sha256": "2b6a0bf4969d7cf89127f18cbc6821059b1ad5f3a1ad5f6bee32ec15e64fc18f",
+      "index_bytes": 351,
+      "worktree_bytes": 351,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/regression/receipts-video-segmentation.json",
+      "mode": "100644",
+      "index_blob_oid": "9ee0b4103c091d0af8a3b5e40243766196e7a015",
+      "index_sha256": "a31f7ae18a629e8549496c3601bed76388026e26ae227bde01d93ff1f8e25171",
+      "worktree_sha256": "a31f7ae18a629e8549496c3601bed76388026e26ae227bde01d93ff1f8e25171",
+      "index_bytes": 352,
+      "worktree_bytes": 352,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "2739cac83841e5d811cafb415f571dcad6e26de2",
+      "index_sha256": "c509a0e5f1124e40b14190247f17a26d041c6e07c35790d80f02463a2a22c617",
+      "worktree_sha256": "c509a0e5f1124e40b14190247f17a26d041c6e07c35790d80f02463a2a22c617",
+      "index_bytes": 135574,
+      "worktree_bytes": 135574,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "fd4542bcb130628bd00a5bdaefdf6f5ce5b70b88",
+      "index_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "worktree_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "index_bytes": 132220,
+      "worktree_bytes": 132220,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/rtl-lip-sync.png",
+      "mode": "100644",
+      "index_blob_oid": "49a77339865c7007d3bd8c5ca51f57c3c4a18527",
+      "index_sha256": "da32e1a4bfc03db203e7d6a3f056a425fbafb68ef666dd837608b8c940ced4df",
+      "worktree_sha256": "da32e1a4bfc03db203e7d6a3f056a425fbafb68ef666dd837608b8c940ced4df",
+      "index_bytes": 71087,
+      "worktree_bytes": 71087,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/flags-after-up.json",
+      "mode": "100644",
+      "index_blob_oid": "8b65403b599fc881c9c3a505de43b9749d69a114",
+      "index_sha256": "f05b0718949f291110290a7fb025e8bad3ce312360f5d02abfe2e6a309687dce",
+      "worktree_sha256": "f05b0718949f291110290a7fb025e8bad3ce312360f5d02abfe2e6a309687dce",
+      "index_bytes": 98,
+      "worktree_bytes": 98,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "78643b0ea8dd40977221da05d19cfd865e0f165e",
+      "index_sha256": "bc45a7db79dd812a8432758378ed25736f41b9852a1b1fdf349db255acd21698",
+      "worktree_sha256": "bc45a7db79dd812a8432758378ed25736f41b9852a1b1fdf349db255acd21698",
+      "index_bytes": 4841,
+      "worktree_bytes": 4841,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/used-state-after-down.json",
+      "mode": "100644",
+      "index_blob_oid": "be59f513ef458a18e7063f4396ab9cfefcf30172",
+      "index_sha256": "380decc5d4c9a989762765df015cd793204daafd493d507af445c54533fe6852",
+      "worktree_sha256": "380decc5d4c9a989762765df015cd793204daafd493d507af445c54533fe6852",
+      "index_bytes": 211722,
+      "worktree_bytes": 211722,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/used-state-after-up.json",
+      "mode": "100644",
+      "index_blob_oid": "be59f513ef458a18e7063f4396ab9cfefcf30172",
+      "index_sha256": "380decc5d4c9a989762765df015cd793204daafd493d507af445c54533fe6852",
+      "worktree_sha256": "380decc5d4c9a989762765df015cd793204daafd493d507af445c54533fe6852",
+      "index_bytes": 211722,
+      "worktree_bytes": 211722,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/used-state-before.json",
+      "mode": "100644",
+      "index_blob_oid": "be59f513ef458a18e7063f4396ab9cfefcf30172",
+      "index_sha256": "380decc5d4c9a989762765df015cd793204daafd493d507af445c54533fe6852",
+      "worktree_sha256": "380decc5d4c9a989762765df015cd793204daafd493d507af445c54533fe6852",
+      "index_bytes": 211722,
+      "worktree_bytes": 211722,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/historical-review/api-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f37d115ed76715d1e00e7780ed27f21d04ae368c",
+      "index_sha256": "b311f1853e51b60f5c46fbf54b507fba3a4c59d23081067353d01c404ca99008",
+      "worktree_sha256": "b311f1853e51b60f5c46fbf54b507fba3a4c59d23081067353d01c404ca99008",
+      "index_bytes": 505,
+      "worktree_bytes": 505,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/historical-review/db-red-wrapper.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "4d1376dcc041d970aba052d0b466dae85dc8c7f2",
+      "index_sha256": "1a4bde1647f3560fc0befc3d0a2ddcd12c8046e40c6e1effc964e15c13b5838a",
+      "worktree_sha256": "1a4bde1647f3560fc0befc3d0a2ddcd12c8046e40c6e1effc964e15c13b5838a",
+      "index_bytes": 53,
+      "worktree_bytes": 53,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/historical-review/p5-review-database.md",
+      "mode": "100644",
+      "index_blob_oid": "b07b4568c81f7d82981c4f88c966c8b59311fe8b",
+      "index_sha256": "3fb0c5ca40e4275b0c3edc082e6c4fdedf7c76e2337c97d17833dcf7a34815a6",
+      "worktree_sha256": "66297c007bc2756b85e6b1ec115490e69c3547c0e5ac5f7fde7cfd27b680473e",
+      "index_bytes": 9153,
+      "worktree_bytes": 9239,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/historical-review/p5-review-runtime.md",
+      "mode": "100644",
+      "index_blob_oid": "dfb14aafde1fae380a1b9e8aca7dc2cb71c3a807",
+      "index_sha256": "26499628694d508ede9c9364f4cc50681c71f99e21f238b39b1a19aa3ce6ee89",
+      "worktree_sha256": "388a251f8cb972cd6a334c2762a596fcf66e5782f9dd9f97a41d0314b7d4972f",
+      "index_bytes": 9124,
+      "worktree_bytes": 9177,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/historical-review/runtime-green.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "0a1a601650d48b179d58620e3071a2918bf7332e",
+      "index_sha256": "8d51dfed335b7e4e672167b127deb7794b188d33acc718700ec7f290ab296030",
+      "worktree_sha256": "8d51dfed335b7e4e672167b127deb7794b188d33acc718700ec7f290ab296030",
+      "index_bytes": 6191,
+      "worktree_bytes": 6191,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/historical-review/runtime-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "d8aab38cb06c8ec7e9c4dbf123a4750d2758cdb5",
+      "index_sha256": "7ed62923308911a529c780e935b50c7dca6ef70e867d4ea96774dfa68044c409",
+      "worktree_sha256": "7ed62923308911a529c780e935b50c7dca6ef70e867d4ea96774dfa68044c409",
+      "index_bytes": 9452,
+      "worktree_bytes": 9452,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/historical-review/sql-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "761cc72007c6e5963c6a7d98bafda01873fc77bc",
+      "index_sha256": "c00669d100d019cdd0e689ceebf543ee34090e22bf64578591cb3b2bb7d862b9",
+      "worktree_sha256": "c00669d100d019cdd0e689ceebf543ee34090e22bf64578591cb3b2bb7d862b9",
+      "index_bytes": 3089,
+      "worktree_bytes": 3089,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "44b7566f77f9ff94571b3b230e3d8749d95f30ac",
+      "index_sha256": "b8c330ee66c2acffcd8f188f97da44cde9ed2a42ff18a98a354515f72ecf7bac",
+      "worktree_sha256": "b8c330ee66c2acffcd8f188f97da44cde9ed2a42ff18a98a354515f72ecf7bac",
+      "index_bytes": 7227,
+      "worktree_bytes": 7227,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final2.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "753afc7b0acbad712245ce78c40ca60a52740c55",
+      "index_sha256": "479b5ff75a94a5229cc61706bbaf23b5b05bb69470b7192b079462a690521758",
+      "worktree_sha256": "479b5ff75a94a5229cc61706bbaf23b5b05bb69470b7192b079462a690521758",
+      "index_bytes": 6451,
+      "worktree_bytes": 6451,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final3.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "38ff6bb2c2afd06fc5ab53c6114b9e3232e9a858",
+      "index_sha256": "8028797cbefbb97b7aaa4a3da7494d3b68c4cdc2e92f5f182bf4a09788337312",
+      "worktree_sha256": "8028797cbefbb97b7aaa4a3da7494d3b68c4cdc2e92f5f182bf4a09788337312",
+      "index_bytes": 6554,
+      "worktree_bytes": 6554,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-final4.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f48d28689ef5708d7efb26171e75f776a9beda1f",
+      "index_sha256": "ee372b559497a72a1c72bd14f94b9d73fcd24c3c249b37da63855c075ac0f3cc",
+      "worktree_sha256": "ee372b559497a72a1c72bd14f94b9d73fcd24c3c249b37da63855c075ac0f3cc",
+      "index_bytes": 6824,
+      "worktree_bytes": 6824,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green1.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "25b3e5c88a8039149f9c638ea8a88cc284b4b4ee",
+      "index_sha256": "9ab42deeae6f4bfae26fd8082d68515578e0c4770558597bbb32bb17f4907fca",
+      "worktree_sha256": "9ab42deeae6f4bfae26fd8082d68515578e0c4770558597bbb32bb17f4907fca",
+      "index_bytes": 6573,
+      "worktree_bytes": 6573,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green2.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "aff7f12cee607b4066486068505d4419c59e256a",
+      "index_sha256": "6c5a066c4db0b3067345925e2825805e027ba5b3810e792fa432909b47e4fcca",
+      "worktree_sha256": "6c5a066c4db0b3067345925e2825805e027ba5b3810e792fa432909b47e4fcca",
+      "index_bytes": 6864,
+      "worktree_bytes": 6864,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green3.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "13c055bb9c7db39d19ed5fdc0815053e437e2914",
+      "index_sha256": "98e72dda8df8da33447d9019301bf86d9583739bf58567b0192dc3d4c0ba7d75",
+      "worktree_sha256": "98e72dda8df8da33447d9019301bf86d9583739bf58567b0192dc3d4c0ba7d75",
+      "index_bytes": 7018,
+      "worktree_bytes": 7018,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green4.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "781c59c14fc7f3d8f09719ba886d938e5541185f",
+      "index_sha256": "244f5cf4f42f8c27e17ac44f4ea207adf90b157dad022fce09d070faa3c65265",
+      "worktree_sha256": "244f5cf4f42f8c27e17ac44f4ea207adf90b157dad022fce09d070faa3c65265",
+      "index_bytes": 7245,
+      "worktree_bytes": 7245,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-green5.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1bf5a555c44b72133d726c2b3a82cc0f380cdfe0",
+      "index_sha256": "b34ba47dcb693de4a7254120cd211f66375f7ba3a3a4e4b25d6025f8f91d17ef",
+      "worktree_sha256": "b34ba47dcb693de4a7254120cd211f66375f7ba3a3a4e4b25d6025f8f91d17ef",
+      "index_bytes": 6451,
+      "worktree_bytes": 6451,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/acceptance-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "ed65f65c9ee132013dab3e850d31907d9cdd483b",
+      "index_sha256": "a2dffef7acf207ff81b6ffdcb97e17efb6c62e59af3a1ab2711f0a9307e7e44e",
+      "worktree_sha256": "a2dffef7acf207ff81b6ffdcb97e17efb6c62e59af3a1ab2711f0a9307e7e44e",
+      "index_bytes": 3199,
+      "worktree_bytes": 3199,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/build-final.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "18344b8bdc6d2cc15bb4b25e76448b34eec8f3bc",
+      "index_sha256": "ffafa792d0a760880e645d7fcf0fc44ac7cb35fd544d8739e98eab574df879c2",
+      "worktree_sha256": "ffafa792d0a760880e645d7fcf0fc44ac7cb35fd544d8739e98eab574df879c2",
+      "index_bytes": 7609,
+      "worktree_bytes": 7609,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/build-final2.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9cebbc30d9829dabd9a9391ff07e885ea1e76dc7",
+      "index_sha256": "498fe08cb2aa4a80d06135933cbb78896e8119639475fe643af129fe381e1fbc",
+      "worktree_sha256": "498fe08cb2aa4a80d06135933cbb78896e8119639475fe643af129fe381e1fbc",
+      "index_bytes": 7607,
+      "worktree_bytes": 7607,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/build-initial.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "0f670693f899b634b2964cec66b1ebea97a57b49",
+      "index_sha256": "1df06d38a328ae66fc17acea1516cc0382781ddbd02a0f375b2868158171669a",
+      "worktree_sha256": "1df06d38a328ae66fc17acea1516cc0382781ddbd02a0f375b2868158171669a",
+      "index_bytes": 7608,
+      "worktree_bytes": 7608,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/build-link.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f54a8feb29117f826a969fb215671274478465a0",
+      "index_sha256": "49a2b3d5933fc122b13c106f13122488d53c09b935c9c231163a50b06b2f7296",
+      "worktree_sha256": "49a2b3d5933fc122b13c106f13122488d53c09b935c9c231163a50b06b2f7296",
+      "index_bytes": 7608,
+      "worktree_bytes": 7608,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/byte-boundary-green.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "783e50788d8463956e7ee2fc6333fccf7ebe8078",
+      "index_sha256": "0e1998420889b9e61ce56becfb402db5051fb14c43e1ceddbdf00f1d6467d4c1",
+      "worktree_sha256": "0e1998420889b9e61ce56becfb402db5051fb14c43e1ceddbdf00f1d6467d4c1",
+      "index_bytes": 2666,
+      "worktree_bytes": 2666,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/byte-boundary-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e0b9dc35333532986a330334bc12733040ce40da",
+      "index_sha256": "30f59a8ec5e66fcdc0207f3087f3472d86f141a9abee6bb370c482b30bce3010",
+      "worktree_sha256": "30f59a8ec5e66fcdc0207f3087f3472d86f141a9abee6bb370c482b30bce3010",
+      "index_bytes": 3490,
+      "worktree_bytes": 3490,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/check-final.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "006299b58f13c349c0517eeaced5ec4d2dbacf04",
+      "index_sha256": "1175663b5e09d0d24db404d53af625591c0e97e0670b8726bfe232de704162f6",
+      "worktree_sha256": "1175663b5e09d0d24db404d53af625591c0e97e0670b8726bfe232de704162f6",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/check.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "6854dca34c4bc89c965b15ed42f49e5a64bd4b20",
+      "index_sha256": "507285f98e1b3099e4cdaac2c34d70a87866099a20281c2a1932d14f37937948",
+      "worktree_sha256": "507285f98e1b3099e4cdaac2c34d70a87866099a20281c2a1932d14f37937948",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/contracts-final.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "42304c6c69f3d2233aae9abb9070377c5fb44de3",
+      "index_sha256": "03f345cca19701f356c53a216298463acba2fe7990ed9dd1e0297aac7cb70d9c",
+      "worktree_sha256": "03f345cca19701f356c53a216298463acba2fe7990ed9dd1e0297aac7cb70d9c",
+      "index_bytes": 15,
+      "worktree_bytes": 15,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/acceptance.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "72941f0214f0ffa3d832036a0291f3c22669d009",
+      "index_sha256": "223973a9ca2150e46fe18e96716e4b1593db0928f7250d0e334bed6887c9697e",
+      "worktree_sha256": "223973a9ca2150e46fe18e96716e4b1593db0928f7250d0e334bed6887c9697e",
+      "index_bytes": 9347,
+      "worktree_bytes": 9347,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/audit-moderate.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "worktree_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "index_bytes": 0,
+      "worktree_bytes": 0,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/build.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "897ee75251e88c136d9269f90bc55abaf5c4a5ec",
+      "index_sha256": "f423533b8e085093136553dc6fb85fef99ca2bcfe7a6173c92509104ee51f6c4",
+      "worktree_sha256": "f423533b8e085093136553dc6fb85fef99ca2bcfe7a6173c92509104ee51f6c4",
+      "index_bytes": 7608,
+      "worktree_bytes": 7608,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/check.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e49458acebdd7b65da83c65ae35fd50080482350",
+      "index_sha256": "65497d24ab394c59b87c32a89781fcff0de425eb902741ce7de7660586cc3ab7",
+      "worktree_sha256": "65497d24ab394c59b87c32a89781fcff0de425eb902741ce7de7660586cc3ab7",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/direct-api-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "3da77f41f60c13721b2a2b2a2a27027c815cfb01",
+      "index_sha256": "ca0b64119fa89a50b5a98faac18d826b8099f7c0cced3f1da3efcfc9cc38160d",
+      "worktree_sha256": "ca0b64119fa89a50b5a98faac18d826b8099f7c0cced3f1da3efcfc9cc38160d",
+      "index_bytes": 7213,
+      "worktree_bytes": 7213,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/red/runs/4da4c2f3-a2cc-4800-a17a-58e8faf0a7af/creative-presenter-review-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "db4f682a74354eb40a86d64a07a26494c6c19e84",
+      "index_sha256": "ca51b04945bdf1bcdb8b681ac7e39d90c539d68ea974d6177c08d2df7be65dfb",
+      "worktree_sha256": "ca51b04945bdf1bcdb8b681ac7e39d90c539d68ea974d6177c08d2df7be65dfb",
+      "index_bytes": 4365,
+      "worktree_bytes": 4365,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression-a.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "75a1aecdac18653b4aa301300942331c16d37ac4",
+      "index_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "worktree_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "index_bytes": 77,
+      "worktree_bytes": 77,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression-b.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "aa07923021562a9b3073e3766631cec45e99cbd1",
+      "index_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "worktree_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "index_bytes": 38,
+      "worktree_bytes": 38,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression-c.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "b0a852d16702c9fb199ef2e8e2cdc38d1103d799",
+      "index_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "worktree_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "index_bytes": 43,
+      "worktree_bytes": 43,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/contracts.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9b65e5fba7a2cb28557f2cf4924b9ef7df6a65c4",
+      "index_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "worktree_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "index_bytes": 4329,
+      "worktree_bytes": 4329,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/database.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "65d8410b8d6b692db8099bac2316daf9d32a4dd1",
+      "index_sha256": "4e4965b1effa8d94b38668e33d8ebe630f714c66567f989985cead80029615f4",
+      "worktree_sha256": "4e4965b1effa8d94b38668e33d8ebe630f714c66567f989985cead80029615f4",
+      "index_bytes": 58155,
+      "worktree_bytes": 58155,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/design.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "328384ebc14d1b61947d0bd7ff381a59a571fc85",
+      "index_sha256": "0ded8d5df5883454e36f478572ab1b92c0ea5a49226a911862c6a851d440ecea",
+      "worktree_sha256": "0ded8d5df5883454e36f478572ab1b92c0ea5a49226a911862c6a851d440ecea",
+      "index_bytes": 16104,
+      "worktree_bytes": 16104,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/foundation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "d406ed3a76705a3f505746127c2bb3b4f36c1709",
+      "index_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "worktree_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "index_bytes": 14005,
+      "worktree_bytes": 14005,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/image.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "614f229fe7c38b5897818d363b3f3ce33d287bd4",
+      "index_sha256": "8d049e6474f874b5166b334148b8a07a80ab9a961d1ff1b7427b26144dd10f99",
+      "worktree_sha256": "8d049e6474f874b5166b334148b8a07a80ab9a961d1ff1b7427b26144dd10f99",
+      "index_bytes": 14991,
+      "worktree_bytes": 14991,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/motion.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "23aaf31b30ea49a79ed083b5a138831c24bb5ee2",
+      "index_sha256": "4b12b2e43cfe67828818a5b893045c8e19e5055bd2fbf1c1d69ddf514005e5c4",
+      "worktree_sha256": "4b12b2e43cfe67828818a5b893045c8e19e5055bd2fbf1c1d69ddf514005e5c4",
+      "index_bytes": 12642,
+      "worktree_bytes": 12642,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/segmentation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e9d549deb3e35555d278295ffb53d494acf118e2",
+      "index_sha256": "2942c503f71a99cbbdb65528b9127ebbfca612bbb4c8463ea2ba7983b037593c",
+      "worktree_sha256": "2942c503f71a99cbbdb65528b9127ebbfca612bbb4c8463ea2ba7983b037593c",
+      "index_bytes": 13050,
+      "worktree_bytes": 13050,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/regression/video.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "5d29c473c2ce8d042f752eb542d0c4e912e6ed31",
+      "index_sha256": "dd2b445a406cc210682c307574d38ae80e988a615e3b4db25618176f05aae17e",
+      "worktree_sha256": "dd2b445a406cc210682c307574d38ae80e988a615e3b4db25618176f05aae17e",
+      "index_bytes": 13704,
+      "worktree_bytes": 13704,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-presenter-review-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "a0b7a1cd435cbae68e0a31045e55cb88f1b7f6df",
+      "index_sha256": "6a58cbb497339b4151e37cadacf09d3b8c4adf587a168049905bcb2a887d2f90",
+      "worktree_sha256": "6a58cbb497339b4151e37cadacf09d3b8c4adf587a168049905bcb2a887d2f90",
+      "index_bytes": 1926,
+      "worktree_bytes": 1926,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9116657af3402359bcb44e65e59104daca38bf50",
+      "index_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "worktree_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "index_bytes": 4743,
+      "worktree_bytes": 4743,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/runs/ea8cecf0-1ee8-4adb-9e38-ed9e317536c5/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/targeted-current.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "7571fdadb83c5c8236513d6068acf71fc0a71dc5",
+      "index_sha256": "9e4b06d98569b35e08fb9c1894d9fb9235ac395dcb5e22adba8e369f40131df7",
+      "worktree_sha256": "9e4b06d98569b35e08fb9c1894d9fb9235ac395dcb5e22adba8e369f40131df7",
+      "index_bytes": 11627,
+      "worktree_bytes": 11627,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/typecheck-restored.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/typecheck.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/unit-current.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "ee6ae9f8f21a3a599de7073e96ea705402ce7af1",
+      "index_sha256": "5cc45653376279f49240df79cfc5bf0c3aa60e135ee4dc13ad148b7acdbe429b",
+      "worktree_sha256": "5cc45653376279f49240df79cfc5bf0c3aa60e135ee4dc13ad148b7acdbe429b",
+      "index_bytes": 63356,
+      "worktree_bytes": 63356,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/controlled-api-final/unit.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "3ac5ab4cc55337a41faaab89804042d745d497e4",
+      "index_sha256": "1b210c43b2c2c82f25fb0addc6f73d81719bdee891b036cbda507c05af32e835",
+      "worktree_sha256": "1b210c43b2c2c82f25fb0addc6f73d81719bdee891b036cbda507c05af32e835",
+      "index_bytes": 62461,
+      "worktree_bytes": 62461,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/acceptance.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "a45b33b76ed5b3b7a6cc8071cd60aaf8970cd242",
+      "index_sha256": "9e85a7fb5a7e4bf3b08f95050678ea020a854e6f1c5f4d8a0d56257b6af74199",
+      "worktree_sha256": "9e85a7fb5a7e4bf3b08f95050678ea020a854e6f1c5f4d8a0d56257b6af74199",
+      "index_bytes": 8411,
+      "worktree_bytes": 8411,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/audit-moderate.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "worktree_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "index_bytes": 0,
+      "worktree_bytes": 0,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/build.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "35d9e8fc14516a4501b78e73e52969ed54c95440",
+      "index_sha256": "88a226404550d79642cabc0ecd6e91301fc36a3f2850f18de2a2ef33180ee4e2",
+      "worktree_sha256": "88a226404550d79642cabc0ecd6e91301fc36a3f2850f18de2a2ef33180ee4e2",
+      "index_bytes": 7609,
+      "worktree_bytes": 7609,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/check-current.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "970d03e6139df7d5bf4f39802ee3ea9d038f3576",
+      "index_sha256": "87ad6426c274a416f989361528a459eac2906d41dc8ab86f7c3ec42b5b83a72c",
+      "worktree_sha256": "87ad6426c274a416f989361528a459eac2906d41dc8ab86f7c3ec42b5b83a72c",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/check.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "df54133867c84b9c26db58615d7ab207223dc76d",
+      "index_sha256": "5ac5ee8909ea28886f63aa760ef1c089d83c615fe32115aa71483ab6b9ae3312",
+      "worktree_sha256": "5ac5ee8909ea28886f63aa760ef1c089d83c615fe32115aa71483ab6b9ae3312",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression-segmentation-wrapper.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "822814878168d9a99025de87846fed494c9084b7",
+      "index_sha256": "b88f69dbee06889c657f1748cb9135e1ef948fd5f5d1dae3260e4767b0d1eb7f",
+      "worktree_sha256": "b88f69dbee06889c657f1748cb9135e1ef948fd5f5d1dae3260e4767b0d1eb7f",
+      "index_bytes": 25,
+      "worktree_bytes": 25,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression-wrapper.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f24a2c4c45e45fb7035836742c084da783f1e829",
+      "index_sha256": "ab6c774514d4fd99fb31021cb255717b1b4f39759707c74ba4735ff0029eb78e",
+      "worktree_sha256": "ab6c774514d4fd99fb31021cb255717b1b4f39759707c74ba4735ff0029eb78e",
+      "index_bytes": 133,
+      "worktree_bytes": 133,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/contracts.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9b65e5fba7a2cb28557f2cf4924b9ef7df6a65c4",
+      "index_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "worktree_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "index_bytes": 4329,
+      "worktree_bytes": 4329,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/database.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "b166687a7f469c975a25111e2c9bd7a1c0109a8f",
+      "index_sha256": "35970a871d7de8f24a99eb28237840c66c216a38bdfe948e437be5321db72287",
+      "worktree_sha256": "35970a871d7de8f24a99eb28237840c66c216a38bdfe948e437be5321db72287",
+      "index_bytes": 58155,
+      "worktree_bytes": 58155,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/design.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "2de7c03fef14b53e04dabdf921ba4a9da33ff9bb",
+      "index_sha256": "7729d3cf831ef5ac039db4a9a122f754bb87454bc21b6cffcb3c4632916a6c6f",
+      "worktree_sha256": "7729d3cf831ef5ac039db4a9a122f754bb87454bc21b6cffcb3c4632916a6c6f",
+      "index_bytes": 16104,
+      "worktree_bytes": 16104,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/foundation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "cbadc468754550ac33c4ea5b4819684b22425c60",
+      "index_sha256": "77a1fb24825472582701d16ca92c5b1b7711f331a5fed46fff5de187c8c24485",
+      "worktree_sha256": "77a1fb24825472582701d16ca92c5b1b7711f331a5fed46fff5de187c8c24485",
+      "index_bytes": 13970,
+      "worktree_bytes": 13970,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/image.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "d954ef93e5690a32f1410d7cf2665e444103d74d",
+      "index_sha256": "6f6c3ad417cd53911ef16230445f75eadca733b676cae1cd0bcce3d478b856e1",
+      "worktree_sha256": "6f6c3ad417cd53911ef16230445f75eadca733b676cae1cd0bcce3d478b856e1",
+      "index_bytes": 14956,
+      "worktree_bytes": 14956,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/motion.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "6d219929696c113d2be39d121d9189f1e64d2125",
+      "index_sha256": "3e0e1b5080d1c2606930b4ead7fac566d37f337e54cca03c199e3d3d853b9a4f",
+      "worktree_sha256": "3e0e1b5080d1c2606930b4ead7fac566d37f337e54cca03c199e3d3d853b9a4f",
+      "index_bytes": 12642,
+      "worktree_bytes": 12642,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/segmentation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "5354797ef827c34d46f454a887dd41edafe65a34",
+      "index_sha256": "4acc7bb58945c73ca3bf73c9655172fb15056325a3b2b991484d4bce18fe5aca",
+      "worktree_sha256": "4acc7bb58945c73ca3bf73c9655172fb15056325a3b2b991484d4bce18fe5aca",
+      "index_bytes": 13050,
+      "worktree_bytes": 13050,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/regression/video.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "bb2e74680faad4567c88491b0718d3e186028f30",
+      "index_sha256": "09b027b58da0543bc809eb953f8ab1e58c38f837520dbf2f513ec048f7486026",
+      "worktree_sha256": "09b027b58da0543bc809eb953f8ab1e58c38f837520dbf2f513ec048f7486026",
+      "index_bytes": 13704,
+      "worktree_bytes": 13704,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-presenter-review-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "bc577d6bbea1deab7e6e55ca7b3ecc7c69618022",
+      "index_sha256": "e1cad7ad516a29ae3a22b70964c33b76ba07065a7474253e758cf00aa660db3a",
+      "worktree_sha256": "e1cad7ad516a29ae3a22b70964c33b76ba07065a7474253e758cf00aa660db3a",
+      "index_bytes": 1083,
+      "worktree_bytes": 1083,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "7bd4c6b0f756e897f06c83bb5eee28869a61f4bb",
+      "index_sha256": "8a5d99905f9c03cd32b3248133e778a47e722ec43a1926f7768411050847231d",
+      "worktree_sha256": "8a5d99905f9c03cd32b3248133e778a47e722ec43a1926f7768411050847231d",
+      "index_bytes": 4656,
+      "worktree_bytes": 4656,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/typecheck-restored.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/typecheck.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/unit-current.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "a826db2fbda858b8e49171c0fbd6e2c0588973af",
+      "index_sha256": "5f15f7056554813d5d3a6335a9e431a7781e99955bfc34b4a0d047c48644c35c",
+      "worktree_sha256": "5f15f7056554813d5d3a6335a9e431a7781e99955bfc34b4a0d047c48644c35c",
+      "index_bytes": 62442,
+      "worktree_bytes": 62442,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/unit.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "909e0a0a94768d5d411319d8a0f78e28497e6a58",
+      "index_sha256": "1152f3ce52a7eb6fcccfc444125bc3ef517d04bbaf0d08ed4a69d1ca00cef6d4",
+      "worktree_sha256": "1152f3ce52a7eb6fcccfc444125bc3ef517d04bbaf0d08ed4a69d1ca00cef6d4",
+      "index_bytes": 62441,
+      "worktree_bytes": 62441,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/video-fixture-green.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "994243bbaacd9111565dafa3c73b718d6eab307c",
+      "index_sha256": "5e88373fd9ecc8a4242b71fd959e876d45fd6953efe39da5ef884894e674d233",
+      "worktree_sha256": "5e88373fd9ecc8a4242b71fd959e876d45fd6953efe39da5ef884894e674d233",
+      "index_bytes": 123,
+      "worktree_bytes": 123,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/recovery-final/video-fixture-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "045a6ecda215db0daf8a02646682f7eb7afa4c96",
+      "index_sha256": "241db3a014277ed4d4079efd455bc3c1c11e960c0b7e5c5041ace32f4e101196",
+      "worktree_sha256": "241db3a014277ed4d4079efd455bc3c1c11e960c0b7e5c5041ace32f4e101196",
+      "index_bytes": 1005,
+      "worktree_bytes": 1005,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/acceptance-attempt1.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1fea30f73674152461b39c5d370436150a62bcc6",
+      "index_sha256": "23ede4f649a8e8ed9fb31344ca0775137e009fffd37b509c490ccfb7849b07a1",
+      "worktree_sha256": "23ede4f649a8e8ed9fb31344ca0775137e009fffd37b509c490ccfb7849b07a1",
+      "index_bytes": 8342,
+      "worktree_bytes": 8342,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/audit-moderate.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "worktree_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "index_bytes": 0,
+      "worktree_bytes": 0,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/build.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "6fa58a08b4b523456f94570fdeb0b1489ec4010b",
+      "index_sha256": "5721f2f4303de6e79d8ee4c1096f919edd3f2568c7f14ebf753fcb41462f5971",
+      "worktree_sha256": "5721f2f4303de6e79d8ee4c1096f919edd3f2568c7f14ebf753fcb41462f5971",
+      "index_bytes": 7609,
+      "worktree_bytes": 7609,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/check.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1866dd4eaa3cd219644ce7ce1019285b1113804f",
+      "index_sha256": "52c03a01bfc99d5872a7ed140e2b90b0324ef0c8506701a5facb1f9fafa9c9c7",
+      "worktree_sha256": "52c03a01bfc99d5872a7ed140e2b90b0324ef0c8506701a5facb1f9fafa9c9c7",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression-wrapper.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "7a1402fcdd6658234aa4674469b0411eccb24552",
+      "index_sha256": "a34ef841a6c2d17f0ec1d8306c978281568e873545bdd6603d33b7bfb3aa377d",
+      "worktree_sha256": "a34ef841a6c2d17f0ec1d8306c978281568e873545bdd6603d33b7bfb3aa377d",
+      "index_bytes": 19,
+      "worktree_bytes": 19,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/contracts.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9b65e5fba7a2cb28557f2cf4924b9ef7df6a65c4",
+      "index_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "worktree_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "index_bytes": 4329,
+      "worktree_bytes": 4329,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/database.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "5ea95abc51974d841eb6568f5c76781d40934f83",
+      "index_sha256": "91d05f78533ae01d6b492a1ed641966d789b74502bc75c96a499af6ca4203e29",
+      "worktree_sha256": "91d05f78533ae01d6b492a1ed641966d789b74502bc75c96a499af6ca4203e29",
+      "index_bytes": 58155,
+      "worktree_bytes": 58155,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/design.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "56937c5500ce782dfecd4526d622e738aa78e281",
+      "index_sha256": "67bac30312243b606162bfa95712553eb676709b73b638bccb2f5e4dc365116e",
+      "worktree_sha256": "67bac30312243b606162bfa95712553eb676709b73b638bccb2f5e4dc365116e",
+      "index_bytes": 16104,
+      "worktree_bytes": 16104,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/foundation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "cbadc468754550ac33c4ea5b4819684b22425c60",
+      "index_sha256": "77a1fb24825472582701d16ca92c5b1b7711f331a5fed46fff5de187c8c24485",
+      "worktree_sha256": "77a1fb24825472582701d16ca92c5b1b7711f331a5fed46fff5de187c8c24485",
+      "index_bytes": 13970,
+      "worktree_bytes": 13970,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/image.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "7972a2f434647a04b3dfcc3879dd021072eb6acb",
+      "index_sha256": "1e132573e4228bb607a5c9806cb818e33683b64d33c491730b05dcdf0bb28c58",
+      "worktree_sha256": "1e132573e4228bb607a5c9806cb818e33683b64d33c491730b05dcdf0bb28c58",
+      "index_bytes": 14956,
+      "worktree_bytes": 14956,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/motion.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f0b6a57da0706a904d7eba40bfd31d7a77dfee4d",
+      "index_sha256": "039a35c025b6f3395d04ec19bb4fc98c2822a5ef3cbb81dde35242ba657cb3d7",
+      "worktree_sha256": "039a35c025b6f3395d04ec19bb4fc98c2822a5ef3cbb81dde35242ba657cb3d7",
+      "index_bytes": 12642,
+      "worktree_bytes": 12642,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/segmentation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "91842feb604d56538e33b76928a9baaff0e48b9c",
+      "index_sha256": "d9031489023fea5484eda4cae0e3cd877162d0b3ecab98955eed580a4fef5208",
+      "worktree_sha256": "d9031489023fea5484eda4cae0e3cd877162d0b3ecab98955eed580a4fef5208",
+      "index_bytes": 13050,
+      "worktree_bytes": 13050,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/regression/video.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f8ebd074560de7eafee606afe82b1d0479408d50",
+      "index_sha256": "57afa714b5de1e21a0249a26ba0876549d583bff775edcc95c9b17c112f143b3",
+      "worktree_sha256": "57afa714b5de1e21a0249a26ba0876549d583bff775edcc95c9b17c112f143b3",
+      "index_bytes": 12360,
+      "worktree_bytes": 12360,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-presenter-review-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "bc577d6bbea1deab7e6e55ca7b3ecc7c69618022",
+      "index_sha256": "e1cad7ad516a29ae3a22b70964c33b76ba07065a7474253e758cf00aa660db3a",
+      "worktree_sha256": "e1cad7ad516a29ae3a22b70964c33b76ba07065a7474253e758cf00aa660db3a",
+      "index_bytes": 1083,
+      "worktree_bytes": 1083,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "56d1100a7d3f71a689ece0fd73ceaf64a93be3af",
+      "index_sha256": "de217aea07bf564dbb09124c0c393c908201d99593383bdbc35a00adacb84f61",
+      "worktree_sha256": "de217aea07bf564dbb09124c0c393c908201d99593383bdbc35a00adacb84f61",
+      "index_bytes": 4583,
+      "worktree_bytes": 4583,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/typecheck.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/corrections/review-r1-r2-d1-d2/unit.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "3e739a4ad1ee6969c89b2fa0bad485162388bebc",
+      "index_sha256": "f0bba9e9bb4927ce97b4a6b6b974d9ffa70947650be56289b4f57e8cf979686f",
+      "worktree_sha256": "f0bba9e9bb4927ce97b4a6b6b974d9ffa70947650be56289b4f57e8cf979686f",
+      "index_bytes": 62165,
+      "worktree_bytes": 62165,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/cost-gate-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "7a3371cdfa7c54d62b6a0b444b71ceacb3fde9ef",
+      "index_sha256": "0cbf253c04d6e7c454d7f1279c90cc91feb0f2a61c1b8534ba335562f637b6ee",
+      "worktree_sha256": "0cbf253c04d6e7c454d7f1279c90cc91feb0f2a61c1b8534ba335562f637b6ee",
+      "index_bytes": 635,
+      "worktree_bytes": 635,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/cost-gate-red2.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "8eb5847593770d52b81cf788ef3a1ff88acb9d1a",
+      "index_sha256": "9173c2fb2c4708a2fbb08fa69ed3b9813e2141e1cac63dec0133ae9f62e72934",
+      "worktree_sha256": "9173c2fb2c4708a2fbb08fa69ed3b9813e2141e1cac63dec0133ae9f62e72934",
+      "index_bytes": 4282,
+      "worktree_bytes": 4282,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/migrate-initial.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "5c9c8bc0e7187cc74014b2ccc99c8bcad5298870",
+      "index_sha256": "72af7035c12eedb7a61c2ffa8d4737725108159572e871bdcf2f51a89c77ce86",
+      "worktree_sha256": "72af7035c12eedb7a61c2ffa8d4737725108159572e871bdcf2f51a89c77ce86",
+      "index_bytes": 11718,
+      "worktree_bytes": 11718,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/npm-test-final.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "6d65eef7dfe1dbcdd4ae8b436a31eda927ff53b5",
+      "index_sha256": "a325f0df3c709aa519a29f56e8147cf4ead301d586bb811ed4c6db83e306d800",
+      "worktree_sha256": "a325f0df3c709aa519a29f56e8147cf4ead301d586bb811ed4c6db83e306d800",
+      "index_bytes": 60327,
+      "worktree_bytes": 60327,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/npm-test-green.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e81e1278061a7e412bdd3e73660ac753a7d51f19",
+      "index_sha256": "b9474f1a08bc27e6c4d9d9bb3c2c5d7d23ef3ff9dcd61947e5e2924db705390a",
+      "worktree_sha256": "b9474f1a08bc27e6c4d9d9bb3c2c5d7d23ef3ff9dcd61947e5e2924db705390a",
+      "index_bytes": 59904,
+      "worktree_bytes": 59904,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/npm-test.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f6d681bf31ec38addbff213f05419b433831bad8",
+      "index_sha256": "b85f8ed51f17ee756f74df64fa821ec2a9b27f5b9eb787807745c4ee3ba9394c",
+      "worktree_sha256": "b85f8ed51f17ee756f74df64fa821ec2a9b27f5b9eb787807745c4ee3ba9394c",
+      "index_bytes": 61600,
+      "worktree_bytes": 61600,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/preview-ui-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9a15db1aaf74d5da17156edbeb80bebeec2353e0",
+      "index_sha256": "e5e405b738cc30b8c5f0076489621f2e5bb46d8a18f16101f90be28081b420ba",
+      "worktree_sha256": "e5e405b738cc30b8c5f0076489621f2e5bb46d8a18f16101f90be28081b420ba",
+      "index_bytes": 6998,
+      "worktree_bytes": 6998,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-extra.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "673044fba15abae912cb64f8143c4ddce1c7e308",
+      "index_sha256": "cec74e25d63dfc88c3fb7a29baadedd0925433b00e99382c05a159a2ec6c71b8",
+      "worktree_sha256": "cec74e25d63dfc88c3fb7a29baadedd0925433b00e99382c05a159a2ec6c71b8",
+      "index_bytes": 43,
+      "worktree_bytes": 43,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-final-a.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "75a1aecdac18653b4aa301300942331c16d37ac4",
+      "index_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "worktree_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "index_bytes": 77,
+      "worktree_bytes": 77,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-final-b.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "aa07923021562a9b3073e3766631cec45e99cbd1",
+      "index_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "worktree_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "index_bytes": 38,
+      "worktree_bytes": 38,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression-final-c.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "b0a852d16702c9fb199ef2e8e2cdc38d1103d799",
+      "index_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "worktree_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "index_bytes": 43,
+      "worktree_bytes": 43,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/contracts-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1c1a479c9ca44178e39150d7c867cd45518b3d21",
+      "index_sha256": "e08b1fade724aada6a579b0d8d8dee0c11c02eda2dcabcdf52dd53fda6fabbb7",
+      "worktree_sha256": "e08b1fade724aada6a579b0d8d8dee0c11c02eda2dcabcdf52dd53fda6fabbb7",
+      "index_bytes": 2904,
+      "worktree_bytes": 2904,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/contracts-red2.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "3a2e772cd31cc3af7dc72a5c40ef526ede27dbde",
+      "index_sha256": "deaa897666b09e32d0bd07a839624661d9dfd1d2d15edae2d4980945fa4c800d",
+      "worktree_sha256": "deaa897666b09e32d0bd07a839624661d9dfd1d2d15edae2d4980945fa4c800d",
+      "index_bytes": 4294,
+      "worktree_bytes": 4294,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/contracts.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9b65e5fba7a2cb28557f2cf4924b9ef7df6a65c4",
+      "index_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "worktree_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "index_bytes": 4329,
+      "worktree_bytes": 4329,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/database.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "a19cc28f638d61f9227337f5a80444f339fb0c41",
+      "index_sha256": "d6675a3ac929bb5da84cb98bbc0d4e9beebc75507fc1f67748cff35c9115889d",
+      "worktree_sha256": "d6675a3ac929bb5da84cb98bbc0d4e9beebc75507fc1f67748cff35c9115889d",
+      "index_bytes": 58153,
+      "worktree_bytes": 58153,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/design.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "d79135a8acfa3d90b01023983bb22b8f4fc759c6",
+      "index_sha256": "3e4d7097cb2b9c197dac6bd930fad5241437a6322e5dd33aaa7800ee40244c88",
+      "worktree_sha256": "3e4d7097cb2b9c197dac6bd930fad5241437a6322e5dd33aaa7800ee40244c88",
+      "index_bytes": 16104,
+      "worktree_bytes": 16104,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/foundation-red.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "50001085b3bed881ff65ff134c3aefe6b0401e61",
+      "index_sha256": "22aedaea3f0bfc78df51c39a0364ce7f23e68ad7b661bf6187fb7c0590514653",
+      "worktree_sha256": "22aedaea3f0bfc78df51c39a0364ce7f23e68ad7b661bf6187fb7c0590514653",
+      "index_bytes": 14046,
+      "worktree_bytes": 14046,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/foundation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "da1715aaf4e622d95bf6a0fd830d4e04d10ff086",
+      "index_sha256": "999e32c0853b70325f8c91be86a5b67f2a4482e158f3d27de9d0ac6f3b80ef7f",
+      "worktree_sha256": "999e32c0853b70325f8c91be86a5b67f2a4482e158f3d27de9d0ac6f3b80ef7f",
+      "index_bytes": 13940,
+      "worktree_bytes": 13940,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/image.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "71bfea04e91904e68a32a0f1f513fe1f0cf916fb",
+      "index_sha256": "1f592ba4fdf51b6455a231f283c35ae587709444a3e4f8c7e1fca2af6d433563",
+      "worktree_sha256": "1f592ba4fdf51b6455a231f283c35ae587709444a3e4f8c7e1fca2af6d433563",
+      "index_bytes": 14927,
+      "worktree_bytes": 14927,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/motion.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "78e145282a4801e0e1777e32e3c150da199057e3",
+      "index_sha256": "1d73c81f01b0dad932db8c5e707e98e4100bcbfeb0b003312672096f1f87ef8f",
+      "worktree_sha256": "1d73c81f01b0dad932db8c5e707e98e4100bcbfeb0b003312672096f1f87ef8f",
+      "index_bytes": 12642,
+      "worktree_bytes": 12642,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/segmentation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9133b0d65ff879ea1754347dce6eef2949c02129",
+      "index_sha256": "955749754b2a06d2dbf59b4c5a816a9e99afdbc3fdb13a0c1cb2368912712d6e",
+      "worktree_sha256": "955749754b2a06d2dbf59b4c5a816a9e99afdbc3fdb13a0c1cb2368912712d6e",
+      "index_bytes": 13050,
+      "worktree_bytes": 13050,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/regression/video.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "b70547206fcea5a3c5a21876cc8b5a98241bb552",
+      "index_sha256": "c54484d254a2fd49c66c35ef43120e1af76c8b9ad26b3ed29ad0489940938f0c",
+      "worktree_sha256": "c54484d254a2fd49c66c35ef43120e1af76c8b9ad26b3ed29ad0489940938f0c",
+      "index_bytes": 13704,
+      "worktree_bytes": 13704,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/29953993-d1d0-43d3-aef4-5ad7b0c29d65/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "757f75a323d9ed0a02c1c1f6aabb3a12009ed071",
+      "index_sha256": "37fb2fd9d954ff7adfe379aa692308b25dac5643570a74852ebdbda90fc83467",
+      "worktree_sha256": "37fb2fd9d954ff7adfe379aa692308b25dac5643570a74852ebdbda90fc83467",
+      "index_bytes": 4180,
+      "worktree_bytes": 4180,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/29953993-d1d0-43d3-aef4-5ad7b0c29d65/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/5f069ad0-4616-4fa6-97eb-0bd0fde7eaee/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "61084868f542f4fae0d5ef1c36839a3785ba1740",
+      "index_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "worktree_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "index_bytes": 3910,
+      "worktree_bytes": 3910,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/5f069ad0-4616-4fa6-97eb-0bd0fde7eaee/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/6751629f-eddb-4c52-9318-ace3b33469f1/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "61084868f542f4fae0d5ef1c36839a3785ba1740",
+      "index_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "worktree_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "index_bytes": 3910,
+      "worktree_bytes": 3910,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/6751629f-eddb-4c52-9318-ace3b33469f1/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/a5da98c2-2304-4ac7-83a5-6cac05329acd/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "beda45484ef87f25559a3adcc6287f55a8fce9a7",
+      "index_sha256": "345fdfbd51152ce18a8a4175cd821836f1e014cdcbe7164bcbd2303212412d30",
+      "worktree_sha256": "345fdfbd51152ce18a8a4175cd821836f1e014cdcbe7164bcbd2303212412d30",
+      "index_bytes": 3697,
+      "worktree_bytes": 3697,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/a5da98c2-2304-4ac7-83a5-6cac05329acd/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/aad377c6-3517-440e-a2b3-37f134d3ad5a/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "757f75a323d9ed0a02c1c1f6aabb3a12009ed071",
+      "index_sha256": "37fb2fd9d954ff7adfe379aa692308b25dac5643570a74852ebdbda90fc83467",
+      "worktree_sha256": "37fb2fd9d954ff7adfe379aa692308b25dac5643570a74852ebdbda90fc83467",
+      "index_bytes": 4180,
+      "worktree_bytes": 4180,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/aad377c6-3517-440e-a2b3-37f134d3ad5a/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bcef9d09-d633-48cd-b3d6-2e896dfc53da/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "0d10ee4232d04739a6f429820e74622a213b131a",
+      "index_sha256": "5b4feaea017c5b238c10a31c9cfaab54a175e78cf6ba7bdd4213399063296568",
+      "worktree_sha256": "5b4feaea017c5b238c10a31c9cfaab54a175e78cf6ba7bdd4213399063296568",
+      "index_bytes": 1406,
+      "worktree_bytes": 1406,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bcef9d09-d633-48cd-b3d6-2e896dfc53da/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bf230bed-1122-4632-91da-e5d37b7d7b73/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f96b2fa5ef81b0b661b01addbe81841f5bdf882d",
+      "index_sha256": "f70d8a1c723fc8074768fba89cc9e96e838ebfa7f05c3f8e05af66c992022214",
+      "worktree_sha256": "f70d8a1c723fc8074768fba89cc9e96e838ebfa7f05c3f8e05af66c992022214",
+      "index_bytes": 4142,
+      "worktree_bytes": 4142,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/bf230bed-1122-4632-91da-e5d37b7d7b73/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c2238772-15bb-448c-8f4e-4a9229fc3b7d/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "392db2a466692246703e0b11337505e6b668d1b3",
+      "index_sha256": "18cac88f5ec65230db650c8b9b850643aa39b3aec6c3ccc1fd4bfe34181cfbfa",
+      "worktree_sha256": "18cac88f5ec65230db650c8b9b850643aa39b3aec6c3ccc1fd4bfe34181cfbfa",
+      "index_bytes": 4122,
+      "worktree_bytes": 4122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c2238772-15bb-448c-8f4e-4a9229fc3b7d/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "56d1100a7d3f71a689ece0fd73ceaf64a93be3af",
+      "index_sha256": "de217aea07bf564dbb09124c0c393c908201d99593383bdbc35a00adacb84f61",
+      "worktree_sha256": "de217aea07bf564dbb09124c0c393c908201d99593383bdbc35a00adacb84f61",
+      "index_bytes": 4583,
+      "worktree_bytes": 4583,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/ce432ed6-ac22-4628-9782-227da56ea5d0/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "61084868f542f4fae0d5ef1c36839a3785ba1740",
+      "index_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "worktree_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "index_bytes": 3910,
+      "worktree_bytes": 3910,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/ce432ed6-ac22-4628-9782-227da56ea5d0/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/d567a118-9548-4fe7-a125-ddd36d549249/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "4c0c1e163031bf27f25e3f585ec21e4950cc20d3",
+      "index_sha256": "4931ba6c922a52b2c767134be804f930e852cb77368063055c149439078e0684",
+      "worktree_sha256": "4931ba6c922a52b2c767134be804f930e852cb77368063055c149439078e0684",
+      "index_bytes": 3988,
+      "worktree_bytes": 3988,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/d567a118-9548-4fe7-a125-ddd36d549249/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/e8eed474-e302-434f-9f49-860a6bf8c90d/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "61084868f542f4fae0d5ef1c36839a3785ba1740",
+      "index_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "worktree_sha256": "a6101ff2cf5578d70241581e58e505da299149539d3cbe1eed85f7093d97da14",
+      "index_bytes": 3910,
+      "worktree_bytes": 3910,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/e8eed474-e302-434f-9f49-860a6bf8c90d/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/f9f34640-009f-4d29-bc01-499b7c306d12/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "879d382aa7bdc3f96577ac7c28397ba13fb42779",
+      "index_sha256": "f1f04a2ab1869d96ccb8858a6b3d48c936054bccc1ab5032cd41f37f5bf6c132",
+      "worktree_sha256": "f1f04a2ab1869d96ccb8858a6b3d48c936054bccc1ab5032cd41f37f5bf6c132",
+      "index_bytes": 4369,
+      "worktree_bytes": 4369,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/runs/f9f34640-009f-4d29-bc01-499b7c306d12/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/typecheck-final.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/history-native/typecheck-final2.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/audit-moderate.json",
+      "mode": "100644",
+      "index_blob_oid": "f4cd8f27dd3be490e29dd67d35de483cd78f1a0c",
+      "index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "worktree_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "index_bytes": 362,
+      "worktree_bytes": 362,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/avatars-rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "836434151f32daf88f81d95aef9326d69b20e344",
+      "index_sha256": "06f7a2e2e78d71c47e9f1d0f147b1171a96d51054ebd048626ba1a2cd8d0ffb8",
+      "worktree_sha256": "06f7a2e2e78d71c47e9f1d0f147b1171a96d51054ebd048626ba1a2cd8d0ffb8",
+      "index_bytes": 131242,
+      "worktree_bytes": 131242,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/avatars-rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "0cf5b24d9c09fed9a508daace626631f794d0040",
+      "index_sha256": "61a652455e6fdf0b840d4deeb58921a52fecca3a266c7eda18c70b40a013a47b",
+      "worktree_sha256": "61a652455e6fdf0b840d4deeb58921a52fecca3a266c7eda18c70b40a013a47b",
+      "index_bytes": 158625,
+      "worktree_bytes": 158625,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/browser-jobs-operator.json",
+      "mode": "100644",
+      "index_blob_oid": "b4f161b57f3398ebd692a56ee4770937589ce5f1",
+      "index_sha256": "9000a026ca6616638d543ef438c36b7e807f66baf4ebaa02e9fc834348631a04",
+      "worktree_sha256": "9000a026ca6616638d543ef438c36b7e807f66baf4ebaa02e9fc834348631a04",
+      "index_bytes": 268,
+      "worktree_bytes": 268,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/browser-jobs.json",
+      "mode": "100644",
+      "index_blob_oid": "ae81ef560bdf524246ce9dacfe0a6ccb172697c7",
+      "index_sha256": "2b7b57f15945bb26055fde1211ef5209e24ac9c63567a2c3e6ccb1fbeb0e1a93",
+      "worktree_sha256": "2b7b57f15945bb26055fde1211ef5209e24ac9c63567a2c3e6ccb1fbeb0e1a93",
+      "index_bytes": 906,
+      "worktree_bytes": 906,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/native-receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "17939ead7328e3faa44e26e85c06ea094cf24947",
+      "index_sha256": "56d60116168bd7283d13d8bbf783d75201a969298eeb1db77c81c2460bcb4594",
+      "worktree_sha256": "56d60116168bd7283d13d8bbf783d75201a969298eeb1db77c81c2460bcb4594",
+      "index_bytes": 10830,
+      "worktree_bytes": 10830,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/preview-lip_sync.png",
+      "mode": "100644",
+      "index_blob_oid": "2f6fa483571dbfc5d542d1ed07bdcc55efd9e0ed",
+      "index_sha256": "cf7d154e282b1156766feed0fb4284ba03b0d40b5cfa8b46291e01e62df9d19f",
+      "worktree_sha256": "cf7d154e282b1156766feed0fb4284ba03b0d40b5cfa8b46291e01e62df9d19f",
+      "index_bytes": 150115,
+      "worktree_bytes": 150115,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/preview-talking_head.png",
+      "mode": "100644",
+      "index_blob_oid": "8dc97302943511decdac14ca126f7ebebfba008b",
+      "index_sha256": "a3a2dd1c1d62c3e3bfeb09b53c32a31112faae737d3abe813478ebb75f52e55e",
+      "worktree_sha256": "a3a2dd1c1d62c3e3bfeb09b53c32a31112faae737d3abe813478ebb75f52e55e",
+      "index_bytes": 150287,
+      "worktree_bytes": 150287,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/receipts-segmentation.json",
+      "mode": "100644",
+      "index_blob_oid": "46a695c9b6af49a4f1b7a133630a2aa7a6538e99",
+      "index_sha256": "18ea4d637011423367c2983a7903c69559eae7ecd33a7be2e44854b0bb8ae384",
+      "worktree_sha256": "18ea4d637011423367c2983a7903c69559eae7ecd33a7be2e44854b0bb8ae384",
+      "index_bytes": 214,
+      "worktree_bytes": 214,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/regression/receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "a68415620644421e3cf847d08dc125f7a56a1aa7",
+      "index_sha256": "feb75bb8cd42b1f099d373c2772e3a8f8556f2a7c38c5de70f096dec860b9361",
+      "worktree_sha256": "feb75bb8cd42b1f099d373c2772e3a8f8556f2a7c38c5de70f096dec860b9361",
+      "index_bytes": 996,
+      "worktree_bytes": 996,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "3eae20ed77189c2eb10fce308607dd6ec6fe28bd",
+      "index_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "worktree_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "index_bytes": 135577,
+      "worktree_bytes": 135577,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "fd4542bcb130628bd00a5bdaefdf6f5ce5b70b88",
+      "index_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "worktree_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "index_bytes": 132220,
+      "worktree_bytes": 132220,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/rtl-lip-sync.png",
+      "mode": "100644",
+      "index_blob_oid": "208f489a88d7c371383c36c2b5d58334e7bf9d9d",
+      "index_sha256": "09a9c858856f36d344a76315f802c27175f2e21769cc9c100e73d96c19f40a3f",
+      "worktree_sha256": "09a9c858856f36d344a76315f802c27175f2e21769cc9c100e73d96c19f40a3f",
+      "index_bytes": 53100,
+      "worktree_bytes": 53100,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/recovery-final/runs/0e47b423-1751-48f8-b172-a4804aac0fef/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "845e91d88e639ac4cb3314b7c585ce868ee91635",
+      "index_sha256": "34a681c7d17e99ae643130e46e040416048604bb230b32404ccf1fc3b80214a7",
+      "worktree_sha256": "34a681c7d17e99ae643130e46e040416048604bb230b32404ccf1fc3b80214a7",
+      "index_bytes": 4841,
+      "worktree_bytes": 4841,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/audit-moderate.json",
+      "mode": "100644",
+      "index_blob_oid": "f4cd8f27dd3be490e29dd67d35de483cd78f1a0c",
+      "index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "worktree_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "index_bytes": 362,
+      "worktree_bytes": 362,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/avatars-rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "a558abc910ff47d81ebb14f1ce38037523413910",
+      "index_sha256": "5fd5040b85d1086e7ddba357010baedd3764be5e2b063275dcfbc47e8fe62e2d",
+      "worktree_sha256": "5fd5040b85d1086e7ddba357010baedd3764be5e2b063275dcfbc47e8fe62e2d",
+      "index_bytes": 130767,
+      "worktree_bytes": 130767,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/avatars-rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "c31444aa8a2008d9f54be471f7ac6903dbee4eb1",
+      "index_sha256": "270db4d8c1ac71649a21c0632527f6bc3cd8bec6a0bbac38c7d3f83515167339",
+      "worktree_sha256": "270db4d8c1ac71649a21c0632527f6bc3cd8bec6a0bbac38c7d3f83515167339",
+      "index_bytes": 156325,
+      "worktree_bytes": 156325,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/browser-jobs-operator.json",
+      "mode": "100644",
+      "index_blob_oid": "ec3ddb1279f81ea1ab176afadb50f56aa27d9363",
+      "index_sha256": "a42f370cc44137b2f096f912cbd8cd99eaf16ca0f854aa774d269b55128df6bb",
+      "worktree_sha256": "a42f370cc44137b2f096f912cbd8cd99eaf16ca0f854aa774d269b55128df6bb",
+      "index_bytes": 268,
+      "worktree_bytes": 268,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/browser-jobs.json",
+      "mode": "100644",
+      "index_blob_oid": "ac573b51a30cc52db11318024881fdcca4f082e8",
+      "index_sha256": "94477fa11214fe52db6e73aca57aba9e7fa35555fb04461e875e84d19ce899c4",
+      "worktree_sha256": "94477fa11214fe52db6e73aca57aba9e7fa35555fb04461e875e84d19ce899c4",
+      "index_bytes": 906,
+      "worktree_bytes": 906,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/native-receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "7662ff76088ad9ab9198b58e4290a0ed900cb855",
+      "index_sha256": "93726885121f550d38389e1a94591c79b5c3ec24572d9f1820ffa8976ed55a16",
+      "worktree_sha256": "93726885121f550d38389e1a94591c79b5c3ec24572d9f1820ffa8976ed55a16",
+      "index_bytes": 10709,
+      "worktree_bytes": 10709,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/preview-lip_sync.png",
+      "mode": "100644",
+      "index_blob_oid": "553079dc776a1cf26ded93da56a2768e6db6adc8",
+      "index_sha256": "5061b658ae1c2a180728636bdcc5edaed5c303449d291792566fa413b3c02768",
+      "worktree_sha256": "5061b658ae1c2a180728636bdcc5edaed5c303449d291792566fa413b3c02768",
+      "index_bytes": 150449,
+      "worktree_bytes": 150449,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/preview-talking_head.png",
+      "mode": "100644",
+      "index_blob_oid": "d1bb01a9caec6dcefd5b9e43c46b80ccc348a13a",
+      "index_sha256": "a4b9eba626a2a8a9f5f9c2308bfb0708da34bf6352f5f4489dbf9d1582f7410e",
+      "worktree_sha256": "a4b9eba626a2a8a9f5f9c2308bfb0708da34bf6352f5f4489dbf9d1582f7410e",
+      "index_bytes": 150458,
+      "worktree_bytes": 150458,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/regression/receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "d0857b51bc1951c1a83853b77d7802f0e6ab9cb5",
+      "index_sha256": "c8a46d1df09a910fb353816b37fda89b9b8ff3740eab5bb82ac14301a2356f41",
+      "worktree_sha256": "c8a46d1df09a910fb353816b37fda89b9b8ff3740eab5bb82ac14301a2356f41",
+      "index_bytes": 1142,
+      "worktree_bytes": 1142,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "3eae20ed77189c2eb10fce308607dd6ec6fe28bd",
+      "index_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "worktree_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "index_bytes": 135577,
+      "worktree_bytes": 135577,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "fd4542bcb130628bd00a5bdaefdf6f5ce5b70b88",
+      "index_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "worktree_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "index_bytes": 132220,
+      "worktree_bytes": 132220,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/rtl-lip-sync.png",
+      "mode": "100644",
+      "index_blob_oid": "208f489a88d7c371383c36c2b5d58334e7bf9d9d",
+      "index_sha256": "09a9c858856f36d344a76315f802c27175f2e21769cc9c100e73d96c19f40a3f",
+      "worktree_sha256": "09a9c858856f36d344a76315f802c27175f2e21769cc9c100e73d96c19f40a3f",
+      "index_bytes": 53100,
+      "worktree_bytes": 53100,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-r1-r2-d1-d2/runs/4f649f3e-e6b9-4835-a41b-37a260135c74/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "5fb990e492155781403a18a8f48e9cc76c2d9d72",
+      "index_sha256": "6a4d0988b20eeacb9995a72c0badfe080f36a54b8c1f8e8ec92f94133cf8e94c",
+      "worktree_sha256": "6a4d0988b20eeacb9995a72c0badfe080f36a54b8c1f8e8ec92f94133cf8e94c",
+      "index_bytes": 4841,
+      "worktree_bytes": 4841,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/audit-moderate.json",
+      "mode": "100644",
+      "index_blob_oid": "f4cd8f27dd3be490e29dd67d35de483cd78f1a0c",
+      "index_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "worktree_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3",
+      "index_bytes": 362,
+      "worktree_bytes": 362,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/avatars-rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "0ad3f094e8b0db1460bea33c25f48fbcbb5592dc",
+      "index_sha256": "f972bac83a6c63531b7a557d73305856e260236a3971e5ac4abbcd310255c05d",
+      "worktree_sha256": "f972bac83a6c63531b7a557d73305856e260236a3971e5ac4abbcd310255c05d",
+      "index_bytes": 130571,
+      "worktree_bytes": 130571,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/avatars-rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "8c81900e9dfb3c680a3f9102471ff65c68c39c09",
+      "index_sha256": "624abf6cb8bb48daab453d6deec51452a0e40814e940fb72466a8674a00552c1",
+      "worktree_sha256": "624abf6cb8bb48daab453d6deec51452a0e40814e940fb72466a8674a00552c1",
+      "index_bytes": 159398,
+      "worktree_bytes": 159398,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/browser-jobs-operator.json",
+      "mode": "100644",
+      "index_blob_oid": "6f08267a153ce6ffdd05a74bfbc53644f4ec06fe",
+      "index_sha256": "7c41c0d147b20592cfd697a4581de4d7980a9380e5f525a8f227067bc305d615",
+      "worktree_sha256": "7c41c0d147b20592cfd697a4581de4d7980a9380e5f525a8f227067bc305d615",
+      "index_bytes": 268,
+      "worktree_bytes": 268,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/browser-jobs.json",
+      "mode": "100644",
+      "index_blob_oid": "fccb0453b481777afffe6edb7ad70f32abd0fc74",
+      "index_sha256": "21f2cb6716e2b6ca115f65132764204f60d9cc6eb670941c5c7cce8c2eafe82c",
+      "worktree_sha256": "21f2cb6716e2b6ca115f65132764204f60d9cc6eb670941c5c7cce8c2eafe82c",
+      "index_bytes": 906,
+      "worktree_bytes": 906,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/cases.json",
+      "mode": "100644",
+      "index_blob_oid": "f9098ef29e6fd25b74d0d723a4698b9fbd657d20",
+      "index_sha256": "ba9eada9d87311982d0fe339c6f8de3e9c9bf9671ac319d9f88686ae6f466daf",
+      "worktree_sha256": "dc6c1dee5205684b01ad85e8bd1dc6a03383efe3e04579c1856f7e544f2baf61",
+      "index_bytes": 10079,
+      "worktree_bytes": 10457,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/gate-receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "1649afa14f7fcffccc3f59c01337ecfb0d813f6d",
+      "index_sha256": "436d92c09ad71cdc3e533e8eb39c80a20af100969dbd6f6ea70cc5397df29c0c",
+      "worktree_sha256": "24b1ca2541317a172552bc796a9374fee04c040d35a6c1d6a8319ecdfc7fc323",
+      "index_bytes": 4216,
+      "worktree_bytes": 4355,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/manifest.json",
+      "mode": "100644",
+      "index_blob_oid": "fbb7e722421efcced700746de7f214c21ec79d9a",
+      "index_sha256": "82cd5def30d806d259811a0a54c0b20f1256f7a67ca549654b20653e524745fc",
+      "worktree_sha256": "8da5cd982b70511f638ebfaca7012b8a6b9d8e9dd721647aed2d40e55ce7b693",
+      "index_bytes": 92692,
+      "worktree_bytes": 93523,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native-log-digests.json",
+      "mode": "100644",
+      "index_blob_oid": "54e7d3b3e54cb8de443bdf3c0ab91e0b06e3c575",
+      "index_sha256": "a6508c4b8380174ba8b3e266cabc1207707fccefe9a2f34857eead3fedb879a6",
+      "worktree_sha256": "9ae7a2197a77a69ea606db8cf5875a240661757f286058277273b41bf1ae0bff",
+      "index_bytes": 77041,
+      "worktree_bytes": 78194,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native-receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "8f9435bf80e98ab021e52ebc036bb61e3f849ab1",
+      "index_sha256": "cba9b6a78029cd556a4fd97d2fe809aea24a19de70e56483b8268f99c049f75a",
+      "worktree_sha256": "cba9b6a78029cd556a4fd97d2fe809aea24a19de70e56483b8268f99c049f75a",
+      "index_bytes": 11085,
+      "worktree_bytes": 11085,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/acceptance.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f03e10b190c95d3ceaa8915bcafff96102031907",
+      "index_sha256": "00919ff3b10f432d987b4e24662858c74ec7c67c964672cd954e062393132bed",
+      "worktree_sha256": "00919ff3b10f432d987b4e24662858c74ec7c67c964672cd954e062393132bed",
+      "index_bytes": 9750,
+      "worktree_bytes": 9750,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/audit-moderate.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e69de29bb2d1d6434b8b29ae775ad8c2e48c5391",
+      "index_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "worktree_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "index_bytes": 0,
+      "worktree_bytes": 0,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/build.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "5de8172d40e193ec8535129f32b9822b909461ca",
+      "index_sha256": "4c187762954990e2a8838f698d1aa65a7a11adfc781d46e197988d1aea6d5fa7",
+      "worktree_sha256": "4c187762954990e2a8838f698d1aa65a7a11adfc781d46e197988d1aea6d5fa7",
+      "index_bytes": 7608,
+      "worktree_bytes": 7608,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/check-final.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "c62e85ba6c5cefdd9ca8cf7af5eb3106e1c9a57e",
+      "index_sha256": "c11e8742f30b07824d960f3148684f9d83ff256e0c5cbabfb08fbd4ab3bf4c5d",
+      "worktree_sha256": "c11e8742f30b07824d960f3148684f9d83ff256e0c5cbabfb08fbd4ab3bf4c5d",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/check.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "b4f4b2c9d36d3fbd3a8d130ec1e768614d0f06d9",
+      "index_sha256": "2e84c6bc220397b79cea6b25d18ae2a3bb04d5a5e5f219cf3589e4c22008bd10",
+      "worktree_sha256": "2e84c6bc220397b79cea6b25d18ae2a3bb04d5a5e5f219cf3589e4c22008bd10",
+      "index_bytes": 122,
+      "worktree_bytes": 122,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-a.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "75a1aecdac18653b4aa301300942331c16d37ac4",
+      "index_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "worktree_sha256": "41eb50420b1d566e31737100e3781ac8f95d95eeed44296d9bbbdf51a1d81dee",
+      "index_bytes": 77,
+      "worktree_bytes": 77,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-b.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "aa07923021562a9b3073e3766631cec45e99cbd1",
+      "index_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "worktree_sha256": "2a5ae3c08a8e734e471b9975e20ce0d726aa10ef18e315dc7598d75193fa6f1f",
+      "index_bytes": 38,
+      "worktree_bytes": 38,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-c.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "b0a852d16702c9fb199ef2e8e2cdc38d1103d799",
+      "index_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "worktree_sha256": "c7639d87f34f9bc68a35767e669fbf5ed8923bbe470270a978f29b7e07acb259",
+      "index_bytes": 43,
+      "worktree_bytes": 43,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/contracts.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9b65e5fba7a2cb28557f2cf4924b9ef7df6a65c4",
+      "index_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "worktree_sha256": "e9c34fbc54bfcbb976e49a90b633e42bfcf13e04abcf4e772f4f96f8efb8cd65",
+      "index_bytes": 4329,
+      "worktree_bytes": 4329,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/database.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "e644d349a7124d50c98089d2814de6dc26b7aea4",
+      "index_sha256": "f843be12b829b506665cd4b3a2e414aee149be104c0b6ff403d6e55c80534977",
+      "worktree_sha256": "f843be12b829b506665cd4b3a2e414aee149be104c0b6ff403d6e55c80534977",
+      "index_bytes": 58155,
+      "worktree_bytes": 58155,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/design.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "26e6f83cbd9e826137b488f316a6972616ff820d",
+      "index_sha256": "79a28db6469de893fe2de5f705d6f6c752113cf4191c3babfc09f961e43d5366",
+      "worktree_sha256": "79a28db6469de893fe2de5f705d6f6c752113cf4191c3babfc09f961e43d5366",
+      "index_bytes": 16104,
+      "worktree_bytes": 16104,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/foundation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "d406ed3a76705a3f505746127c2bb3b4f36c1709",
+      "index_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "worktree_sha256": "c13406b71c32f207756da315bab8133cae5bfa52309a091a1e0b81c7b0b21090",
+      "index_bytes": 14005,
+      "worktree_bytes": 14005,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/image.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "f18e313b0562802b99330b80bfbf5ba44f67c33b",
+      "index_sha256": "25c0dead428019a2ae1298015136b2156bea32f0d271be27ee0c60c74582db68",
+      "worktree_sha256": "25c0dead428019a2ae1298015136b2156bea32f0d271be27ee0c60c74582db68",
+      "index_bytes": 14991,
+      "worktree_bytes": 14991,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/motion.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "b4d80fc61a4f46f86deedf299e24de9f9ed0c096",
+      "index_sha256": "4ed48d1a9de085bf15312d1fa295171c938fde870bdd9459bd275cafebf6f5d7",
+      "worktree_sha256": "4ed48d1a9de085bf15312d1fa295171c938fde870bdd9459bd275cafebf6f5d7",
+      "index_bytes": 12642,
+      "worktree_bytes": 12642,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/segmentation.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "ef82a6624ba0b5c9b1d2f7df3b754464f1f8ebaf",
+      "index_sha256": "64740ba53ab1d5e5c735d0c8d59bd056b42a4f334cf947b4b1e36f98d4501dc9",
+      "worktree_sha256": "64740ba53ab1d5e5c735d0c8d59bd056b42a4f334cf947b4b1e36f98d4501dc9",
+      "index_bytes": 13050,
+      "worktree_bytes": 13050,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression/video.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "c523d299406338a2555c0859d9f900ded8dc3683",
+      "index_sha256": "707365d9df6d2bff14d60483531a0801b29751c2d59e593cec4036a00bf1fe7f",
+      "worktree_sha256": "707365d9df6d2bff14d60483531a0801b29751c2d59e593cec4036a00bf1fe7f",
+      "index_bytes": 13704,
+      "worktree_bytes": 13704,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-presenter-review-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "8a5dd0ffe7e320aadd5752d578557d1f7c5633c6",
+      "index_sha256": "84abd7e8e911c479e694aec075218ec6c7adaeca0e97615044891e79c7ff546e",
+      "worktree_sha256": "84abd7e8e911c479e694aec075218ec6c7adaeca0e97615044891e79c7ff546e",
+      "index_bytes": 2337,
+      "worktree_bytes": 2337,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-talking-head-integration.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "9116657af3402359bcb44e65e59104daca38bf50",
+      "index_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "worktree_sha256": "a3a5354061dbaf1176100096e7443c2f8eaaf837cb3252ede6936469ddea536c",
+      "index_bytes": 4743,
+      "worktree_bytes": 4743,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/runs/5498be00-09d1-43c7-93a4-261e892987df/creative-talking-head-sql.mjs.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "1b9c47d1a14c1f8ea46d60b07096e7c03caae542",
+      "index_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "worktree_sha256": "4cde075d3ab0bab331f261cb1176a8204757bb9164f1c0100f9e38f535d33dad",
+      "index_bytes": 64,
+      "worktree_bytes": 64,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/targeted.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "ef060f0dad77aea42ef0eec192fea8154e22d9fb",
+      "index_sha256": "b4543ae4076df1a9b1c01a8e9ff921f564d80f2f6b4ddd6fd6bc5d68e2db9986",
+      "worktree_sha256": "b4543ae4076df1a9b1c01a8e9ff921f564d80f2f6b4ddd6fd6bc5d68e2db9986",
+      "index_bytes": 11626,
+      "worktree_bytes": 11626,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck-restored.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "220eb6bfa8c81a297f3d2894ab22d85faa29349b",
+      "index_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "worktree_sha256": "1b634e3ce17199393ff56d306081d69a7c5ff5b3c1a736c573c3291982954324",
+      "index_bytes": 152,
+      "worktree_bytes": 152,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/native/unit.log.txt",
+      "mode": "100644",
+      "index_blob_oid": "075516992fbff89514c6a6868ac69d368701a332",
+      "index_sha256": "77860b838b65b45b816f027030971a0d4b98c8a12d7fd0ada21aed83a8b3023a",
+      "worktree_sha256": "77860b838b65b45b816f027030971a0d4b98c8a12d7fd0ada21aed83a8b3023a",
+      "index_bytes": 63337,
+      "worktree_bytes": 63337,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/preview-lip_sync.png",
+      "mode": "100644",
+      "index_blob_oid": "7b72741541f3ac55e163d5b5cc9b943ed45c004a",
+      "index_sha256": "bb8697076008bb7581d846ffb1b87248886381f626289fe3cf9f4dd24c0c99f8",
+      "worktree_sha256": "bb8697076008bb7581d846ffb1b87248886381f626289fe3cf9f4dd24c0c99f8",
+      "index_bytes": 150810,
+      "worktree_bytes": 150810,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/preview-talking_head.png",
+      "mode": "100644",
+      "index_blob_oid": "6157877d623569d1d66807e9f2df4747612189b1",
+      "index_sha256": "086c643ce74d008e0fe6d47bc67a435e880a34c81dd85f6c2b7af6b6c61948a2",
+      "worktree_sha256": "086c643ce74d008e0fe6d47bc67a435e880a34c81dd85f6c2b7af6b6c61948a2",
+      "index_bytes": 150341,
+      "worktree_bytes": 150341,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/receipts-contracts-database-foundation-image.json",
+      "mode": "100644",
+      "index_blob_oid": "4f5a2a2a976fca9acef6c9efd6ca4e276c91c51f",
+      "index_sha256": "431b4aef2bc3f0848d71442cad72f328a5a1e8d36dff957f7faea59dad01aeca",
+      "worktree_sha256": "431b4aef2bc3f0848d71442cad72f328a5a1e8d36dff957f7faea59dad01aeca",
+      "index_bytes": 574,
+      "worktree_bytes": 574,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/receipts-design-motion.json",
+      "mode": "100644",
+      "index_blob_oid": "8e8d158d5228406a91e62473b0229a536630a219",
+      "index_sha256": "2b6a0bf4969d7cf89127f18cbc6821059b1ad5f3a1ad5f6bee32ec15e64fc18f",
+      "worktree_sha256": "2b6a0bf4969d7cf89127f18cbc6821059b1ad5f3a1ad5f6bee32ec15e64fc18f",
+      "index_bytes": 351,
+      "worktree_bytes": 351,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/regression/receipts-video-segmentation.json",
+      "mode": "100644",
+      "index_blob_oid": "9ee0b4103c091d0af8a3b5e40243766196e7a015",
+      "index_sha256": "a31f7ae18a629e8549496c3601bed76388026e26ae227bde01d93ff1f8e25171",
+      "worktree_sha256": "a31f7ae18a629e8549496c3601bed76388026e26ae227bde01d93ff1f8e25171",
+      "index_bytes": 352,
+      "worktree_bytes": 352,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/review-handoff.md",
+      "mode": "100644",
+      "index_blob_oid": "0d8ff6a8bb9622044064fb18e2899912134424b3",
+      "index_sha256": "e20bd84e053f220a8fec4ee08ac74c3aa88914f2a7838a5dc4882cb25e0e97d3",
+      "worktree_sha256": "954bafced7fdfe1ca0375c997a7cc8189d6eba1a4a50cfd046ff6c23972978fc",
+      "index_bytes": 2173,
+      "worktree_bytes": 2189,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "3eae20ed77189c2eb10fce308607dd6ec6fe28bd",
+      "index_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "worktree_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "index_bytes": 135577,
+      "worktree_bytes": 135577,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "fd4542bcb130628bd00a5bdaefdf6f5ce5b70b88",
+      "index_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "worktree_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "index_bytes": 132220,
+      "worktree_bytes": 132220,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/rtl-lip-sync.png",
+      "mode": "100644",
+      "index_blob_oid": "8e365554387dfde6e689915cd30a8a44b69eb845",
+      "index_sha256": "68efd7ee8277cce631a897b1153bfb33684d33f273009d9f00789c46e1cb37a1",
+      "worktree_sha256": "68efd7ee8277cce631a897b1153bfb33684d33f273009d9f00789c46e1cb37a1",
+      "index_bytes": 71471,
+      "worktree_bytes": 71471,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/flags-after-up.json",
+      "mode": "100644",
+      "index_blob_oid": "8b65403b599fc881c9c3a505de43b9749d69a114",
+      "index_sha256": "f05b0718949f291110290a7fb025e8bad3ce312360f5d02abfe2e6a309687dce",
+      "worktree_sha256": "f05b0718949f291110290a7fb025e8bad3ce312360f5d02abfe2e6a309687dce",
+      "index_bytes": 98,
+      "worktree_bytes": 98,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "0b02896b02178f4ba64a04d957c8aa2b2869d7d5",
+      "index_sha256": "69bcee1a6735ab202825f1063747cacb7356503c638525990c6b6c4719c1fbcf",
+      "worktree_sha256": "69bcee1a6735ab202825f1063747cacb7356503c638525990c6b6c4719c1fbcf",
+      "index_bytes": 4841,
+      "worktree_bytes": 4841,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/used-state-after-down.json",
+      "mode": "100644",
+      "index_blob_oid": "e0f044607669b1bb050f165dd72c94620cdbb419",
+      "index_sha256": "a0f09c0b17f0b7929873ca65c23b48da8615cc9542894075265319d216c2f94a",
+      "worktree_sha256": "a0f09c0b17f0b7929873ca65c23b48da8615cc9542894075265319d216c2f94a",
+      "index_bytes": 211736,
+      "worktree_bytes": 211736,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/used-state-after-up.json",
+      "mode": "100644",
+      "index_blob_oid": "e0f044607669b1bb050f165dd72c94620cdbb419",
+      "index_sha256": "a0f09c0b17f0b7929873ca65c23b48da8615cc9542894075265319d216c2f94a",
+      "worktree_sha256": "a0f09c0b17f0b7929873ca65c23b48da8615cc9542894075265319d216c2f94a",
+      "index_bytes": 211736,
+      "worktree_bytes": 211736,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/used-state-before.json",
+      "mode": "100644",
+      "index_blob_oid": "e0f044607669b1bb050f165dd72c94620cdbb419",
+      "index_sha256": "a0f09c0b17f0b7929873ca65c23b48da8615cc9542894075265319d216c2f94a",
+      "worktree_sha256": "a0f09c0b17f0b7929873ca65c23b48da8615cc9542894075265319d216c2f94a",
+      "index_bytes": 211736,
+      "worktree_bytes": 211736,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/corrections/review-ready/self-review-20-gates.json",
+      "mode": "100644",
+      "index_blob_oid": "8c192082dace6d9263344d0e72e435b883c570a6",
+      "index_sha256": "97cd3756986970e7e06ca50e66aee1dc213f5e9618b8e791c644289b2991b510",
+      "worktree_sha256": "6feabbcd1a5cb8f0a493678cea246cf1ffa95bb09353a14b38de8a6f9492796c",
+      "index_bytes": 9861,
+      "worktree_bytes": 10068,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/fixtures/encoded.mp3",
+      "mode": "100644",
+      "index_blob_oid": "acac476b6b45d3a50ca659af34560a375a91c11e",
+      "index_sha256": "ca503053a5d86bd46d01782c9d4687b2c6f68dbdc8177afcc647ba25d09b8d70",
+      "worktree_sha256": "ca503053a5d86bd46d01782c9d4687b2c6f68dbdc8177afcc647ba25d09b8d70",
+      "index_bytes": 81068,
+      "worktree_bytes": 81068,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/fixtures/encoded.mp4",
+      "mode": "100644",
+      "index_blob_oid": "b1f9abe05cbecb9931831128536e69a835e69622",
+      "index_sha256": "43aa9febb1632541057e0e7e57acfd0d2e9ce024160a0e09d1cc6e28274d7ddf",
+      "worktree_sha256": "43aa9febb1632541057e0e7e57acfd0d2e9ce024160a0e09d1cc6e28274d7ddf",
+      "index_bytes": 52247,
+      "worktree_bytes": 52247,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/fixtures/encoded.wav",
+      "mode": "100644",
+      "index_blob_oid": "8f73842f6bd635aa336b293c381612f96822d007",
+      "index_sha256": "1e4319ba00c7fdeede85d65ab962cf0fd30ca91b18099bcb9c4416ee0a1f5ff6",
+      "worktree_sha256": "1e4319ba00c7fdeede85d65ab962cf0fd30ca91b18099bcb9c4416ee0a1f5ff6",
+      "index_bytes": 480078,
+      "worktree_bytes": 480078,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/gate-receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "d09e87e387542b5666e0e5e1f4ab646c060f0548",
+      "index_sha256": "65f03f3bb6056e4ecdb2751ea07f561f56df74a0aa7c9211d564f2c66c328d3e",
+      "worktree_sha256": "65f03f3bb6056e4ecdb2751ea07f561f56df74a0aa7c9211d564f2c66c328d3e",
+      "index_bytes": 1645,
+      "worktree_bytes": 1645,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/manifest.json",
+      "mode": "100644",
+      "index_blob_oid": "05a55ef2b0676c68c1061674002bce88a21608bc",
+      "index_sha256": "d49227393aab6e32f2a02512dc79417ce3bed0872f37eb6ab448e0471981227e",
+      "worktree_sha256": "d49227393aab6e32f2a02512dc79417ce3bed0872f37eb6ab448e0471981227e",
+      "index_bytes": 74156,
+      "worktree_bytes": 74156,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/native-receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "254ae8fb5a2909f64debd7f64938957d910b671f",
+      "index_sha256": "29cfba2a411ff13d6f5dc5313b69721e78e8cdc72b1cb1d01d7bb1b7135d2ed7",
+      "worktree_sha256": "29cfba2a411ff13d6f5dc5313b69721e78e8cdc72b1cb1d01d7bb1b7135d2ed7",
+      "index_bytes": 10683,
+      "worktree_bytes": 10683,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/preview-lip_sync.png",
+      "mode": "100644",
+      "index_blob_oid": "bb3080919d2ba8f15757a1bf85579f91126781ce",
+      "index_sha256": "97089e0c210053ec402100ba44e0901c39fc1ee9506a91186f18e0da89aca258",
+      "worktree_sha256": "97089e0c210053ec402100ba44e0901c39fc1ee9506a91186f18e0da89aca258",
+      "index_bytes": 150158,
+      "worktree_bytes": 150158,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/preview-talking_head.png",
+      "mode": "100644",
+      "index_blob_oid": "f778dd3cfa71be223f6939eceebf834491ff609c",
+      "index_sha256": "f4144a0344626baad27ba97df28ad9508464fa2a4068d559b9a462be37c5ef93",
+      "worktree_sha256": "f4144a0344626baad27ba97df28ad9508464fa2a4068d559b9a462be37c5ef93",
+      "index_bytes": 150579,
+      "worktree_bytes": 150579,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts-contracts-database-foundation-image.json",
+      "mode": "100644",
+      "index_blob_oid": "4f5a2a2a976fca9acef6c9efd6ca4e276c91c51f",
+      "index_sha256": "431b4aef2bc3f0848d71442cad72f328a5a1e8d36dff957f7faea59dad01aeca",
+      "worktree_sha256": "431b4aef2bc3f0848d71442cad72f328a5a1e8d36dff957f7faea59dad01aeca",
+      "index_bytes": 574,
+      "worktree_bytes": 574,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts-contracts-foundation-images-segmentation-design-motion-video-database.json",
+      "mode": "100644",
+      "index_blob_oid": "bc380b35761a96e4bcde7617d25de230c15b52f5",
+      "index_sha256": "fe8a818414999f3f392da859a0330e40b85cdaf8c0927c6527b6b9715fb7fae5",
+      "worktree_sha256": "fe8a818414999f3f392da859a0330e40b85cdaf8c0927c6527b6b9715fb7fae5",
+      "index_bytes": 880,
+      "worktree_bytes": 880,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts-contracts-foundation.json",
+      "mode": "100644",
+      "index_blob_oid": "c33e7e02b041e5c6c47ae95ea671bf52aeb7b595",
+      "index_sha256": "6da99ed04711dd86651a81a5c47e6813b68828ebfff6db4b8cb9f745e2599b4e",
+      "worktree_sha256": "6da99ed04711dd86651a81a5c47e6813b68828ebfff6db4b8cb9f745e2599b4e",
+      "index_bytes": 504,
+      "worktree_bytes": 504,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts-contracts.json",
+      "mode": "100644",
+      "index_blob_oid": "f65c74da43c9c39ee4fe667718019db3782c46ee",
+      "index_sha256": "d601a3db36556c1383cb646bcdbf6ea9339cb96156be0822a20fa9e7250e0cce",
+      "worktree_sha256": "d601a3db36556c1383cb646bcdbf6ea9339cb96156be0822a20fa9e7250e0cce",
+      "index_bytes": 192,
+      "worktree_bytes": 192,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts-design-motion.json",
+      "mode": "100644",
+      "index_blob_oid": "8e8d158d5228406a91e62473b0229a536630a219",
+      "index_sha256": "2b6a0bf4969d7cf89127f18cbc6821059b1ad5f3a1ad5f6bee32ec15e64fc18f",
+      "worktree_sha256": "2b6a0bf4969d7cf89127f18cbc6821059b1ad5f3a1ad5f6bee32ec15e64fc18f",
+      "index_bytes": 351,
+      "worktree_bytes": 351,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts-image-segmentation.json",
+      "mode": "100644",
+      "index_blob_oid": "6ec53a334b9838f115577a4f7953e20ebc44a641",
+      "index_sha256": "9978f93bd40f3707461c4bd505764f666c6f5c6d736810a355d2a14e31da59c5",
+      "worktree_sha256": "9978f93bd40f3707461c4bd505764f666c6f5c6d736810a355d2a14e31da59c5",
+      "index_bytes": 330,
+      "worktree_bytes": 330,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts-video-segmentation.json",
+      "mode": "100644",
+      "index_blob_oid": "9ee0b4103c091d0af8a3b5e40243766196e7a015",
+      "index_sha256": "a31f7ae18a629e8549496c3601bed76388026e26ae227bde01d93ff1f8e25171",
+      "worktree_sha256": "a31f7ae18a629e8549496c3601bed76388026e26ae227bde01d93ff1f8e25171",
+      "index_bytes": 352,
+      "worktree_bytes": 352,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/regression/receipts.json",
+      "mode": "100644",
+      "index_blob_oid": "26d8544fd8974e95eb3a2c5ca7b80e0ad575b56b",
+      "index_sha256": "f88ff6b469ecfc014cb86cea6e6b3754f5df31665bac4f06c73583d3ae442581",
+      "worktree_sha256": "f88ff6b469ecfc014cb86cea6e6b3754f5df31665bac4f06c73583d3ae442581",
+      "index_bytes": 1124,
+      "worktree_bytes": 1124,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/rtl-1280.png",
+      "mode": "100644",
+      "index_blob_oid": "3eae20ed77189c2eb10fce308607dd6ec6fe28bd",
+      "index_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "worktree_sha256": "bba0e6cc6489726f089743af48e65269415602bc5a81092f9c116e07f4c6c724",
+      "index_bytes": 135577,
+      "worktree_bytes": 135577,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/rtl-390.png",
+      "mode": "100644",
+      "index_blob_oid": "fd4542bcb130628bd00a5bdaefdf6f5ce5b70b88",
+      "index_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "worktree_sha256": "b2078453f192f2d1a22f66659218b5d328b9714c50c85bebb3dbdc514aa13728",
+      "index_bytes": 132220,
+      "worktree_bytes": 132220,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/rtl-lip-sync.png",
+      "mode": "100644",
+      "index_blob_oid": "208f489a88d7c371383c36c2b5d58334e7bf9d9d",
+      "index_sha256": "09a9c858856f36d344a76315f802c27175f2e21769cc9c100e73d96c19f40a3f",
+      "worktree_sha256": "09a9c858856f36d344a76315f802c27175f2e21769cc9c100e73d96c19f40a3f",
+      "index_bytes": 53100,
+      "worktree_bytes": 53100,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/29953993-d1d0-43d3-aef4-5ad7b0c29d65/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "f40648a1ce85e1df4977b9190f993b1cb71f746a",
+      "index_sha256": "6c266ac6c3b527bc88e8a9e92c090c9bb5f30a56059e0fa41649bb3914ee90dc",
+      "worktree_sha256": "6c266ac6c3b527bc88e8a9e92c090c9bb5f30a56059e0fa41649bb3914ee90dc",
+      "index_bytes": 4761,
+      "worktree_bytes": 4761,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/5f069ad0-4616-4fa6-97eb-0bd0fde7eaee/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "85918cc64e8de65fd203f9ae679758e751d1e3c8",
+      "index_sha256": "9c870327cf3a66fbfe6fb51ff86d689e42c63ebac8a331665d73654c8d082c1a",
+      "worktree_sha256": "9c870327cf3a66fbfe6fb51ff86d689e42c63ebac8a331665d73654c8d082c1a",
+      "index_bytes": 4576,
+      "worktree_bytes": 4576,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/6751629f-eddb-4c52-9318-ace3b33469f1/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "865e8acc0a8dbdf3de67b98cbfca41f75a47fcc3",
+      "index_sha256": "f688e441d5677131d1711bbfa97ee13b79adb218c9c2498c3e266b4816d2b9d3",
+      "worktree_sha256": "f688e441d5677131d1711bbfa97ee13b79adb218c9c2498c3e266b4816d2b9d3",
+      "index_bytes": 4761,
+      "worktree_bytes": 4761,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/a5da98c2-2304-4ac7-83a5-6cac05329acd/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "b2a92331e0cafe44f8c36fce2db55fae872b3407",
+      "index_sha256": "a5803b3289eee44f5ed5bae9dfbb19a40f1cffe59781c4354a46be78b40389fd",
+      "worktree_sha256": "a5803b3289eee44f5ed5bae9dfbb19a40f1cffe59781c4354a46be78b40389fd",
+      "index_bytes": 5151,
+      "worktree_bytes": 5151,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/aad377c6-3517-440e-a2b3-37f134d3ad5a/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "76a642be8cbf3c4a27fb245a9c48c79639c74cb7",
+      "index_sha256": "bb1bc23149191557f733a0031550a8a382ecc9980307fa25451800872220d3d3",
+      "worktree_sha256": "bb1bc23149191557f733a0031550a8a382ecc9980307fa25451800872220d3d3",
+      "index_bytes": 4761,
+      "worktree_bytes": 4761,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/abeb2e14-f37e-43ef-b895-1687a76e6099/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "56220bc3c4d61975fa6469bf475d14263e0c9333",
+      "index_sha256": "44fa8683cbb38e34422c019e91c1bc8b5ee072600fcc954c3b315340c840cd56",
+      "worktree_sha256": "44fa8683cbb38e34422c019e91c1bc8b5ee072600fcc954c3b315340c840cd56",
+      "index_bytes": 307,
+      "worktree_bytes": 307,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/bcef9d09-d633-48cd-b3d6-2e896dfc53da/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "69b810dbe13bccc1fb95fc35c27fe326755ac604",
+      "index_sha256": "378b4a6c47ba0d4a70ff4a793a04aa3315f15a5f4793ecda04615fa72f226f46",
+      "worktree_sha256": "378b4a6c47ba0d4a70ff4a793a04aa3315f15a5f4793ecda04615fa72f226f46",
+      "index_bytes": 5925,
+      "worktree_bytes": 5925,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/bf230bed-1122-4632-91da-e5d37b7d7b73/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "bddb4f8fad66e6d7845fae438e672bf3ce9f3b50",
+      "index_sha256": "3dd44f71151df8e79f18350ca3df85f1ce9f7c60ffa7121cd8605f297074d532",
+      "worktree_sha256": "3dd44f71151df8e79f18350ca3df85f1ce9f7c60ffa7121cd8605f297074d532",
+      "index_bytes": 5280,
+      "worktree_bytes": 5280,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/c2238772-15bb-448c-8f4e-4a9229fc3b7d/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "a4e5d341c6393c9e7d8adf4636e238f6bf2ae759",
+      "index_sha256": "e343a6c49ceefc6cf7a4ff96d46dce9af9262d2c1e1e6f346bc731aee8d55097",
+      "worktree_sha256": "e343a6c49ceefc6cf7a4ff96d46dce9af9262d2c1e1e6f346bc731aee8d55097",
+      "index_bytes": 5095,
+      "worktree_bytes": 5095,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/c7cd7d28-fc45-43ed-92f3-0c069db113ee/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "a1223906547ae3804603db758de0a65a694b8b09",
+      "index_sha256": "9c41a98702c2aedb68a08023131ae0ad0c6dac9dff2978108df9c4cc8d12a373",
+      "worktree_sha256": "9c41a98702c2aedb68a08023131ae0ad0c6dac9dff2978108df9c4cc8d12a373",
+      "index_bytes": 4761,
+      "worktree_bytes": 4761,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/ce432ed6-ac22-4628-9782-227da56ea5d0/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "ad30d41252139289889dfb59ea75627865bc528e",
+      "index_sha256": "6ccb8db55753682df257173f862500f8962e8006d83b6a6652ab26cca34a499c",
+      "worktree_sha256": "6ccb8db55753682df257173f862500f8962e8006d83b6a6652ab26cca34a499c",
+      "index_bytes": 4576,
+      "worktree_bytes": 4576,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/d567a118-9548-4fe7-a125-ddd36d549249/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "c15b2e986be8e3b52a2d96fe2e798de93faf9030",
+      "index_sha256": "a8fd4b41315d9ce9fd601025a5d97cd9d0a3d065e80b866cc991d7ddfda13409",
+      "worktree_sha256": "a8fd4b41315d9ce9fd601025a5d97cd9d0a3d065e80b866cc991d7ddfda13409",
+      "index_bytes": 5267,
+      "worktree_bytes": 5267,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/e8eed474-e302-434f-9f49-860a6bf8c90d/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "cb7d9f0336a162b55488bf8d0abd53d1c1c406f0",
+      "index_sha256": "112da85127dfdac2cb1b47937bae2bf8085b8827cf8f7a7954bccb5f02070a86",
+      "worktree_sha256": "112da85127dfdac2cb1b47937bae2bf8085b8827cf8f7a7954bccb5f02070a86",
+      "index_bytes": 4576,
+      "worktree_bytes": 4576,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/runs/f9f34640-009f-4d29-bc01-499b7c306d12/runner.json",
+      "mode": "100644",
+      "index_blob_oid": "4deedd329439ee001125a67d3db8556f75118207",
+      "index_sha256": "656c31029fedd8106e7302648c24b6ecfe13e373d3894a827e2b22d7c58ab593",
+      "worktree_sha256": "656c31029fedd8106e7302648c24b6ecfe13e373d3894a827e2b22d7c58ab593",
+      "index_bytes": 5369,
+      "worktree_bytes": 5369,
+      "representation": "exact"
+    },
+    {
+      "path": "evaluation/creative-talking-head-v1/self-review-20-gates.json",
+      "mode": "100644",
+      "index_blob_oid": "15a0b24feb8e48fae2e5d94d408b0ba0a9f70d1c",
+      "index_sha256": "98bd074ce28bf31f10745941d4204ff47e662a501dfb20f5c172a5991109be82",
+      "worktree_sha256": "98bd074ce28bf31f10745941d4204ff47e662a501dfb20f5c172a5991109be82",
+      "index_bytes": 6299,
+      "worktree_bytes": 6299,
+      "representation": "exact"
+    },
+    {
+      "path": "packages/contracts/schemas/creative/adapter-envelope.v1.schema.json",
+      "mode": "100644",
+      "index_blob_oid": "748a6837fed7aaa7c9af5791a9288dad77ffc286",
+      "index_sha256": "df1b10e8f4e49225c8dffe1c1ed8d9148abe8d17058f06c1a4b037ad8519fe39",
+      "worktree_sha256": "152838066b110448721cb8ad453b261e6f56c4693fe33c4433501b48385a3a7d",
+      "index_bytes": 1209,
+      "worktree_bytes": 1229,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/contracts/schemas/creative/asset-metadata.v1.schema.json",
+      "mode": "100644",
+      "index_blob_oid": "ca20f6669802a30d9e34f824653df8f33e20d39c",
+      "index_sha256": "ce846894568e4716cbc451452b1ccc3d8e13873caaa0d7590b81b1bb4ffdd2a8",
+      "worktree_sha256": "339f1401e90ee257fa012ad8b1a4e6f8adb723a1cd27eb98346d5d8782ecffef",
+      "index_bytes": 864,
+      "worktree_bytes": 879,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/contracts/schemas/creative/create-job-request.v1.schema.json",
+      "mode": "100644",
+      "index_blob_oid": "e499944214b5e52d0f83ca72d8290ece178f022e",
+      "index_sha256": "8c0af63ffd50856ce2088279aea8c0361a3f434e6637b5e57cca09dfff4aa771",
+      "worktree_sha256": "d9256b71bec623588de633df44b91d4bc0a4d6da11266cb9c58a8cdad016e861",
+      "index_bytes": 1293,
+      "worktree_bytes": 1313,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/contracts/schemas/creative/job-record.v1.schema.json",
+      "mode": "100644",
+      "index_blob_oid": "7524dde31ca8fefbddd7a8ba9c48cec2ea486e0e",
+      "index_sha256": "c934f3eec053178f6605153c5e3c89c6c5dd35b1d5fc7543cacbd826d367c43a",
+      "worktree_sha256": "79c748a86baf1a4607ac56340045ae8f356d2d6ea14f0266749800b89d50fe6b",
+      "index_bytes": 1481,
+      "worktree_bytes": 1503,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/creative-runtime/adapters/heygen.mjs",
+      "mode": "100644",
+      "index_blob_oid": "325d69a99b968f349bb0f56d7a471e74970e30db",
+      "index_sha256": "01fba2d11ae31477f619136c9f300a826efa18f95015cf0bcc170a5dc8de2ff3",
+      "worktree_sha256": "01fba2d11ae31477f619136c9f300a826efa18f95015cf0bcc170a5dc8de2ff3",
+      "index_bytes": 2739,
+      "worktree_bytes": 2739,
+      "representation": "exact"
+    },
+    {
+      "path": "packages/creative-runtime/adapters/http-image.mjs",
+      "mode": "100644",
+      "index_blob_oid": "0e9e19d1ef5037ab865ec60ad9f298cad2696488",
+      "index_sha256": "9cfacfa9d329ec7c05744bd4b141b52946f2af277dd707f0593d2a7bf18a1300",
+      "worktree_sha256": "aa97c3e5259e025af82da844b7675963f508085661c80f824a8a4462e6785a4c",
+      "index_bytes": 16406,
+      "worktree_bytes": 16768,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/creative-runtime/adapters/provider-json.mjs",
+      "mode": "100644",
+      "index_blob_oid": "1ddbe7b416e83bbd3b67c4c791d674547f9553c7",
+      "index_sha256": "14c84b23317f8923022f2875da81f7c0012b0c9b0da63ff6aaf7d1945e12755e",
+      "worktree_sha256": "14c84b23317f8923022f2875da81f7c0012b0c9b0da63ff6aaf7d1945e12755e",
+      "index_bytes": 733,
+      "worktree_bytes": 733,
+      "representation": "exact"
+    },
+    {
+      "path": "packages/creative-runtime/adapters/sync.mjs",
+      "mode": "100644",
+      "index_blob_oid": "4bc4cef9fa327dd2f99b58827298f06b07932765",
+      "index_sha256": "ea0256b8cc31006ba67cc802aa81f527d788bc1f89c9b99c3fb7c72ae75ffd69",
+      "worktree_sha256": "ea0256b8cc31006ba67cc802aa81f527d788bc1f89c9b99c3fb7c72ae75ffd69",
+      "index_bytes": 2955,
+      "worktree_bytes": 2955,
+      "representation": "exact"
+    },
+    {
+      "path": "packages/creative-runtime/capabilities.mjs",
+      "mode": "100644",
+      "index_blob_oid": "b18b22d36736a31b79d93d8adf42eba72a154b9f",
+      "index_sha256": "15733b3d22b63e7efed521889aa839efef7ea4491711b20f504bf37a9dd685ea",
+      "worktree_sha256": "1e54bca13dd98464fb6fc1c1ae367fa014439b8c492fa3d5a5f1ab183d78d462",
+      "index_bytes": 1754,
+      "worktree_bytes": 1782,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/creative-runtime/package.json",
+      "mode": "100644",
+      "index_blob_oid": "81aa91b55456020cb92d54cc048f270ec71c83ff",
+      "index_sha256": "59f2f489f21105a0098d0f1f628f232591f06deb891034e918e4bff6a5458b13",
+      "worktree_sha256": "bc1e4f3747dc11befb9a4d8629eca17371ffe87c1c3ae2fdc41ea83c8402d778",
+      "index_bytes": 1439,
+      "worktree_bytes": 1482,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/creative-runtime/render/mp4.d.ts",
+      "mode": "100644",
+      "index_blob_oid": "601a69af94a6b9ad7cb769897431499f511eb435",
+      "index_sha256": "bf68ec9cfbc009d4f68bec97fd9456fd17efd1dd5bf1ee10de959a6ef53f1465",
+      "worktree_sha256": "bf68ec9cfbc009d4f68bec97fd9456fd17efd1dd5bf1ee10de959a6ef53f1465",
+      "index_bytes": 1289,
+      "worktree_bytes": 1289,
+      "representation": "exact"
+    },
+    {
+      "path": "packages/creative-runtime/render/mp4.mjs",
+      "mode": "100644",
+      "index_blob_oid": "105b20ea6e988f61b741bf3c633b50dc972a4911",
+      "index_sha256": "4d58dc598e534c2529aaa90cc86dbaec2a5327b857932f6cccdd7af9eb402919",
+      "worktree_sha256": "3b963c1a9ef56e046c3a3e770e3eb6d2719808c9aae25bd450406447f934d35d",
+      "index_bytes": 22677,
+      "worktree_bytes": 23182,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/creative-runtime/render/presenter-worker.mjs",
+      "mode": "100644",
+      "index_blob_oid": "68d1bd6749e9ada52506de26ec5913213c7fb87d",
+      "index_sha256": "34016ace4189dc6c4497afd932200c4d5da7d5785772758ebeb9e63622a31d08",
+      "worktree_sha256": "34016ace4189dc6c4497afd932200c4d5da7d5785772758ebeb9e63622a31d08",
+      "index_bytes": 12452,
+      "worktree_bytes": 12452,
+      "representation": "exact"
+    },
+    {
+      "path": "packages/database/migrations/0046_creative_talking_head.down.sql",
+      "mode": "100644",
+      "index_blob_oid": "b8f48e02e012d208edd140e236f0561d3d6a58c0",
+      "index_sha256": "91d26b0c25bfc144be89205b1f31dde2a0b0a3ef4ed7b4ae33f34eb6bc333f49",
+      "worktree_sha256": "147cc5fe1a91f95f4b6c19c657c27ba7cd515692b3c83e10b472b74a6108af98",
+      "index_bytes": 10215,
+      "worktree_bytes": 10330,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "packages/database/migrations/0046_creative_talking_head.up.sql",
+      "mode": "100644",
+      "index_blob_oid": "bed55dd7c23c6a5b8e1b17a59d6758018a2fd1c6",
+      "index_sha256": "f11f9657da01658a95aa7d8855616b9a083f1fc83f9c13081caab7afd059d2f3",
+      "worktree_sha256": "14960e95e4f1529a39631846225fb6135d664d79505c15415a56b117aba1e6b3",
+      "index_bytes": 35686,
+      "worktree_bytes": 36030,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "scripts/creative-foundation-integration.mjs",
+      "mode": "100644",
+      "index_blob_oid": "f054e6c1d60ff31970bafe7299297b05443a75fa",
+      "index_sha256": "96a0e1104f945fc0d59c214abd765570cf26547e4dd5363403b3ad3905d9c97e",
+      "worktree_sha256": "2f5cce6369a783931c36285af929b2c12df53cd1c6f033cd7ef3746d3cc87496",
+      "index_bytes": 33452,
+      "worktree_bytes": 34037,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "scripts/creative-presenter-review-sql.mjs",
+      "mode": "100644",
+      "index_blob_oid": "260cebad009816d1de76a50dbd1d302d31ca901f",
+      "index_sha256": "7c78da32dc3bb819656fdc0b88e497133162f47aab094c2aa9b350a229f57257",
+      "worktree_sha256": "7c78da32dc3bb819656fdc0b88e497133162f47aab094c2aa9b350a229f57257",
+      "index_bytes": 8387,
+      "worktree_bytes": 8387,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-presenter-worker.mjs",
+      "mode": "100644",
+      "index_blob_oid": "e2c756c205ddd22734b963cbee2dc1d875f59f6c",
+      "index_sha256": "a46c0774f821e1a588bf3fdc731a08757ee2644f24328207f0603173b7487dae",
+      "worktree_sha256": "a46c0774f821e1a588bf3fdc731a08757ee2644f24328207f0603173b7487dae",
+      "index_bytes": 2943,
+      "worktree_bytes": 2943,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-talking-head-acceptance.mjs",
+      "mode": "100644",
+      "index_blob_oid": "6256f70deed303238673eb0fc71bc51353c663a8",
+      "index_sha256": "9e503d1e366f3c7ce3327e762a579303587ea36efc20ab9975945f130f59699e",
+      "worktree_sha256": "9e503d1e366f3c7ce3327e762a579303587ea36efc20ab9975945f130f59699e",
+      "index_bytes": 6634,
+      "worktree_bytes": 6634,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-talking-head-browser.mjs",
+      "mode": "100644",
+      "index_blob_oid": "85eb9e466c91488b214b55aaf94d47431da079b9",
+      "index_sha256": "cb96bfe72872315d642d99c61ee4fc00b3e007c3c0a86aaaa1d9de97c013069b",
+      "worktree_sha256": "cb96bfe72872315d642d99c61ee4fc00b3e007c3c0a86aaaa1d9de97c013069b",
+      "index_bytes": 7154,
+      "worktree_bytes": 7154,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-talking-head-crash-probe.mjs",
+      "mode": "100644",
+      "index_blob_oid": "239377f7c3c84ee0341c5c05b1107aaac15ad147",
+      "index_sha256": "0ec2c81cc61a67df44e4736337659c186b8012a90c63d258c450eb3e7507e354",
+      "worktree_sha256": "0ec2c81cc61a67df44e4736337659c186b8012a90c63d258c450eb3e7507e354",
+      "index_bytes": 1375,
+      "worktree_bytes": 1375,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-talking-head-integration.mjs",
+      "mode": "100644",
+      "index_blob_oid": "821e4601d929075bc898814184cd8112bdc8c795",
+      "index_sha256": "391701f014865f236b0169720734b07351fa3f9a2b60ebf3094d21784cf92628",
+      "worktree_sha256": "391701f014865f236b0169720734b07351fa3f9a2b60ebf3094d21784cf92628",
+      "index_bytes": 61225,
+      "worktree_bytes": 61225,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-talking-head-regression.mjs",
+      "mode": "100644",
+      "index_blob_oid": "c9f63199193adb7095d8231adde2b136f2bdf94d",
+      "index_sha256": "75b5faba785cce674c54bf5ebb15d05b06479c672897f5a655806920042e1c79",
+      "worktree_sha256": "75b5faba785cce674c54bf5ebb15d05b06479c672897f5a655806920042e1c79",
+      "index_bytes": 4879,
+      "worktree_bytes": 4879,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-talking-head-sql.mjs",
+      "mode": "100644",
+      "index_blob_oid": "27be8822308f9420af194b236845e2e81438d88f",
+      "index_sha256": "9f60a9c30615e9c78cf59ba21fb2c5d79b8768e1c357ed12dda90aff0c7987a4",
+      "worktree_sha256": "9f60a9c30615e9c78cf59ba21fb2c5d79b8768e1c357ed12dda90aff0c7987a4",
+      "index_bytes": 1172,
+      "worktree_bytes": 1172,
+      "representation": "exact"
+    },
+    {
+      "path": "scripts/creative-video-integration.mjs",
+      "mode": "100644",
+      "index_blob_oid": "6d55d96d202443da06992ed3785044e1e3fc24fa",
+      "index_sha256": "671ac09baea75a809b0587f3b2d2e41b4ec3ce4075bbcd131700b176d5d6e300",
+      "worktree_sha256": "e5c984396ca3e1730d1d831ec3c8b48c72e33d359079c8153e400c465c6db301",
+      "index_bytes": 42219,
+      "worktree_bytes": 42984,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "tests/creative-motion.test.mjs",
+      "mode": "100644",
+      "index_blob_oid": "9962125d5759e41d4d4c53814c00646591438fa0",
+      "index_sha256": "c03e0f555a0ce5c8c7e8eb059a4417f8c1bdc1e788614979fd61ff65aef287c0",
+      "worktree_sha256": "8e0d7c8910978e95540137649def9aededc6c64fa6525275491f606b13df2bf3",
+      "index_bytes": 32246,
+      "worktree_bytes": 33018,
+      "representation": "Git CRLF normalization only"
+    },
+    {
+      "path": "tests/creative-presenter-review.test.mjs",
+      "mode": "100644",
+      "index_blob_oid": "2e00c59345ad15e3a4f530010249f65a37b46702",
+      "index_sha256": "b8caf406c8705b9a7bb6047b774b4cf45e2f66c5866ae19ad3651726bef7cd33",
+      "worktree_sha256": "b8caf406c8705b9a7bb6047b774b4cf45e2f66c5866ae19ad3651726bef7cd33",
+      "index_bytes": 7411,
+      "worktree_bytes": 7411,
+      "representation": "exact"
+    },
+    {
+      "path": "tests/creative-talking-head.test.mjs",
+      "mode": "100644",
+      "index_blob_oid": "89dcdefa135617423f8f87424a10f32d9732d20c",
+      "index_sha256": "25a6a6585e535b0ea9528f6366539d9fe058c0c9620fe4e0794b2b9cb151aaf7",
+      "worktree_sha256": "25a6a6585e535b0ea9528f6366539d9fe058c0c9620fe4e0794b2b9cb151aaf7",
+      "index_bytes": 7496,
+      "worktree_bytes": 7496,
+      "representation": "exact"
+    },
+    {
+      "path": "tests/creative-video.test.mjs",
+      "mode": "100644",
+      "index_blob_oid": "485904732ce1f20a3e59ee8a5f5e0a6f98ca1df0",
+      "index_sha256": "a8f4fc9d3f25443f3b8d8bb3104185b7e78c584c4c26e45941ecf82f1b23e52a",
+      "worktree_sha256": "a648cc97e3796e7e707b97df095dcb6e965b75359097e55eeb10d56b9e3b297d",
+      "index_bytes": 28880,
+      "worktree_bytes": 29504,
+      "representation": "Git CRLF normalization only"
+    }
+  ],
+  "manifest_path": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tanaghom-p5-decision\\evaluation\\creative-talking-head-v1\\corrections\\review-ready\\manifest.json",
+  "manifest_sha256": "8da5cd982b70511f638ebfaca7012b8a6b9d8e9dd721647aed2d40e55ce7b693",
+  "gates": {
+    "scope": "Actual recovered current-byte executions; no independent approval",
+    "commands": [
+      {
+        "command": "npm run check",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/check-final.log.txt"
+      },
+      {
+        "command": "npm test",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/unit.log.txt"
+      },
+      {
+        "command": "npm run typecheck:dashboard",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck.log.txt"
+      },
+      {
+        "command": "npm run build:dashboard",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/build.log.txt"
+      },
+      {
+        "command": "npm audit --audit-level=moderate --json",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/audit-moderate.json"
+      },
+      {
+        "command": "npm run typecheck:dashboard (after generated import restoration)",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/typecheck-restored.log.txt"
+      },
+      {
+        "command": "node --test tests/creative-presenter-review.test.mjs tests/creative-talking-head.test.mjs tests/creative-motion.test.mjs tests/creative-video.test.mjs",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/targeted.log.txt"
+      },
+      {
+        "command": "node scripts/creative-talking-head-acceptance.mjs --browser",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/acceptance.log.txt"
+      },
+      {
+        "command": "node scripts/creative-talking-head-regression.mjs contracts database foundation image",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-a.log.txt"
+      },
+      {
+        "command": "node scripts/creative-talking-head-regression.mjs design motion",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-b.log.txt"
+      },
+      {
+        "command": "node scripts/creative-talking-head-regression.mjs video segmentation",
+        "exit": 0,
+        "receipt": "evaluation/creative-talking-head-v1/corrections/review-ready/native/regression-c.log.txt"
+      }
+    ],
+    "unit_counts": {
+      "tests": 279,
+      "pass": 279,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "targeted_counts": {
+      "tests": 58,
+      "pass": 58,
+      "fail": 0,
+      "cancelled": 0,
+      "skipped": 0
+    },
+    "unique_acceptance_cases": 82,
+    "loopback_creates": 39,
+    "loopback_queries": 42,
+    "migration_up_files": 43,
+    "wrapper_gates": 51,
+    "review_sql_pass_labels": 43,
+    "regression_suites": [
+      {
+        "suite": "contracts",
+        "exit": 0,
+        "baseline": "0046_creative_talking_head",
+        "passes": 52
+      },
+      {
+        "suite": "database",
+        "exit": 0,
+        "target": "0034_agency_pilot_integration",
+        "passes": 1,
+        "error": null
+      },
+      {
+        "suite": "foundation",
+        "exit": 0,
+        "target": null,
+        "passes": 18,
+        "error": null
+      },
+      {
+        "suite": "image",
+        "exit": 0,
+        "target": null,
+        "passes": 15,
+        "error": null
+      },
+      {
+        "suite": "design",
+        "exit": 0,
+        "target": "0039_creative_design_render",
+        "passes": 18,
+        "error": null
+      },
+      {
+        "suite": "motion",
+        "exit": 0,
+        "target": "0040_creative_motion_render",
+        "passes": 17,
+        "error": null
+      },
+      {
+        "suite": "video",
+        "exit": 0,
+        "target": "0044_creative_video_lane",
+        "passes": 21,
+        "error": null
+      },
+      {
+        "suite": "segmentation",
+        "exit": 0,
+        "target": "0045_creative_segmentation",
+        "passes": 14,
+        "error": null
+      }
+    ],
+    "native_runner": "evaluation/creative-talking-head-v1/corrections/review-ready/runs/5498be00-09d1-43c7-93a4-261e892987df/runner.json",
+    "historical_monolithic_timeout": "Tool deadline; no successful wrapper exit claimed. Labeled leftover removed; all suites rerun in bounded final batches."
+  },
+  "verified_source_files": 568,
+  "verified_native_logs": 164,
+  "verified_worktree_index_equivalence": "exact or Git CRLF normalization only for every staged path",
+  "git_diff_cached_check_exit": 0,
+  "unstaged_tracked_diff": [],
+  "untracked_nonignored_files": [],
+  "independent_runtime_review": "PENDING required explicit PASS/FAIL at this hash",
+  "independent_database_review": "PENDING required explicit PASS/BLOCKED at this same hash",
+  "publication": "NONE; no commit/push/PR/merge",
+  "retained_historical_unlabeled_container": "67b85f4f1d492cabd52afc955eb7edf79aaf5d9b08d6bdb6ff668fd835eaa721",
+  "external_gates": "LEDGER ONLY / EXTERNAL ACCEPTANCE PENDING; flags default OFF"
+}

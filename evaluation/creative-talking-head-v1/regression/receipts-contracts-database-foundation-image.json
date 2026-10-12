@@ -1,0 +1,32 @@
+{
+  "scope": "OFFLINE DISPOSABLE SOURCE ONLY",
+  "receipts": [
+    {
+      "suite": "contracts",
+      "exit": 0,
+      "baseline": "0046_creative_talking_head",
+      "passes": 52
+    },
+    {
+      "suite": "database",
+      "exit": 0,
+      "target": "0034_agency_pilot_integration",
+      "passes": 1,
+      "error": null
+    },
+    {
+      "suite": "foundation",
+      "exit": 0,
+      "target": null,
+      "passes": 18,
+      "error": null
+    },
+    {
+      "suite": "image",
+      "exit": 0,
+      "target": null,
+      "passes": 15,
+      "error": null
+    }
+  ]
+}

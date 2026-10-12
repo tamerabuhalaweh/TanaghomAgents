@@ -1,0 +1,4 @@
+PASS contracts
+PASS database exit=0
+PASS foundation exit=0
+PASS image exit=0

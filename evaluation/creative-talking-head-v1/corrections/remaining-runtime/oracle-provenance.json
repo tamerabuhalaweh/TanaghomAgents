@@ -1,0 +1,39 @@
+{
+  "scope": "Same independent oracles unchanged RED -> final GREEN; no live provider",
+  "oracles": [
+    {
+      "original": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\security-probes.mjs",
+      "executed_copy": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\security-probes.mjs",
+      "staged_exact_source": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/oracles/security-probes.mjs.txt",
+      "sha256": "701f3476fd888778d86910d013104d2f09af27b182ba17ad4494a82e48b32d53"
+    },
+    {
+      "original": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-runtime-cycle1-review\\media-probes.mjs",
+      "executed_copy": "C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\p5-remaining-runtime-cycle1\\media-probes.mjs",
+      "staged_exact_source": "evaluation/creative-talking-head-v1/corrections/remaining-runtime/oracles/media-probes.mjs.txt",
+      "sha256": "d8bff99a1023feeeb468b1e84dfc9f5fc1e26966e8135b8c18e27afa7e74a43a"
+    }
+  ],
+  "red_exit": 1,
+  "red_counts": {
+    "tests": 19,
+    "pass": 10,
+    "fail": 9,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "final_green_exit": 0,
+  "final_green_counts": {
+    "tests": 19,
+    "pass": 19,
+    "fail": 0,
+    "skipped": 0,
+    "cancelled": 0
+  },
+  "strengthened_unit_file": "tests/creative-presenter-boundary.test.mjs",
+  "strengthened_unit_cases": 64,
+  "mixed_harness_red": "56 tests / 16 pass / 40 fail; moov insertion fixture assumption classified separately",
+  "corrected_harness_red": "56 tests / 22 pass / 34 fail; no weakened assertion",
+  "extra_track_red": "1 test / 0 pass / 1 fail",
+  "unallocated_cidr_red": "5 tests / 1 pass / 4 fail"
+}

@@ -1,0 +1,184 @@
+TAP version 13
+# Subtest: creative image lane migration is additive, guarded, and reversible
+ok 1 - creative image lane migration is additive, guarded, and reversible
+  ---
+  duration_ms: 16.0946
+  type: 'test'
+  ...
+# Subtest: image generation and fidelity contracts validate
+ok 2 - image generation and fidelity contracts validate
+  ---
+  duration_ms: 320.6126
+  type: 'test'
+  ...
+# Subtest: provider allowlist and presets are versioned, bounded, and commercial-clean
+ok 3 - provider allowlist and presets are versioned, bounded, and commercial-clean
+  ---
+  duration_ms: 11.6673
+  type: 'test'
+  ...
+# Subtest: http image adapter normalizes, allowlists, and classifies without network
+ok 4 - http image adapter normalizes, allowlists, and classifies without network
+  ---
+  duration_ms: 63.1642
+  type: 'test'
+  ...
+# Subtest: review round: ssrf guard, attempt lifecycle, version truth, operation truth, chroma segment
+ok 5 - review round: ssrf guard, attempt lifecycle, version truth, operation truth, chroma segment
+  ---
+  duration_ms: 216.3757
+  type: 'test'
+  ...
+# Subtest: local sharp pipeline renders, composes, and enhances deterministically
+ok 6 - local sharp pipeline renders, composes, and enhances deterministically
+  ---
+  duration_ms: 166.2604
+  type: 'test'
+  ...
+# Subtest: s3 adapter signs deterministically and round-trips objects
+ok 7 - s3 adapter signs deterministically and round-trips objects
+  ---
+  duration_ms: 7.8375
+  type: 'test'
+  ...
+# Subtest: artifact downloads pin resolved public destinations; loopback needs test mode
+ok 8 - artifact downloads pin resolved public destinations; loopback needs test mode
+  ---
+  duration_ms: 2.0421
+  type: 'test'
+  ...
+# Subtest: R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+ok 9 - R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+  ---
+  duration_ms: 30.96
+  type: 'test'
+  ...
+# Subtest: R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+ok 10 - R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+  ---
+  duration_ms: 2.1844
+  type: 'test'
+  ...
+# Subtest: R2 actual presenter fixture has media payload and sample extents
+ok 11 - R2 actual presenter fixture has media payload and sample extents
+  ---
+  duration_ms: 1.5907
+  type: 'test'
+  ...
+# Subtest: R2 rejects no-mdat of real encoded fixture
+ok 12 - R2 rejects no-mdat of real encoded fixture
+  ---
+  duration_ms: 0.7754
+  type: 'test'
+  ...
+# Subtest: R2 rejects empty-mdat of real encoded fixture
+ok 13 - R2 rejects empty-mdat of real encoded fixture
+  ---
+  duration_ms: 0.276
+  type: 'test'
+  ...
+# Subtest: R2 rejects dummy-mdat of real encoded fixture
+ok 14 - R2 rejects dummy-mdat of real encoded fixture
+  ---
+  duration_ms: 0.4037
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-offset of real encoded fixture
+ok 15 - R2 rejects bad-chunk-offset of real encoded fixture
+  ---
+  duration_ms: 0.4406
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-sample-size of real encoded fixture
+ok 16 - R2 rejects bad-sample-size of real encoded fixture
+  ---
+  duration_ms: 0.2491
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-map of real encoded fixture
+ok 17 - R2 rejects bad-chunk-map of real encoded fixture
+  ---
+  duration_ms: 0.4594
+  type: 'test'
+  ...
+# Subtest: R2 rejects out-of-bounds-audio of real encoded fixture
+ok 18 - R2 rejects out-of-bounds-audio of real encoded fixture
+  ---
+  duration_ms: 0.8152
+  type: 'test'
+  ...
+# Subtest: live runner refuses source-only even with feature flags ON; before DB/key/network
+ok 19 - live runner refuses source-only even with feature flags ON; before DB/key/network
+  ---
+  duration_ms: 192.0779
+  type: 'test'
+  ...
+# Subtest: bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+ok 20 - bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+  ---
+  duration_ms: 3.4501
+  type: 'test'
+  ...
+# Subtest: binary signatures reject high-bit aliases rather than lossy ASCII matches
+ok 21 - binary signatures reject high-bit aliases rather than lossy ASCII matches
+  ---
+  duration_ms: 7.0206
+  type: 'test'
+  ...
+# Subtest: controlled encoded media rejects container, codec, dimensions, duration and bounds
+ok 22 - controlled encoded media rejects container, codec, dimensions, duration and bounds
+  ---
+  duration_ms: 4.6021
+  type: 'test'
+  ...
+# Subtest: actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+ok 23 - actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+  ---
+  duration_ms: 4.0851
+  type: 'test'
+  ...
+# Subtest: provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+ok 24 - provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+  ---
+  duration_ms: 54.77
+  type: 'test'
+  ...
+# Subtest: MP4 validator rejects trailing truncated box bytes
+ok 25 - MP4 validator rejects trailing truncated box bytes
+  ---
+  duration_ms: 1.3359
+  type: 'test'
+  ...
+# Subtest: presenter output must include a supported audio track
+ok 26 - presenter output must include a supported audio track
+  ---
+  duration_ms: 1.0313
+  type: 'test'
+  ...
+# Subtest: lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+ok 27 - lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+  ---
+  duration_ms: 4.7982
+  type: 'test'
+  ...
+# Subtest: HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+ok 28 - HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+  ---
+  duration_ms: 5.9358
+  type: 'test'
+  ...
+# Subtest: Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+ok 29 - Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+  ---
+  duration_ms: 5.0975
+  type: 'test'
+  ...
+1..29
+# tests 29
+# suites 0
+# pass 29
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 985.1047

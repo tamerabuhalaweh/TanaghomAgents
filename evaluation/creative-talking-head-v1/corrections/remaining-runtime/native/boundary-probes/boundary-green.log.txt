@@ -1,0 +1,346 @@
+TAP version 13
+# Subtest: RC1 non-public/invalid binary destination fc01::1
+ok 1 - RC1 non-public/invalid binary destination fc01::1
+  ---
+  duration_ms: 10.3046
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+ok 2 - RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+  ---
+  duration_ms: 0.7468
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fdff:ffff::1
+ok 3 - RC1 non-public/invalid binary destination fdff:ffff::1
+  ---
+  duration_ms: 0.7348
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fe90::1
+ok 4 - RC1 non-public/invalid binary destination fe90::1
+  ---
+  duration_ms: 0.543
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination febf:ffff::1
+ok 5 - RC1 non-public/invalid binary destination febf:ffff::1
+  ---
+  duration_ms: 0.9924
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fec1::1
+ok 6 - RC1 non-public/invalid binary destination fec1::1
+  ---
+  duration_ms: 0.3149
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination feff::1
+ok 7 - RC1 non-public/invalid binary destination feff::1
+  ---
+  duration_ms: 0.411
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:7f00:1
+ok 8 - RC1 non-public/invalid binary destination ::ffff:7f00:1
+  ---
+  duration_ms: 0.3746
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+ok 9 - RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+  ---
+  duration_ms: 0.6185
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+ok 10 - RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+  ---
+  duration_ms: 0.6553
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+ok 11 - RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+  ---
+  duration_ms: 0.3832
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:c0a8:101
+ok 12 - RC1 non-public/invalid binary destination ::ffff:c0a8:101
+  ---
+  duration_ms: 0.3058
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+ok 13 - RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+  ---
+  duration_ms: 0.2657
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:2::1
+ok 14 - RC1 non-public/invalid binary destination 2001:2::1
+  ---
+  duration_ms: 0.2731
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+ok 15 - RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+  ---
+  duration_ms: 0.5497
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 100::1
+ok 16 - RC1 non-public/invalid binary destination 100::1
+  ---
+  duration_ms: 0.3271
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:db8::1
+ok 17 - RC1 non-public/invalid binary destination 2001:db8::1
+  ---
+  duration_ms: 0.3138
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 3fff::1
+ok 18 - RC1 non-public/invalid binary destination 3fff::1
+  ---
+  duration_ms: 0.302
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2002:7f00:1::1
+ok 19 - RC1 non-public/invalid binary destination 2002:7f00:1::1
+  ---
+  duration_ms: 0.2963
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::127.0.0.1
+ok 20 - RC1 non-public/invalid binary destination ::127.0.0.1
+  ---
+  duration_ms: 0.3489
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+ok 21 - RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+  ---
+  duration_ms: 1.3645
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+ok 22 - RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+  ---
+  duration_ms: 0.4387
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b:1::1
+ok 23 - RC1 non-public/invalid binary destination 64:ff9b:1::1
+  ---
+  duration_ms: 0.3558
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ff02::1
+ok 24 - RC1 non-public/invalid binary destination ff02::1
+  ---
+  duration_ms: 0.2886
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::
+ok 25 - RC1 non-public/invalid binary destination ::
+  ---
+  duration_ms: 0.2142
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+ok 26 - RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+  ---
+  duration_ms: 0.2103
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2606:4700::1%1
+ok 27 - RC1 non-public/invalid binary destination 2606:4700::1%1
+  ---
+  duration_ms: 0.1881
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination bogus:address
+ok 28 - RC1 non-public/invalid binary destination bogus:address
+  ---
+  duration_ms: 0.1992
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+ok 29 - RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+  ---
+  duration_ms: 0.1888
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 1::2::3
+ok 30 - RC1 non-public/invalid binary destination 1::2::3
+  ---
+  duration_ms: 0.2071
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 8.8.8.8
+ok 31 - RC1 public normalized positive pin 8.8.8.8
+  ---
+  duration_ms: 25.0407
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2606:4700:4700::1111
+ok 32 - RC1 public normalized positive pin 2606:4700:4700::1111
+  ---
+  duration_ms: 0.6262
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+ok 33 - RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+  ---
+  duration_ms: 0.4689
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin ::ffff:808:808
+ok 34 - RC1 public normalized positive pin ::ffff:808:808
+  ---
+  duration_ms: 0.4625
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+ok 35 - RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+  ---
+  duration_ms: 0.5614
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 64:ff9b::808:808
+ok 36 - RC1 public normalized positive pin 64:ff9b::808:808
+  ---
+  duration_ms: 0.4398
+  type: 'test'
+  ...
+# Subtest: RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+ok 37 - RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+  ---
+  duration_ms: 32.3557
+  type: 'test'
+  ...
+# Subtest: RC2 unmodified provider-encoded H264 AAC facts preserved
+ok 38 - RC2 unmodified provider-encoded H264 AAC facts preserved
+  ---
+  duration_ms: 2.3885
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description declared-missing
+ok 39 - RC2 rejects sample description declared-missing
+  ---
+  duration_ms: 0.6248
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description undeclared-extra
+ok 40 - RC2 rejects sample description undeclared-extra
+  ---
+  duration_ms: 1.1717
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description zero-count
+ok 41 - RC2 rejects sample description zero-count
+  ---
+  duration_ms: 0.264
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description zero-index
+ok 42 - RC2 rejects sample description zero-index
+  ---
+  duration_ms: 0.3673
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description missing-index
+ok 43 - RC2 rejects sample description missing-index
+  ---
+  duration_ms: 0.3094
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description truncated-entry
+ok 44 - RC2 rejects sample description truncated-entry
+  ---
+  duration_ms: 0.1385
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description oversized-entry
+ok 45 - RC2 rejects sample description oversized-entry
+  ---
+  duration_ms: 1.1313
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description undersized-entry
+ok 46 - RC2 rejects sample description undersized-entry
+  ---
+  duration_ms: 0.1616
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description trailing-entry-byte
+ok 47 - RC2 rejects sample description trailing-entry-byte
+  ---
+  duration_ms: 0.2336
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description unsupported-active
+ok 48 - RC2 rejects sample description unsupported-active
+  ---
+  duration_ms: 0.5311
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description allowed-but-mismatched-active
+ok 49 - RC2 rejects sample description allowed-but-mismatched-active
+  ---
+  duration_ms: 0.5708
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description mismatched-visual
+ok 50 - RC2 rejects sample description mismatched-visual
+  ---
+  duration_ms: 0.5252
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-declared-missing
+ok 51 - RC2 rejects sample description audio-declared-missing
+  ---
+  duration_ms: 0.5202
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-missing-index
+ok 52 - RC2 rejects sample description audio-missing-index
+  ---
+  duration_ms: 0.4543
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-unsupported
+ok 53 - RC2 rejects sample description audio-unsupported
+  ---
+  duration_ms: 0.3041
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-mismatched
+ok 54 - RC2 rejects sample description audio-mismatched
+  ---
+  duration_ms: 0.4207
+  type: 'test'
+  ...
+# Subtest: RC2 real existing second consistent video description is valid
+ok 55 - RC2 real existing second consistent video description is valid
+  ---
+  duration_ms: 0.503
+  type: 'test'
+  ...
+# Subtest: RC2 real existing second consistent audio description is valid
+ok 56 - RC2 real existing second consistent audio description is valid
+  ---
+  duration_ms: 0.3686
+  type: 'test'
+  ...
+1..56
+# tests 56
+# suites 0
+# pass 56
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 227.2012

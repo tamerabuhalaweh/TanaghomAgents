@@ -21,6 +21,7 @@ interface AssetVersionRow {
   prompt_ref: string | null;
   template_ref: string | null;
   method: string;
+  provenance?: Record<string, unknown>;
   status: string;
   created_at: string;
 }
@@ -177,6 +178,8 @@ export function VersionDetailView({ locale, dir, versionId }: { locale: Creative
               <dt>{t(locale, "assets.provenance")}</dt>
               <dd>{detail.data.version.method} · {detail.data.version.bytes} B · {detail.data.version.mime} · {detail.data.version.sha256.slice(0, 16)}…</dd>
             </dl>
+            {detail.data.version.mime === "video/mp4" && <video className="creative-preview" controls preload="metadata" src={`/api/creative/assets/versions/${versionId}/preview`} style={{maxWidth:"100%"}} />}
+            {detail.data.version.provenance && ["talking_head", "lip_sync"].includes(String(detail.data.version.provenance.operation)) && <details open><summary>{locale === "ar" ? "معلومات المصدر والتوليد" : "Generation provenance"}</summary><pre dir="ltr" style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{JSON.stringify(detail.data.version.provenance,null,2)}</pre></details>}
             <h2>{t(locale, "fidelity.title")}</h2>
             {fidelity.loading ? <Loading locale={locale} />
               : fidelity.error ? <LoadError locale={locale} error={fidelity.error} onRetry={fidelity.reload} />

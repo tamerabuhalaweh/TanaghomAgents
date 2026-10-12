@@ -1,0 +1,28 @@
+PASS owner canonical avatar API registration readback
+PASS SQL rejects forged script provenance
+PASS authenticated Arabic stock submission
+
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: The input did not match the regular expression /actual_cost_pending/. Input:
+
+'Error: download must not run'
+
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/scripts/creative-talking-head-integration.mjs:77:25 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: Error: download must not run
+      at download (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/scripts/creative-talking-head-integration.mjs:77:135)
+      at executePresenterJob (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/packages/creative-runtime/render/presenter-worker.mjs:69:24)
+      at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+      at async waitForActual (node:assert:565:5)
+      at async Function.rejects (node:assert:686:25)
+      at async file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tanaghom-p5-decision/scripts/creative-talking-head-integration.mjs:77:25,
+  expected: /actual_cost_pending/,
+  operator: 'rejects'
+}
+
+Node.js v22.18.0
