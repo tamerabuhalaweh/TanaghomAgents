@@ -1,0 +1,626 @@
+{
+  "scope": "issue242 local only; no publication/deployment; #243 PAUSED",
+  "receipt_count": 42,
+  "receipts": [
+    {
+      "command": [
+        "npm.cmd",
+        "audit",
+        "--audit-level=moderate"
+      ],
+      "exit": 0,
+      "sha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+      "log": "audit-online-final-before-eof-policy.log",
+      "native_log_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "audit",
+        "--audit-level=moderate"
+      ],
+      "exit": 0,
+      "sha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+      "log": "audit-online-final.log",
+      "native_log_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "audit",
+        "--audit-level=moderate"
+      ],
+      "exit": 0,
+      "sha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3",
+      "log": "audit-online.log",
+      "native_log_sha256": "34edba43e649c633f14980b58609d459c7b33659f7d246faeb0b1fe405104f66",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "run",
+        "build:dashboard"
+      ],
+      "exit": 0,
+      "sha256": "19c4f0e6723caad8fb7c1dd3492719d96e6ec357c554f8d85316351ca652b061",
+      "log": "build.log",
+      "native_log_sha256": "df101b590d27781fc7b46e353f85d6aa96ce84bc51e0d51655841e2c905ae616",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "run",
+        "check"
+      ],
+      "exit": 0,
+      "sha256": "8ac1c13763b7dd239b3e9f09ae38081670815fa6eeb91e923d09f4fa756d6d77",
+      "log": "check-final.log",
+      "native_log_sha256": "c0ef7cb382e3ab27d7d1319ccab31fb0cb1271374a0066cf8ee5122a785fd305",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "run",
+        "check"
+      ],
+      "exit": 0,
+      "sha256": "bddb2d917733d7d61826cea17e0b5a883a8cff8fd2efe34fd7d963acfbaf6f78",
+      "log": "check.log",
+      "native_log_sha256": "2b527a56a81fe7d388edacea119652c0750b2c2344e994c7d421bb83608214bc",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 0,
+      "command": [
+        "docker",
+        "rm",
+        "-f",
+        "-v",
+        "355f07c6fee659253042ebd0fa4d0580405539aa93491c16e7afb8fa8ae5f124"
+      ],
+      "ownership_label": "issue242-b1f2263da8354c02a6f3f13edfd706e8",
+      "exact_id_absent": true,
+      "label_census": "",
+      "log": "cleanup-issue242-b1f2263da8354c02a6f3f13edfd706e8.log",
+      "native_log_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 0,
+      "command": [
+        "docker",
+        "rm",
+        "-f",
+        "-v",
+        "7fcee778ba15f2c53f950250a41fdee4f9298ec23a5d0ec75adb3381d1b2c6cd"
+      ],
+      "ownership_label": "issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29",
+      "exact_id_absent": true,
+      "label_census": "",
+      "log": "cleanup-issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29.log",
+      "native_log_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 1,
+      "command": "DATABASE_TEST_URL=<owned fixture> node scripts/smartlabs-local-integration.mjs",
+      "classification": "harness missing standard URL built-in; no auth weakening",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "combined-attempt1.log",
+      "native_log_sha256": "0b0ee28eaab8b16352c6ec6c930197fbff0cf393bb9325715b78d24aa60fb54b",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 0,
+      "command": "DATABASE_TEST_URL=<owned fixture> node scripts/smartlabs-local-integration.mjs",
+      "classification": "corrected auth/render oracle GREEN",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "combined-attempt2.log",
+      "native_log_sha256": "8dcee3ecb7a50ea884e8d077b18db3b150e7a9c43a5ff20f757d1a79647523e9",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/smartlabs-local-integration.mjs"
+      ],
+      "exit": 0,
+      "sha256": "379e884ecf76dc1b415f8fd5dd2d0410f5bf4e7854c69206edfbe17bd747f184",
+      "log": "combined-final.log",
+      "native_log_sha256": "4e8ca880559c274017258a313afe235574a91d9ab8da25239e86404f4e79a2c2",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "tests/smartlabs-secret-config.test.mjs"
+      ],
+      "exit": 0,
+      "sha256": "5bfb3628fe22af7f332564e66c051d4b45607d4ab1910318b702314f79379962",
+      "log": "file-green.log",
+      "native_log_sha256": "c74ec88c69d8ab6764b0db1b9a24f57c4c2bd092b2bf7a030b2a813c1f937791",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 4,
+        "pass": 4,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "355f07c6fee659253042ebd0fa4d0580405539aa93491c16e7afb8fa8ae5f124",
+        "psql",
+        "-U",
+        "postgres",
+        "-d",
+        "postgres",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        "CREATE DATABASE creativefoundation242"
+      ],
+      "exit": 0,
+      "sha256": "691e4b64d448c6cffd680247056c2f445e4fbf2dcbc9be821934064e906d1ce7",
+      "log": "foundation-create-db.log",
+      "native_log_sha256": "af73d38e4cb084b02cd07c61bf5614f4aed80ac7e2cff8a2cf86a923cdd5eb1f",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/creative-foundation-integration.mjs"
+      ],
+      "exit": 0,
+      "sha256": "9149dcb5603962fc780981c121e13ac5c0c92891ff7bb64710bdc52c907e0399",
+      "log": "foundation-fresh.log",
+      "native_log_sha256": "bff8f9ef6ef102b75a953b75c9ab9ad4388cd0435d3f40f9a443dc42d05fdeb5",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "docker",
+        "run",
+        "-d",
+        "--name",
+        "smartlabs-issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29",
+        "--label",
+        "tanaghom.owner=issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29",
+        "--network",
+        "bridge",
+        "-p",
+        "127.0.0.1::5432",
+        "-e",
+        "POSTGRES_PASSWORD=fixture242-only",
+        "-e",
+        "POSTGRES_DB=smartlabs242",
+        "postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94"
+      ],
+      "exit": 0,
+      "sha256": "cfb2ea27f9f1406ca10062ea3a828c3d3983fcafc22e0d0a037ef39fff417337",
+      "log": "foundation-pg-create.log",
+      "native_log_sha256": "9fac09c801f1649c30f7e36f47f94237f9cacc58691cadc4276e4ecb30ef1950",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/creative-foundation-integration.mjs"
+      ],
+      "exit": 3,
+      "sha256": "50ee2727f2d059eaef260c6dd4a8010b102dabd6793858dec0df692bb583314d",
+      "log": "foundation.log",
+      "native_log_sha256": "b2fda8e05fcd7ff9acead57e69383f373cc88f99e17bab7b2e09cd8dda78e2ff",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "test"
+      ],
+      "exit": 0,
+      "sha256": "d2352760d19b614433a9a1a92086fc32fd7d45c472233ea717dff3b56c30a240",
+      "log": "full-final-before-eof-policy.log",
+      "native_log_sha256": "5e4a5cd229d6880870701c352dd29ab6c9df92e2c41e51671427075016f47a27",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 424,
+        "pass": 424,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "test"
+      ],
+      "exit": 0,
+      "sha256": "8a5410ad2a1afcb44e3ddbc5b464f683e0923c52ee23a10dfeb2e351696e55f6",
+      "log": "full-final.log",
+      "native_log_sha256": "32c607455cb85192792202fbba539eb77dfe5d94453dd21d77b5d462ab902843",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 424,
+        "pass": 424,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "test"
+      ],
+      "exit": 0,
+      "sha256": "21ba34e8f7443b1396600689c382cba2763603fed7c2869a99191ca83fc9d4aa",
+      "log": "full.log",
+      "native_log_sha256": "17e37c72f8fd7063e6706f12d0d81345cb47a4ca1be3d3a2c6c18ba7b455a7f2",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 424,
+        "pass": 423,
+        "fail": 0,
+        "skipped": 1
+      }
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "355f07c6fee659253042ebd0fa4d0580405539aa93491c16e7afb8fa8ae5f124",
+        "psql",
+        "-U",
+        "postgres",
+        "-d",
+        "smartlabs242",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        "COMMENT ON DATABASE smartlabs242 IS 'issue242-b1f2263da8354c02a6f3f13edfd706e8'"
+      ],
+      "exit": 0,
+      "sha256": "584e079f160fd37b8e1fa66c0823a151f4ed00beb8d43e0e2378ca994c21c128",
+      "log": "marker-combined.log",
+      "native_log_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "docker",
+        "exec",
+        "7fcee778ba15f2c53f950250a41fdee4f9298ec23a5d0ec75adb3381d1b2c6cd",
+        "psql",
+        "-U",
+        "postgres",
+        "-d",
+        "smartlabs242",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        "COMMENT ON DATABASE smartlabs242 IS 'issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29'"
+      ],
+      "exit": 0,
+      "sha256": "584e079f160fd37b8e1fa66c0823a151f4ed00beb8d43e0e2378ca994c21c128",
+      "log": "marker-foundation.log",
+      "native_log_sha256": "fd9bc34e0eebcb944af0a702f25abe887dcc6e4f857d353ef6490aef1f2483df",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/database.mjs",
+        "migrate"
+      ],
+      "exit": 0,
+      "sha256": "c0ee8feb76c2c46c9226e7650d8c4aef57506db01fc0469b558cb512e99b0c18",
+      "log": "migrate-through0046.log",
+      "native_log_sha256": "11f3b35647c8459033df4026a8c56d297f22233bbe82e18f640ba96594be1ffd",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 2,
+      "command": "node scripts/database.mjs migrate",
+      "classification": "preflight without required DATABASE_URL; not a migration result",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "migrate.log",
+      "native_log_sha256": "87a739531d28e6fe85734b7b219508f845af5641e4ec6045a196944bc9933a4d",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 0,
+      "command": "DATABASE_TEST_URL=<owned fixture> node scripts/smartlabs-migration-verification.mjs",
+      "classification": "first full cycle GREEN",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "migration-cycle-green.log",
+      "native_log_sha256": "9118db314be7dfe0b2731be7773c569dc2bdd2292884228b87fbdab8fd52e224",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 1,
+      "command": "DATABASE_TEST_URL=<owned fixture> node scripts/smartlabs-migration-verification.mjs",
+      "classification": "wrong-baseline down product RED",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "migration-cycle-red.log",
+      "native_log_sha256": "4f0eb8b61734dee3e4df70be18f531f4436c23c7fd1f1d0fc4358a66706bcb59",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "psql",
+        "postgresql://postgres:fixture242-only@127.0.0.1:50063/smartlabs242",
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-f",
+        "packages/database/migrations/0047_smartlabs_audio.down.sql"
+      ],
+      "exit": 0,
+      "sha256": "8a05a883a4b37d58f38d572f8d82a427098bc37c88eb1d59876d7965837d1304",
+      "log": "migration-final-prepare.log",
+      "native_log_sha256": "097a4505da5fc4851b2ed7d5a48300f964ac39318a7d0ff2d6829093f1ac0440",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "node",
+        "scripts/smartlabs-migration-verification.mjs"
+      ],
+      "exit": 0,
+      "sha256": "9118db314be7dfe0b2731be7773c569dc2bdd2292884228b87fbdab8fd52e224",
+      "log": "migration-final.log",
+      "native_log_sha256": "99e0cfd6c0b1bb3b67b43e040cf0f802525556f895e8ce07c20317ab2ac64c7d",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 0,
+      "command": "DATABASE_TEST_URL=<owned fixture> node scripts/smartlabs-migration-verification.mjs --role-red",
+      "classification": "role guard GREEN",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "migration-role-green.log",
+      "native_log_sha256": "139a0625bbdfed97018d20fb91cda9ff58bd1a5121fbf2f82bf919d5137bdca0",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 1,
+      "command": "DATABASE_TEST_URL=<owned fixture> node scripts/smartlabs-migration-verification.mjs --role-red",
+      "classification": "unsafe role product RED",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "migration-role-red.log",
+      "native_log_sha256": "af86a674473a0eaf4ca75ad15993654a221828a4f98b223aad06c2ff045ae16f",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "docker",
+        "run",
+        "-d",
+        "--name",
+        "smartlabs-issue242-b1f2263da8354c02a6f3f13edfd706e8",
+        "--label",
+        "tanaghom.owner=issue242-b1f2263da8354c02a6f3f13edfd706e8",
+        "--network",
+        "bridge",
+        "-p",
+        "127.0.0.1::5432",
+        "-e",
+        "POSTGRES_PASSWORD=fixture242-only",
+        "-e",
+        "POSTGRES_DB=smartlabs242",
+        "postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94"
+      ],
+      "exit": 0,
+      "sha256": "19ad386e3711c96ce0287b60ec02af1281ed396a148a3e42d5376653ff55d0b0",
+      "log": "pg-create.log",
+      "native_log_sha256": "8f4115a3d2b083682f15affe312de696d4891470c0b0a81c2ada90bc3838594b",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "psql",
+        "postgresql://postgres:fixture242-only@127.0.0.1:65272/smartlabs242",
+        "-X",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-c",
+        "SELECT version() AS server; SELECT count(*) AS ledger_count,max(version) AS latest FROM schema_migrations; SELECT rolname,rolsuper,rolcreaterole,rolcreatedb,rolreplication,rolbypassrls FROM pg_roles WHERE rolname IN ('tanaghom_api','tanaghom_creative_worker'); SELECT p.proname,p.proacl FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='tanaghom' AND has_function_privilege('tanaghom_creative_worker',p.oid,'EXECUTE') ORDER BY p.proname; SELECT c.relname,c.relacl FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='tanaghom' AND c.relname IN ('creative_jobs','creative_assets','creative_asset_versions');"
+      ],
+      "exit": 0,
+      "sha256": "40eda0668ed0ac4a3519b067a2a28ea2b882d6d1cf01b5ab4f270ebb78309619",
+      "log": "restricted-current-grants.log",
+      "native_log_sha256": "fda9711b6f446db7a35dd8236d9cad4e9bd5240f19f1211249504ae8c724587c",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "exit": 1,
+      "command": "node --test tests/smartlabs-secret-config.test.mjs",
+      "classification": "CLI _FILE RED",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "smartlabs-242-file-cli-red.log",
+      "native_log_sha256": "7aa46d0d149b48ebe018172d68c63c616d429c3c938683d13c5221b040485d08",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 4,
+        "pass": 3,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "exit": 0,
+      "command": "node --test tests/smartlabs-secret-config.test.mjs",
+      "classification": "first _FILE GREEN",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "smartlabs-242-file-green.log",
+      "native_log_sha256": "71635cb923605412641d7f091fe7a67757332b76231677f4cba4a52f214a9f6d",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 1,
+        "pass": 1,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "exit": 0,
+      "command": "node --test tests/smartlabs-secret-config.test.mjs",
+      "classification": "enabled missing key GREEN",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "smartlabs-242-file-missing-green.log",
+      "native_log_sha256": "8240f72906f294f7640436074fa69ca8f135413bf3d01ae42eeb278fd2fbab6f",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 2,
+        "pass": 2,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "exit": 1,
+      "command": "node --test tests/smartlabs-secret-config.test.mjs",
+      "classification": "enabled missing key RED",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "smartlabs-242-file-missing-red.log",
+      "native_log_sha256": "d98dcee4971105516f66b336b1e9f07bf3af4d304eb7f6f30dc4662797edacb4",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 2,
+        "pass": 1,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "exit": 1,
+      "command": "node --test tests/smartlabs-secret-config.test.mjs",
+      "classification": "native missing _FILE behavior RED",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "smartlabs-242-file-red.log",
+      "native_log_sha256": "18e01119006a5cc79671cbe4219ea355877860f5856e9138146082203bc39e8b",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 1,
+        "pass": 0,
+        "fail": 1,
+        "skipped": 0
+      }
+    },
+    {
+      "exit": 0,
+      "command": "node --test tests/smartlabs-server-factory.test.mjs",
+      "classification": "normal installed-dependency preflight",
+      "exit_provenance": "observed native terminal tool result; original log preserved without synthesized EXIT line",
+      "log": "smartlabs-242-normal-preflight.log",
+      "native_log_sha256": "9d24d1c4937eef20c1fb4871ef5d982d7180b4b182e4c753e2379e3a15fcbe41",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 9,
+        "pass": 9,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "tests/smartlabs-adapters.test.mjs",
+        "tests/smartlabs-server-factory.test.mjs",
+        "tests/smartlabs-secret-config.test.mjs"
+      ],
+      "exit": 0,
+      "sha256": "f356eebb2526b811c33a6c94b4eda0b141264bbdff8977becb6e66fb2c44f2bc",
+      "log": "targeted-final-before-eof-policy.log",
+      "native_log_sha256": "8f42657c0a5d41eecbde0a40e72429d220365ba85a910cfb1a188788fbd9c0fd",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 81,
+        "pass": 81,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "tests/smartlabs-adapters.test.mjs",
+        "tests/smartlabs-server-factory.test.mjs",
+        "tests/smartlabs-secret-config.test.mjs"
+      ],
+      "exit": 0,
+      "sha256": "d0f596d6e07df5fd20b3ead5b8efc0b18bb703a12df44212c1e6dc56ad138281",
+      "log": "targeted-final.log",
+      "native_log_sha256": "1eebaa6cfe5685a0a2af15220e40802aa76c562365c107488562a9d9b1441fbe",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 81,
+        "pass": 81,
+        "fail": 0,
+        "skipped": 0
+      }
+    },
+    {
+      "command": [
+        "node",
+        "--test",
+        "tests/smartlabs-adapters.test.mjs",
+        "tests/smartlabs-server-factory.test.mjs",
+        "tests/smartlabs-secret-config.test.mjs"
+      ],
+      "exit": 0,
+      "sha256": "80e6fcafd820f7bd544d2422ddf2774b9da32ff22aa5e7975697bfe35c04ff2d",
+      "log": "targeted.log",
+      "native_log_sha256": "c06ac7381fa6477676a8fa20e26ef4f9162010e5e4bd850f75b948ff92703b1b",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout",
+      "native_totals": {
+        "tests": 81,
+        "pass": 80,
+        "fail": 0,
+        "skipped": 1
+      }
+    },
+    {
+      "command": [
+        "npm.cmd",
+        "run",
+        "typecheck:dashboard"
+      ],
+      "exit": 0,
+      "sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36",
+      "log": "typecheck.log",
+      "native_log_sha256": "fb55b926ae5fd70788a94fc4e48b6a2c057e5496358ba7ae17c00629eb3efa85",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    },
+    {
+      "command": [
+        "node",
+        "../smartlabs242-unreadable.mjs"
+      ],
+      "exit": 0,
+      "sha256": "6a23e809efeb4d3a1b4b734fc8b5d670ffd2aec45d59805e7b7f4eea6c2449bd",
+      "log": "unreadable-native.log",
+      "native_log_sha256": "b0f411f6339fccbae1df521ebe77263780c95e136d718c2a4ab25a681eedf607",
+      "sanitization": "none required: synthetic-only credentials/fixtures, no JWT or real secrets in stdout"
+    }
+  ],
+  "final_suite_environment": {
+    "NODE_OPTIONS": "unset",
+    "SMARTLABS_TEST_TYPESCRIPT": "unset",
+    "SMARTLABS_TEST_FFMPEG": {
+      "path": "C:\\Users\\tamer\\scoop\\apps\\ffmpeg\\9.0.2\\bin\\ffmpeg.exe",
+      "sha256_before_after": "589e50b766d251afdf181dd664d40bd94407e200b019989fd7468c7d118a28d0",
+      "installed_or_modified": false
+    }
+  },
+  "normalization": "Native evidence directory has scoped * -text attributes, preserving original captured bytes. Source CRLF normalization is recorded only in the external freeze manifest."
+}

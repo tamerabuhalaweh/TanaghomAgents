@@ -1,0 +1,259 @@
+[
+  {
+    "label": "linux-clean-git-metadata",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'git init -q && git config core.autocrlf false && git add -f --pathspec-from-file=/owned/tracked-paths.nul --pathspec-file-nul && git ls-files --stage deployment/phase7c-agent-studio/scripts/common.sh deployment/phase7d-runtime-production-update/scripts/common.sh && test -z \"$(git ls-files --others --exclude-standard)\"']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "32764c543d29cf7f2968f012df9b63095e3f7cf517360686a283daf7448d83ce"
+  },
+  {
+    "label": "linux-fixture-cleanup-check",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'test ! -e /owned/source/tmp && test -z \"$(find /owned/fixtures /tmp -maxdepth 1 -type d \\\\( -name \"smartlabs-242-*\" -o -name \"sl-audio-*\" \\\\) -print)\" && node -e \"const os=require(\\'node:os\\');delete process.env.TMPDIR;console.log(JSON.stringify({unsetTMPDIR:process.env.TMPDIR===undefined,fallback:os.tmpdir()}))\"']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "47a95621332871f76b4abcf835e50ee0e749ba59be393acd95bd1ce4713a6362"
+  },
+  {
+    "label": "linux-green-full-clean-normal",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'export TMPDIR=/owned/fixtures; export TEMP=/owned/fixtures TMP=/owned/fixtures SMARTLABS_TEST_FFMPEG=/usr/bin/ffmpeg; npm test']",
+    "exit": 0,
+    "counts": {
+      "tests": 445,
+      "pass": 445,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "0182d2628eaa0a190b325aab06e8b16611a91d8d6b690fe633a15e159d95f655"
+  },
+  {
+    "label": "linux-green-full-clean-tmpdir-absent",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'unset TMPDIR; export TEMP=/owned/fixtures TMP=/owned/fixtures SMARTLABS_TEST_FFMPEG=/usr/bin/ffmpeg; npm test']",
+    "exit": 0,
+    "counts": {
+      "tests": 445,
+      "pass": 445,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "e7ab9d8389b8a4b4393783867d1aa21671014e17d9906ef418128a67843a89c4"
+  },
+  {
+    "label": "linux-green-full-normal",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'export TMPDIR=/owned/fixtures; export TEMP=/owned/fixtures TMP=/owned/fixtures SMARTLABS_TEST_FFMPEG=/usr/bin/ffmpeg; npm test']",
+    "exit": 1,
+    "counts": {
+      "tests": 445,
+      "pass": 443,
+      "fail": 2,
+      "skipped": 0
+    },
+    "log_sha256": "8ebb0bf284b5f753ec8589e98b8f9675efbd9baa39bfbb87510d6de9c862ef5f"
+  },
+  {
+    "label": "linux-green-full-tmpdir-absent",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'unset TMPDIR; export TEMP=/owned/fixtures TMP=/owned/fixtures SMARTLABS_TEST_FFMPEG=/usr/bin/ffmpeg; npm test']",
+    "exit": 1,
+    "counts": {
+      "tests": 445,
+      "pass": 443,
+      "fail": 2,
+      "skipped": 0
+    },
+    "log_sha256": "e8add9ce1afa6346b701036a17ec3934fd3c6a0850c9551b60bf4a8352fde00e"
+  },
+  {
+    "label": "linux-green-targeted-exact-normal",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'export TMPDIR=/owned/fixtures; node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs']",
+    "exit": 0,
+    "counts": {
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "1331462c4053e6e01b226735938aa1da6f277c5d96da8dbecb32f3a4de8cdb4b"
+  },
+  {
+    "label": "linux-green-targeted-exact-tmpdir-absent",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'unset TMPDIR; node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs']",
+    "exit": 0,
+    "counts": {
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "0aa4979bd1e0f2570a4749846cdca394696fe702727ea89d8c6ad3094c624a8a"
+  },
+  {
+    "label": "linux-green-targeted-normal",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'export TMPDIR=/owned/fixtures; export TEMP=/owned/fixtures TMP=/owned/fixtures SMARTLABS_TEST_FFMPEG=/usr/bin/ffmpeg; node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs']",
+    "exit": 0,
+    "counts": {
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "6ce169716c9a62f44e5b43e6b58c8718ec9aefffdc421750e373274bdd6e834f"
+  },
+  {
+    "label": "linux-green-targeted-tmpdir-absent",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'unset TMPDIR; export TEMP=/owned/fixtures TMP=/owned/fixtures SMARTLABS_TEST_FFMPEG=/usr/bin/ffmpeg; node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs']",
+    "exit": 0,
+    "counts": {
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "293d3389fdd24346278612a882ce5a1e9b12d00bc3e9d0ba07690ed2f4ce563f"
+  },
+  {
+    "label": "linux-network-preparation",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'mkdir -p /owned/source /owned/fixtures /owned/npm-cache && tar -xf /owned/head-source.tar -C /owned/source && export TMPDIR=/owned/fixtures TEMP=/owned/fixtures TMP=/owned/fixtures npm_config_cache=/owned/npm-cache && node --version && npm --version && npm ci --ignore-scripts --no-audit --no-fund && apt-get update && apt-get install -y --no-install-recommends ffmpeg && sha256sum /usr/bin/ffmpeg']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "45cf49371db97e3dc5ddcdb495e073aa9ddc5ac6d9d722ff2e276b0dc7a10786"
+  },
+  {
+    "label": "linux-offline-environment",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'node --version; npm --version; test ! -e /owned/source/tmp; sha256sum /usr/bin/ffmpeg; node -e \"console.log(JSON.stringify({typescript:require(\\'typescript/package.json\\').version,pg:require(\\'pg/package.json\\').version}))\"']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "7330967be0e93d1904d20ed84be21eb450014a9af352119a231cfa67b1eb9fb2"
+  },
+  {
+    "label": "linux-red-targeted-exact-tmpdir-absent",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'unset TMPDIR; export TEMP=/owned/fixtures TMP=/owned/fixtures; test ! -e /owned/source/tmp && node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs']",
+    "exit": 1,
+    "counts": {
+      "tests": 25,
+      "pass": 21,
+      "fail": 4,
+      "skipped": 0
+    },
+    "log_sha256": "d73fb24b10a7821cd2355b5c19f157b36e23fb409cc5b85baa6aadceafe481d2"
+  },
+  {
+    "label": "linux-red-targeted-tmpdir-absent",
+    "command": "['docker', 'exec', 'ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c', 'sh', '-lc', 'unset TMPDIR; export TEMP=/owned/fixtures TMP=/owned/fixtures; test ! -e /owned/source/tmp && node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs']",
+    "exit": 1,
+    "counts": {
+      "tests": 25,
+      "pass": 21,
+      "fail": 4,
+      "skipped": 0
+    },
+    "log_sha256": "fe452dd257d0792f576530c1ff05d6e2cb021d24d4ea7933af73aa0f5a343bcb"
+  },
+  {
+    "label": "native-build",
+    "command": "['npm.cmd', 'run', 'build:dashboard']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "db485127240ea4d53bb3a5c9c24a02fb8b220f2656ab64701cc01f523e72ba60"
+  },
+  {
+    "label": "native-check-restored",
+    "command": "['npm.cmd', 'run', 'check']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "7a256739fe79308ff2dde87840f585fcb68de6fb915cdef08898dd6cab40f586"
+  },
+  {
+    "label": "native-check",
+    "command": "['npm.cmd', 'run', 'check']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "c4352416d7ba72c8efcbb31c7f293dd0a3bfcebdd5abfda42ea7019ded83d8df"
+  },
+  {
+    "label": "native-green-full-normal",
+    "command": "['npm.cmd', 'test']",
+    "exit": 0,
+    "counts": {
+      "tests": 445,
+      "pass": 445,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "7f5c032a0a30f5dcd60f39a3fdf1bb22be48b58b837d3091577f0eff8057999d"
+  },
+  {
+    "label": "native-green-full-tmpdir-absent",
+    "command": "['npm.cmd', 'test']",
+    "exit": 0,
+    "counts": {
+      "tests": 445,
+      "pass": 445,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "3e31832db54162a3c7de02a0268680d1fd540d32651e80eb2bf350f5d831a46d"
+  },
+  {
+    "label": "native-green-targeted-normal",
+    "command": "['node', '--test', 'tests/smartlabs-secret-config.test.mjs', 'tests/smartlabs-server-factory.test.mjs']",
+    "exit": 0,
+    "counts": {
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "8cbf76c8c1fd493a1673800fd1819f62a04e47425ccf2ee650e4d9a0ea36297d"
+  },
+  {
+    "label": "native-green-targeted-tmpdir-absent",
+    "command": "['node', '--test', 'tests/smartlabs-secret-config.test.mjs', 'tests/smartlabs-server-factory.test.mjs']",
+    "exit": 0,
+    "counts": {
+      "tests": 25,
+      "pass": 25,
+      "fail": 0,
+      "skipped": 0
+    },
+    "log_sha256": "110e8a4cb0375228aa852e52eb8c0895252008655bab78d87151dba2aa75ac55"
+  },
+  {
+    "label": "native-red-targeted-tmpdir-absent",
+    "command": "['node', '--test', 'tests/smartlabs-secret-config.test.mjs', 'tests/smartlabs-server-factory.test.mjs']",
+    "exit": 1,
+    "counts": {
+      "tests": 25,
+      "pass": 21,
+      "fail": 4,
+      "skipped": 0
+    },
+    "log_sha256": "da1030a87278407d68529df0a07e0f1354b5852bfc3c8fa28fc731bcd6a834ea"
+  },
+  {
+    "label": "native-temp-resolution",
+    "command": "['node', '-e', \"const os=require('node:os');console.log(JSON.stringify({TMPDIRAbsent:process.env.TMPDIR===undefined,TEMP:process.env.TEMP,TMP:process.env.TMP,resolved:os.tmpdir()}))\"]",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "f860e1a217dda48702e5e0771e243b8b38984ce65ccebfd4439bef38599ad365"
+  },
+  {
+    "label": "native-typecheck-restored",
+    "command": "['npm.cmd', 'run', 'typecheck:dashboard']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "a228c6f44810815514147838535b45fdc5fd18b4857289e77da6559c386ddd4a"
+  },
+  {
+    "label": "native-typecheck",
+    "command": "['npm.cmd', 'run', 'typecheck:dashboard']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "a228c6f44810815514147838535b45fdc5fd18b4857289e77da6559c386ddd4a"
+  },
+  {
+    "label": "online-audit",
+    "command": "['npm.cmd', 'audit', '--audit-level=moderate']",
+    "exit": 0,
+    "counts": {},
+    "log_sha256": "717e801e63cf1e97ee70f4e60d5820694b32d7ecfdfd9909a07290e36ae359df"
+  }
+]

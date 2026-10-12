@@ -1,0 +1,23 @@
+PASS actual API/worker login restrictions, direct creative CRUD and role escalation denied
+PASS built Next rendered secret isolation /login bytes=12804
+PASS built Next rendered secret isolation /workspace bytes=12804
+PASS built Next rendered secret isolation /creative bytes=12804
+PASS built Next rendered secret isolation /api/health bytes=93
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+
+401 !== 409
+
+    at file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/scripts/smartlabs-local-integration.mjs:97:73
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5) {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 401,
+  expected: 409,
+  operator: 'strictEqual'
+}
+
+Node.js v22.18.0

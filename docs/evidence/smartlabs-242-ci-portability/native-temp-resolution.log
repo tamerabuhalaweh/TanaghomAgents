@@ -1,0 +1,3 @@
+Command: node -e const os=require('node:os');console.log(JSON.stringify({TMPDIRAbsent:process.env.TMPDIR===undefined,TEMP:process.env.TEMP,TMP:process.env.TMP,resolved:os.tmpdir()}))
+Exit: 0
+{"TMPDIRAbsent":true,"TEMP":"<OWNED_SCRATCH>/smartlabs-242-portability-owned","TMP":"<OWNED_SCRATCH>/smartlabs-242-portability-owned","resolved":"<OWNED_SCRATCH>/smartlabs-242-portability-owned"}

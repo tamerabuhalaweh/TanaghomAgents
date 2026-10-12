@@ -1,0 +1,11 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "tests/smartlabs-adapters.test.mjs",
+    "tests/smartlabs-server-factory.test.mjs",
+    "tests/smartlabs-secret-config.test.mjs"
+  ],
+  "exit": 0,
+  "sha256": "80e6fcafd820f7bd544d2422ddf2774b9da32ff22aa5e7975697bfe35c04ff2d"
+}

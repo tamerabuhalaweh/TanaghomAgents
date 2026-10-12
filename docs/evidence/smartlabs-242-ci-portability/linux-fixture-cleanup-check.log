@@ -1,0 +1,3 @@
+Command: docker exec ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c sh -lc test ! -e /owned/source/tmp && test -z "$(find /owned/fixtures /tmp -maxdepth 1 -type d \( -name "smartlabs-242-*" -o -name "sl-audio-*" \) -print)" && node -e "const os=require('node:os');delete process.env.TMPDIR;console.log(JSON.stringify({unsetTMPDIR:process.env.TMPDIR===undefined,fallback:os.tmpdir()}))"
+Exit: 0
+{"unsetTMPDIR":true,"fallback":"/tmp"}

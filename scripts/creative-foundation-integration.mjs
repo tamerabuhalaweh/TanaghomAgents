@@ -18,8 +18,9 @@ import { readFileSync } from "node:fs";
 const databaseUrl = process.env.DATABASE_TEST_URL;
 if (!databaseUrl) throw new Error("DATABASE_TEST_URL is required");
 
-const authPort = 43211;
-const dashboardPort = 43212;
+// Owned local runners may choose unused ephemeral ports; no deployed service.
+const authPort = Number(process.env.CREATIVE_TEST_AUTH_PORT || 43211);
+const dashboardPort = Number(process.env.CREATIVE_TEST_DASHBOARD_PORT || 43212);
 const authOrigin = `http://127.0.0.1:${authPort}`;
 const dashboardOrigin = `http://127.0.0.1:${dashboardPort}`;
 const OWNER_SUBJECT = "90000000-0000-4000-8000-000000000001";
@@ -130,6 +131,7 @@ try {
   await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.up.sql`, "utf8"));
   console.log(`PASS unused ${latestMigration} up`);
   psqlFile("packages/database/tests/creative_foundation.sql");
+  psqlFile("packages/database/tests/smartlabs_audio.sql");
   psqlFile("packages/database/tests/creative_studio.sql");
   psqlFile("packages/database/seeds/staging.sql");
   // Extra users for role/tenant API coverage (seed provides the owner).

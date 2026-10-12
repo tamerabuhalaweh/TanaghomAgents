@@ -5,10 +5,10 @@
 // harness and AWS signing self-checks in tests.
 import { createHash, createHmac } from "node:crypto";
 
-const KEY_RE = /^t\/[0-9a-f-]{36}\/[a-z_]+\/[0-9a-f-]{36}\/v[0-9]+\.(png|jpg|jpeg|webp|mp4|wav|mp3|html)$/;
+const KEY_RE = /^t\/[0-9a-f-]{36}\/[a-z_]+\/[0-9a-f-]{36}\/v[0-9]+\.(png|jpg|jpeg|webp|mp4|wav|mp3|ogg|flac|aac|html)$/;
 const MIME_BY_EXT = Object.freeze({
   png: "image/png", jpg: "image/jpeg", jpeg: "image/jpeg", webp: "image/webp",
-  mp4: "video/mp4", wav: "audio/wav", mp3: "audio/mpeg", html: "text/html",
+  mp4: "video/mp4", wav: "audio/wav", mp3: "audio/mpeg", ogg:"audio/ogg", flac:"audio/flac", aac:"audio/aac", html: "text/html",
 });
 
 function assertKey(key) {

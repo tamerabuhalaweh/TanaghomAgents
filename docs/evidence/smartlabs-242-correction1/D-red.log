@@ -1,0 +1,114 @@
+database-create 0 d823dab12432e48e525dfd8db8e1947233beb1c94f33aa4ee34ce2d84b25b6f1
+
+database-owner 0 tainers.image.created": "2025-10-22T17:40:39Z",
+                "org.opencontainers.image.revision": "5ec89312491bdaa2c42377a65ec0af2ecb774480",
+                "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#5ec89312491bdaa2c42377a65ec0af2ecb774480:17/alpine3.22",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+                "org.opencontainers.image.version": "17.6-alpine3.22"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
+
+database-ready-0 2 /var/run/postgresql:5432 - no response
+
+database-ready-1 2 /var/run/postgresql:5432 - no response
+
+database-ready-2 2 /var/run/postgresql:5432 - no response
+
+database-ready-3 0 /var/run/postgresql:5432 - accepting connections
+
+create-db 0 
+marker 0 COMMENT
+PostgreSQL 17.6 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+
+full-chain-through46 0 tabase/migrations/0046_creative_talking_head.up.sql:73: NOTICE:  trigger "creative_consent_governance" for relation "tanaghom.creative_avatar_consents" does not exist, skipping
+DROP TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE TRIGGER
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+CREATE FUNCTION
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+ALTER TABLE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+REVOKE
+GRANT
+GRANT
+GRANT
+GRANT
+GRANT
+INSERT 0 1
+COMMIT
+
+baseline-worker-job-update 0 BEGIN
+GRANT
+DO
+DO
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+INSERT 0 1
+UNSAFE_BASELINE_ACCEPTED
+ROLLBACK
+
+baseline-worker-truncate 0 BEGIN
+GRANT
+DO
+DO
+ALTER TABLE
+ALTER TABLE
+CREATE FUNCTION
+CREATE FUNCTION
+INSERT 0 1
+UNSAFE_BASELINE_ACCEPTED
+ROLLBACK
+
+database-cleanup-owner 0 tainers.image.created": "2025-10-22T17:40:39Z",
+                "org.opencontainers.image.revision": "5ec89312491bdaa2c42377a65ec0af2ecb774480",
+                "org.opencontainers.image.source": "https://github.com/docker-library/postgres.git#5ec89312491bdaa2c42377a65ec0af2ecb774480:17/alpine3.22",
+                "org.opencontainers.image.url": "https://hub.docker.com/_/postgres",
+                "org.opencontainers.image.version": "17.6-alpine3.22"
+            },
+            "platform": {
+                "architecture": "amd64",
+                "os": "linux"
+            }
+        }
+    }
+]
+
+database-cleanup 0 d823dab12432e48e525dfd8db8e1947233beb1c94f33aa4ee34ce2d84b25b6f1
+
+database-cleanup-absence 1 []
+Error: No such object: d823dab12432e48e525dfd8db8e1947233beb1c94f33aa4ee34ce2d84b25b6f1
+
+database-cleanup-census 0 
+Traceback (most recent call last):
+  File "C:\Users\tamer\AppData\Local\hermes\cache\scratch\smartlabs-242-correction1-native.py", line 52, in <module>
+    assert not accepted,'unsafe baselines accepted: '+str(accepted)
+           ^^^^^^^^^^^^
+AssertionError: unsafe baselines accepted: ['worker-job-update', 'worker-truncate']
+
+OUTPUT C:\Users\tamer\AppData\Local\hermes\cache\scratch\smartlabs-242-correction1-native-red-63961b69de694a4c964ea8126a18cae0

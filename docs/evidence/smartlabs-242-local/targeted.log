@@ -1,0 +1,498 @@
+TAP version 13
+# Subtest: ASR tracer: trusted controlled asset reader, exact multipart and linked Arabic transcript
+ok 1 - ASR tracer: trusted controlled asset reader, exact multipart and linked Arabic transcript
+  ---
+  duration_ms: 83.2815
+  type: 'test'
+  ...
+# Subtest: compressed audio decoder fails closed without a pinned executable, denies remote containers
+ok 2 - compressed audio decoder fails closed without a pinned executable, denies remote containers
+  ---
+  duration_ms: 2.5405
+  type: 'test'
+  ...
+# Subtest: real pinned decoder consumes full MP3/Ogg/FLAC/AAC sample streams and refuses decoded overflow
+ok 3 - real pinned decoder consumes full MP3/Ogg/FLAC/AAC sample streams and refuses decoded overflow # SKIP
+  ---
+  duration_ms: 0.1438
+  type: 'test'
+  ...
+# Subtest: provider response cannot echo credentials through content or metadata
+ok 4 - provider response cannot echo credentials through content or metadata
+  ---
+  duration_ms: 17.4147
+  type: 'test'
+  ...
+# Subtest: 429 Retry-After blocks a fresh call locally instead of creating a retry storm
+ok 5 - 429 Retry-After blocks a fresh call locally instead of creating a retry storm
+  ---
+  duration_ms: 7.8562
+  type: 'test'
+  ...
+# Subtest: gemma status 401: sanitized proxy failure, one request, no automatic retry
+ok 6 - gemma status 401: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 10.6012
+  type: 'test'
+  ...
+# Subtest: gemma status 429: sanitized proxy failure, one request, no automatic retry
+ok 7 - gemma status 429: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 11.9524
+  type: 'test'
+  ...
+# Subtest: gemma status 503: sanitized proxy failure, one request, no automatic retry
+ok 8 - gemma status 503: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 13.2178
+  type: 'test'
+  ...
+# Subtest: gemma status 504: sanitized proxy failure, one request, no automatic retry
+ok 9 - gemma status 504: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 14.1688
+  type: 'test'
+  ...
+# Subtest: tts status 401: sanitized proxy failure, one request, no automatic retry
+ok 10 - tts status 401: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 7.4813
+  type: 'test'
+  ...
+# Subtest: tts status 402: sanitized proxy failure, one request, no automatic retry
+ok 11 - tts status 402: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 13.6713
+  type: 'test'
+  ...
+# Subtest: tts status 429: sanitized proxy failure, one request, no automatic retry
+ok 12 - tts status 429: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 6.7605
+  type: 'test'
+  ...
+# Subtest: tts status 503: sanitized proxy failure, one request, no automatic retry
+ok 13 - tts status 503: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 14.663
+  type: 'test'
+  ...
+# Subtest: tts status 504: sanitized proxy failure, one request, no automatic retry
+ok 14 - tts status 504: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 6.7047
+  type: 'test'
+  ...
+# Subtest: asr status 400: sanitized proxy failure, one request, no automatic retry
+ok 15 - asr status 400: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 6.6622
+  type: 'test'
+  ...
+# Subtest: asr status 401: sanitized proxy failure, one request, no automatic retry
+ok 16 - asr status 401: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 6.4926
+  type: 'test'
+  ...
+# Subtest: asr status 403: sanitized proxy failure, one request, no automatic retry
+ok 17 - asr status 403: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 8.4778
+  type: 'test'
+  ...
+# Subtest: asr status 413: sanitized proxy failure, one request, no automatic retry
+ok 18 - asr status 413: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 5.5047
+  type: 'test'
+  ...
+# Subtest: asr status 422: sanitized proxy failure, one request, no automatic retry
+ok 19 - asr status 422: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 6.0768
+  type: 'test'
+  ...
+# Subtest: asr status 429: sanitized proxy failure, one request, no automatic retry
+ok 20 - asr status 429: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 7.5383
+  type: 'test'
+  ...
+# Subtest: asr status 503: sanitized proxy failure, one request, no automatic retry
+ok 21 - asr status 503: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 5.3536
+  type: 'test'
+  ...
+# Subtest: asr status 504: sanitized proxy failure, one request, no automatic retry
+ok 22 - asr status 504: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 5.8116
+  type: 'test'
+  ...
+# Subtest: Gemma rejects unsupported schemas, tool fields, >8192 exact tokens, output and byte budget before request
+ok 23 - Gemma rejects unsupported schemas, tool fields, >8192 exact tokens, output and byte budget before request
+  ---
+  duration_ms: 2.5175
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects malformed
+ok 24 - Gemma bounded output rejects malformed
+  ---
+  duration_ms: 6.7612
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects oversize
+ok 25 - Gemma bounded output rejects oversize
+  ---
+  duration_ms: 9.4564
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects usage
+ok 26 - Gemma bounded output rejects usage
+  ---
+  duration_ms: 10.3318
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects tool
+ok 27 - Gemma bounded output rejects tool
+  ---
+  duration_ms: 5.487
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects wrong-model
+ok 28 - Gemma bounded output rejects wrong-model
+  ---
+  duration_ms: 4.5176
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects invalid-id
+ok 29 - Gemma bounded output rejects invalid-id
+  ---
+  duration_ms: 4.7544
+  type: 'test'
+  ...
+# Subtest: TTS Unicode boundary, stopped backend, cloning and voice overrides are pre-contact refusals
+ok 30 - TTS Unicode boundary, stopped backend, cloning and voice overrides are pre-contact refusals
+  ---
+  duration_ms: 6.0241
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses empty
+ok 31 - TTS real WAV validation refuses empty
+  ---
+  duration_ms: 8.0779
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses not-wave
+ok 32 - TTS real WAV validation refuses not-wave
+  ---
+  duration_ms: 5.0428
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses stereo
+ok 33 - TTS real WAV validation refuses stereo
+  ---
+  duration_ms: 4.4842
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses sample-rate
+ok 34 - TTS real WAV validation refuses sample-rate
+  ---
+  duration_ms: 4.6337
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses bits
+ok 35 - TTS real WAV validation refuses bits
+  ---
+  duration_ms: 4.2219
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses silent
+ok 36 - TTS real WAV validation refuses silent
+  ---
+  duration_ms: 6.9285
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses truncated
+ok 37 - TTS real WAV validation refuses truncated
+  ---
+  duration_ms: 7.2172
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses oversize
+ok 38 - TTS real WAV validation refuses oversize
+  ---
+  duration_ms: 35.6232
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial 20.1s
+ok 39 - ASR controlled audio pre-upload denial 20.1s
+  ---
+  duration_ms: 5.2647
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial 25MiB
+ok 40 - ASR controlled audio pre-upload denial 25MiB
+  ---
+  duration_ms: 44.2058
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial checksum
+ok 41 - ASR controlled audio pre-upload denial checksum
+  ---
+  duration_ms: 3.3545
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial webm
+ok 42 - ASR controlled audio pre-upload denial webm
+  ---
+  duration_ms: 6.8126
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial mime
+ok 43 - ASR controlled audio pre-upload denial mime
+  ---
+  duration_ms: 2.032
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial foreign
+ok 44 - ASR controlled audio pre-upload denial foreign
+  ---
+  duration_ms: 1.4428
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial extra-field
+ok 45 - ASR controlled audio pre-upload denial extra-field
+  ---
+  duration_ms: 1.5218
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"en","duration":1,"processing_time_ms":1}
+ok 46 - ASR response shape rejects {"text":"مرحبا","language":"en","duration":1,"processing_time_ms":1}
+  ---
+  duration_ms: 8.3665
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":[],"language":"ar","duration":1,"processing_time_ms":1}
+ok 47 - ASR response shape rejects {"text":[],"language":"ar","duration":1,"processing_time_ms":1}
+  ---
+  duration_ms: 5.1099
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"ar","duration":21,"processing_time_ms":1}
+ok 48 - ASR response shape rejects {"text":"مرحبا","language":"ar","duration":21,"processing_time_ms":1}
+  ---
+  duration_ms: 4.8943
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":-1}
+ok 49 - ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":-1}
+  ---
+  duration_ms: 5.1449
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":1,"request_id":["id"]}
+ok 50 - ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":1,"request_id":["id"]}
+  ---
+  duration_ms: 5.37
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects "{"
+ok 51 - ASR response shape rejects "{"
+  ---
+  duration_ms: 10.6709
+  type: 'test'
+  ...
+# Subtest: common native HTTP deadline covers stalled body; cancellation and rejected fetch never retry
+ok 52 - common native HTTP deadline covers stalled body; cancellation and rejected fetch never retry
+  ---
+  duration_ms: 84.2091
+  type: 'test'
+  ...
+# Subtest: HTTP side-effect boundary denies non-owned insecure URLs and redacts error request IDs
+ok 53 - HTTP side-effect boundary denies non-owned insecure URLs and redacts error request IDs
+  ---
+  duration_ms: 5.2777
+  type: 'test'
+  ...
+# Subtest: gemma actual stalled body deadline quarantines capacity across factories
+ok 54 - gemma actual stalled body deadline quarantines capacity across factories
+  ---
+  duration_ms: 58.5555
+  type: 'test'
+  ...
+# Subtest: tts actual stalled body deadline quarantines capacity across factories
+ok 55 - tts actual stalled body deadline quarantines capacity across factories
+  ---
+  duration_ms: 51.3654
+  type: 'test'
+  ...
+# Subtest: asr actual stalled body deadline quarantines capacity across factories
+ok 56 - asr actual stalled body deadline quarantines capacity across factories
+  ---
+  duration_ms: 45.3356
+  type: 'test'
+  ...
+# Subtest: Gemma 60s operation budget includes trusted token counting; late counter cannot cause a dispatch
+ok 57 - Gemma 60s operation budget includes trusted token counting; late counter cannot cause a dispatch
+  ---
+  duration_ms: 46.7981
+  type: 'test'
+  ...
+# Subtest: public provider-neutral adapter exports are usable without SmartLabs URLs or credentials
+ok 58 - public provider-neutral adapter exports are usable without SmartLabs URLs or credentials
+  ---
+  duration_ms: 7.6943
+  type: 'test'
+  ...
+# Subtest: JSON-escaped credential echoes cannot reach returned text
+ok 59 - JSON-escaped credential echoes cannot reach returned text
+  ---
+  duration_ms: 5.2353
+  type: 'test'
+  ...
+# Subtest: Retry-After delta larger than one day is preserved, and HTTP date parses safely
+ok 60 - Retry-After delta larger than one day is preserved, and HTTP date parses safely
+  ---
+  duration_ms: 7.6252
+  type: 'test'
+  ...
+# Subtest: uncontracted 202 is not accepted as a completed Gemma response
+ok 61 - uncontracted 202 is not accepted as a completed Gemma response
+  ---
+  duration_ms: 5.0992
+  type: 'test'
+  ...
+# Subtest: TTS billing metadata is numeric-only through an explicit trusted header mapper; unknown names are never guessed
+ok 62 - TTS billing metadata is numeric-only through an explicit trusted header mapper; unknown names are never guessed
+  ---
+  duration_ms: 7.4592
+  type: 'test'
+  ...
+# Subtest: upstream 504 is indeterminate: a second factory cannot blindly dispatch after a proxy timeout
+ok 63 - upstream 504 is indeterminate: a second factory cannot blindly dispatch after a proxy timeout
+  ---
+  duration_ms: 4.47
+  type: 'test'
+  ...
+# Subtest: credential whitespace is rejected rather than silently repaired by Headers
+ok 64 - credential whitespace is rejected rather than silently repaired by Headers
+  ---
+  duration_ms: 1.6642
+  type: 'test'
+  ...
+# Subtest: TTS tracer: exact OmniVoice wire body and validated private-ready WAV
+ok 65 - TTS tracer: exact OmniVoice wire body and validated private-ready WAV
+  ---
+  duration_ms: 8.4407
+  type: 'test'
+  ...
+# Subtest: Gemma tracer: one actual chat request, bounded plain response, safe metadata
+ok 66 - Gemma tracer: one actual chat request, bounded plain response, safe metadata
+  ---
+  duration_ms: 4.8195
+  type: 'test'
+  ...
+# Subtest: default OFF, missing credentials and exact counter deny before I/O
+ok 67 - default OFF, missing credentials and exact counter deny before I/O
+  ---
+  duration_ms: 1.8577
+  type: 'test'
+  ...
+# Subtest: shared process admission across instances holds through body; failure releases only determinate outcomes
+ok 68 - shared process admission across instances holds through body; failure releases only determinate outcomes
+  ---
+  duration_ms: 49.3845
+  type: 'test'
+  ...
+# Subtest: server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+ok 69 - server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+  ---
+  duration_ms: 27.0885
+  type: 'test'
+  ...
+# Subtest: server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+ok 70 - server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+  ---
+  duration_ms: 30.3236
+  type: 'test'
+  ...
+# Subtest: explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+ok 71 - explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+  ---
+  duration_ms: 228.768
+  type: 'test'
+  ...
+# Subtest: server config refuses enabled capability without its key before dispatch
+ok 72 - server config refuses enabled capability without its key before dispatch
+  ---
+  duration_ms: 0.3598
+  type: 'test'
+  ...
+# Subtest: actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+ok 73 - actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+  ---
+  duration_ms: 445.4032
+  type: 'test'
+  ...
+# Subtest: actual private storage reader refuses oversize file before unbounded allocation
+ok 74 - actual private storage reader refuses oversize file before unbounded allocation
+  ---
+  duration_ms: 49.017
+  type: 'test'
+  ...
+# Subtest: TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+ok 75 - TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+  ---
+  duration_ms: 55.3996
+  type: 'test'
+  ...
+# Subtest: controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+ok 76 - controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+  ---
+  duration_ms: 2.9638
+  type: 'test'
+  ...
+# Subtest: Creative schema MIME mirrors include controlled compressed audio
+ok 77 - Creative schema MIME mirrors include controlled compressed audio
+  ---
+  duration_ms: 1.7416
+  type: 'test'
+  ...
+# Subtest: guarded actual server smoke reserves durable group before exactly G1 T1 A1; interruption cannot rerun
+ok 78 - guarded actual server smoke reserves durable group before exactly G1 T1 A1; interruption cannot rerun
+  ---
+  duration_ms: 53.621
+  type: 'test'
+  ...
+# Subtest: smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+ok 79 - smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+  ---
+  duration_ms: 85.923
+  type: 'test'
+  ...
+# Subtest: owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+ok 80 - owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+  ---
+  duration_ms: 26.3615
+  type: 'test'
+  ...
+# Subtest: compiled server factory authenticates request; default OFF health exposes presence only without network
+ok 81 - compiled server factory authenticates request; default OFF health exposes presence only without network
+  ---
+  duration_ms: 21.5787
+  type: 'test'
+  ...
+1..81
+# tests 81
+# suites 0
+# pass 80
+# fail 0
+# cancelled 0
+# skipped 1
+# todo 0
+# duration_ms 1062.0313
+
+EXIT=0

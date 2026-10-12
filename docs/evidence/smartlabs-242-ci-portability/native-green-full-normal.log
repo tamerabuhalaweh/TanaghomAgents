@@ -1,0 +1,2690 @@
+Command: npm.cmd test
+Exit: 0
+
+> tanaghom-agents@0.1.0 test
+> node --test tests/*.test.mjs
+
+TAP version 13
+# Subtest: pilot owner commands cannot submit authority, snapshots, prompts or tenant IDs
+ok 1 - pilot owner commands cannot submit authority, snapshots, prompts or tenant IDs
+  ---
+  duration_ms: 12.6532
+  type: 'test'
+  ...
+# Subtest: typed evidence rejects executable or fabricated approval metadata
+ok 2 - typed evidence rejects executable or fabricated approval metadata
+  ---
+  duration_ms: 19.1646
+  type: 'test'
+  ...
+# Subtest: report command validation is repeatable and bounded
+ok 3 - report command validation is repeatable and bounded
+  ---
+  duration_ms: 2.443
+  type: 'test'
+  ...
+# Subtest: pilot workflow is inactive, fixed-route, credential-reference-only and schedule-disabled
+ok 4 - pilot workflow is inactive, fixed-route, credential-reference-only and schedule-disabled
+  ---
+  duration_ms: 1.9946
+  type: 'test'
+  ...
+# Subtest: new gateway is default-off, bounded and separately authenticated with no raw error logging
+ok 5 - new gateway is default-off, bounded and separately authenticated with no raw error logging
+  ---
+  duration_ms: 1.5793
+  type: 'test'
+  ...
+# Subtest: all six Agency candidates pass the real Skill Library contract without runtime admission
+ok 6 - all six Agency candidates pass the real Skill Library contract without runtime admission
+  ---
+  duration_ms: 2889.1871
+  type: 'test'
+  ...
+# Subtest: candidate validation rejects runtime promotion or provider execution
+ok 7 - candidate validation rejects runtime promotion or provider execution
+  ---
+  duration_ms: 1016.3607
+  type: 'test'
+  ...
+# Subtest: candidate validation rejects source, contract, path, and reference hash drift
+ok 8 - candidate validation rejects source, contract, path, and reference hash drift
+  ---
+  duration_ms: 1277.2451
+  type: 'test'
+  ...
+# Subtest: candidate validation preserves explicit executor gaps and original worker identity
+ok 9 - candidate validation preserves explicit executor gaps and original worker identity
+  ---
+  duration_ms: 748.2153
+  type: 'test'
+  ...
+# Subtest: candidate drafts reject executable metadata, hidden authority, and silent procedure changes
+ok 10 - candidate drafts reject executable metadata, hidden authority, and silent procedure changes
+  ---
+  duration_ms: 823.8763
+  type: 'test'
+  ...
+# Subtest: quality corpus covers all six profiles and both languages without pretending public reserves are blind
+ok 11 - quality corpus covers all six profiles and both languages without pretending public reserves are blind
+  ---
+  duration_ms: 1985.6694
+  type: 'test'
+  ...
+# Subtest: corpus rejects omissions, duplicates, label drift, false customer signoff and missing Arabic
+ok 12 - corpus rejects omissions, duplicates, label drift, false customer signoff and missing Arabic
+  ---
+  duration_ms: 9.4016
+  type: 'test'
+  ...
+# Subtest: four reused profiles compare identical model inputs/schema/budgets with only system augmentation changed
+ok 13 - four reused profiles compare identical model inputs/schema/budgets with only system augmentation changed
+  ---
+  duration_ms: 727.2735
+  type: 'test'
+  ...
+# Subtest: reference-only profiles cannot be counted as existing AI baselines
+ok 14 - reference-only profiles cannot be counted as existing AI baselines
+  ---
+  duration_ms: 365.5412
+  type: 'test'
+  ...
+# Subtest: report fixtures actually exercise missing money, conflicting observations and zero denominators
+ok 15 - report fixtures actually exercise missing money, conflicting observations and zero denominators
+  ---
+  duration_ms: 64.4059
+  type: 'test'
+  ...
+# Subtest: brand fixtures genuinely leave unknown asset rights unresolved and never grant approval
+ok 16 - brand fixtures genuinely leave unknown asset rights unresolved and never grant approval
+  ---
+  duration_ms: 35.4878
+  type: 'test'
+  ...
+# Subtest: guided schema screen rejects the known crash shape and open/invalid objects
+ok 17 - guided schema screen rejects the known crash shape and open/invalid objects
+  ---
+  duration_ms: 2.3911
+  type: 'test'
+  ...
+# Subtest: source freeze is reproducible and changed sources cannot silently keep the lock
+ok 18 - source freeze is reproducible and changed sources cannot silently keep the lock
+  ---
+  duration_ms: 87.086
+  type: 'test'
+  ...
+# Subtest: offline packet regenerates identical case/request hashes and never fabricates measured results
+ok 19 - offline packet regenerates identical case/request hashes and never fabricates measured results
+  ---
+  duration_ms: 4872.2985
+  type: 'test'
+  ...
+# Subtest: rubric cannot reward simulated output or hide critical failure behind an average
+ok 20 - rubric cannot reward simulated output or hide critical failure behind an average
+  ---
+  duration_ms: 1.4467
+  type: 'test'
+  ...
+# Subtest: preparation has no credential loader or transport and rejects a live flag
+ok 21 - preparation has no credential loader or transport and rejects a live flag
+  ---
+  duration_ms: 277.5373
+  type: 'test'
+  ...
+# Subtest: fixed runner preserves prior source locks and schedules every bilingual case/arm/repetition once
+ok 22 - fixed runner preserves prior source locks and schedules every bilingual case/arm/repetition once
+  ---
+  duration_ms: 118.2114
+  type: 'test'
+  ...
+# Subtest: paired runner changes only system augmentation, labels baseline provenance honestly and validates output
+ok 23 - paired runner changes only system augmentation, labels baseline provenance honestly and validates output
+  ---
+  duration_ms: 1139.2039
+  type: 'test'
+  ...
+# Subtest: caller cannot relabel an arm, use another case/profile, substitute model or invent a reference baseline
+ok 24 - caller cannot relabel an arm, use another case/profile, substitute model or invent a reference baseline
+  ---
+  duration_ms: 364.7065
+  type: 'test'
+  ...
+# Subtest: condition comparison normalizes only independent trace IDs, not evidence or business facts
+ok 25 - condition comparison normalizes only independent trace IDs, not evidence or business facts
+  ---
+  duration_ms: 41.4349
+  type: 'test'
+  ...
+# Subtest: disposable workflow accepts loopback endpoints only, remains inactive, has no schedule and uses linked items
+ok 26 - disposable workflow accepts loopback endpoints only, remains inactive, has no schedule and uses linked items
+  ---
+  duration_ms: 14.4358
+  type: 'test'
+  ...
+# Subtest: prerequisite checker honestly reports missing names/model evidence and never grants execution authority
+ok 27 - prerequisite checker honestly reports missing names/model evidence and never grants execution authority
+  ---
+  duration_ms: 2.8237
+  type: 'test'
+  ...
+# Subtest: authored refund protocol fixtures escalate in both languages, including capitalized English input
+ok 28 - authored refund protocol fixtures escalate in both languages, including capitalized English input
+  ---
+  duration_ms: 44.5669
+  type: 'test'
+  ...
+# Subtest: host-network preflight proves its own loopback marker and fails closed without changing Docker settings
+ok 29 - host-network preflight proves its own loopback marker and fails closed without changing Docker settings
+  ---
+  duration_ms: 279.5227
+  type: 'test'
+  ...
+# Subtest: runtime manifest pins complete contracts/procedures and refuses fabricated admission or retargeting
+ok 30 - runtime manifest pins complete contracts/procedures and refuses fabricated admission or retargeting
+  ---
+  duration_ms: 52.2123
+  type: 'test'
+  ...
+# Subtest: adapter module has no network, database, credential or environment loader
+ok 31 - adapter module has no network, database, credential or environment loader
+  ---
+  duration_ms: 1.2972
+  type: 'test'
+  ...
+# Subtest: Agency social_media_strategist/en: actual n8n request/result node compatibility and immutable lineage
+ok 32 - Agency social_media_strategist/en: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 216.9237
+  type: 'test'
+  ...
+# Subtest: Agency social_media_strategist/ar: actual n8n request/result node compatibility and immutable lineage
+ok 33 - Agency social_media_strategist/ar: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 28.0114
+  type: 'test'
+  ...
+# Subtest: Agency content_creator/en: actual n8n request/result node compatibility and immutable lineage
+ok 34 - Agency content_creator/en: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 79.5288
+  type: 'test'
+  ...
+# Subtest: Agency content_creator/ar: actual n8n request/result node compatibility and immutable lineage
+ok 35 - Agency content_creator/ar: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 50.2468
+  type: 'test'
+  ...
+# Subtest: Agency discovery_coach/en: actual n8n request/result node compatibility and immutable lineage
+ok 36 - Agency discovery_coach/en: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 121.8608
+  type: 'test'
+  ...
+# Subtest: Agency discovery_coach/ar: actual n8n request/result node compatibility and immutable lineage
+ok 37 - Agency discovery_coach/ar: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 48.2152
+  type: 'test'
+  ...
+# Subtest: Agency support_responder/en: actual n8n request/result node compatibility and immutable lineage
+ok 38 - Agency support_responder/en: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 60.8049
+  type: 'test'
+  ...
+# Subtest: Agency support_responder/ar: actual n8n request/result node compatibility and immutable lineage
+ok 39 - Agency support_responder/ar: actual n8n request/result node compatibility and immutable lineage
+  ---
+  duration_ms: 72.1547
+  type: 'test'
+  ...
+# Subtest: all four bindings refuse tenant, identity, version, source and input substitutions before request construction
+ok 40 - all four bindings refuse tenant, identity, version, source and input substitutions before request construction
+  ---
+  duration_ms: 1082.0046
+  type: 'test'
+  ...
+# Subtest: stops, live modes, stale snapshots and provider flags fail closed before and after simulated inference
+ok 41 - stops, live modes, stale snapshots and provider flags fail closed before and after simulated inference
+  ---
+  duration_ms: 216.6084
+  type: 'test'
+  ...
+# Subtest: campaign adapters enforce cadence, draft bounds, approved pillars/channels and regeneration lineage
+ok 42 - campaign adapters enforce cadence, draft bounds, approved pillars/channels and regeneration lineage
+  ---
+  duration_ms: 146.884
+  type: 'test'
+  ...
+# Subtest: conversation adapters reject fabricated citations, low confidence, excessive questions and unsafe non-escalations
+ok 43 - conversation adapters reject fabricated citations, low confidence, excessive questions and unsafe non-escalations
+  ---
+  duration_ms: 307.0117
+  type: 'test'
+  ...
+# Subtest: Brand Guardian/en: findings, rights gaps and stale reviews never grant approval
+ok 44 - Brand Guardian/en: findings, rights gaps and stale reviews never grant approval
+  ---
+  duration_ms: 165.2823
+  type: 'test'
+  ...
+# Subtest: Brand Guardian/ar: findings, rights gaps and stale reviews never grant approval
+ok 45 - Brand Guardian/ar: findings, rights gaps and stale reviews never grant approval
+  ---
+  duration_ms: 92.6559
+  type: 'test'
+  ...
+# Subtest: Executive report/en: grounded values, real zero and unknown ratios remain distinct
+ok 46 - Executive report/en: grounded values, real zero and unknown ratios remain distinct
+  ---
+  duration_ms: 92.2969
+  type: 'test'
+  ...
+# Subtest: Executive report/ar: grounded values, real zero and unknown ratios remain distinct
+ok 47 - Executive report/ar: grounded values, real zero and unknown ratios remain distinct
+  ---
+  duration_ms: 38.9919
+  type: 'test'
+  ...
+# Subtest: report rejects cross-tenant/stale evidence and refuses negative, unknown, mismatched or invented metrics
+ok 48 - report rejects cross-tenant/stale evidence and refuses negative, unknown, mismatched or invented metrics
+  ---
+  duration_ms: 103.7126
+  type: 'test'
+  ...
+# Subtest: Brand semantic adapter/en: safe schema and bounded synthetic review
+ok 49 - Brand semantic adapter/en: safe schema and bounded synthetic review
+  ---
+  duration_ms: 82.8421
+  type: 'test'
+  ...
+# Subtest: Brand semantic adapter/ar: safe schema and bounded synthetic review
+ok 50 - Brand semantic adapter/ar: safe schema and bounded synthetic review
+  ---
+  duration_ms: 68.8482
+  type: 'test'
+  ...
+# Subtest: report handles valid ratios, inconsistent ratios and mixed currencies without invented aggregation
+ok 51 - report handles valid ratios, inconsistent ratios and mixed currencies without invented aggregation
+  ---
+  duration_ms: 43.1294
+  type: 'test'
+  ...
+# Subtest: malicious customer text remains data in the original request; invalid simulated provider outputs fail closed
+ok 52 - malicious customer text remains data in the original request; invalid simulated provider outputs fail closed
+  ---
+  duration_ms: 22.0724
+  type: 'test'
+  ...
+# Subtest: workspace deployment validates the ledger as administrator without widening API permissions
+ok 53 - workspace deployment validates the ledger as administrator without widening API permissions
+  ---
+  duration_ms: 4.3453
+  type: 'test'
+  ...
+# Subtest: workspace: six bounded profiles and no model compiler/tool request
+ok 54 - workspace: six bounded profiles and no model compiler/tool request
+  ---
+  duration_ms: 1.8415
+  type: 'test'
+  ...
+# Subtest: workspace: predecessor lineage passes as unapproved task data, never new authority
+ok 55 - workspace: predecessor lineage passes as unapproved task data, never new authority
+  ---
+  duration_ms: 1.0622
+  type: 'test'
+  ...
+# Subtest: workspace: complete model documents only; wrong model, truncation, tools and wrong language fail
+ok 56 - workspace: complete model documents only; wrong model, truncation, tools and wrong language fail
+  ---
+  duration_ms: 1.3172
+  type: 'test'
+  ...
+# Subtest: workspace: deterministic report has no invented business metrics or model invocation
+ok 57 - workspace: deterministic report has no invented business metrics or model invocation
+  ---
+  duration_ms: 0.5404
+  type: 'test'
+  ...
+# Subtest: workspace: additive migration separates simulator claims, human decisions and worker privileges
+ok 58 - workspace: additive migration separates simulator claims, human decisions and worker privileges
+  ---
+  duration_ms: 2.0986
+  type: 'test'
+  ...
+# Subtest: agent registry reconciles every shipped workflow export with reviewed runtime evidence
+ok 59 - agent registry reconciles every shipped workflow export with reviewed runtime evidence
+  ---
+  duration_ms: 24.0474
+  type: 'test'
+  ...
+# Subtest: database registry seed stays aligned with the versioned contract
+ok 60 - database registry seed stays aligned with the versioned contract
+  ---
+  duration_ms: 5.1303
+  type: 'test'
+  ...
+# Subtest: 0033 counts canonical scenarios independently from invocation cardinality
+ok 61 - 0033 counts canonical scenarios independently from invocation cardinality
+  ---
+  duration_ms: 12.0959
+  type: 'test'
+  ...
+# Subtest: Agent Studio validator accepts a bounded draft and rejects unsafe authority, secrets, URLs, automatic mode, and unknown fields
+ok 62 - Agent Studio validator accepts a bounded draft and rejects unsafe authority, secrets, URLs, automatic mode, and unknown fields
+  ---
+  duration_ms: 452.841
+  type: 'test'
+  ...
+# Subtest: organization agent draft contract is closed, version-pinned, and excludes automatic mode
+ok 63 - organization agent draft contract is closed, version-pinned, and excludes automatic mode
+  ---
+  duration_ms: 264.0159
+  type: 'test'
+  ...
+# Subtest: Agent Studio migration is tenant-bound, immutable, least privilege, and runtime-gated
+ok 64 - Agent Studio migration is tenant-bound, immutable, least privilege, and runtime-gated
+  ---
+  duration_ms: 13.7733
+  type: 'test'
+  ...
+# Subtest: Agent Studio API/UI exposes honest lifecycle, live certification evidence, error, mobile, and RTL states without credentials or runtime mutation
+ok 65 - Agent Studio API/UI exposes honest lifecycle, live certification evidence, error, mobile, and RTL states without credentials or runtime mutation
+  ---
+  duration_ms: 24.1084
+  type: 'test'
+  ...
+# Subtest: Conversation normalizer safely canonicalizes the exact production enum aliases
+ok 66 - Conversation normalizer safely canonicalizes the exact production enum aliases
+  ---
+  duration_ms: 8.0705
+  type: 'test'
+  ...
+# Subtest: Conversation normalizer rejects a citation that is not the retrieved approved version
+ok 67 - Conversation normalizer rejects a citation that is not the retrieved approved version
+  ---
+  duration_ms: 2.8899
+  type: 'test'
+  ...
+# Subtest: Conversation normalizer rejects unknown enum aliases
+ok 68 - Conversation normalizer rejects unknown enum aliases
+  ---
+  duration_ms: 1.2314
+  type: 'test'
+  ...
+# Subtest: core canary workflow contract disables schedules, restores originals, and detects unrelated drift
+ok 69 - core canary workflow contract disables schedules, restores originals, and detects unrelated drift
+  ---
+  duration_ms: 734.9383
+  type: 'test'
+  ...
+# Subtest: creative design migration is additive, guarded, and reversible
+ok 70 - creative design migration is additive, guarded, and reversible
+  ---
+  duration_ms: 11.24
+  type: 'test'
+  ...
+# Subtest: ad and carousel design contracts validate
+ok 71 - ad and carousel design contracts validate
+  ---
+  duration_ms: 2436.5386
+  type: 'test'
+  ...
+# Subtest: document renderer validates, escapes, and builds deterministic HTML
+ok 72 - document renderer validates, escapes, and builds deterministic HTML
+  ---
+  duration_ms: 17.5165
+  type: 'test'
+  ...
+# Subtest: font policy pins the bundled Cairo build
+ok 73 - font policy pins the bundled Cairo build
+  ---
+  duration_ms: 3.0584
+  type: 'test'
+  ...
+# Subtest: design server boundary stays strict and provider-free
+ok 74 - design server boundary stays strict and provider-free
+  ---
+  duration_ms: 18.6227
+  type: 'test'
+  ...
+# Subtest: creative migration 0036 is additive, guarded, and fully reversible
+ok 75 - creative migration 0036 is additive, guarded, and fully reversible
+  ---
+  duration_ms: 24.6757
+  type: 'test'
+  ...
+# Subtest: creative contracts accept valid payloads and reject invalid states
+ok 76 - creative contracts accept valid payloads and reject invalid states
+  ---
+  duration_ms: 213.7603
+  type: 'test'
+  ...
+# Subtest: creative runtime vocabulary, registry, and queue policy are closed
+ok 77 - creative runtime vocabulary, registry, and queue policy are closed
+  ---
+  duration_ms: 17.2191
+  type: 'test'
+  ...
+# Subtest: mock adapter is deterministic and classifies scripted outcomes
+ok 78 - mock adapter is deterministic and classifies scripted outcomes
+  ---
+  duration_ms: 2.0449
+  type: 'test'
+  ...
+# Subtest: storage keys are tenant-scoped and checksums/previews verify
+ok 79 - storage keys are tenant-scoped and checksums/previews verify
+  ---
+  duration_ms: 15.9864
+  type: 'test'
+  ...
+# Subtest: test storage adapter stores privately with checksum and preview guards
+ok 80 - test storage adapter stores privately with checksum and preview guards
+  ---
+  duration_ms: 5.9496
+  type: 'test'
+  ...
+# Subtest: creative server boundary stays authenticated, authorized, idempotent, and provider-free
+ok 81 - creative server boundary stays authenticated, authorized, idempotent, and provider-free
+  ---
+  duration_ms: 34.2259
+  type: 'test'
+  ...
+# Subtest: review corrections are present: tenant templates, brand FK, audit mirrors, key scope
+ok 82 - review corrections are present: tenant templates, brand FK, audit mirrors, key scope
+  ---
+  duration_ms: 3.646
+  type: 'test'
+  ...
+# Subtest: creative image lane migration is additive, guarded, and reversible
+ok 83 - creative image lane migration is additive, guarded, and reversible
+  ---
+  duration_ms: 15.4202
+  type: 'test'
+  ...
+# Subtest: image generation and fidelity contracts validate
+ok 84 - image generation and fidelity contracts validate
+  ---
+  duration_ms: 2368.0097
+  type: 'test'
+  ...
+# Subtest: provider allowlist and presets are versioned, bounded, and commercial-clean
+ok 85 - provider allowlist and presets are versioned, bounded, and commercial-clean
+  ---
+  duration_ms: 9.48
+  type: 'test'
+  ...
+# Subtest: http image adapter normalizes, allowlists, and classifies without network
+ok 86 - http image adapter normalizes, allowlists, and classifies without network
+  ---
+  duration_ms: 80.1476
+  type: 'test'
+  ...
+# Subtest: review round: ssrf guard, attempt lifecycle, version truth, operation truth, chroma segment
+ok 87 - review round: ssrf guard, attempt lifecycle, version truth, operation truth, chroma segment
+  ---
+  duration_ms: 605.6235
+  type: 'test'
+  ...
+# Subtest: local sharp pipeline renders, composes, and enhances deterministically
+ok 88 - local sharp pipeline renders, composes, and enhances deterministically
+  ---
+  duration_ms: 318.1507
+  type: 'test'
+  ...
+# Subtest: s3 adapter signs deterministically and round-trips objects
+ok 89 - s3 adapter signs deterministically and round-trips objects
+  ---
+  duration_ms: 22.6815
+  type: 'test'
+  ...
+# Subtest: artifact downloads pin resolved public destinations; loopback needs test mode
+ok 90 - artifact downloads pin resolved public destinations; loopback needs test mode
+  ---
+  duration_ms: 7.1019
+  type: 'test'
+  ...
+# Subtest: motion worker module stays EXECUTE-only: no direct table reads
+ok 91 - motion worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 10.7457
+  type: 'test'
+  ...
+# Subtest: motion contract validates through JSON schema
+ok 92 - motion contract validates through JSON schema
+  ---
+  duration_ms: 2370.3497
+  type: 'test'
+  ...
+# Subtest: timeline plans totals and freezes frames deterministically with RTL entrances
+ok 93 - timeline plans totals and freezes frames deterministically with RTL entrances
+  ---
+  duration_ms: 5.5108
+  type: 'test'
+  ...
+# Subtest: malicious and oversized motion JSON is rejected
+ok 94 - malicious and oversized motion JSON is rejected
+  ---
+  duration_ms: 4.2999
+  type: 'test'
+  ...
+# Subtest: ffmpeg argv allowlist rejects codecs, dims, fps, and path injection
+ok 95 - ffmpeg argv allowlist rejects codecs, dims, fps, and path injection
+  ---
+  duration_ms: 2.3165
+  type: 'test'
+  ...
+# Subtest: pure-JS MP4 validator enforces container, codec, dims, and duration
+ok 96 - pure-JS MP4 validator enforces container, codec, dims, and duration
+  ---
+  duration_ms: 10.9559
+  type: 'test'
+  ...
+# Subtest: encode fails closed on timeout and spawn errors without shell
+ok 97 - encode fails closed on timeout and spawn errors without shell
+  ---
+  duration_ms: 39.225
+  type: 'test'
+  ...
+# Subtest: streaming encoder cleans temp output on every exit path
+ok 98 - streaming encoder cleans temp output on every exit path
+  ---
+  duration_ms: 248.8923
+  type: 'test'
+  ...
+# Subtest: motion worker executes a job to one MP4 version and completes
+ok 99 - motion worker executes a job to one MP4 version and completes
+  ---
+  duration_ms: 150.0277
+  type: 'test'
+  ...
+# Subtest: 900-frame render never accumulates frame buffers
+ok 100 - 900-frame render never accumulates frame buffers
+  ---
+  duration_ms: 256.3613
+  type: 'test'
+  ...
+# Subtest: motion worker honors cancellation, timeouts, and duplicate guards
+ok 101 - motion worker honors cancellation, timeouts, and duplicate guards
+  ---
+  duration_ms: 58.3893
+  type: 'test'
+  ...
+# Subtest: worker polls cancellation while encoder.finish() is pending
+ok 102 - worker polls cancellation while encoder.finish() is pending
+  ---
+  duration_ms: 205.2859
+  type: 'test'
+  ...
+# Subtest: motion claim helper uses the filtered claim
+ok 103 - motion claim helper uses the filtered claim
+  ---
+  duration_ms: 1.8892
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 3000::1
+ok 104 - RC1 non-public/invalid binary destination 3000::1
+  ---
+  duration_ms: 12.3588
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2d00::1
+ok 105 - RC1 non-public/invalid binary destination 2d00::1
+  ---
+  duration_ms: 1.2842
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:1000::1
+ok 106 - RC1 non-public/invalid binary destination 2001:1000::1
+  ---
+  duration_ms: 1.8495
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 3ffe::1
+ok 107 - RC1 non-public/invalid binary destination 3ffe::1
+  ---
+  duration_ms: 0.6426
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 5f00::1
+ok 108 - RC1 non-public/invalid binary destination 5f00::1
+  ---
+  duration_ms: 0.4481
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fc01::1
+ok 109 - RC1 non-public/invalid binary destination fc01::1
+  ---
+  duration_ms: 0.3233
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+ok 110 - RC1 non-public/invalid binary destination FC01:0000:0000:0000:0000:0000:0000:0001
+  ---
+  duration_ms: 0.4351
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fdff:ffff::1
+ok 111 - RC1 non-public/invalid binary destination fdff:ffff::1
+  ---
+  duration_ms: 0.3935
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fe90::1
+ok 112 - RC1 non-public/invalid binary destination fe90::1
+  ---
+  duration_ms: 0.7314
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination febf:ffff::1
+ok 113 - RC1 non-public/invalid binary destination febf:ffff::1
+  ---
+  duration_ms: 0.867
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination fec1::1
+ok 114 - RC1 non-public/invalid binary destination fec1::1
+  ---
+  duration_ms: 0.6995
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination feff::1
+ok 115 - RC1 non-public/invalid binary destination feff::1
+  ---
+  duration_ms: 0.4755
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:7f00:1
+ok 116 - RC1 non-public/invalid binary destination ::ffff:7f00:1
+  ---
+  duration_ms: 0.4456
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+ok 117 - RC1 non-public/invalid binary destination 0:0:0:0:0:ffff:127.0.0.1
+  ---
+  duration_ms: 0.5967
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+ok 118 - RC1 non-public/invalid binary destination ::FFFF:0A00:0001
+  ---
+  duration_ms: 0.312
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+ok 119 - RC1 non-public/invalid binary destination ::ffff:172.16.0.1
+  ---
+  duration_ms: 0.3481
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:c0a8:101
+ok 120 - RC1 non-public/invalid binary destination ::ffff:c0a8:101
+  ---
+  duration_ms: 0.357
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+ok 121 - RC1 non-public/invalid binary destination ::ffff:a9fe:a9fe
+  ---
+  duration_ms: 0.9605
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:2::1
+ok 122 - RC1 non-public/invalid binary destination 2001:2::1
+  ---
+  duration_ms: 0.3027
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+ok 123 - RC1 non-public/invalid binary destination 2001:0002:0:0:0:0:0:1
+  ---
+  duration_ms: 0.2755
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 100::1
+ok 124 - RC1 non-public/invalid binary destination 100::1
+  ---
+  duration_ms: 0.3317
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2001:db8::1
+ok 125 - RC1 non-public/invalid binary destination 2001:db8::1
+  ---
+  duration_ms: 0.2908
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 3fff::1
+ok 126 - RC1 non-public/invalid binary destination 3fff::1
+  ---
+  duration_ms: 0.2614
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2002:7f00:1::1
+ok 127 - RC1 non-public/invalid binary destination 2002:7f00:1::1
+  ---
+  duration_ms: 0.2547
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::127.0.0.1
+ok 128 - RC1 non-public/invalid binary destination ::127.0.0.1
+  ---
+  duration_ms: 0.4112
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+ok 129 - RC1 non-public/invalid binary destination 64:ff9b::7f00:1
+  ---
+  duration_ms: 0.2761
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+ok 130 - RC1 non-public/invalid binary destination 64:ff9b::10.0.0.1
+  ---
+  duration_ms: 0.3042
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 64:ff9b:1::1
+ok 131 - RC1 non-public/invalid binary destination 64:ff9b:1::1
+  ---
+  duration_ms: 0.366
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ff02::1
+ok 132 - RC1 non-public/invalid binary destination ff02::1
+  ---
+  duration_ms: 0.3373
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::
+ok 133 - RC1 non-public/invalid binary destination ::
+  ---
+  duration_ms: 0.3047
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+ok 134 - RC1 non-public/invalid binary destination 0:0:0:0:0:0:0:1
+  ---
+  duration_ms: 0.2426
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 2606:4700::1%1
+ok 135 - RC1 non-public/invalid binary destination 2606:4700::1%1
+  ---
+  duration_ms: 0.2517
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination bogus:address
+ok 136 - RC1 non-public/invalid binary destination bogus:address
+  ---
+  duration_ms: 0.2462
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+ok 137 - RC1 non-public/invalid binary destination ::ffff:999.0.0.1
+  ---
+  duration_ms: 0.315
+  type: 'test'
+  ...
+# Subtest: RC1 non-public/invalid binary destination 1::2::3
+ok 138 - RC1 non-public/invalid binary destination 1::2::3
+  ---
+  duration_ms: 1.9306
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 8.8.8.8
+ok 139 - RC1 public normalized positive pin 8.8.8.8
+  ---
+  duration_ms: 23.311
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2410::1
+ok 140 - RC1 public normalized positive pin 2410::1
+  ---
+  duration_ms: 0.569
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2630::1
+ok 141 - RC1 public normalized positive pin 2630::1
+  ---
+  duration_ms: 0.7763
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2606:4700:4700::1111
+ok 142 - RC1 public normalized positive pin 2606:4700:4700::1111
+  ---
+  duration_ms: 1.1766
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+ok 143 - RC1 public normalized positive pin 2001:4860:4860:0:0:0:0:8888
+  ---
+  duration_ms: 1.2007
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin ::ffff:808:808
+ok 144 - RC1 public normalized positive pin ::ffff:808:808
+  ---
+  duration_ms: 0.4313
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+ok 145 - RC1 public normalized positive pin 0:0:0:0:0:ffff:8.8.8.8
+  ---
+  duration_ms: 0.6828
+  type: 'test'
+  ...
+# Subtest: RC1 public normalized positive pin 64:ff9b::808:808
+ok 146 - RC1 public normalized positive pin 64:ff9b::808:808
+  ---
+  duration_ms: 1.9253
+  type: 'test'
+  ...
+# Subtest: RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+ok 147 - RC1 actual default HTTPS transport makes zero owned-localhost connections with test bypass OFF
+  ---
+  duration_ms: 18.8288
+  type: 'test'
+  ...
+# Subtest: RC2 no additional active video track may hide an unsupported description
+ok 148 - RC2 no additional active video track may hide an unsupported description
+  ---
+  duration_ms: 2.0046
+  type: 'test'
+  ...
+# Subtest: RC2 unmodified provider-encoded H264 AAC facts preserved
+ok 149 - RC2 unmodified provider-encoded H264 AAC facts preserved
+  ---
+  duration_ms: 1.129
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description declared-missing
+ok 150 - RC2 rejects sample description declared-missing
+  ---
+  duration_ms: 0.4996
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description undeclared-extra
+ok 151 - RC2 rejects sample description undeclared-extra
+  ---
+  duration_ms: 1.1695
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description zero-count
+ok 152 - RC2 rejects sample description zero-count
+  ---
+  duration_ms: 0.3636
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description zero-index
+ok 153 - RC2 rejects sample description zero-index
+  ---
+  duration_ms: 0.6036
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description missing-index
+ok 154 - RC2 rejects sample description missing-index
+  ---
+  duration_ms: 0.369
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description truncated-entry
+ok 155 - RC2 rejects sample description truncated-entry
+  ---
+  duration_ms: 0.17
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description oversized-entry
+ok 156 - RC2 rejects sample description oversized-entry
+  ---
+  duration_ms: 0.2187
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description undersized-entry
+ok 157 - RC2 rejects sample description undersized-entry
+  ---
+  duration_ms: 0.2599
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description trailing-entry-byte
+ok 158 - RC2 rejects sample description trailing-entry-byte
+  ---
+  duration_ms: 0.4149
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description unsupported-active
+ok 159 - RC2 rejects sample description unsupported-active
+  ---
+  duration_ms: 1.3434
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description allowed-but-mismatched-active
+ok 160 - RC2 rejects sample description allowed-but-mismatched-active
+  ---
+  duration_ms: 2.2947
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description mismatched-visual
+ok 161 - RC2 rejects sample description mismatched-visual
+  ---
+  duration_ms: 3.4257
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-declared-missing
+ok 162 - RC2 rejects sample description audio-declared-missing
+  ---
+  duration_ms: 1.1987
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-missing-index
+ok 163 - RC2 rejects sample description audio-missing-index
+  ---
+  duration_ms: 0.5035
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-unsupported
+ok 164 - RC2 rejects sample description audio-unsupported
+  ---
+  duration_ms: 0.6275
+  type: 'test'
+  ...
+# Subtest: RC2 rejects sample description audio-mismatched
+ok 165 - RC2 rejects sample description audio-mismatched
+  ---
+  duration_ms: 0.7229
+  type: 'test'
+  ...
+# Subtest: RC2 real existing second consistent video description is valid
+ok 166 - RC2 real existing second consistent video description is valid
+  ---
+  duration_ms: 0.9669
+  type: 'test'
+  ...
+# Subtest: RC2 real existing second consistent audio description is valid
+ok 167 - RC2 real existing second consistent audio description is valid
+  ---
+  duration_ms: 0.7575
+  type: 'test'
+  ...
+# Subtest: R1 actual runner hands approved configuration to downloader without network or loopback
+ok 168 - R1 actual runner hands approved configuration to downloader without network or loopback
+  ---
+  duration_ms: 48.8802
+  type: 'test'
+  ...
+# Subtest: R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+ok 169 - R1 runner HTTPS origin handoff reaches reused public pinned downloader offline
+  ---
+  duration_ms: 0.882
+  type: 'test'
+  ...
+# Subtest: R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+ok 170 - R1 exact origins reject subdomain, other port, HTTP, credentials and redirect before transport
+  ---
+  duration_ms: 2.0454
+  type: 'test'
+  ...
+# Subtest: R2 actual presenter fixture has media payload and sample extents
+ok 171 - R2 actual presenter fixture has media payload and sample extents
+  ---
+  duration_ms: 1.8827
+  type: 'test'
+  ...
+# Subtest: R1 exact origin downloader denies empty approvals and non-public/mixed A/AAAA before transport
+ok 172 - R1 exact origin downloader denies empty approvals and non-public/mixed A/AAAA before transport
+  ---
+  duration_ms: 1.8792
+  type: 'test'
+  ...
+# Subtest: R1 allowed HTTPS redirect re-resolves all answers and refuses mixed destination
+ok 173 - R1 allowed HTTPS redirect re-resolves all answers and refuses mixed destination
+  ---
+  duration_ms: 1.2461
+  type: 'test'
+  ...
+# Subtest: R1 bounded artifact bytes reject oversize response on exact origin
+ok 174 - R1 bounded artifact bytes reject oversize response on exact origin
+  ---
+  duration_ms: 0.9059
+  type: 'test'
+  ...
+# Subtest: R2 empty malformed truncated and missing track sample tables fail closed
+ok 175 - R2 empty malformed truncated and missing track sample tables fail closed
+  ---
+  duration_ms: 0.7982
+  type: 'test'
+  ...
+# Subtest: R2 rejects no-mdat of real encoded fixture
+ok 176 - R2 rejects no-mdat of real encoded fixture
+  ---
+  duration_ms: 0.6932
+  type: 'test'
+  ...
+# Subtest: R2 rejects empty-mdat of real encoded fixture
+ok 177 - R2 rejects empty-mdat of real encoded fixture
+  ---
+  duration_ms: 0.6371
+  type: 'test'
+  ...
+# Subtest: R2 rejects dummy-mdat of real encoded fixture
+ok 178 - R2 rejects dummy-mdat of real encoded fixture
+  ---
+  duration_ms: 0.3695
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-offset of real encoded fixture
+ok 179 - R2 rejects bad-chunk-offset of real encoded fixture
+  ---
+  duration_ms: 1.4351
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-sample-size of real encoded fixture
+ok 180 - R2 rejects bad-sample-size of real encoded fixture
+  ---
+  duration_ms: 0.4076
+  type: 'test'
+  ...
+# Subtest: R2 rejects bad-chunk-map of real encoded fixture
+ok 181 - R2 rejects bad-chunk-map of real encoded fixture
+  ---
+  duration_ms: 0.2278
+  type: 'test'
+  ...
+# Subtest: R2 rejects out-of-bounds-audio of real encoded fixture
+ok 182 - R2 rejects out-of-bounds-audio of real encoded fixture
+  ---
+  duration_ms: 0.3965
+  type: 'test'
+  ...
+# Subtest: worker module stays EXECUTE-only: no direct table reads
+ok 183 - worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 11.4275
+  type: 'test'
+  ...
+# Subtest: PNG output validator enforces magic and canvas dimensions
+ok 184 - PNG output validator enforces magic and canvas dimensions
+  ---
+  duration_ms: 1.5649
+  type: 'test'
+  ...
+# Subtest: offline capture disables scripts, sizes viewport, and aborts routable requests
+ok 185 - offline capture disables scripts, sizes viewport, and aborts routable requests
+  ---
+  duration_ms: 2.2068
+  type: 'test'
+  ...
+# Subtest: worker executes an ad job to one persisted version and completes
+ok 186 - worker executes an ad job to one persisted version and completes
+  ---
+  duration_ms: 11.3191
+  type: 'test'
+  ...
+# Subtest: worker persists carousel slides as ordered versions of one lineage
+ok 187 - worker persists carousel slides as ordered versions of one lineage
+  ---
+  duration_ms: 6.7374
+  type: 'test'
+  ...
+# Subtest: worker fails closed on bad documents, foreign capabilities, and network attempts
+ok 188 - worker fails closed on bad documents, foreign capabilities, and network attempts
+  ---
+  duration_ms: 7.0697
+  type: 'test'
+  ...
+# Subtest: claim helper uses the capability-filtered claim only
+ok 189 - claim helper uses the capability-filtered claim only
+  ---
+  duration_ms: 1.0235
+  type: 'test'
+  ...
+# Subtest: worker resolves private source assets through the controlled reader
+ok 190 - worker resolves private source assets through the controlled reader
+  ---
+  duration_ms: 7.6148
+  type: 'test'
+  ...
+# Subtest: local filesystem storage round-trips with exclusive create
+ok 191 - local filesystem storage round-trips with exclusive create
+  ---
+  duration_ms: 18.3425
+  type: 'test'
+  ...
+# Subtest: segmentation worker module stays EXECUTE-only: no direct table reads
+ok 192 - segmentation worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 17.6593
+  type: 'test'
+  ...
+# Subtest: segmentation migration is additive, guarded, and reversible
+ok 193 - segmentation migration is additive, guarded, and reversible
+  ---
+  duration_ms: 3.4236
+  type: 'test'
+  ...
+# Subtest: segment request normalization enforces engines, mimes, dims, and refine bounds
+ok 194 - segment request normalization enforces engines, mimes, dims, and refine bounds
+  ---
+  duration_ms: 1.5866
+  type: 'test'
+  ...
+# Subtest: local deterministic engine segments fixtures without touching the source
+ok 195 - local deterministic engine segments fixtures without touching the source
+  ---
+  duration_ms: 136.4745
+  type: 'test'
+  ...
+# Subtest: bridge runner uses fixed argv, no shell, with timeout and report validation
+ok 196 - bridge runner uses fixed argv, no shell, with timeout and report validation
+  ---
+  duration_ms: 7.3831
+  type: 'test'
+  ...
+# Subtest: segment worker persists mask v1 + cutout v2 of one lineage
+ok 197 - segment worker persists mask v1 + cutout v2 of one lineage
+  ---
+  duration_ms: 32.4429
+  type: 'test'
+  ...
+# Subtest: segment worker fails closed on bad engine, unknown source, and cancel
+ok 198 - segment worker fails closed on bad engine, unknown source, and cancel
+  ---
+  duration_ms: 14.61
+  type: 'test'
+  ...
+# Subtest: deployment verification pins weights and code before inference
+ok 199 - deployment verification pins weights and code before inference
+  ---
+  duration_ms: 23.8927
+  type: 'test'
+  ...
+# Subtest: restart recovery reuses verified outputs without duplicates
+ok 200 - restart recovery reuses verified outputs without duplicates
+  ---
+  duration_ms: 66.6143
+  type: 'test'
+  ...
+# Subtest: forged bridge reports fail mask integrity
+ok 201 - forged bridge reports fail mask integrity
+  ---
+  duration_ms: 59.8616
+  type: 'test'
+  ...
+# Subtest: segment claim helper uses the filtered claim
+ok 202 - segment claim helper uses the filtered claim
+  ---
+  duration_ms: 1.0397
+  type: 'test'
+  ...
+# (node:44632) [MODULE_TYPELESS_PACKAGE_JSON] Warning: Module type of file:///<REPOSITORY>/apps/dashboard/lib/i18n/creative.ts is not specified and it doesn't parse as CommonJS.
+# Reparsing as ES module because module syntax was detected. This incurs a performance overhead.
+# To eliminate this warning, add "type": "module" to <USER_HOME>\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\apps\\dashboard\\package.json.
+# (Use `node --trace-warnings ...` to show where the warning was created)
+# Subtest: creative dictionaries stay complete across locales
+ok 203 - creative dictionaries stay complete across locales
+  ---
+  duration_ms: 3.2251
+  type: 'test'
+  ...
+# Subtest: creative studio migration, routes, and pages follow foundation conventions
+ok 204 - creative studio migration, routes, and pages follow foundation conventions
+  ---
+  duration_ms: 26.5112
+  type: 'test'
+  ...
+# Subtest: review round two: globals read-only, no generic claim, idempotency-first, safe preview, serialized versions
+ok 205 - review round two: globals read-only, no generic claim, idempotency-first, safe preview, serialized versions
+  ---
+  duration_ms: 5.4174
+  type: 'test'
+  ...
+# Subtest: creative server boundary stays provider-free with upload guards
+ok 206 - creative server boundary stays provider-free with upload guards
+  ---
+  duration_ms: 22.1168
+  type: 'test'
+  ...
+# Subtest: creative studio UI is bilingual, direction-aware, and role-gated
+ok 207 - creative studio UI is bilingual, direction-aware, and role-gated
+  ---
+  duration_ms: 17.083
+  type: 'test'
+  ...
+# Subtest: live runner refuses source-only even with feature flags ON; before DB/key/network
+ok 208 - live runner refuses source-only even with feature flags ON; before DB/key/network
+  ---
+  duration_ms: 298.4208
+  type: 'test'
+  ...
+# Subtest: bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+ok 209 - bounded actual MP3 layer III byte frames expose duration/rate/channels; forged audio rejected
+  ---
+  duration_ms: 2.4866
+  type: 'test'
+  ...
+# Subtest: binary signatures reject high-bit aliases rather than lossy ASCII matches
+ok 210 - binary signatures reject high-bit aliases rather than lossy ASCII matches
+  ---
+  duration_ms: 10.019
+  type: 'test'
+  ...
+# Subtest: controlled encoded media rejects container, codec, dimensions, duration and bounds
+ok 211 - controlled encoded media rejects container, codec, dimensions, duration and bounds
+  ---
+  duration_ms: 3.8634
+  type: 'test'
+  ...
+# Subtest: actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+ok 212 - actual encoded MP4 reports AAC audio channels and rate; WAV byte parser rejects forged bytes
+  ---
+  duration_ms: 3.4893
+  type: 'test'
+  ...
+# Subtest: provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+ok 213 - provider JSON responses bounded before parsing; malformed/oversized results remain indeterminate
+  ---
+  duration_ms: 57.7264
+  type: 'test'
+  ...
+# Subtest: MP4 validator rejects trailing truncated box bytes
+ok 214 - MP4 validator rejects trailing truncated box bytes
+  ---
+  duration_ms: 0.8927
+  type: 'test'
+  ...
+# Subtest: presenter output must include a supported audio track
+ok 215 - presenter output must include a supported audio track
+  ---
+  duration_ms: 0.8858
+  type: 'test'
+  ...
+# Subtest: lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+ok 216 - lip_sync is canonical Creative Runtime and JSON contract capability, not a provider identifier
+  ---
+  duration_ms: 2.9013
+  type: 'test'
+  ...
+# Subtest: HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+ok 217 - HeyGen stock Arabic scripts use v3 look+explicit approved voice, not group or cloning
+  ---
+  duration_ms: 4.4019
+  type: 'test'
+  ...
+# Subtest: Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+ok 218 - Sync uses approved byte multipart video+audio, lipsync-2 and persisted key; image/text denied
+  ---
+  duration_ms: 3.9097
+  type: 'test'
+  ...
+# Subtest: video lane migration is additive, guarded, and reversible
+ok 219 - video lane migration is additive, guarded, and reversible
+  ---
+  duration_ms: 17.2206
+  type: 'test'
+  ...
+# Subtest: video worker module stays EXECUTE-only: no direct table reads
+ok 220 - video worker module stays EXECUTE-only: no direct table reads
+  ---
+  duration_ms: 3.4218
+  type: 'test'
+  ...
+# Subtest: video request normalization and cost estimates
+ok 221 - video request normalization and cost estimates
+  ---
+  duration_ms: 1.9246
+  type: 'test'
+  ...
+# Subtest: video adapter construction enforces https outside test loopback
+ok 222 - video adapter construction enforces https outside test loopback
+  ---
+  duration_ms: 1.6468
+  type: 'test'
+  ...
+# Subtest: MiniMax task lifecycle maps to worker vocabulary
+ok 223 - MiniMax task lifecycle maps to worker vocabulary
+  ---
+  duration_ms: 3.4023
+  type: 'test'
+  ...
+# Subtest: provider MP4s validate against the vendor codec allowlist, never MIME
+ok 224 - provider MP4s validate against the vendor codec allowlist, never MIME
+  ---
+  duration_ms: 4.6544
+  type: 'test'
+  ...
+# Subtest: video worker executes text-to-video to a persisted version
+ok 225 - video worker executes text-to-video to a persisted version
+  ---
+  duration_ms: 6.8042
+  type: 'test'
+  ...
+# Subtest: video worker resolves private sources for image-to-video
+ok 226 - video worker resolves private sources for image-to-video
+  ---
+  duration_ms: 2.3641
+  type: 'test'
+  ...
+# Subtest: indeterminate attempts are never blindly retried
+ok 227 - indeterminate attempts are never blindly retried
+  ---
+  duration_ms: 1.6645
+  type: 'test'
+  ...
+# Subtest: restart resumes the SAME anchored task without a new create
+ok 228 - restart resumes the SAME anchored task without a new create
+  ---
+  duration_ms: 2.2571
+  type: 'test'
+  ...
+# Subtest: resume of a terminal-succeeded attempt re-downloads without recreate
+ok 229 - resume of a terminal-succeeded attempt re-downloads without recreate
+  ---
+  duration_ms: 2.0001
+  type: 'test'
+  ...
+# Subtest: provider success survives downstream artifact failure
+ok 230 - provider success survives downstream artifact failure
+  ---
+  duration_ms: 1.0323
+  type: 'test'
+  ...
+# Subtest: capacity rejection without a task allows exactly one new attempt
+ok 231 - capacity rejection without a task allows exactly one new attempt
+  ---
+  duration_ms: 1.4161
+  type: 'test'
+  ...
+# Subtest: transient poll errors keep reconciling the same task
+ok 232 - transient poll errors keep reconciling the same task
+  ---
+  duration_ms: 25.6002
+  type: 'test'
+  ...
+# Subtest: moderated provider failures are deterministic and terminal
+ok 233 - moderated provider failures are deterministic and terminal
+  ---
+  duration_ms: 0.8749
+  type: 'test'
+  ...
+# Subtest: provider-reported cancelled is the only path recording provider-cancelled
+ok 234 - provider-reported cancelled is the only path recording provider-cancelled
+  ---
+  duration_ms: 0.7579
+  type: 'test'
+  ...
+# Subtest: local cancel stops polling without a provider cancel call
+ok 235 - local cancel stops polling without a provider cancel call
+  ---
+  duration_ms: 0.5945
+  type: 'test'
+  ...
+# Subtest: cancel during provider polling reconciles truthfully, then records cancel
+ok 236 - cancel during provider polling reconciles truthfully, then records cancel
+  ---
+  duration_ms: 1.8448
+  type: 'test'
+  ...
+# Subtest: video claim helper uses the filtered claim
+ok 237 - video claim helper uses the filtered claim
+  ---
+  duration_ms: 0.6896
+  type: 'test'
+  ...
+# Subtest: dashboard exposes the Phase 2 operational routes
+ok 238 - dashboard exposes the Phase 2 operational routes
+  ---
+  duration_ms: 19.6434
+  type: 'test'
+  ...
+# Subtest: live approval workspace retains approved content without direct external calls
+ok 239 - live approval workspace retains approved content without direct external calls
+  ---
+  duration_ms: 5.8043
+  type: 'test'
+  ...
+# Subtest: Phase 4 team management is owner-only and preserves the final admin
+ok 240 - Phase 4 team management is owner-only and preserves the final admin
+  ---
+  duration_ms: 5.6439
+  type: 'test'
+  ...
+# Subtest: Content Library is live, keeps approval evidence, and guards Postiz handoff
+ok 241 - Content Library is live, keeps approval evidence, and guards Postiz handoff
+  ---
+  duration_ms: 5.8534
+  type: 'test'
+  ...
+# Subtest: self-hosted Postiz uses an exact deployment allowlist and a base URL field
+ok 242 - self-hosted Postiz uses an exact deployment allowlist and a base URL field
+  ---
+  duration_ms: 3.4691
+  type: 'test'
+  ...
+# Subtest: GHL settings are customer managed and lead handoff stays explicit
+ok 243 - GHL settings are customer managed and lead handoff stays explicit
+  ---
+  duration_ms: 2.6834
+  type: 'test'
+  ...
+# Subtest: dashboard includes reduced-motion and responsive navigation behavior
+ok 244 - dashboard includes reduced-motion and responsive navigation behavior
+  ---
+  duration_ms: 2.818
+  type: 'test'
+  ...
+# Subtest: server API verifies Supabase JWTs and keeps fixture UI disconnected
+ok 245 - server API verifies Supabase JWTs and keeps fixture UI disconnected
+  ---
+  duration_ms: 7.2045
+  type: 'test'
+  ...
+# Subtest: approval decisions are transactional, idempotent, audited, and queued
+ok 246 - approval decisions are transactional, idempotent, audited, and queued
+  ---
+  duration_ms: 2.3859
+  type: 'test'
+  ...
+# Subtest: login uses server-mediated Supabase Auth and HttpOnly session cookies
+ok 247 - login uses server-mediated Supabase Auth and HttpOnly session cookies
+  ---
+  duration_ms: 3.9253
+  type: 'test'
+  ...
+# Subtest: expired sessions rotate HttpOnly tokens once and retry the original request
+ok 248 - expired sessions rotate HttpOnly tokens once and retry the original request
+  ---
+  duration_ms: 3.6105
+  type: 'test'
+  ...
+# Subtest: logout preserves same-origin protection behind the trusted HTTPS proxy
+ok 249 - logout preserves same-origin protection behind the trusted HTTPS proxy
+  ---
+  duration_ms: 7.0069
+  type: 'test'
+  ...
+# Subtest: page protection stays optimistic while data authorization remains server-side
+ok 250 - page protection stays optimistic while data authorization remains server-side
+  ---
+  duration_ms: 2.6899
+  type: 'test'
+  ...
+# Subtest: approvals and audit activity load live data with honest operational states
+ok 251 - approvals and audit activity load live data with honest operational states
+  ---
+  duration_ms: 2.0219
+  type: 'test'
+  ...
+# Subtest: shared shell uses live session identity and no fixture notification counts
+ok 252 - shared shell uses live session identity and no fixture notification counts
+  ---
+  duration_ms: 2.2692
+  type: 'test'
+  ...
+# Subtest: operations API reads every remaining dashboard domain in one protected snapshot
+ok 253 - operations API reads every remaining dashboard domain in one protected snapshot
+  ---
+  duration_ms: 1.7167
+  type: 'test'
+  ...
+# Subtest: GHL agent action policy is owner-only and provider dispatch stays behind the private gateway
+ok 254 - GHL agent action policy is owner-only and provider dispatch stays behind the private gateway
+  ---
+  duration_ms: 4.1148
+  type: 'test'
+  ...
+# Subtest: GHL action review is tenant-bound, role-aware, and never retries indeterminate operations
+ok 255 - GHL action review is tenant-bound, role-aware, and never retries indeterminate operations
+  ---
+  duration_ms: 3.0902
+  type: 'test'
+  ...
+# Subtest: remaining operational screens use the live snapshot without business fixtures
+ok 256 - remaining operational screens use the live snapshot without business fixtures
+  ---
+  duration_ms: 9.8348
+  type: 'test'
+  ...
+# Subtest: campaign lifecycle exposes real tenant-bound actions and no provider handoff
+ok 257 - campaign lifecycle exposes real tenant-bound actions and no provider handoff
+  ---
+  duration_ms: 7.1217
+  type: 'test'
+  ...
+# Subtest: system monitoring uses a tenant-bound read-only snapshot and honest runtime evidence
+ok 258 - system monitoring uses a tenant-bound read-only snapshot and honest runtime evidence
+  ---
+  duration_ms: 3.094
+  type: 'test'
+  ...
+# Subtest: notification destinations are owner-managed, encrypted, masked, and activation-independent
+ok 259 - notification destinations are owner-managed, encrypted, masked, and activation-independent
+  ---
+  duration_ms: 3.2806
+  type: 'test'
+  ...
+# Subtest: private dashboard canary is localhost-only, bounded, and secret-free by shape
+ok 260 - private dashboard canary is localhost-only, bounded, and secret-free by shape
+  ---
+  duration_ms: 18.2037
+  type: 'test'
+  ...
+# Subtest: public dashboard ingress enables secure cookies without exposing n8n
+ok 261 - public dashboard ingress enables secure cookies without exposing n8n
+  ---
+  duration_ms: 12.9433
+  type: 'test'
+  ...
+# Subtest: PostCSS does not read an absolute untrusted source map when from is unset
+ok 262 - PostCSS does not read an absolute untrusted source map when from is unset
+  ---
+  duration_ms: 19.9569
+  type: 'test'
+  ...
+# Subtest: Nano ID zero-sized custom generators terminate without hanging the test runner
+ok 263 - Nano ID zero-sized custom generators terminate without hanging the test runner
+  ---
+  duration_ms: 240.1585
+  type: 'test'
+  ...
+# Subtest: URI resolution canonicalizes the effective host before policy comparison
+ok 264 - URI resolution canonicalizes the effective host before policy comparison
+  ---
+  duration_ms: 3.927
+  type: 'test'
+  ...
+# Subtest: URI normalization does not repeatedly decode a nested encoded loopback host
+ok 265 - URI normalization does not repeatedly decode a nested encoded loopback host
+  ---
+  duration_ms: 1.2668
+  type: 'test'
+  ...
+# Subtest: Final UAT provider reconciliation changes only the reviewed Postiz application allowlist
+ok 266 - Final UAT provider reconciliation changes only the reviewed Postiz application allowlist
+  ---
+  duration_ms: 2.4932
+  type: 'test'
+  ...
+# Subtest: Final UAT provider package refuses credentials, channels, actions and unsafe rollback
+ok 267 - Final UAT provider package refuses credentials, channels, actions and unsafe rollback
+  ---
+  duration_ms: 5.528
+  type: 'test'
+  ...
+# Subtest: fresh test deployment retains private database, digest pins and fail-closed runtime
+ok 268 - fresh test deployment retains private database, digest pins and fail-closed runtime
+  ---
+  duration_ms: 38.2208
+  type: 'test'
+  ...
+# Subtest: 0032 adds an immutable replacement for the invalid historical model alias
+ok 269 - 0032 adds an immutable replacement for the invalid historical model alias
+  ---
+  duration_ms: 14.4423
+  type: 'test'
+  ...
+# Subtest: bilingual UAT completion remains fail-closed and provider-free
+ok 270 - bilingual UAT completion remains fail-closed and provider-free
+  ---
+  duration_ms: 12.3836
+  type: 'test'
+  ...
+# Subtest: Arabic bilingual resume is exact, bounded, provider-free, and forward-only
+ok 271 - Arabic bilingual resume is exact, bounded, provider-free, and forward-only
+  ---
+  duration_ms: 19.3459
+  type: 'test'
+  ...
+# Subtest: Phase 7AB production update is exact, reversible, dashboard-only, and protected-service scoped
+ok 272 - Phase 7AB production update is exact, reversible, dashboard-only, and protected-service scoped
+  ---
+  duration_ms: 15.8595
+  type: 'test'
+  ...
+# Subtest: Phase 7C Agent Studio production update is exact, empty-data reversible, dashboard-only, and protected-service scoped
+ok 273 - Phase 7C Agent Studio production update is exact, empty-data reversible, dashboard-only, and protected-service scoped
+  ---
+  duration_ms: 595.9453
+  type: 'test'
+  ...
+# Subtest: Phase 7D production package is exact, inactive, least privilege, and reverses only its own state
+ok 274 - Phase 7D production package is exact, inactive, least privilege, and reverses only its own state
+  ---
+  duration_ms: 610.5556
+  type: 'test'
+  ...
+# Subtest: Phase 7F canary is exact, bilingual, simulation-only and independently restorable
+ok 275 - Phase 7F canary is exact, bilingual, simulation-only and independently restorable
+  ---
+  duration_ms: 40.1777
+  type: 'test'
+  ...
+# Subtest: Phase 7F package validation permits only the bounded dispatcher window
+ok 276 - Phase 7F package validation permits only the bounded dispatcher window
+  ---
+  duration_ms: 3.7296
+  type: 'test'
+  ...
+# Subtest: Phase 7F workflow contract accepts import-resolved credential IDs but rejects a changed binding name
+ok 277 - Phase 7F workflow contract accepts import-resolved credential IDs but rejects a changed binding name
+  ---
+  duration_ms: 422.7967
+  type: 'test'
+  ...
+# Subtest: Phase 7F dispatcher transition accepts only the exact legacy state and proves rollback scope
+ok 278 - Phase 7F dispatcher transition accepts only the exact legacy state and proves rollback scope
+  ---
+  duration_ms: 583.4128
+  type: 'test'
+  ...
+# Subtest: full Agent Studio certification covers twelve bilingual adversarial scenarios
+ok 279 - full Agent Studio certification covers twelve bilingual adversarial scenarios
+  ---
+  duration_ms: 22.1617
+  type: 'test'
+  ...
+# Subtest: certification keeps n8n publication bounded to the fixed simulation dispatcher
+ok 280 - certification keeps n8n publication bounded to the fixed simulation dispatcher
+  ---
+  duration_ms: 9.3468
+  type: 'test'
+  ...
+# Subtest: disposable certification reproduces and prevents aged-queue recovery theft
+ok 281 - disposable certification reproduces and prevents aged-queue recovery theft
+  ---
+  duration_ms: 27.4836
+  type: 'test'
+  ...
+# Subtest: Phase 7F served-model update is database-only, transactional and fail-closed
+ok 282 - Phase 7F served-model update is database-only, transactional and fail-closed
+  ---
+  duration_ms: 16.2764
+  type: 'test'
+  ...
+# Subtest: Phase 7D planner and result contracts are strict, bounded, and bilingual
+ok 283 - Phase 7D planner and result contracts are strict, bounded, and bilingual
+  ---
+  duration_ms: 169.1803
+  type: 'test'
+  ...
+# Subtest: Phase 7D database runtime is tenant-bound, server-authorized, and least privilege
+ok 284 - Phase 7D database runtime is tenant-bound, server-authorized, and least privilege
+  ---
+  duration_ms: 24.3417
+  type: 'test'
+  ...
+# Subtest: Phase 7D n8n exports are inactive, fixed-target, parameterized, and retention-safe
+ok 285 - Phase 7D n8n exports are inactive, fixed-target, parameterized, and retention-safe
+  ---
+  duration_ms: 11.4333
+  type: 'test'
+  ...
+# Subtest: Phase 7D prompt preserves the full instruction hierarchy and progressive disclosure
+ok 286 - Phase 7D prompt preserves the full instruction hierarchy and progressive disclosure
+  ---
+  duration_ms: 4.2472
+  type: 'test'
+  ...
+# Subtest: Phase 7D executor exports are fixed, inactive, and credential-separated
+ok 287 - Phase 7D executor exports are fixed, inactive, and credential-separated
+  ---
+  duration_ms: 61.6222
+  type: 'test'
+  ...
+# Subtest: Phase 7D adapter migration pins authority and canonical certification
+ok 288 - Phase 7D adapter migration pins authority and canonical certification
+  ---
+  duration_ms: 3.517
+  type: 'test'
+  ...
+# Subtest: Agent Studio provider gateway is authenticated, fail-closed, and fixed-operation
+ok 289 - Agent Studio provider gateway is authenticated, fail-closed, and fixed-operation
+  ---
+  duration_ms: 4.5909
+  type: 'test'
+  ...
+# Subtest: environment template contains placeholders, not integration credentials
+ok 290 - environment template contains placeholders, not integration credentials
+  ---
+  duration_ms: 20.5662
+  type: 'test'
+  ...
+# Subtest: legacy recovery snapshot is explicitly non-deployable and secret-free by shape
+ok 291 - legacy recovery snapshot is explicitly non-deployable and secret-free by shape
+  ---
+  duration_ms: 2.1404
+  type: 'test'
+  ...
+# Subtest: roadmap preserves the human publishing approval gate
+ok 292 - roadmap preserves the human publishing approval gate
+  ---
+  duration_ms: 3.2758
+  type: 'test'
+  ...
+# Subtest: security overrides keep audited URI and image dependencies on patched releases
+ok 293 - security overrides keep audited URI and image dependencies on patched releases
+  ---
+  duration_ms: 12.1056
+  type: 'test'
+  ...
+# Subtest: migration runner accepts PostgreSQL boolean output variants
+ok 294 - migration runner accepts PostgreSQL boolean output variants
+  ---
+  duration_ms: 9.2917
+  type: 'test'
+  ...
+# Subtest: dashboard runtime loads the ignored root environment explicitly
+ok 295 - dashboard runtime loads the ignored root environment explicitly
+  ---
+  duration_ms: 5.3748
+  type: 'test'
+  ...
+# Subtest: database roles keep n8n outside the human approval boundary
+ok 296 - database roles keep n8n outside the human approval boundary
+  ---
+  duration_ms: 8.8997
+  type: 'test'
+  ...
+# Subtest: Phase 3 Gemma contracts and prompts are versioned and non-operational
+ok 297 - Phase 3 Gemma contracts and prompts are versioned and non-operational
+  ---
+  duration_ms: 10.9275
+  type: 'test'
+  ...
+# Subtest: Phase 3 worker mutations use explicit controlled functions
+ok 298 - Phase 3 worker mutations use explicit controlled functions
+  ---
+  duration_ms: 12.6672
+  type: 'test'
+  ...
+# Subtest: Phase 3 n8n exports are inactive and constrained to controlled boundaries
+ok 299 - Phase 3 n8n exports are inactive and constrained to controlled boundaries
+  ---
+  duration_ms: 5.3617
+  type: 'test'
+  ...
+# Subtest: Phase 4 Postiz handoff is draft-only, inactive, and approval guarded
+ok 300 - Phase 4 Postiz handoff is draft-only, inactive, and approval guarded
+  ---
+  duration_ms: 15.6435
+  type: 'test'
+  ...
+# Subtest: Phase 4H performance monitoring is historical, inactive, and attribution-safe
+ok 301 - Phase 4H performance monitoring is historical, inactive, and attribution-safe
+  ---
+  duration_ms: 59.33
+  type: 'test'
+  ...
+# Subtest: Phase 4F gateway activation package is private, transactional, and reversible
+ok 302 - Phase 4F gateway activation package is private, transactional, and reversible
+  ---
+  duration_ms: 48.3151
+  type: 'test'
+  ...
+# Subtest: Phase 5A GHL synchronization is contact-only, inactive, and least privileged
+ok 303 - Phase 5A GHL synchronization is contact-only, inactive, and least privileged
+  ---
+  duration_ms: 42.0948
+  type: 'test'
+  ...
+# Subtest: Phase 5B GHL ingress verifies raw Ed25519 bodies and durably queues zero-action work
+ok 304 - Phase 5B GHL ingress verifies raw Ed25519 bodies and durably queues zero-action work
+  ---
+  duration_ms: 25.3922
+  type: 'test'
+  ...
+# Subtest: Phase 5C knowledge is versioned, tenant-bound, grounded, and proposal-only
+ok 305 - Phase 5C knowledge is versioned, tenant-bound, grounded, and proposal-only
+  ---
+  duration_ms: 11.4748
+  type: 'test'
+  ...
+# Subtest: Phase 5C Conversation Intelligence worker is inactive, least privileged, and proposal-only
+ok 306 - Phase 5C Conversation Intelligence worker is inactive, least privileged, and proposal-only
+  ---
+  duration_ms: 13.8365
+  type: 'test'
+  ...
+# Subtest: Phase 5D supervisor ownership is atomic, tenant-bound, and dispatch-safe
+ok 307 - Phase 5D supervisor ownership is atomic, tenant-bound, and dispatch-safe
+  ---
+  duration_ms: 37.0109
+  type: 'test'
+  ...
+# Subtest: Phase 5E GHL actions are governed, inactive, replay-safe, and least privileged
+ok 308 - Phase 5E GHL actions are governed, inactive, replay-safe, and least privileged
+  ---
+  duration_ms: 9.6837
+  type: 'test'
+  ...
+# Subtest: Phase 5E service-agent completions retain an attributable audit actor
+ok 309 - Phase 5E service-agent completions retain an attributable audit actor
+  ---
+  duration_ms: 2.2723
+  type: 'test'
+  ...
+# Subtest: Phase 5E action review records immutable human reconciliation without worker table access
+ok 310 - Phase 5E action review records immutable human reconciliation without worker table access
+  ---
+  duration_ms: 2.3467
+  type: 'test'
+  ...
+# Subtest: Phase 5F capacity is measured, bounded, recoverable, and SmartLabs-isolated
+ok 311 - Phase 5F capacity is measured, bounded, recoverable, and SmartLabs-isolated
+  ---
+  duration_ms: 11.0274
+  type: 'test'
+  ...
+# Subtest: Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert-observable
+ok 312 - Phase 5F pinned n8n queue runtime is disposable, restart-tested, and alert-observable
+  ---
+  duration_ms: 27.948
+  type: 'test'
+  ...
+# Subtest: Phase 5F retention is measured, built-in, restorable, and SmartLabs-isolated
+ok 313 - Phase 5F retention is measured, built-in, restorable, and SmartLabs-isolated
+  ---
+  duration_ms: 29.072
+  type: 'test'
+  ...
+# Subtest: Phase 5F abrupt dependency loss is durable, exact-once, observed, and SmartLabs-isolated
+ok 314 - Phase 5F abrupt dependency loss is durable, exact-once, observed, and SmartLabs-isolated
+  ---
+  duration_ms: 36.2941
+  type: 'test'
+  ...
+# Subtest: Phase 5F monitoring destinations default locked and preserve least privilege
+ok 315 - Phase 5F monitoring destinations default locked and preserve least privilege
+  ---
+  duration_ms: 41.7653
+  type: 'test'
+  ...
+# Subtest: Phase 5D production update is manual, transactional, scoped, and recoverable
+ok 316 - Phase 5D production update is manual, transactional, scoped, and recoverable
+  ---
+  duration_ms: 93.1526
+  type: 'test'
+  ...
+# Subtest: Phase 5F production update is manual, exact, data-preserving, and SmartLabs-isolated
+ok 317 - Phase 5F production update is manual, exact, data-preserving, and SmartLabs-isolated
+  ---
+  duration_ms: 11.7246
+  type: 'test'
+  ...
+# Subtest: Phase 5G production update is exact, quality-evidence-preserving, and Tanaghom-only
+ok 318 - Phase 5G production update is exact, quality-evidence-preserving, and Tanaghom-only
+  ---
+  duration_ms: 23.2442
+  type: 'test'
+  ...
+# Subtest: Phase 5G shadow production update is exact, inactive, reversible, and existing-workflow preserving
+ok 319 - Phase 5G shadow production update is exact, inactive, reversible, and existing-workflow preserving
+  ---
+  duration_ms: 12.9611
+  type: 'test'
+  ...
+# Subtest: Phase 5C Conversation Intelligence production update is least-privileged, inactive, and exactly reversible
+ok 320 - Phase 5C Conversation Intelligence production update is least-privileged, inactive, and exactly reversible
+  ---
+  duration_ms: 7.7692
+  type: 'test'
+  ...
+# Subtest: Phase 6 Agent Registry production update is exact, inactive, reversible, and Tanaghom-only
+ok 321 - Phase 6 Agent Registry production update is exact, inactive, reversible, and Tanaghom-only
+  ---
+  duration_ms: 9.3148
+  type: 'test'
+  ...
+# Subtest: Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, reversible, and Tanaghom-only
+ok 322 - Phase 6 Campaign Lifecycle production update is exact, mutation-guarded, reversible, and Tanaghom-only
+  ---
+  duration_ms: 30.1355
+  type: 'test'
+  ...
+# Subtest: Phase 5F database bridge is database-only, PostgreSQL 17.6-pinned, and reversibly tested
+ok 323 - Phase 5F database bridge is database-only, PostgreSQL 17.6-pinned, and reversibly tested
+  ---
+  duration_ms: 56.3146
+  type: 'test'
+  ...
+# Subtest: Phase 5G quality rollout is sequential, evidence-backed, and runtime-independent
+ok 324 - Phase 5G quality rollout is sequential, evidence-backed, and runtime-independent
+  ---
+  duration_ms: 41.3022
+  type: 'test'
+  ...
+# Subtest: Phase 5G baseline and shadow evaluation is de-identified, proposal-only, and least privileged
+ok 325 - Phase 5G baseline and shadow evaluation is de-identified, proposal-only, and least privileged
+  ---
+  duration_ms: 65.3407
+  type: 'test'
+  ...
+# Subtest: Phase 6 agentic simulation executes every inactive workflow without customer credentials
+ok 326 - Phase 6 agentic simulation executes every inactive workflow without customer credentials
+  ---
+  duration_ms: 4.2911
+  type: 'test'
+  ...
+# Subtest: Phase 6 core-agent canary is sequential, zero-budget, human-gated, and transactionally restored
+ok 327 - Phase 6 core-agent canary is sequential, zero-budget, human-gated, and transactionally restored
+  ---
+  duration_ms: 12.7939
+  type: 'test'
+  ...
+# Subtest: Phase 6 Conversation Intelligence canary is synthetic, exclusive, grounded, and restored inactive
+ok 328 - Phase 6 Conversation Intelligence canary is synthetic, exclusive, grounded, and restored inactive
+  ---
+  duration_ms: 61.4422
+  type: 'test'
+  ...
+# Subtest: Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, and reversible
+ok 329 - Phase 6 Conversation Intelligence schema hotfix is exact, inactive-only, and reversible
+  ---
+  duration_ms: 23.8479
+  type: 'test'
+  ...
+# Subtest: Phase 6 runtime-agent reconciliation guarantees Publisher and Sales workers without rewriting history
+ok 330 - Phase 6 runtime-agent reconciliation guarantees Publisher and Sales workers without rewriting history
+  ---
+  duration_ms: 13.321
+  type: 'test'
+  ...
+# Subtest: Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and evidence-preserving
+ok 331 - Phase 6 existing-campaign canary is exact-ID, governed, human-gated, and evidence-preserving
+  ---
+  duration_ms: 23.7063
+  type: 'test'
+  ...
+# Subtest: Phase 6 content-job reconciliation is exact, least-privileged, idempotent, and provider-isolated
+ok 332 - Phase 6 content-job reconciliation is exact, least-privileged, idempotent, and provider-isolated
+  ---
+  duration_ms: 8.2754
+  type: 'test'
+  ...
+# Subtest: Phase 6 all-agent UAT activation publishes every reviewed worker with core-only polling and exact rollback
+ok 333 - Phase 6 all-agent UAT activation publishes every reviewed worker with core-only polling and exact rollback
+  ---
+  duration_ms: 10.8598
+  type: 'test'
+  ...
+# Subtest: Phase 6 UAT runtime correction fixes vLLM schemas and starts eight policy-gated schedules safely
+ok 334 - Phase 6 UAT runtime correction fixes vLLM schemas and starts eight policy-gated schedules safely
+  ---
+  duration_ms: 16.7267
+  type: 'test'
+  ...
+# Subtest: Phase 6 provider runtime readiness removes only proven infrastructure blockers
+ok 335 - Phase 6 provider runtime readiness removes only proven infrastructure blockers
+  ---
+  duration_ms: 6.1301
+  type: 'test'
+  ...
+# Subtest: governed Skill Library validator rejects executable, secret, URL, hidden, and oversized content
+ok 336 - governed Skill Library validator rejects executable, secret, URL, hidden, and oversized content
+  ---
+  duration_ms: 337.3127
+  type: 'test'
+  ...
+# Subtest: organization skill draft contract is closed and permits only non-executable customer classes
+ok 337 - organization skill draft contract is closed and permits only non-executable customer classes
+  ---
+  duration_ms: 135.8848
+  type: 'test'
+  ...
+# Subtest: Skill Library keeps customer skills non-executable, tenant-scoped, and owner-governed
+ok 338 - Skill Library keeps customer skills non-executable, tenant-scoped, and owner-governed
+  ---
+  duration_ms: 23.986
+  type: 'test'
+  ...
+# Subtest: Skill Library route, responsive states, RTL support, and settings navigation are present
+ok 339 - Skill Library route, responsive states, RTL support, and settings navigation are present
+  ---
+  duration_ms: 7.5211
+  type: 'test'
+  ...
+# Subtest: Phase 7A recovery contract, schemas, hashes, and safe skill exports validate
+ok 340 - Phase 7A recovery contract, schemas, hashes, and safe skill exports validate
+  ---
+  duration_ms: 1021.5718
+  type: 'test'
+  ...
+# Subtest: Skill Registry migration enforces immutable, tenant-aware, least-privilege boundaries
+ok 341 - Skill Registry migration enforces immutable, tenant-aware, least-privilege boundaries
+  ---
+  duration_ms: 11.2887
+  type: 'test'
+  ...
+# Subtest: authenticated operations API exposes a read-only tenant-filtered Skill Registry shape
+ok 342 - authenticated operations API exposes a read-only tenant-filtered Skill Registry shape
+  ---
+  duration_ms: 3.3145
+  type: 'test'
+  ...
+# Subtest: ASR tracer: trusted controlled asset reader, exact multipart and linked Arabic transcript
+ok 343 - ASR tracer: trusted controlled asset reader, exact multipart and linked Arabic transcript
+  ---
+  duration_ms: 195.1497
+  type: 'test'
+  ...
+# Subtest: compressed audio decoder fails closed without a pinned executable, denies remote containers
+ok 344 - compressed audio decoder fails closed without a pinned executable, denies remote containers
+  ---
+  duration_ms: 5.8443
+  type: 'test'
+  ...
+# Subtest: real pinned decoder consumes full MP3/Ogg/FLAC/AAC sample streams and refuses decoded overflow
+ok 345 - real pinned decoder consumes full MP3/Ogg/FLAC/AAC sample streams and refuses decoded overflow
+  ---
+  duration_ms: 2359.6213
+  type: 'test'
+  ...
+# Subtest: provider response cannot echo credentials through content or metadata
+ok 346 - provider response cannot echo credentials through content or metadata
+  ---
+  duration_ms: 27.0602
+  type: 'test'
+  ...
+# Subtest: 429 Retry-After blocks a fresh call locally instead of creating a retry storm
+ok 347 - 429 Retry-After blocks a fresh call locally instead of creating a retry storm
+  ---
+  duration_ms: 19.0476
+  type: 'test'
+  ...
+# Subtest: gemma invalid paid 200 malformed quarantines fresh factories through result validation
+ok 348 - gemma invalid paid 200 malformed quarantines fresh factories through result validation
+  ---
+  duration_ms: 23.3978
+  type: 'test'
+  ...
+# Subtest: gemma invalid paid 200 semantic quarantines fresh factories through result validation
+ok 349 - gemma invalid paid 200 semantic quarantines fresh factories through result validation
+  ---
+  duration_ms: 32.836
+  type: 'test'
+  ...
+# Subtest: tts invalid paid 200 malformed quarantines fresh factories through result validation
+ok 350 - tts invalid paid 200 malformed quarantines fresh factories through result validation
+  ---
+  duration_ms: 25.4675
+  type: 'test'
+  ...
+# Subtest: tts invalid paid 200 semantic quarantines fresh factories through result validation
+ok 351 - tts invalid paid 200 semantic quarantines fresh factories through result validation
+  ---
+  duration_ms: 16.8175
+  type: 'test'
+  ...
+# Subtest: asr invalid paid 200 malformed quarantines fresh factories through result validation
+ok 352 - asr invalid paid 200 malformed quarantines fresh factories through result validation
+  ---
+  duration_ms: 15.8166
+  type: 'test'
+  ...
+# Subtest: asr invalid paid 200 semantic quarantines fresh factories through result validation
+ok 353 - asr invalid paid 200 semantic quarantines fresh factories through result validation
+  ---
+  duration_ms: 18.6801
+  type: 'test'
+  ...
+# Subtest: gemma paid validated success and definitive 401 release; predispatch invalid input does not quarantine
+ok 354 - gemma paid validated success and definitive 401 release; predispatch invalid input does not quarantine
+  ---
+  duration_ms: 32.7802
+  type: 'test'
+  ...
+# Subtest: tts paid validated success and definitive 401 release; predispatch invalid input does not quarantine
+ok 355 - tts paid validated success and definitive 401 release; predispatch invalid input does not quarantine
+  ---
+  duration_ms: 25.5696
+  type: 'test'
+  ...
+# Subtest: asr paid validated success and definitive 401 release; predispatch invalid input does not quarantine
+ok 356 - asr paid validated success and definitive 401 release; predispatch invalid input does not quarantine
+  ---
+  duration_ms: 50.537
+  type: 'test'
+  ...
+# Subtest: gemma status 401: sanitized proxy failure, one request, no automatic retry
+ok 357 - gemma status 401: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 28.7975
+  type: 'test'
+  ...
+# Subtest: gemma status 429: sanitized proxy failure, one request, no automatic retry
+ok 358 - gemma status 429: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 26.4808
+  type: 'test'
+  ...
+# Subtest: gemma status 503: sanitized proxy failure, one request, no automatic retry
+ok 359 - gemma status 503: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 24.0698
+  type: 'test'
+  ...
+# Subtest: gemma status 504: sanitized proxy failure, one request, no automatic retry
+ok 360 - gemma status 504: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 36.4814
+  type: 'test'
+  ...
+# Subtest: tts status 401: sanitized proxy failure, one request, no automatic retry
+ok 361 - tts status 401: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 19.9195
+  type: 'test'
+  ...
+# Subtest: tts status 402: sanitized proxy failure, one request, no automatic retry
+ok 362 - tts status 402: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 21.4688
+  type: 'test'
+  ...
+# Subtest: tts status 429: sanitized proxy failure, one request, no automatic retry
+ok 363 - tts status 429: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 17.2533
+  type: 'test'
+  ...
+# Subtest: tts status 503: sanitized proxy failure, one request, no automatic retry
+ok 364 - tts status 503: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 14.8806
+  type: 'test'
+  ...
+# Subtest: tts status 504: sanitized proxy failure, one request, no automatic retry
+ok 365 - tts status 504: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 13.5328
+  type: 'test'
+  ...
+# Subtest: asr status 400: sanitized proxy failure, one request, no automatic retry
+ok 366 - asr status 400: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 18.8369
+  type: 'test'
+  ...
+# Subtest: asr status 401: sanitized proxy failure, one request, no automatic retry
+ok 367 - asr status 401: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 21.8975
+  type: 'test'
+  ...
+# Subtest: asr status 403: sanitized proxy failure, one request, no automatic retry
+ok 368 - asr status 403: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 18.9197
+  type: 'test'
+  ...
+# Subtest: asr status 413: sanitized proxy failure, one request, no automatic retry
+ok 369 - asr status 413: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 21.5314
+  type: 'test'
+  ...
+# Subtest: asr status 422: sanitized proxy failure, one request, no automatic retry
+ok 370 - asr status 422: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 19.9344
+  type: 'test'
+  ...
+# Subtest: asr status 429: sanitized proxy failure, one request, no automatic retry
+ok 371 - asr status 429: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 31.0461
+  type: 'test'
+  ...
+# Subtest: asr status 503: sanitized proxy failure, one request, no automatic retry
+ok 372 - asr status 503: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 22.0644
+  type: 'test'
+  ...
+# Subtest: asr status 504: sanitized proxy failure, one request, no automatic retry
+ok 373 - asr status 504: sanitized proxy failure, one request, no automatic retry
+  ---
+  duration_ms: 17.2776
+  type: 'test'
+  ...
+# Subtest: Gemma rejects unsupported schemas, tool fields, >8192 exact tokens, output and byte budget before request
+ok 374 - Gemma rejects unsupported schemas, tool fields, >8192 exact tokens, output and byte budget before request
+  ---
+  duration_ms: 10.8871
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects malformed
+ok 375 - Gemma bounded output rejects malformed
+  ---
+  duration_ms: 18.8293
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects oversize
+ok 376 - Gemma bounded output rejects oversize
+  ---
+  duration_ms: 24.1745
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects usage
+ok 377 - Gemma bounded output rejects usage
+  ---
+  duration_ms: 19.0582
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects tool
+ok 378 - Gemma bounded output rejects tool
+  ---
+  duration_ms: 18.8504
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects wrong-model
+ok 379 - Gemma bounded output rejects wrong-model
+  ---
+  duration_ms: 22.7625
+  type: 'test'
+  ...
+# Subtest: Gemma bounded output rejects invalid-id
+ok 380 - Gemma bounded output rejects invalid-id
+  ---
+  duration_ms: 21.0212
+  type: 'test'
+  ...
+# Subtest: TTS Unicode boundary, stopped backend, cloning and voice overrides are pre-contact refusals
+ok 381 - TTS Unicode boundary, stopped backend, cloning and voice overrides are pre-contact refusals
+  ---
+  duration_ms: 30.3602
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses empty
+ok 382 - TTS real WAV validation refuses empty
+  ---
+  duration_ms: 25.9423
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses not-wave
+ok 383 - TTS real WAV validation refuses not-wave
+  ---
+  duration_ms: 41.8002
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses stereo
+ok 384 - TTS real WAV validation refuses stereo
+  ---
+  duration_ms: 28.1634
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses sample-rate
+ok 385 - TTS real WAV validation refuses sample-rate
+  ---
+  duration_ms: 21.0147
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses bits
+ok 386 - TTS real WAV validation refuses bits
+  ---
+  duration_ms: 44.6555
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses silent
+ok 387 - TTS real WAV validation refuses silent
+  ---
+  duration_ms: 59.1112
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses truncated
+ok 388 - TTS real WAV validation refuses truncated
+  ---
+  duration_ms: 18.0976
+  type: 'test'
+  ...
+# Subtest: TTS real WAV validation refuses oversize
+ok 389 - TTS real WAV validation refuses oversize
+  ---
+  duration_ms: 496.9865
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial 20.1s
+ok 390 - ASR controlled audio pre-upload denial 20.1s
+  ---
+  duration_ms: 62.5257
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial 25MiB
+ok 391 - ASR controlled audio pre-upload denial 25MiB
+  ---
+  duration_ms: 256.5062
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial checksum
+ok 392 - ASR controlled audio pre-upload denial checksum
+  ---
+  duration_ms: 43.0815
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial webm
+ok 393 - ASR controlled audio pre-upload denial webm
+  ---
+  duration_ms: 30.8063
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial mime
+ok 394 - ASR controlled audio pre-upload denial mime
+  ---
+  duration_ms: 11.0909
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial foreign
+ok 395 - ASR controlled audio pre-upload denial foreign
+  ---
+  duration_ms: 9.0941
+  type: 'test'
+  ...
+# Subtest: ASR controlled audio pre-upload denial extra-field
+ok 396 - ASR controlled audio pre-upload denial extra-field
+  ---
+  duration_ms: 9.1966
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"en","duration":1,"processing_time_ms":1}
+ok 397 - ASR response shape rejects {"text":"مرحبا","language":"en","duration":1,"processing_time_ms":1}
+  ---
+  duration_ms: 36.5408
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":[],"language":"ar","duration":1,"processing_time_ms":1}
+ok 398 - ASR response shape rejects {"text":[],"language":"ar","duration":1,"processing_time_ms":1}
+  ---
+  duration_ms: 18.8216
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"ar","duration":21,"processing_time_ms":1}
+ok 399 - ASR response shape rejects {"text":"مرحبا","language":"ar","duration":21,"processing_time_ms":1}
+  ---
+  duration_ms: 17.5674
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":-1}
+ok 400 - ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":-1}
+  ---
+  duration_ms: 17.6402
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":1,"request_id":["id"]}
+ok 401 - ASR response shape rejects {"text":"مرحبا","language":"ar","duration":1,"processing_time_ms":1,"request_id":["id"]}
+  ---
+  duration_ms: 18.4145
+  type: 'test'
+  ...
+# Subtest: ASR response shape rejects "{"
+ok 402 - ASR response shape rejects "{"
+  ---
+  duration_ms: 34.8037
+  type: 'test'
+  ...
+# Subtest: common native HTTP deadline covers stalled body; cancellation and rejected fetch never retry
+ok 403 - common native HTTP deadline covers stalled body; cancellation and rejected fetch never retry
+  ---
+  duration_ms: 119.6072
+  type: 'test'
+  ...
+# Subtest: HTTP side-effect boundary denies non-owned insecure URLs and redacts error request IDs
+ok 404 - HTTP side-effect boundary denies non-owned insecure URLs and redacts error request IDs
+  ---
+  duration_ms: 24.0945
+  type: 'test'
+  ...
+# Subtest: gemma actual stalled body deadline quarantines capacity across factories
+ok 405 - gemma actual stalled body deadline quarantines capacity across factories
+  ---
+  duration_ms: 57.3832
+  type: 'test'
+  ...
+# Subtest: tts actual stalled body deadline quarantines capacity across factories
+ok 406 - tts actual stalled body deadline quarantines capacity across factories
+  ---
+  duration_ms: 48.5196
+  type: 'test'
+  ...
+# Subtest: asr actual stalled body deadline quarantines capacity across factories
+ok 407 - asr actual stalled body deadline quarantines capacity across factories
+  ---
+  duration_ms: 49.191
+  type: 'test'
+  ...
+# Subtest: Gemma 60s operation budget includes trusted token counting; late counter cannot cause a dispatch
+ok 408 - Gemma 60s operation budget includes trusted token counting; late counter cannot cause a dispatch
+  ---
+  duration_ms: 47.8331
+  type: 'test'
+  ...
+# Subtest: public provider-neutral adapter exports are usable without SmartLabs URLs or credentials
+ok 409 - public provider-neutral adapter exports are usable without SmartLabs URLs or credentials
+  ---
+  duration_ms: 6.1214
+  type: 'test'
+  ...
+# Subtest: JSON-escaped credential echoes cannot reach returned text
+ok 410 - JSON-escaped credential echoes cannot reach returned text
+  ---
+  duration_ms: 15.7804
+  type: 'test'
+  ...
+# Subtest: Retry-After delta larger than one day is preserved, and HTTP date parses safely
+ok 411 - Retry-After delta larger than one day is preserved, and HTTP date parses safely
+  ---
+  duration_ms: 20.7295
+  type: 'test'
+  ...
+# Subtest: uncontracted 202 is not accepted as a completed Gemma response
+ok 412 - uncontracted 202 is not accepted as a completed Gemma response
+  ---
+  duration_ms: 14.9711
+  type: 'test'
+  ...
+# Subtest: TTS billing metadata is numeric-only through an explicit trusted header mapper; unknown names are never guessed
+ok 413 - TTS billing metadata is numeric-only through an explicit trusted header mapper; unknown names are never guessed
+  ---
+  duration_ms: 22.1521
+  type: 'test'
+  ...
+# Subtest: upstream 504 is indeterminate: a second factory cannot blindly dispatch after a proxy timeout
+ok 414 - upstream 504 is indeterminate: a second factory cannot blindly dispatch after a proxy timeout
+  ---
+  duration_ms: 12.2983
+  type: 'test'
+  ...
+# Subtest: credential whitespace is rejected rather than silently repaired by Headers
+ok 415 - credential whitespace is rejected rather than silently repaired by Headers
+  ---
+  duration_ms: 4.9128
+  type: 'test'
+  ...
+# Subtest: TTS tracer: exact OmniVoice wire body and validated private-ready WAV
+ok 416 - TTS tracer: exact OmniVoice wire body and validated private-ready WAV
+  ---
+  duration_ms: 17.2628
+  type: 'test'
+  ...
+# Subtest: Gemma tracer: one actual chat request, bounded plain response, safe metadata
+ok 417 - Gemma tracer: one actual chat request, bounded plain response, safe metadata
+  ---
+  duration_ms: 14.3987
+  type: 'test'
+  ...
+# Subtest: default OFF, missing credentials and exact counter deny before I/O
+ok 418 - default OFF, missing credentials and exact counter deny before I/O
+  ---
+  duration_ms: 5.7737
+  type: 'test'
+  ...
+# Subtest: shared process admission across instances holds through body; failure releases only determinate outcomes
+ok 419 - shared process admission across instances holds through body; failure releases only determinate outcomes
+  ---
+  duration_ms: 55.8566
+  type: 'test'
+  ...
+# Subtest: server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+ok 420 - server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+  ---
+  duration_ms: 64.2717
+  type: 'test'
+  ...
+# Subtest: server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+ok 421 - server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+  ---
+  duration_ms: 130.6681
+  type: 'test'
+  ...
+# Subtest: explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+ok 422 - explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+  ---
+  duration_ms: 303.5101
+  type: 'test'
+  ...
+# Subtest: server config refuses enabled capability without its key before dispatch
+ok 423 - server config refuses enabled capability without its key before dispatch
+  ---
+  duration_ms: 0.4711
+  type: 'test'
+  ...
+# Subtest: actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+ok 424 - actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+  ---
+  duration_ms: 724.9381
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: draft
+ok 425 - ASR requires current SQL approved source: draft
+  ---
+  duration_ms: 69.4441
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: rejected
+ok 426 - ASR requires current SQL approved source: rejected
+  ---
+  duration_ms: 43.7314
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: archived
+ok 427 - ASR requires current SQL approved source: archived
+  ---
+  duration_ms: 33.3075
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: approved
+ok 428 - ASR requires current SQL approved source: approved
+  ---
+  duration_ms: 65.3729
+  type: 'test'
+  ...
+# Subtest: actual private storage reader refuses oversize file before unbounded allocation
+ok 429 - actual private storage reader refuses oversize file before unbounded allocation
+  ---
+  duration_ms: 63.3485
+  type: 'test'
+  ...
+# Subtest: TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+ok 430 - TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+  ---
+  duration_ms: 52.9446
+  type: 'test'
+  ...
+# Subtest: controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+ok 431 - controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+  ---
+  duration_ms: 4.7941
+  type: 'test'
+  ...
+# Subtest: Creative schema MIME mirrors include controlled compressed audio
+ok 432 - Creative schema MIME mirrors include controlled compressed audio
+  ---
+  duration_ms: 1.6971
+  type: 'test'
+  ...
+# Subtest: guarded server smoke preserves draft, pauses for human approval before A1 and cannot re-spend G1 T1
+ok 433 - guarded server smoke preserves draft, pauses for human approval before A1 and cannot re-spend G1 T1
+  ---
+  duration_ms: 58.957
+  type: 'test'
+  ...
+# Subtest: smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+ok 434 - smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+  ---
+  duration_ms: 103.5211
+  type: 'test'
+  ...
+# Subtest: owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+ok 435 - owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+  ---
+  duration_ms: 41.5032
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+ok 436 - tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 36.7599
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+ok 437 - asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 24.8157
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+ok 438 - tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 38.5141
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+ok 439 - asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 46.0683
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed null
+ok 440 - tts current Creative execution gate fails closed null
+  ---
+  duration_ms: 39.9251
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed null
+ok 441 - asr current Creative execution gate fails closed null
+  ---
+  duration_ms: 35.8407
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed "error"
+ok 442 - tts current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 28.1879
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed "error"
+ok 443 - asr current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 49.9335
+  type: 'test'
+  ...
+# Subtest: compiled server factory authenticates request; default OFF health exposes presence only without network
+ok 444 - compiled server factory authenticates request; default OFF health exposes presence only without network
+  ---
+  duration_ms: 51.4598
+  type: 'test'
+  ...
+# Subtest: Gemma workflows use vLLM-compatible strict structured-output schemas
+ok 445 - Gemma workflows use vLLM-compatible strict structured-output schemas
+  ---
+  duration_ms: 167.425
+  type: 'test'
+  ...
+1..445
+# tests 445
+# suites 0
+# pass 445
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 11417.9024

@@ -1,0 +1,59 @@
+TAP version 13
+# {"backend":"gemma","first":{"code":"response_invalid","status":502,"metadata":{"indeterminate":true}},"second":{"code":"outcome_recovery_required","status":429,"metadata":{}},"providerRequests":1}
+# Subtest: REGRESSION gemma: post-dispatch invalid success must quarantine second generation
+ok 1 - REGRESSION gemma: post-dispatch invalid success must quarantine second generation
+  ---
+  duration_ms: 113.8285
+  type: 'test'
+  ...
+# {"backend":"tts","first":{"code":"audio_invalid","status":422,"metadata":{"indeterminate":true}},"second":{"code":"outcome_recovery_required","status":429,"metadata":{}},"providerRequests":1}
+# Subtest: REGRESSION tts: post-dispatch invalid success must quarantine second generation
+ok 2 - REGRESSION tts: post-dispatch invalid success must quarantine second generation
+  ---
+  duration_ms: 30.5178
+  type: 'test'
+  ...
+# {"backend":"asr","first":{"code":"response_invalid","status":502,"metadata":{"indeterminate":true}},"second":{"code":"outcome_recovery_required","status":429,"metadata":{}},"providerRequests":1}
+# Subtest: REGRESSION asr: post-dispatch invalid success must quarantine second generation
+ok 3 - REGRESSION asr: post-dispatch invalid success must quarantine second generation
+  ---
+  duration_ms: 23.6637
+  type: 'test'
+  ...
+# {"sourceStatus":"approved","observed":{"result":{"text":"مرحبا","language":"ar","duration":0.1,"source":{"versionId":"11111111-1111-4111-8111-111111111111","assetId":"11111111-1111-4111-8111-111111111111","jobId":"11111111-1111-4111-8111-111111111111","sha256":"e073b37cae162c7386fbb1e845005cfa6f241052a44e81457cca1217075d8c4a"},"metadata":{"status":200,"requestId":null,"latencyMs":10,"processingTimeMs":1}}},"providerRequests":1,"reads":1,"audits":1,"controlReads":1,"databaseBoundary":"SQL-consistent double, not native PostgreSQL"}
+# {"sourceStatus":"draft","observed":{"code":"controlled_audio_not_found","status":404,"metadata":{}},"providerRequests":0,"reads":0,"audits":0,"controlReads":1,"databaseBoundary":"SQL-consistent double, not native PostgreSQL"}
+# Subtest: CONTROL compiled factory ASR source approved
+ok 4 - CONTROL compiled factory ASR source approved
+  ---
+  duration_ms: 165.3395
+  type: 'test'
+  ...
+# {"sourceStatus":"rejected","observed":{"code":"controlled_audio_not_found","status":404,"metadata":{}},"providerRequests":0,"reads":0,"audits":0,"controlReads":1,"databaseBoundary":"SQL-consistent double, not native PostgreSQL"}
+# {"creativeControl":{"enabled":false,"emergency_stop":true},"observed":{"code":"creative_execution_disabled","status":503},"providerRequests":0,"reads":0,"audits":0,"controlReads":1,"databaseBoundary":"controlled double; actual factory/authorization/environment feature guard compiled unchanged"}
+# Subtest: REGRESSION compiled factory ASR source draft
+ok 5 - REGRESSION compiled factory ASR source draft
+  ---
+  duration_ms: 63.1261
+  type: 'test'
+  ...
+# Subtest: CONTROL compiled factory ASR source rejected
+ok 6 - CONTROL compiled factory ASR source rejected
+  ---
+  duration_ms: 51.1869
+  type: 'test'
+  ...
+# Subtest: REGRESSION compiled factory ASR emergency stop must deny before private read/provider upload
+ok 7 - REGRESSION compiled factory ASR emergency stop must deny before private read/provider upload
+  ---
+  duration_ms: 39.2091
+  type: 'test'
+  ...
+1..7
+# tests 7
+# suites 0
+# pass 7
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1096.2764

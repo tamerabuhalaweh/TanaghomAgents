@@ -1,0 +1,50 @@
+import os,subprocess,pathlib,json,hashlib,sys
+ROOT=pathlib.Path('C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl');SCRATCH=ROOT.parent
+OUT=ROOT/'docs/evidence/smartlabs-242-correction1';OUT.mkdir(exist_ok=True)
+records=[]
+def run(name,args,env=None,timeout=900):
+ e={k:v for k,v in os.environ.items() if k!='NODE_OPTIONS' and not k.startswith('SMARTLABS_')}
+ e.update({'SMARTLABS_GEMMA_ENABLED':'false','SMARTLABS_TTS_ENABLED':'false','SMARTLABS_ASR_ENABLED':'false','NEXT_TELEMETRY_DISABLED':'1'})
+ if env:e.update(env)
+ p=subprocess.run(args,cwd=ROOT,env=e,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=timeout)
+ raw=p.stdout;(OUT/(name+'.log')).write_bytes(raw)
+ receipt={'name':name,'argv':args,'exit':p.returncode,'log':name+'.log','native_log_sha256':hashlib.sha256(raw).hexdigest()}
+ records.append(receipt);(OUT/'source-receipts.json').write_text(json.dumps(records,indent=2)+'\n')
+ print(name,'EXIT',p.returncode,raw[-1000:].decode(errors='replace'),flush=True)
+ assert p.returncode==0,name
+ return p
+manifest=json.loads((SCRATCH/'smartlabs-242-final-freeze.json').read_text())['manifest']
+source=[x['path'] for x in manifest if not x['path'].startswith('docs/evidence/')]
+before={p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in source}
+(OUT/'verified-source-bytes.json').write_text(json.dumps(before,indent=2)+'\n')
+lock=hashlib.sha256((ROOT/'package-lock.json').read_bytes()).hexdigest();assert lock=='e28945f1e087cf707c5948e5595252476ec9b48e0d95f56e54479a2dbe389dcf'
+ffmpeg=pathlib.Path('C:/Users/tamer/scoop/apps/ffmpeg/9.0.2/bin/ffmpeg.exe');ffhash=hashlib.sha256(ffmpeg.read_bytes()).hexdigest()
+run('targeted-final',['node','--test','tests/smartlabs-adapters.test.mjs','tests/smartlabs-server-factory.test.mjs','tests/smartlabs-secret-config.test.mjs'],{'SMARTLABS_TEST_FFMPEG':str(ffmpeg)})
+run('full-final',['npm.cmd','test'],{'SMARTLABS_TEST_FFMPEG':str(ffmpeg)})
+run('check-final',['npm.cmd','run','check'])
+run('typecheck-final',['npm.cmd','run','typecheck:dashboard'])
+files=[str(p.relative_to(ROOT)) for d in [ROOT,ROOT/'apps/dashboard'] for p in d.glob('.env*')];assert files==['.env.example'],files
+sentinels=['FAKE242_GEMMA_DIRECT_37eae4','FAKE242_API_DIRECT_03fa8a','FAKE242_GEMMA_FILE_e4da73','FAKE242_API_FILE_bae107']
+gf=SCRATCH/'smartlabs-242-correction1-fake-gemma';af=SCRATCH/'smartlabs-242-correction1-fake-api';gf.write_text(sentinels[2]+'\n');af.write_text(sentinels[3]+'\r\n')
+ne=ROOT/'apps/dashboard/next-env.d.ts';original=ne.read_bytes();expected=subprocess.check_output(['git','show','HEAD:apps/dashboard/next-env.d.ts'],cwd=ROOT)
+assert original.replace(b'\r\n',b'\n')==expected.replace(b'\r\n',b'\n')
+try:
+ run('build-final',['npm.cmd','run','build:dashboard'],{'SMARTLABS_GEMMA_API_KEY':sentinels[0],'SMARTLABS_API_KEY':sentinels[1],'SMARTLABS_GEMMA_API_KEY_FILE':str(gf),'SMARTLABS_API_KEY_FILE':str(af)})
+ generated=hashlib.sha256(ne.read_bytes()).hexdigest()
+finally:ne.write_bytes(original)
+targets=[]
+for folder in [ROOT/'apps/dashboard/.next/static',ROOT/'apps/dashboard/.next/server',ROOT/'apps/dashboard/public']:
+ if folder.exists():targets.extend(p for p in folder.rglob('*') if p.is_file())
+bad=[];names=[];hashes={}
+for p in targets:
+ b=p.read_bytes();rel=str(p.relative_to(ROOT));hashes[rel]=hashlib.sha256(b).hexdigest()
+ if any(v.encode() in b for v in sentinels+[str(gf),str(af),str(gf).replace('\\','/'),str(af).replace('\\','/')]):bad.append(rel)
+ if b'SMARTLABS_' in b:names.append(rel)
+report={'files_scanned':len(targets),'fake_marker_or_path_leaks':bad,'smartlabs_name_hits':names,'generated_next_env_sha256':generated,'restored_next_env_sha256':hashlib.sha256(ne.read_bytes()).hexdigest(),'package_lock_sha256':lock,'ffmpeg_sha256':ffhash,'decoder_installed_or_changed':False,'normal_production_build':True}
+(OUT/'build-isolation.json').write_text(json.dumps(report,indent=2)+'\n');(SCRATCH/'smartlabs-242-correction1-build-artifact-hashes.json').write_text(json.dumps(hashes,indent=2)+'\n')
+assert not bad and not names,report
+run('audit-online-final',['npm.cmd','audit','--json','--audit-level=moderate'],timeout=180)
+assert hashlib.sha256(ffmpeg.read_bytes()).hexdigest()==ffhash
+assert hashlib.sha256((ROOT/'package-lock.json').read_bytes()).hexdigest()==lock
+assert {p:hashlib.sha256((ROOT/p).read_bytes()).hexdigest() for p in source}==before
+print('ALL SOURCE GATES VERIFIED',report,flush=True)

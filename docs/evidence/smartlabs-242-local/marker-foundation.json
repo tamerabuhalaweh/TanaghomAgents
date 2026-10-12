@@ -1,0 +1,18 @@
+{
+  "command": [
+    "docker",
+    "exec",
+    "7fcee778ba15f2c53f950250a41fdee4f9298ec23a5d0ec75adb3381d1b2c6cd",
+    "psql",
+    "-U",
+    "postgres",
+    "-d",
+    "smartlabs242",
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-c",
+    "COMMENT ON DATABASE smartlabs242 IS 'issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29'"
+  ],
+  "exit": 0,
+  "sha256": "584e079f160fd37b8e1fa66c0823a151f4ed00beb8d43e0e2378ca994c21c128"
+}

@@ -11,7 +11,7 @@
     "version": { "type": "integer", "minimum": 1 },
     "parent_version_id": { "type": ["string", "null"], "format": "uuid" },
     "job_id": { "type": "string", "format": "uuid" },
-    "mime": { "enum": ["image/png", "image/jpeg", "image/webp", "video/mp4", "audio/wav", "audio/mpeg", "text/html"] },
+    "mime": { "enum": ["image/png", "image/jpeg", "image/webp", "video/mp4", "audio/wav", "audio/mpeg", "audio/ogg", "audio/flac", "audio/aac", "text/html"] },
     "width": { "type": ["integer", "null"], "minimum": 1, "maximum": 16384 },
     "height": { "type": ["integer", "null"], "minimum": 1, "maximum": 16384 },
     "duration_ms": { "type": ["integer", "null"], "minimum": 1, "maximum": 3600000 },

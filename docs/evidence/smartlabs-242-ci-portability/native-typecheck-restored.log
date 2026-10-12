@@ -1,0 +1,10 @@
+Command: npm.cmd run typecheck:dashboard
+Exit: 0
+
+> tanaghom-agents@0.1.0 typecheck:dashboard
+> npm run typecheck --workspace @tanaghom/dashboard
+
+
+> @tanaghom/dashboard@0.1.0 typecheck
+> tsc --noEmit
+

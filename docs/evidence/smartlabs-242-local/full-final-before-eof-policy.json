@@ -1,0 +1,8 @@
+{
+  "command": [
+    "npm.cmd",
+    "test"
+  ],
+  "exit": 0,
+  "sha256": "d2352760d19b614433a9a1a92086fc32fd7d45c472233ea717dff3b56c30a240"
+}

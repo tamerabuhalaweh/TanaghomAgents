@@ -1,0 +1,55 @@
+TAP version 13
+# Subtest: server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+ok 1 - server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+  ---
+  duration_ms: 12.114
+  type: 'test'
+  ...
+# Subtest: server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+ok 2 - server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+  ---
+  duration_ms: 20.8185
+  type: 'test'
+  ...
+# Subtest: explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+not ok 3 - explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+  ---
+  duration_ms: 76.4455
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-secret-config.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    {"status":"BLOCKED","code":"operator_configuration_required"}
+    
+    
+    2 !== 0
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 0
+  actual: 2
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-secret-config.test.mjs:44:69)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: server config refuses enabled capability without its key before dispatch
+ok 4 - server config refuses enabled capability without its key before dispatch
+  ---
+  duration_ms: 0.2351
+  type: 'test'
+  ...
+1..4
+# tests 4
+# suites 0
+# pass 3
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 220.2324

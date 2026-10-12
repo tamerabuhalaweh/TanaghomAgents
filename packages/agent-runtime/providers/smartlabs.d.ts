@@ -1,0 +1,10 @@
+export interface SmartLabsConfig {gemmaBaseUrl:string;gemmaKey:string;model:string;apiBaseUrl:string;apiKey:string;asrUrl:string;ttsBackend:string;voiceId:string;language:string;gemmaEnabled:boolean;ttsEnabled:boolean;asrEnabled:boolean}
+export interface AudioSource {bytes:Buffer;mime:string;sha256:string;versionId:string;assetId:string;jobId:string|null}
+export interface AdapterDependencies { tokenCounter?:(request:{model:string;messages:{role:string;content:string}[]})=>number|Promise<number>; thinkingDisabled?:boolean; readControlledAudio?:(versionId:string)=>Promise<AudioSource|null>; inspectCompressed?:(bytes:Buffer,options?:{signal?:AbortSignal;maxDuration?:number})=>Promise<{mime:string;duration:number}>;readBilling?:(headers:Headers)=>{creditsUsed?:number;balance?:number}|null;ownedLoopbackTest?:boolean }
+export interface Metadata {status:number;requestId:string|null;latencyMs:number;[key:string]:unknown}
+export interface GemmaResult {text:string;metadata:Metadata&{model:string;usage:{prompt_tokens:number;completion_tokens:number;total_tokens:number}|null;finishReason:string}}
+export interface TtsResult {bytes:Buffer;mime:string;duration:number;sample_rate:number;channels:number;sha256:string;size:number;backend:string;metadata:Metadata}
+export interface AsrResult {text:string;language:string;duration:number;source:{versionId:string;assetId:string;jobId:string|null;sha256:string};metadata:Metadata}
+export interface Adapters {gemma:{complete(input:Record<string,unknown>,options?:{signal?:AbortSignal}):Promise<GemmaResult>;models(options?:{signal?:AbortSignal}):Promise<{models:{id:string}[];metadata:Metadata}>};tts:{synthesize(input:{text:string},options?:{signal?:AbortSignal}):Promise<TtsResult>};asr:{transcribe(input:{sourceVersionId:string},options?:{signal?:AbortSignal}):Promise<AsrResult>}}
+export function readSmartLabsConfig(env:Record<string,string|undefined>):SmartLabsConfig;
+export function createSmartLabsAdapters(config:SmartLabsConfig,dependencies?:AdapterDependencies):Adapters;

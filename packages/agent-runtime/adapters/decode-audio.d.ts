@@ -1,0 +1,1 @@
+export function createBoundedAudioDecoder(pin:{path:string;sha256:string}): (bytes:Buffer,options?:{signal?:AbortSignal;maxDuration?:number})=>Promise<{mime:string;duration:number;sample_rate:number;channels:number;sha256:string;size:number}>;

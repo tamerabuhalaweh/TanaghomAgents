@@ -11,7 +11,7 @@
     "capability": { "enum": ["image", "edit", "product_shoot", "design", "carousel", "motion", "video", "talking_head", "lip_sync", "voice", "music", "landing_page"] },
     "job_id": { "type": "string", "format": "uuid" },
     "params": { "type": "object" },
-    "mime": { "enum": ["image/png", "image/jpeg", "image/webp", "video/mp4", "audio/wav", "audio/mpeg", "text/html"] },
+    "mime": { "enum": ["image/png", "image/jpeg", "image/webp", "video/mp4", "audio/wav", "audio/mpeg", "audio/ogg", "audio/flac", "audio/aac", "text/html"] },
     "bytes": { "type": "integer", "minimum": 1, "maximum": 524288000 },
     "sha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
     "outcome": { "enum": ["succeeded", "failed"] },

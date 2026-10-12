@@ -1,0 +1,36 @@
+TAP version 13
+# Subtest: server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+not ok 1 - server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+  ---
+  duration_ms: 7.3786
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-secret-config.test.mjs:7:1'
+  failureType: 'testCodeFailure'
+  error: |-
+    Expected values to be strictly equal:
+    + actual - expected
+    
+    + ''
+    - 'fake-242-exact-key'
+    
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  expected: 'fake-242-exact-key'
+  actual: ''
+  operator: 'strictEqual'
+  stack: |-
+    TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-secret-config.test.mjs:14:10)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+1..1
+# tests 1
+# suites 0
+# pass 0
+# fail 1
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 133.0909

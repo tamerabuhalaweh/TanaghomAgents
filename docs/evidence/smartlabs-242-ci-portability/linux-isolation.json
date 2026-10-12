@@ -1,0 +1,9 @@
+{
+  "id": "ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c",
+  "label": "owned-20261012",
+  "image_id": "sha256:5711a0d445a1af54af9589066c646df387d1831a608226f4cd694fc59e745059",
+  "networks_during_final_green": {},
+  "owned_tmpfs": {
+    "/tmp": "rw,size=64m"
+  }
+}

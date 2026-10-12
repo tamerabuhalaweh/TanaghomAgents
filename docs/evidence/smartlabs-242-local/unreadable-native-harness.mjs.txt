@@ -1,0 +1,14 @@
+import {spawn} from 'node:child_process';
+import {mkdtempSync,writeFileSync,rmSync} from 'node:fs';
+import {join} from 'node:path';
+import {once} from 'node:events';
+import assert from 'node:assert/strict';
+import {readSmartLabsConfig} from './tg-sl/packages/agent-runtime/providers/smartlabs.mjs';
+const dir=mkdtempSync(join(process.env.TMPDIR,'smartlabs-242-unreadable-')),file=join(dir,'fake-key');writeFileSync(file,'fake-unreadable-key');
+const child=spawn('powershell.exe',['-NoProfile','-NonInteractive','-Command',`$f=[System.IO.File]::Open('${file.replaceAll("'","''")}',[System.IO.FileMode]::Open,[System.IO.FileAccess]::Read,[System.IO.FileShare]::None);[Console]::WriteLine('READY');[Console]::Out.Flush();[Console]::ReadLine() | Out-Null;$f.Dispose()`],{stdio:['pipe','pipe','pipe']});
+try{
+ await Promise.race([new Promise((resolve,reject)=>{child.stdout.on('data',b=>{if(b.toString().includes('READY'))resolve();});child.on('exit',()=>reject(new Error('fixture locker exited early')));}),new Promise((_,reject)=>setTimeout(()=>reject(new Error('fixture locker timeout')),10000).unref())]);
+ for(const name of ['SMARTLABS_API_KEY_FILE','SMARTLABS_GEMMA_API_KEY_FILE'])assert.throws(()=>readSmartLabsConfig({[name]:file}),e=>{assert.equal(e.code,'credentials_configuration_invalid');assert.equal(e.message.includes('fake-unreadable-key'),false);assert.equal(e.message.includes(file),false);return true;});
+ child.stdin.end('\n');await once(child,'exit');assert.equal(child.exitCode,0);assert.equal(readSmartLabsConfig({SMARTLABS_API_KEY_FILE:file}).apiKey,'fake-unreadable-key');
+ console.log('PASS native Windows FileShare.None unreadable regular fake file fails closed for both keys without key/path disclosure; exact import succeeds after lock release');
+}finally{if(child.exitCode===null)child.kill();rmSync(dir,{recursive:true,force:true});}

@@ -1,0 +1,9 @@
+{
+  "command": [
+    "npm.cmd",
+    "audit",
+    "--audit-level=moderate"
+  ],
+  "exit": 0,
+  "sha256": "6d8c5c8f3d7684adb070417bd608d01ae90aa3dc26a65af03ffda4955f38d9a3"
+}

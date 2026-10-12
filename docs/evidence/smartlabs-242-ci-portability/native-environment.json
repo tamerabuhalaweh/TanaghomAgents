@@ -1,0 +1,9 @@
+{
+  "node": "v22.18.0",
+  "ffmpeg_executable_sha256": "140e3801d8adeda639a21b14e62b93a4c7d26b7a758421f43c82be59753be49b",
+  "ffmpeg_executable": "<USER_HOME>\\scoop\\shims\\ffmpeg.exe",
+  "TMPDIR_normal": "<OWNED_SCRATCH>/smartlabs-242-portability-owned",
+  "TMPDIR_negative": "absent",
+  "TEMP_TMP_negative": "<OWNED_SCRATCH>/smartlabs-242-portability-owned",
+  "fixture_leftovers": []
+}

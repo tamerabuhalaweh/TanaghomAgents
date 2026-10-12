@@ -1,0 +1,16 @@
+{
+  "before": {
+    "lock": "e28945f1e087cf707c5948e5595252476ec9b48e0d95f56e54479a2dbe389dcf",
+    "next_env": "4e4da12aa061aac172fb1bcb48e9b6e4b293080d2f494327925fdba8f39632ac",
+    "env_filenames": [
+      ".env.example"
+    ]
+  },
+  "next_env_generated_sha256": "1b59d4c6b83807db275d43f3cf2cc8e9323f465fab764eea091cc5becd5bad37",
+  "next_env_restored_sha256": "4e4da12aa061aac172fb1bcb48e9b6e4b293080d2f494327925fdba8f39632ac",
+  "lock_after": "e28945f1e087cf707c5948e5595252476ec9b48e0d95f56e54479a2dbe389dcf",
+  "build_exit": 0,
+  "scanned_files": 735,
+  "fake_value_leaks": [],
+  "client_or_rendered_env_name_hits": []
+}

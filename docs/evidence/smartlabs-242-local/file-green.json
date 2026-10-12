@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    "--test",
+    "tests/smartlabs-secret-config.test.mjs"
+  ],
+  "exit": 0,
+  "sha256": "5bfb3628fe22af7f332564e66c051d4b45607d4ab1910318b702314f79379962"
+}

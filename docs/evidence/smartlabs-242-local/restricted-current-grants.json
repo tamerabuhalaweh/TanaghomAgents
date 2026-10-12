@@ -1,0 +1,13 @@
+{
+  "command": [
+    "psql",
+    "postgresql://postgres:fixture242-only@127.0.0.1:65272/smartlabs242",
+    "-X",
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-c",
+    "SELECT version() AS server; SELECT count(*) AS ledger_count,max(version) AS latest FROM schema_migrations; SELECT rolname,rolsuper,rolcreaterole,rolcreatedb,rolreplication,rolbypassrls FROM pg_roles WHERE rolname IN ('tanaghom_api','tanaghom_creative_worker'); SELECT p.proname,p.proacl FROM pg_proc p JOIN pg_namespace n ON n.oid=p.pronamespace WHERE n.nspname='tanaghom' AND has_function_privilege('tanaghom_creative_worker',p.oid,'EXECUTE') ORDER BY p.proname; SELECT c.relname,c.relacl FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE n.nspname='tanaghom' AND c.relname IN ('creative_jobs','creative_assets','creative_asset_versions');"
+  ],
+  "exit": 0,
+  "sha256": "40eda0668ed0ac4a3519b067a2a28ea2b882d6d1cf01b5ab4f270ebb78309619"
+}

@@ -1,0 +1,463 @@
+{
+  "command_count": 32,
+  "receipts": [
+    {
+      "label": "database-create",
+      "argv": [
+        "docker",
+        "run",
+        "-d",
+        "--pull=never",
+        "--label",
+        "hermes.issue242.correction1=issue242-2aa94f9be3504e16a6bd6fccdd7b2a95",
+        "-e",
+        "POSTGRES_HOST_AUTH_METHOD=trust",
+        "-p",
+        "127.0.0.1::5432",
+        "postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94"
+      ],
+      "exit": 0,
+      "sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "evidence_log": "native-database-create.log"
+    },
+    {
+      "label": "database-owner",
+      "argv": [
+        "docker",
+        "inspect",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4"
+      ],
+      "exit": 0,
+      "sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "evidence_log": "native-database-owner.log"
+    },
+    {
+      "label": "database-ready-0",
+      "argv": [
+        "docker",
+        "exec",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 2,
+      "sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "evidence_log": "native-database-ready-0.log"
+    },
+    {
+      "label": "database-ready-1",
+      "argv": [
+        "docker",
+        "exec",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 2,
+      "sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "evidence_log": "native-database-ready-1.log"
+    },
+    {
+      "label": "database-ready-2",
+      "argv": [
+        "docker",
+        "exec",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 2,
+      "sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "evidence_log": "native-database-ready-2.log"
+    },
+    {
+      "label": "database-ready-3",
+      "argv": [
+        "docker",
+        "exec",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 2,
+      "sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "evidence_log": "native-database-ready-3.log"
+    },
+    {
+      "label": "database-ready-4",
+      "argv": [
+        "docker",
+        "exec",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 0,
+      "sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "evidence_log": "native-database-ready-4.log"
+    },
+    {
+      "label": "create-db",
+      "argv": [
+        "docker",
+        "exec",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "createdb",
+        "-U",
+        "postgres",
+        "smartlabs242"
+      ],
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence_log": "native-create-db.log"
+    },
+    {
+      "label": "marker",
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "psql",
+        "-X",
+        "-U",
+        "postgres",
+        "-d",
+        "smartlabs242",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At"
+      ],
+      "exit": 0,
+      "sha256": "b47e6e0919e856285dde34a45a4c3baf763e4c224617ac64f17dc810dd4774b2",
+      "evidence_log": "native-marker.log"
+    },
+    {
+      "label": "full-chain-through46",
+      "argv": [
+        "node",
+        "scripts/database.mjs",
+        "migrate"
+      ],
+      "exit": 0,
+      "sha256": "c0ee8feb76c2c46c9226e7650d8c4aef57506db01fc0469b558cb512e99b0c18",
+      "evidence_log": "native-full-chain-through46.log"
+    },
+    {
+      "label": "baseline-worker-job-update",
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "psql",
+        "-X",
+        "-U",
+        "postgres",
+        "-d",
+        "smartlabs242",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At"
+      ],
+      "exit": 3,
+      "sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "evidence_log": "native-baseline-worker-job-update.log"
+    },
+    {
+      "label": "baseline-worker-truncate",
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "psql",
+        "-X",
+        "-U",
+        "postgres",
+        "-d",
+        "smartlabs242",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At"
+      ],
+      "exit": 3,
+      "sha256": "0ce89c3532dfee594ce2e56ef84e761c4fdc984f5bbea58c25c40625ac861afe",
+      "evidence_log": "native-baseline-worker-truncate.log"
+    },
+    {
+      "label": "migration-verification",
+      "argv": [
+        "node",
+        "scripts/smartlabs-migration-verification.mjs"
+      ],
+      "exit": 0,
+      "sha256": "0ce7be70982d7923cf1a10899514021d75bea7eac46eb9948e80e89fd3bbd32d",
+      "evidence_log": "native-migration-verification.log"
+    },
+    {
+      "label": "audio-contract",
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "psql",
+        "-X",
+        "-U",
+        "postgres",
+        "-d",
+        "smartlabs242",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At"
+      ],
+      "exit": 0,
+      "sha256": "db993625a2ed8e7eb00130951989de6ee319ca39d77ff90b2cb407d74363778e",
+      "evidence_log": "native-audio-contract.log"
+    },
+    {
+      "label": "combined-native",
+      "argv": [
+        "node",
+        "scripts/smartlabs-local-integration.mjs"
+      ],
+      "exit": 0,
+      "sha256": "1970a020a1910af508e2e4f76d666ec046ad17a37c6fe4caedb850ffe826c1c9",
+      "evidence_log": "native-combined-native.log"
+    },
+    {
+      "label": "privileges",
+      "argv": [
+        "docker",
+        "exec",
+        "-i",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4",
+        "psql",
+        "-X",
+        "-U",
+        "postgres",
+        "-d",
+        "smartlabs242",
+        "-v",
+        "ON_ERROR_STOP=1",
+        "-At"
+      ],
+      "exit": 0,
+      "sha256": "237e0e5ab168b033de06ae820ce1755550b49d0f5f4131af3f7d259a37b7ecc0",
+      "evidence_log": "native-privileges.log"
+    },
+    {
+      "label": "database-cleanup-owner",
+      "argv": [
+        "docker",
+        "inspect",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4"
+      ],
+      "exit": 0,
+      "sha256": "4a95b377af66e70a0c24a67831f7d4bafeab96ae2d143cc51e33d63c67ca48d9",
+      "evidence_log": "native-database-cleanup-owner.log"
+    },
+    {
+      "label": "database-cleanup",
+      "argv": [
+        "docker",
+        "rm",
+        "-f",
+        "-v",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4"
+      ],
+      "exit": 0,
+      "sha256": "7b46755f7bb6ac39ac1422cc31b2be581546a08180bc14a15a34ed38aa8caf2c",
+      "evidence_log": "native-database-cleanup.log"
+    },
+    {
+      "label": "database-cleanup-absence",
+      "argv": [
+        "docker",
+        "inspect",
+        "72c7163f4ee1c0ca647c3c795f72cae61b9af9870cafde23fed327a31cc0d6a4"
+      ],
+      "exit": 1,
+      "sha256": "b80ff3187d98ecbd51131dfbc7578755a091aadb12780568c1d00335c02ca097",
+      "evidence_log": "native-database-cleanup-absence.log"
+    },
+    {
+      "label": "database-cleanup-census",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--filter",
+        "label=hermes.issue242.correction1=issue242-2aa94f9be3504e16a6bd6fccdd7b2a95"
+      ],
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence_log": "native-database-cleanup-census.log"
+    },
+    {
+      "label": "foundation-create",
+      "argv": [
+        "docker",
+        "run",
+        "-d",
+        "--pull=never",
+        "--label",
+        "hermes.issue242.correction1=issue242-9c696630b38b4c2db6e408a3430e13e4",
+        "-e",
+        "POSTGRES_HOST_AUTH_METHOD=trust",
+        "-p",
+        "127.0.0.1::5432",
+        "postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94"
+      ],
+      "exit": 0,
+      "sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "evidence_log": "native-foundation-create.log"
+    },
+    {
+      "label": "foundation-owner",
+      "argv": [
+        "docker",
+        "inspect",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85"
+      ],
+      "exit": 0,
+      "sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "evidence_log": "native-foundation-owner.log"
+    },
+    {
+      "label": "foundation-ready-0",
+      "argv": [
+        "docker",
+        "exec",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 2,
+      "sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "evidence_log": "native-foundation-ready-0.log"
+    },
+    {
+      "label": "foundation-ready-1",
+      "argv": [
+        "docker",
+        "exec",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 2,
+      "sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "evidence_log": "native-foundation-ready-1.log"
+    },
+    {
+      "label": "foundation-ready-2",
+      "argv": [
+        "docker",
+        "exec",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 2,
+      "sha256": "7c926b87e40b26ec6ffb4c78f403571ac977ece539b51f52b4a58a6943d143ea",
+      "evidence_log": "native-foundation-ready-2.log"
+    },
+    {
+      "label": "foundation-ready-3",
+      "argv": [
+        "docker",
+        "exec",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85",
+        "pg_isready",
+        "-U",
+        "postgres"
+      ],
+      "exit": 0,
+      "sha256": "6e168fc3b5a0662104b5e5da92e87b870e8b7c65fec827d267115b5123d18614",
+      "evidence_log": "native-foundation-ready-3.log"
+    },
+    {
+      "label": "foundation-db",
+      "argv": [
+        "docker",
+        "exec",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85",
+        "createdb",
+        "-U",
+        "postgres",
+        "creativefoundation242"
+      ],
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence_log": "native-foundation-db.log"
+    },
+    {
+      "label": "foundation-native",
+      "argv": [
+        "node",
+        "scripts/creative-foundation-integration.mjs"
+      ],
+      "exit": 0,
+      "sha256": "9149dcb5603962fc780981c121e13ac5c0c92891ff7bb64710bdc52c907e0399",
+      "evidence_log": "native-foundation-native.log"
+    },
+    {
+      "label": "foundation-cleanup-owner",
+      "argv": [
+        "docker",
+        "inspect",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85"
+      ],
+      "exit": 0,
+      "sha256": "2297c8406f7dee16e6a169450ba51a035395a5f9ba9fbad2ae08317e636358a4",
+      "evidence_log": "native-foundation-cleanup-owner.log"
+    },
+    {
+      "label": "foundation-cleanup",
+      "argv": [
+        "docker",
+        "rm",
+        "-f",
+        "-v",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85"
+      ],
+      "exit": 0,
+      "sha256": "2786b210919bf6a32cbc51a7d16218ebd97b20e65bd33c5d435d49c8335953f5",
+      "evidence_log": "native-foundation-cleanup.log"
+    },
+    {
+      "label": "foundation-cleanup-absence",
+      "argv": [
+        "docker",
+        "inspect",
+        "6c7ed9d8b5f791c6533f87eece8983602e53a2670606155e752bd720ce86ef85"
+      ],
+      "exit": 1,
+      "sha256": "392599b7a248fa29ca032be73ef8890ea7005ff9e7973f9522beee23f039f3ce",
+      "evidence_log": "native-foundation-cleanup-absence.log"
+    },
+    {
+      "label": "foundation-cleanup-census",
+      "argv": [
+        "docker",
+        "ps",
+        "-aq",
+        "--filter",
+        "label=hermes.issue242.correction1=issue242-9c696630b38b4c2db6e408a3430e13e4"
+      ],
+      "exit": 0,
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "evidence_log": "native-foundation-cleanup-census.log"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "command": [
+    "npm.cmd",
+    "run",
+    "build:dashboard"
+  ],
+  "exit": 0,
+  "sha256": "19c4f0e6723caad8fb7c1dd3492719d96e6ec357c554f8d85316351ca652b061"
+}

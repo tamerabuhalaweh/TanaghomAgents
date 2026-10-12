@@ -1,0 +1,6 @@
+Command: docker exec ee40ad3c878bfde332556e2f7bb184fb4a6e1c116efa4309ccb1c446431a405c sh -lc node --version; npm --version; test ! -e /owned/source/tmp; sha256sum /usr/bin/ffmpeg; node -e "console.log(JSON.stringify({typescript:require('typescript/package.json').version,pg:require('pg/package.json').version}))"
+Exit: 0
+v24.18.0
+11.16.0
+0dafc1360bb07743f76abeb1e4ae16b0aaa1331e9041a0e8d6a8524111dc0cbb  /usr/bin/ffmpeg
+{"typescript":"5.9.3","pg":"8.16.3"}

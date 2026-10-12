@@ -1,0 +1,70 @@
+[
+  {
+    "name": "targeted-final",
+    "argv": [
+      "node",
+      "--test",
+      "tests/smartlabs-adapters.test.mjs",
+      "tests/smartlabs-server-factory.test.mjs",
+      "tests/smartlabs-secret-config.test.mjs"
+    ],
+    "exit": 0,
+    "log": "targeted-final.log",
+    "native_log_sha256": "972a4ed6b12b2506a08d97a556581e5941af78ab6e471aadc7aab812f69c65f7"
+  },
+  {
+    "name": "full-final",
+    "argv": [
+      "npm.cmd",
+      "test"
+    ],
+    "exit": 0,
+    "log": "full-final.log",
+    "native_log_sha256": "3938f484346683158cc81a6a20f091e2c98131c8173025aaf9a20ab8a06c40a9"
+  },
+  {
+    "name": "check-final",
+    "argv": [
+      "npm.cmd",
+      "run",
+      "check"
+    ],
+    "exit": 0,
+    "log": "check-final.log",
+    "native_log_sha256": "6dcfc6693d1910e4594ba79cfe7e606ded810b11da92edbbef0f7bf437a49f62"
+  },
+  {
+    "name": "typecheck-final",
+    "argv": [
+      "npm.cmd",
+      "run",
+      "typecheck:dashboard"
+    ],
+    "exit": 0,
+    "log": "typecheck-final.log",
+    "native_log_sha256": "43abf469e6704a5b0933910f4fdc8664bc95ebec0fd33e02a760d8c261ba2f36"
+  },
+  {
+    "name": "build-final",
+    "argv": [
+      "npm.cmd",
+      "run",
+      "build:dashboard"
+    ],
+    "exit": 0,
+    "log": "build-final.log",
+    "native_log_sha256": "9f6865c43bb87a3b9d75ca30768ce9df1a291731050105c2c49b81bc654f7955"
+  },
+  {
+    "name": "audit-online-final",
+    "argv": [
+      "npm.cmd",
+      "audit",
+      "--json",
+      "--audit-level=moderate"
+    ],
+    "exit": 0,
+    "log": "audit-online-final.log",
+    "native_log_sha256": "b78ee8d1c18ab241d3e0ffd04f68ce878e70b214e4de0cb8213a7637950773c3"
+  }
+]

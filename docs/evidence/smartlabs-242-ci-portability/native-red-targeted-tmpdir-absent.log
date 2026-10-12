@@ -1,0 +1,211 @@
+Command: node --test tests/smartlabs-secret-config.test.mjs tests/smartlabs-server-factory.test.mjs
+Exit: 1
+TAP version 13
+# Subtest: server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+not ok 1 - server config loads exact fake key bytes from _FILE, allowing one terminal LF or CRLF only
+  ---
+  duration_ms: 0.8356
+  type: 'test'
+  location: '<USER_HOME>\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-secret-config.test.mjs:9:1'
+  failureType: 'testCodeFailure'
+  error: 'The "path" argument must be of type string. Received undefined'
+  code: 'ERR_INVALID_ARG_TYPE'
+  name: 'TypeError'
+  stack: |-
+    join (node:path:508:7)
+    TestContext.<anonymous> (file:///<REPOSITORY>/tests/smartlabs-secret-config.test.mjs:10:24)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.start (node:internal/test_runner/test:944:17)
+    startSubtestAfterBootstrap (node:internal/test_runner/harness:296:17)
+  ...
+# Subtest: server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+not ok 2 - server config refuses malformed, ambiguous, empty, missing and unreadable fake secret sources without disclosure
+  ---
+  duration_ms: 0.2669
+  type: 'test'
+  location: '<USER_HOME>\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-secret-config.test.mjs:20:1'
+  failureType: 'testCodeFailure'
+  error: 'The "path" argument must be of type string. Received undefined'
+  code: 'ERR_INVALID_ARG_TYPE'
+  name: 'TypeError'
+  stack: |-
+    join (node:path:508:7)
+    TestContext.<anonymous> (file:///<REPOSITORY>/tests/smartlabs-secret-config.test.mjs:21:24)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+not ok 3 - explicit CLI accepts _FILE only with trusted context and refuses a credential-bearing receipt
+  ---
+  duration_ms: 0.1941
+  type: 'test'
+  location: '<USER_HOME>\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-secret-config.test.mjs:39:1'
+  failureType: 'testCodeFailure'
+  error: 'The "path" argument must be of type string. Received undefined'
+  code: 'ERR_INVALID_ARG_TYPE'
+  name: 'TypeError'
+  stack: |-
+    join (node:path:508:7)
+    TestContext.<anonymous> (file:///<REPOSITORY>/tests/smartlabs-secret-config.test.mjs:40:24)
+    Test.runInAsyncScope (node:async_hooks:214:14)
+    Test.run (node:internal/test_runner/test:1047:25)
+    Test.processPendingSubtests (node:internal/test_runner/test:744:18)
+    Test.postRun (node:internal/test_runner/test:1173:19)
+    Test.run (node:internal/test_runner/test:1101:12)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: server config refuses enabled capability without its key before dispatch
+ok 4 - server config refuses enabled capability without its key before dispatch
+  ---
+  duration_ms: 0.8765
+  type: 'test'
+  ...
+# Subtest: actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+ok 5 - actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+  ---
+  duration_ms: 414.4584
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: draft
+ok 6 - ASR requires current SQL approved source: draft
+  ---
+  duration_ms: 37.9354
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: rejected
+ok 7 - ASR requires current SQL approved source: rejected
+  ---
+  duration_ms: 27.53
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: archived
+ok 8 - ASR requires current SQL approved source: archived
+  ---
+  duration_ms: 30.4754
+  type: 'test'
+  ...
+# Subtest: ASR requires current SQL approved source: approved
+ok 9 - ASR requires current SQL approved source: approved
+  ---
+  duration_ms: 47.5854
+  type: 'test'
+  ...
+# Subtest: actual private storage reader refuses oversize file before unbounded allocation
+not ok 10 - actual private storage reader refuses oversize file before unbounded allocation
+  ---
+  duration_ms: 3.8858
+  type: 'test'
+  location: '<USER_HOME>\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:35:1'
+  failureType: 'testCodeFailure'
+  error: "ENOENT: no such file or directory, mkdtemp '<USER_HOME>\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tmp\\sl-audio-XXXXXX'"
+  code: 'ENOENT'
+  stack: |-
+    async mkdtemp (node:internal/fs/promises:1183:10)
+    async TestContext.<anonymous> (file:///<REPOSITORY>/tests/smartlabs-server-factory.test.mjs:37:18)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+ok 11 - TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+  ---
+  duration_ms: 43.7532
+  type: 'test'
+  ...
+# Subtest: controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+ok 12 - controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+  ---
+  duration_ms: 3.158
+  type: 'test'
+  ...
+# Subtest: Creative schema MIME mirrors include controlled compressed audio
+ok 13 - Creative schema MIME mirrors include controlled compressed audio
+  ---
+  duration_ms: 0.8439
+  type: 'test'
+  ...
+# Subtest: guarded server smoke preserves draft, pauses for human approval before A1 and cannot re-spend G1 T1
+ok 14 - guarded server smoke preserves draft, pauses for human approval before A1 and cannot re-spend G1 T1
+  ---
+  duration_ms: 48.5186
+  type: 'test'
+  ...
+# Subtest: smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+ok 15 - smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+  ---
+  duration_ms: 82.8687
+  type: 'test'
+  ...
+# Subtest: owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+ok 16 - owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+  ---
+  duration_ms: 17.5261
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+ok 17 - tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 21.8754
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+ok 18 - asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 14.8936
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+ok 19 - tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 17.4988
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+ok 20 - asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 14.5494
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed null
+ok 21 - tts current Creative execution gate fails closed null
+  ---
+  duration_ms: 13.682
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed null
+ok 22 - asr current Creative execution gate fails closed null
+  ---
+  duration_ms: 13.8072
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed "error"
+ok 23 - tts current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 13.6437
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed "error"
+ok 24 - asr current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 13.6853
+  type: 'test'
+  ...
+# Subtest: compiled server factory authenticates request; default OFF health exposes presence only without network
+ok 25 - compiled server factory authenticates request; default OFF health exposes presence only without network
+  ---
+  duration_ms: 14.4905
+  type: 'test'
+  ...
+1..25
+# tests 25
+# suites 0
+# pass 21
+# fail 4
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 1077.2607

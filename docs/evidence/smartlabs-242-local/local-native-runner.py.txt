@@ -1,0 +1,97 @@
+import os,subprocess,pathlib,json,hashlib,time,uuid
+ROOT=pathlib.Path('C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl')
+OUT=ROOT/'docs/evidence/smartlabs-242-local'
+OUT.mkdir(parents=True,exist_ok=True)
+SCRATCH=ROOT.parent
+
+def run(name,args,env=None,stdin=None,timeout=600):
+    e=os.environ.copy();e.pop('NODE_OPTIONS',None)
+    if env:e.update(env)
+    p=subprocess.run(args,cwd=ROOT,env=e,input=stdin,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,timeout=timeout)
+    raw=p.stdout
+    (OUT/(name+'.log')).write_bytes(raw+b'\nEXIT='+str(p.returncode).encode()+b'\n')
+    receipt={'command':args,'exit':p.returncode,'sha256':hashlib.sha256(raw).hexdigest()}
+    (OUT/(name+'.json')).write_text(json.dumps(receipt,indent=2)+'\n')
+    print(name,'EXIT',p.returncode,raw.decode(errors='replace')[-1400:])
+    return p
+
+if __name__=='__main__':
+    import sys
+    mode=sys.argv[1]
+    if mode=='basic':
+        run('file-green',['node','--test','tests/smartlabs-secret-config.test.mjs'])
+        run('typecheck',['npm.cmd','run','typecheck:dashboard'])
+        run('check',['npm.cmd','run','check'])
+    if mode=='build':
+        files=[str(p.relative_to(ROOT)) for d in [ROOT,ROOT/'apps/dashboard'] for p in d.glob('.env*')]
+        assert files==['.env.example'],files
+        sentinels=['FAKE242_GEMMA_DIRECT_37eae4','FAKE242_API_DIRECT_03fa8a','FAKE242_GEMMA_FILE_e4da73','FAKE242_API_FILE_bae107']
+        gf=SCRATCH/'smartlabs-242-fake-gemma-key';af=SCRATCH/'smartlabs-242-fake-api-key'
+        gf.write_text(sentinels[2]+'\n');af.write_text(sentinels[3]+'\r\n')
+        # Build with direct and file markers present and flags OFF. Conflict is never
+        # resolved: factory is request-scoped, not build-evaluated. Separate file-only
+        # factory tests prove resolution; scans cover all marker values and paths.
+        env={'SMARTLABS_GEMMA_API_KEY':sentinels[0],'SMARTLABS_API_KEY':sentinels[1],
+             'SMARTLABS_GEMMA_API_KEY_FILE':str(gf),'SMARTLABS_API_KEY_FILE':str(af),
+             'SMARTLABS_GEMMA_ENABLED':'false','SMARTLABS_TTS_ENABLED':'false','SMARTLABS_ASR_ENABLED':'false','NEXT_TELEMETRY_DISABLED':'1'}
+        lock=ROOT/'package-lock.json';ne=ROOT/'apps/dashboard/next-env.d.ts'
+        before={'lock':hashlib.sha256(lock.read_bytes()).hexdigest(),'next_env':hashlib.sha256(ne.read_bytes()).hexdigest(),'env_filenames':files}
+        original=ne.read_bytes();p=run('build',['npm.cmd','run','build:dashboard'],env=env,timeout=900)
+        after=hashlib.sha256(ne.read_bytes()).hexdigest()
+        expected=subprocess.check_output(['git','show','HEAD:apps/dashboard/next-env.d.ts'],cwd=ROOT)
+        # Repository policy keeps tracked Next-generated type reference at baseline.
+        assert original.replace(b'\r\n',b'\n')==expected.replace(b'\r\n',b'\n')
+        ne.write_bytes(original)
+        targets=[]
+        for d in [ROOT/'apps/dashboard/.next/static',ROOT/'apps/dashboard/public']:
+            if d.exists():targets.extend(x for x in d.rglob('*') if x.is_file())
+        targets.extend(x for x in (ROOT/'apps/dashboard/.next/server').rglob('*') if x.is_file() and x.suffix in ['.html','.rsc','.map'])
+        bad=[];name_hits=[]
+        for x in targets:
+            b=x.read_bytes()
+            if any(s.encode() in b for s in sentinels+[str(gf),str(af)]):bad.append(str(x.relative_to(ROOT)))
+            if b'SMARTLABS_' in b:name_hits.append(str(x.relative_to(ROOT)))
+        report={'before':before,'next_env_generated_sha256':after,'next_env_restored_sha256':hashlib.sha256(ne.read_bytes()).hexdigest(),'lock_after':hashlib.sha256(lock.read_bytes()).hexdigest(),'build_exit':p.returncode,'scanned_files':len(targets),'fake_value_leaks':bad,'client_or_rendered_env_name_hits':name_hits}
+        (OUT/'build-isolation.json').write_text(json.dumps(report,indent=2)+'\n');print(json.dumps(report));assert p.returncode==0 and not bad and not name_hits and report['lock_after']==before['lock']
+    if mode=='foundation':
+        import socket
+        owned=json.loads((SCRATCH/'smartlabs242-owned-pg.json').read_text())
+        p=run('foundation-create-db',['docker','exec',owned['id'],'psql','-U','postgres','-d','postgres','-v','ON_ERROR_STOP=1','-c','CREATE DATABASE creativefoundation242'])
+        assert p.returncode==0
+        def port():
+            with socket.socket() as s:s.bind(('127.0.0.1',0));return str(s.getsockname()[1])
+        url='postgresql://postgres:fixture242-only@127.0.0.1:'+owned['port']+'/creativefoundation242'
+        private=SCRATCH/'smartlabs-242-foundation-private';private.mkdir(exist_ok=True)
+        p=run('foundation',['node','scripts/creative-foundation-integration.mjs'],env={'DATABASE_TEST_URL':url,'CREATIVE_TEST_AUTH_PORT':port(),'CREATIVE_TEST_DASHBOARD_PORT':port(),'CREATIVE_UPLOAD_DIR':str(private),'SMARTLABS_GEMMA_ENABLED':'false','SMARTLABS_TTS_ENABLED':'false','SMARTLABS_ASR_ENABLED':'false','NEXT_TELEMETRY_DISABLED':'1'},timeout=600)
+        assert p.returncode==0
+    if mode=='regression':
+        ffmpeg=pathlib.Path('C:/Users/tamer/scoop/apps/ffmpeg/current/bin/ffmpeg.exe').resolve()
+        decoder_hash=hashlib.sha256(ffmpeg.read_bytes()).hexdigest()
+        env={'SMARTLABS_TEST_FFMPEG':str(ffmpeg)}
+        run('targeted-final',['node','--test','tests/smartlabs-adapters.test.mjs','tests/smartlabs-server-factory.test.mjs','tests/smartlabs-secret-config.test.mjs'],env=env)
+        run('full-final',['npm.cmd','test'],env=env,timeout=900)
+        assert hashlib.sha256(ffmpeg.read_bytes()).hexdigest()==decoder_hash
+        (OUT/'decoder-pin.json').write_text(json.dumps({'path':str(ffmpeg),'sha256_before_after':decoder_hash,'installed_or_modified':False},indent=2)+'\n')
+        run('audit-online-final',['npm.cmd','audit','--audit-level=moderate'],timeout=120)
+    if mode=='migrate':
+        owned=json.loads((SCRATCH/'smartlabs242-owned-pg.json').read_text())
+        url='postgresql://postgres:fixture242-only@127.0.0.1:'+owned['port']+'/smartlabs242'
+        p=run('migrate-through0046',['node','scripts/database.mjs','migrate'],env={'DATABASE_URL':url,'DATABASE_MIGRATION_TARGET':'0046_creative_talking_head'},timeout=300)
+        assert p.returncode==0
+    if mode=='pg-create':
+        label='issue242-'+uuid.uuid4().hex
+        name='smartlabs-'+label
+        p=run('pg-create',['docker','run','-d','--name',name,'--label','tanaghom.owner='+label,'--network','bridge','-p','127.0.0.1::5432','-e','POSTGRES_PASSWORD=fixture242-only','-e','POSTGRES_DB=smartlabs242','postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94'])
+        assert p.returncode==0
+        cid=p.stdout.decode().strip()
+        owned={'id':cid,'name':name,'label':label}
+        (SCRATCH/'smartlabs242-owned-pg.json').write_text(json.dumps(owned,indent=2)+'\n')
+        info=json.loads(subprocess.check_output(['docker','inspect',cid]))[0]
+        assert info['Id']==cid and info['Config']['Labels']['tanaghom.owner']==label
+        owned['port']=info['NetworkSettings']['Ports']['5432/tcp'][0]['HostPort']
+        (SCRATCH/'smartlabs242-owned-pg.json').write_text(json.dumps(owned,indent=2)+'\n')
+        for i in range(40):
+            if subprocess.run(['docker','exec',cid,'pg_isready','-U','postgres','-d','smartlabs242'],stdout=subprocess.DEVNULL).returncode==0:break
+            time.sleep(.25)
+        else:raise RuntimeError('owned PostgreSQL not ready')
+        (OUT/'pg-ownership.json').write_text(json.dumps(owned,indent=2)+'\n');print(owned)

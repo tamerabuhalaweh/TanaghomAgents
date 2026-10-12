@@ -1,0 +1,58 @@
+TAP version 13
+# Subtest: tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+ok 1 - tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 387.3372
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+ok 2 - asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 61.5098
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+ok 3 - tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 40.4024
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+ok 4 - asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 33.4426
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed null
+ok 5 - tts current Creative execution gate fails closed null
+  ---
+  duration_ms: 33.8139
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed null
+ok 6 - asr current Creative execution gate fails closed null
+  ---
+  duration_ms: 20.7028
+  type: 'test'
+  ...
+# Subtest: tts current Creative execution gate fails closed "error"
+ok 7 - tts current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 24.7134
+  type: 'test'
+  ...
+# Subtest: asr current Creative execution gate fails closed "error"
+ok 8 - asr current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 21.8694
+  type: 'test'
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 8
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 812.6985

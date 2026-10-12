@@ -12,9 +12,10 @@ const EXT_BY_MIME: Record<string, string> = {
   "video/mp4": "mp4",
   "audio/wav": "wav",
   "audio/mpeg": "mp3",
+  "audio/ogg":"ogg", "audio/flac":"flac", "audio/aac":"aac",
   "text/html": "html",
 };
-const KEY_RE = /^t\/[0-9a-f-]{36}\/[a-z_]+\/[0-9a-f-]{36}\/v[0-9]+\.(png|jpg|jpeg|webp|mp4|wav|mp3|html)$/;
+const KEY_RE = /^t\/[0-9a-f-]{36}\/[a-z_]+\/[0-9a-f-]{36}\/v[0-9]+\.(png|jpg|jpeg|webp|mp4|wav|mp3|ogg|flac|aac|html)$/;
 
 export function extensionForMime(mime: string) {
   const ext = EXT_BY_MIME[mime];

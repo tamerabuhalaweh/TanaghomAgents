@@ -1,0 +1,9 @@
+{
+  "command": [
+    "npm.cmd",
+    "run",
+    "check"
+  ],
+  "exit": 0,
+  "sha256": "bddb2d917733d7d61826cea17e0b5a883a8cff8fd2efe34fd7d963acfbaf6f78"
+}

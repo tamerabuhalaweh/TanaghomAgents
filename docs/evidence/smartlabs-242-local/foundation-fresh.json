@@ -1,0 +1,8 @@
+{
+  "command": [
+    "node",
+    "scripts/creative-foundation-integration.mjs"
+  ],
+  "exit": 0,
+  "sha256": "9149dcb5603962fc780981c121e13ac5c0c92891ff7bb64710bdc52c907e0399"
+}
