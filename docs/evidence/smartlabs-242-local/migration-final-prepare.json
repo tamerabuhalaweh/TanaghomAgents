@@ -1,0 +1,13 @@
+{
+  "command": [
+    "psql",
+    "postgresql://postgres:fixture242-only@127.0.0.1:50063/smartlabs242",
+    "-X",
+    "-v",
+    "ON_ERROR_STOP=1",
+    "-f",
+    "packages/database/migrations/0047_smartlabs_audio.down.sql"
+  ],
+  "exit": 0,
+  "sha256": "8a05a883a4b37d58f38d572f8d82a427098bc37c88eb1d59876d7965837d1304"
+}

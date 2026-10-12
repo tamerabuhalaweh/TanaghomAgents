@@ -1,0 +1,235 @@
+
+> tanaghom-agents@0.1.0 build:dashboard
+> node scripts/dashboard.mjs build
+
+▲ Next.js 16.4.0 (Turbopack)
+✓ Running next.config.ts took 151ms
+
+  Creating an optimized production build ...
+✓ Compiled successfully in 5.6s
+  Running TypeScript ...
+  Finished TypeScript in 6.3s ...
+  Collecting page data using 11 workers ...
+  Generating static pages using 11 workers (0/84) ...
+  Generating static pages using 11 workers (21/84) 
+  Generating static pages using 11 workers (42/84) 
+  Generating static pages using 11 workers (63/84) 
+✓ Generating static pages using 11 workers (84/84) in 2.6s
+Turbopack build encountered 3 warnings:
+./apps/dashboard/lib/server/creative/storage.ts:64:28
+Warning: Dynamic filesystem access causes tracing of the whole project
+  [90m62 |[0m         [36melse[0m {
+  [90m63 |[0m           [36mif[0m(![33mNumber[0m.isSafeInteger(maxBytes)||maxBytes<[35m1[0m||maxBytes>[35m25[0m*[35m1024[0m*[35m1024[0m)[36mthrow[0m [36mnew[0m [33m...[0m
+[33m[1m>[0m [90m64 |[0m           [36mconst[0m file=[36mawait[0m open(target,[32m"r"[0m);
+  [90m   |[0m                            [33m[1m^^^^^^^^^^^^^^^^[0m
+  [90m65 |[0m           [36mtry[0m {
+  [90m66 |[0m             [36mif[0m(([36mawait[0m file.stat()).size>maxBytes)[36mthrow[0m [36mnew[0m [33mError[0m([32m"object_size_exceeded"[0m);
+  [90m67 |[0m             [36mconst[0m chunks:[33mBuffer[0m[]=[];[36mlet[0m size=[35m0[0m;
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: fs.open(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./apps/dashboard/lib/server/creative/storage.ts
+    ./apps/dashboard/app/api/creative/designs/[id]/preview/route.ts
+
+
+./apps/dashboard/lib/server/creative/storage.ts:61:45
+Warning: Dynamic filesystem access causes tracing of the whole project
+  [90m59 |[0m ... {
+  [90m60 |[0m ...[36met[0m bytes:[33mBuffer[0m;
+[33m[1m>[0m [90m61 |[0m ...[36mf[0m(maxBytes===[36mundefined[0m)bytes=[36mawait[0m readFile(target);
+  [90m   |[0m                                       [33m[1m^^^^^^^^^^^^^^^^[0m
+  [90m62 |[0m ...[36mlse[0m {
+  [90m63 |[0m ... [36mif[0m(![33mNumber[0m.isSafeInteger(maxBytes)||maxBytes<[35m1[0m||maxBytes>[35m25[0m*[35m1024[0m*[35m1024[0m)[36mthrow[0m [36mnew[0m [33mError[0m([32m...[0m
+  [90m64 |[0m ... [36mconst[0m file=[36mawait[0m open(target,[32m"r"[0m);
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: fs.readFile(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./apps/dashboard/lib/server/creative/storage.ts
+    ./apps/dashboard/app/api/creative/designs/[id]/preview/route.ts
+
+
+./apps/dashboard/lib/server/creative/storage.ts:40:12
+Warning: Dynamic filesystem access causes tracing of the whole project
+  [90m38 |[0m [36mexport[0m [36mfunction[0m localStorage(dir = uploadDir()): [33mCreativeStorage[0m {
+  [90m39 |[0m   [36masync[0m [36mfunction[0m filePath(key: string) {
+[33m[1m>[0m [90m40 |[0m     [36mreturn[0m path.join(dir, keyToRelativePath(key));
+  [90m   |[0m            [33m[1m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  [90m41 |[0m   }
+  [90m42 |[0m   [36mreturn[0m {
+  [90m43 |[0m     kind: [32m"local-fs"[0m,
+
+Static analysis determined that this filesystem access causes the whole project to be traced and included in the output.
+This is usually unintentional and leads to all source files (including the public folder) to be deployed as part of the server code.
+This can slow down deployments or lead to failures when size limits are exceeded.
+To resolve this, you can
+- make sure the path is statically scoped to some subfolder, for example path.join(process.cwd(), 'data', bar), or
+- only use them in development, or
+- opt out by adding an ignore comment to the highlighted call: path.join(/*turbopackIgnore: true*/ ...), or
+- remove them.
+
+Import trace:
+  App Route:
+    ./apps/dashboard/lib/server/creative/storage.ts
+    ./apps/dashboard/app/api/creative/designs/[id]/preview/route.ts
+
+
+  Finalizing page optimization ...
+
+Route (app)
+┌ ○ /
+├ ○ /_not-found
+├ ○ /accept-invite
+├ ○ /actions
+├ ○ /agents
+├ ƒ /api/admin/agents
+├ ƒ /api/admin/agents/[id]/transition
+├ ƒ /api/admin/agents/pilot
+├ ƒ /api/admin/automation/ghl
+├ ƒ /api/admin/automation/postiz
+├ ƒ /api/admin/integrations
+├ ƒ /api/admin/integrations/[provider]
+├ ƒ /api/admin/integrations/[provider]/test
+├ ƒ /api/admin/integrations/postiz/channels
+├ ƒ /api/admin/knowledge
+├ ƒ /api/admin/knowledge/[id]/transition
+├ ƒ /api/admin/notifications
+├ ƒ /api/admin/notifications/[id]
+├ ƒ /api/admin/skills
+├ ƒ /api/admin/skills/[id]/export
+├ ƒ /api/admin/skills/[id]/transition
+├ ƒ /api/admin/users
+├ ƒ /api/admin/users/[id]
+├ ƒ /api/approvals
+├ ƒ /api/approvals/[id]/decision
+├ ƒ /api/audit
+├ ƒ /api/auth/accept-invite
+├ ƒ /api/auth/login
+├ ƒ /api/auth/logout
+├ ƒ /api/auth/refresh
+├ ƒ /api/auth/session
+├ ƒ /api/campaigns
+├ ƒ /api/campaigns/[id]
+├ ƒ /api/campaigns/[id]/content
+├ ƒ /api/campaigns/[id]/ready
+├ ƒ /api/campaigns/[id]/strategy
+├ ƒ /api/content
+├ ƒ /api/content/[id]/postiz-draft
+├ ƒ /api/conversations
+├ ƒ /api/conversations/[id]
+├ ƒ /api/conversations/[id]/reply-draft
+├ ƒ /api/conversations/[id]/transition
+├ ƒ /api/conversations/emergency
+├ ƒ /api/creative/assets
+├ ƒ /api/creative/assets/[id]
+├ ƒ /api/creative/assets/versions/[id]
+├ ƒ /api/creative/assets/versions/[id]/decision
+├ ƒ /api/creative/assets/versions/[id]/fidelity
+├ ƒ /api/creative/assets/versions/[id]/preview
+├ ƒ /api/creative/brand-kits
+├ ƒ /api/creative/brand-kits/[id]
+├ ƒ /api/creative/brand-kits/[id]/current
+├ ƒ /api/creative/brand-kits/[id]/versions
+├ ƒ /api/creative/designs
+├ ƒ /api/creative/designs/[id]
+├ ƒ /api/creative/designs/[id]/preview
+├ ƒ /api/creative/designs/[id]/render
+├ ƒ /api/creative/designs/[id]/versions
+├ ƒ /api/creative/generations
+├ ƒ /api/creative/jobs
+├ ƒ /api/creative/jobs/[id]
+├ ƒ /api/creative/jobs/[id]/cancel
+├ ƒ /api/creative/motions
+├ ƒ /api/creative/motions/[id]
+├ ƒ /api/creative/motions/[id]/preview
+├ ƒ /api/creative/motions/[id]/render
+├ ƒ /api/creative/motions/[id]/versions
+├ ƒ /api/creative/presenters/catalog
+├ ƒ /api/creative/presenters/generate
+├ ƒ /api/creative/presenters/manage
+├ ƒ /api/creative/product/generate
+├ ƒ /api/creative/product/presets
+├ ƒ /api/creative/segment/jobs
+├ ƒ /api/creative/templates
+├ ƒ /api/creative/templates/[id]/active
+├ ƒ /api/creative/uploads
+├ ƒ /api/creative/video/generate
+├ ƒ /api/creative/video/jobs
+├ ƒ /api/ghl-actions
+├ ƒ /api/ghl-actions/[id]/decision
+├ ƒ /api/ghl-actions/[id]/reconcile
+├ ƒ /api/health
+├ ƒ /api/internal/agency-pilot
+├ ƒ /api/internal/agency-workspace
+├ ƒ /api/internal/agent-runtime/provider
+├ ƒ /api/internal/integrations/ghl/action
+├ ƒ /api/internal/integrations/ghl/contact
+├ ƒ /api/internal/integrations/postiz/analytics
+├ ƒ /api/internal/integrations/postiz/draft
+├ ƒ /api/leads/[id]/ghl-contact
+├ ƒ /api/operations
+├ ƒ /api/quality
+├ ƒ /api/system/monitoring
+├ ƒ /api/webhooks/ghl
+├ ƒ /api/workspace
+├ ○ /approvals
+├ ○ /campaigns
+├ ƒ /campaigns/[id]
+├ ○ /content
+├ ƒ /creative
+├ ƒ /creative/assets
+├ ƒ /creative/assets/[id]
+├ ƒ /creative/assets/versions/[id]
+├ ƒ /creative/avatars
+├ ƒ /creative/brand-kits
+├ ƒ /creative/brand-kits/[id]
+├ ƒ /creative/designs
+├ ƒ /creative/designs/[id]
+├ ƒ /creative/generate
+├ ƒ /creative/jobs
+├ ƒ /creative/jobs/[id]
+├ ƒ /creative/motion
+├ ƒ /creative/motion/[id]
+├ ƒ /creative/presenters
+├ ƒ /creative/product
+├ ƒ /creative/templates
+├ ƒ /creative/video
+├ ○ /inbox
+├ ○ /knowledge
+├ ○ /leads
+├ ○ /login
+├ ○ /quality
+├ ○ /reports
+├ ○ /settings/agents
+├ ○ /settings/integrations
+├ ○ /settings/notifications
+├ ○ /settings/skills
+├ ○ /system
+├ ○ /team
+└ ○ /workspace
+
+
+ƒ Proxy (Middleware)
+
+○  (Static)   prerendered as static content
+ƒ  (Dynamic)  server-rendered on demand
+
+
+EXIT=0

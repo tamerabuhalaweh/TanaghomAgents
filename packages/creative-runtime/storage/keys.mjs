@@ -6,10 +6,10 @@ import { MIME_TYPES } from '../capabilities.mjs';
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const EXT_BY_MIME = Object.freeze({
   'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp',
-  'video/mp4': 'mp4', 'audio/wav': 'wav', 'audio/mpeg': 'mp3', 'text/html': 'html',
+  'video/mp4': 'mp4', 'audio/wav': 'wav', 'audio/mpeg': 'mp3', 'audio/ogg':'ogg', 'audio/flac':'flac', 'audio/aac':'aac', 'text/html': 'html',
 });
 const MIME_BY_EXT = Object.freeze(Object.fromEntries(Object.entries(EXT_BY_MIME).map(([mime, ext]) => [ext, mime])));
-const KEY_RE = /^t\/([0-9a-f-]{36})\/([a-z_]+)\/([0-9a-f-]{36})\/v(\d+)\.(png|jpg|jpeg|webp|mp4|wav|mp3|html)$/i;
+const KEY_RE = /^t\/([0-9a-f-]{36})\/([a-z_]+)\/([0-9a-f-]{36})\/v(\d+)\.(png|jpg|jpeg|webp|mp4|wav|mp3|ogg|flac|aac|html)$/i;
 
 export function extensionForMime(mime) {
   const ext = EXT_BY_MIME[mime];

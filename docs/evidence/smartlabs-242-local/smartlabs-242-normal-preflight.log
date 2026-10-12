@@ -1,0 +1,64 @@
+TAP version 13
+# Subtest: actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+ok 1 - actual compiled ASR bridge resolves tenant-owned version through private storage and audits checksum only
+  ---
+  duration_ms: 419.9018
+  type: 'test'
+  ...
+# Subtest: actual private storage reader refuses oversize file before unbounded allocation
+ok 2 - actual private storage reader refuses oversize file before unbounded allocation
+  ---
+  duration_ms: 65.1633
+  type: 'test'
+  ...
+# Subtest: TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+ok 3 - TTS actual factory writes private draft version on existing voice job, durable guard prevents second spend
+  ---
+  duration_ms: 66.6233
+  type: 'test'
+  ...
+# Subtest: controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+ok 4 - controlled Creative audio vocabulary/key/storage mirrors admit Ogg FLAC AAC without public URLs
+  ---
+  duration_ms: 3.1001
+  type: 'test'
+  ...
+# Subtest: Creative schema MIME mirrors include controlled compressed audio
+ok 5 - Creative schema MIME mirrors include controlled compressed audio
+  ---
+  duration_ms: 1.7125
+  type: 'test'
+  ...
+# Subtest: guarded actual server smoke reserves durable group before exactly G1 T1 A1; interruption cannot rerun
+ok 6 - guarded actual server smoke reserves durable group before exactly G1 T1 A1; interruption cannot rerun
+  ---
+  duration_ms: 48.9667
+  type: 'test'
+  ...
+# Subtest: smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+ok 7 - smoke CLI requires explicit confirmation, installed server configuration and trusted context before invoking anything
+  ---
+  duration_ms: 70.847
+  type: 'test'
+  ...
+# Subtest: owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+ok 8 - owned active voice prerequisites reject invalid lease and foreign smoke job before spending
+  ---
+  duration_ms: 28.0902
+  type: 'test'
+  ...
+# Subtest: compiled server factory authenticates request; default OFF health exposes presence only without network
+ok 9 - compiled server factory authenticates request; default OFF health exposes presence only without network
+  ---
+  duration_ms: 23.3738
+  type: 'test'
+  ...
+1..9
+# tests 9
+# suites 0
+# pass 9
+# fail 0
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 906.9021

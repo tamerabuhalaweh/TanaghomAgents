@@ -1,0 +1,8 @@
+{
+  "command": [
+    "node",
+    "../smartlabs242-unreadable.mjs"
+  ],
+  "exit": 0,
+  "sha256": "6a23e809efeb4d3a1b4b734fc8b5d670ffd2aec45d59805e7b7f4eea6c2449bd"
+}

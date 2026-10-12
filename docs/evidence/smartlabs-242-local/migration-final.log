@@ -1,0 +1,8 @@
+PASS escalated role and broadened worker/API permissions refused
+PASS full migration chain actual ledger count=44 latest=0047_smartlabs_audio
+PASS unused down/up; repeated up and wrong-baseline down refused
+PASS populated prior-format rows/job/version/provenance preserved byte-equivalent JSON down/up
+PASS used new-format down refuses with all rows unchanged
+PASS #242 migration verification
+
+EXIT=0

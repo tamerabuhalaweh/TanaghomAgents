@@ -1,0 +1,18 @@
+PASS escalated role and broadened worker/API permissions refused
+PASS full migration chain actual ledger count=44 latest=0047_smartlabs_audio
+node:internal/modules/run_main:123
+    triggerUncaughtException(
+    ^
+
+AssertionError [ERR_ASSERTION]: migration must refuse unsafe state
+    at rejected (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/scripts/smartlabs-migration-verification.mjs:9:131)
+    at process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    at async file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/scripts/smartlabs-migration-verification.mjs:34:3 {
+  generatedMessage: false,
+  code: 'ERR_ASSERTION',
+  actual: undefined,
+  expected: true,
+  operator: '=='
+}
+
+Node.js v22.18.0

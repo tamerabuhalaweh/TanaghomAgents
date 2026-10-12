@@ -1,0 +1,8 @@
+{
+  "command": [
+    "node",
+    "scripts/smartlabs-migration-verification.mjs"
+  ],
+  "exit": 0,
+  "sha256": "9118db314be7dfe0b2731be7773c569dc2bdd2292884228b87fbdab8fd52e224"
+}

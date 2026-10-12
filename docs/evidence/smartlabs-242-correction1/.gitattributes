@@ -1,0 +1,6 @@
+# Preserve native evidence bytes and hashes, including captured CRLF.
+* -text
+# Native diagnostic whitespace is evidence, not editable source.
+*.log -diff
+# Generated Windows metadata permits CRLF, not other trailing whitespace.
+*.json whitespace=cr-at-eol

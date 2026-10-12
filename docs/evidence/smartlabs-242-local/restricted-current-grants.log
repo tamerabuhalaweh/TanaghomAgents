@@ -1,0 +1,61 @@
+                                         server                                          
+-----------------------------------------------------------------------------------------
+ PostgreSQL 17.6 on x86_64-pc-linux-musl, compiled by gcc (Alpine 14.2.0) 14.2.0, 64-bit
+(1 row)
+
+ ledger_count |        latest        
+--------------+----------------------
+           44 | 0047_smartlabs_audio
+(1 row)
+
+         rolname          | rolsuper | rolcreaterole | rolcreatedb | rolreplication | rolbypassrls 
+--------------------------+----------+---------------+-------------+----------------+--------------
+ tanaghom_api             | f        | f             | f           | f              | f
+ tanaghom_creative_worker | f        | f             | f           | f              | f
+(2 rows)
+
+              proname              |                                      proacl                                       
+-----------------------------------+-----------------------------------------------------------------------------------
+ attach_creative_provider_request  | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ begin_creative_provider_call      | {postgres=X/postgres,tanaghom_api=X/postgres,tanaghom_creative_worker=X/postgres}
+ claim_creative_design_job         | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ claim_creative_job                | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ claim_creative_motion_job         | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ claim_creative_presenter_job      | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ claim_creative_segment_job        | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ claim_creative_video_job          | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ complete_creative_job             | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ count_creative_render_outputs     | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ create_creative_asset_version     | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ expire_creative_leases            | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ fail_creative_job                 | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ finish_creative_provider_call     | {postgres=X/postgres,tanaghom_api=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_motion_input         | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_motion_state         | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_presenter_input      | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_presenter_source     | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_provider_call        | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_render_input         | {postgres=X/postgres,tanaghom_api=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_render_source        | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_render_version_asset | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_segment_input        | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_segment_outputs      | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_segment_source       | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_segment_state        | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_video_input          | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ get_creative_video_source         | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ heartbeat_creative_job            | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ latest_creative_provider_call     | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ mark_creative_job_running         | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+ reconcile_creative_provider_call  | {postgres=X/postgres,tanaghom_creative_worker=X/postgres}
+(32 rows)
+
+         relname         |                                      relacl                                       
+-------------------------+-----------------------------------------------------------------------------------
+ creative_asset_versions | {postgres=arwdDxtm/postgres,tanaghom_api=r/postgres,tanaghom_readonly=r/postgres}
+ creative_assets         | {postgres=arwdDxtm/postgres,tanaghom_api=r/postgres,tanaghom_readonly=r/postgres}
+ creative_jobs           | {postgres=arwdDxtm/postgres,tanaghom_api=r/postgres,tanaghom_readonly=r/postgres}
+(3 rows)
+
+
+EXIT=0

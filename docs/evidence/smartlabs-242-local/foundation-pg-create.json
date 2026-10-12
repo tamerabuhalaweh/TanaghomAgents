@@ -1,0 +1,22 @@
+{
+  "command": [
+    "docker",
+    "run",
+    "-d",
+    "--name",
+    "smartlabs-issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29",
+    "--label",
+    "tanaghom.owner=issue242-foundation-4e46e2507a6a4510a0c9bc1eb0461c29",
+    "--network",
+    "bridge",
+    "-p",
+    "127.0.0.1::5432",
+    "-e",
+    "POSTGRES_PASSWORD=fixture242-only",
+    "-e",
+    "POSTGRES_DB=smartlabs242",
+    "postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94"
+  ],
+  "exit": 0,
+  "sha256": "cfb2ea27f9f1406ca10062ea3a828c3d3983fcafc22e0d0a037ef39fff417337"
+}

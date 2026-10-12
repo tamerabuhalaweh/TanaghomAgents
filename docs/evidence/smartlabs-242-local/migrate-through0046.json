@@ -1,0 +1,9 @@
+{
+  "command": [
+    "node",
+    "scripts/database.mjs",
+    "migrate"
+  ],
+  "exit": 0,
+  "sha256": "c0ee8feb76c2c46c9226e7650d8c4aef57506db01fc0469b558cb512e99b0c18"
+}

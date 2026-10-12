@@ -1,0 +1,3 @@
+PASS native Windows FileShare.None unreadable regular fake file fails closed for both keys without key/path disclosure; exact import succeeds after lock release
+
+EXIT=0

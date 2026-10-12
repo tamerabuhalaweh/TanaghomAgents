@@ -1,0 +1,6 @@
+# Preserve native evidence bytes and hashes, including captured CRLF.
+* -text
+# Native command output may contain diagnostic whitespace; treat as artifacts.
+*.log -diff
+# Metadata is generated on Windows; allow CRLF, not other trailing whitespace.
+*.json whitespace=cr-at-eol

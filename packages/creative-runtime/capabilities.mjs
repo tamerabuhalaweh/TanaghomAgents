@@ -18,7 +18,7 @@ export const RETRYABLE_ERROR_CLASSES = Object.freeze(['transient', 'capacity', '
 export const REVIEW_DECISIONS = Object.freeze(['approved', 'rejected']);
 export const ASSET_VERSION_STATUSES = Object.freeze(['draft', 'in_review', 'approved', 'rejected', 'archived']);
 export const MIME_TYPES = Object.freeze([
-  'image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'audio/wav', 'audio/mpeg', 'text/html',
+  'image/png', 'image/jpeg', 'image/webp', 'video/mp4', 'audio/wav', 'audio/mpeg', 'audio/ogg', 'audio/flac', 'audio/aac', 'text/html',
 ]);
 export const RENDER_METHODS = Object.freeze(['mock', 'upload', 'render', 'edit', 'composite']);
 

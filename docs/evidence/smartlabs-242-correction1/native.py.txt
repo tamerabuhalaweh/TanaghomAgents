@@ -1,0 +1,69 @@
+import subprocess,pathlib,json,hashlib,os,uuid,time,sys,socket,traceback
+ROOT=pathlib.Path('C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl')
+MODE=sys.argv[1]
+OUT=ROOT.parent/('smartlabs-242-correction1-native-'+MODE+'-'+uuid.uuid4().hex);OUT.mkdir()
+IMAGE='postgres@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94'
+records=[]
+def run(label,args,input=None,env=None,required=True,timeout=900):
+ e=os.environ.copy();e.pop('NODE_OPTIONS',None)
+ if env:e.update(env)
+ p=subprocess.run(args,cwd=ROOT,input=input,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,env=e,timeout=timeout)
+ (OUT/(label+'.log')).write_bytes(p.stdout)
+ records.append(dict(label=label,argv=args,exit=p.returncode,sha256=hashlib.sha256(p.stdout).hexdigest()))
+ (OUT/'receipts.json').write_text(json.dumps(records,indent=2))
+ print(label,p.returncode,p.stdout[-600:].decode(errors='replace'),flush=True)
+ if required and p.returncode:raise RuntimeError(label+' exit '+str(p.returncode))
+ return p
+def port():
+ with socket.socket() as s:s.bind(('127.0.0.1',0));return str(s.getsockname()[1])
+def cluster(kind):
+ owner='issue242-'+uuid.uuid4().hex
+ cid=run(kind+'-create',['docker','run','-d','--pull=never','--label','hermes.issue242.correction1='+owner,'-e','POSTGRES_HOST_AUTH_METHOD=trust','-p','127.0.0.1::5432',IMAGE]).stdout.decode().strip()
+ info=json.loads(run(kind+'-owner',['docker','inspect',cid]).stdout)[0]
+ assert info['Id']==cid and info['Config']['Labels']['hermes.issue242.correction1']==owner
+ for i in range(60):
+  if run(kind+'-ready-'+str(i),['docker','exec',cid,'pg_isready','-U','postgres'],required=False).returncode==0:break
+  time.sleep(.5)
+ else:raise RuntimeError('not ready')
+ return cid,owner,info['NetworkSettings']['Ports']['5432/tcp'][0]['HostPort']
+def cleanup(kind,cid,owner):
+ info=json.loads(run(kind+'-cleanup-owner',['docker','inspect',cid]).stdout)[0]
+ assert info['Id']==cid and info['Config']['Labels']['hermes.issue242.correction1']==owner
+ run(kind+'-cleanup',['docker','rm','-f','-v',cid])
+ assert run(kind+'-cleanup-absence',['docker','inspect',cid],required=False).returncode!=0
+ assert not run(kind+'-cleanup-census',['docker','ps','-aq','--filter','label=hermes.issue242.correction1='+owner]).stdout.strip()
+def sql(cid,label,text,required=True):return run(label,['docker','exec','-i',cid,'psql','-X','-U','postgres','-d','smartlabs242','-v','ON_ERROR_STOP=1','-At'],input=text.encode(),required=required)
+failed=False
+try:
+ cid,owner,p=cluster('database')
+ try:
+  run('create-db',['docker','exec',cid,'createdb','-U','postgres','smartlabs242'])
+  sql(cid,'marker',"COMMENT ON DATABASE smartlabs242 IS '"+owner+"';SELECT version();")
+  url=f'postgresql://postgres@127.0.0.1:{p}/smartlabs242'
+  env={'DATABASE_URL':url,'DATABASE_TEST_URL':url,'SMARTLABS_LOCAL_FIXTURE_OWNER':owner,'DATABASE_MIGRATION_TARGET':'0046_creative_talking_head'}
+  run('full-chain-through46',['node','scripts/database.mjs','migrate'],env=env)
+  up=(ROOT/'packages/database/migrations/0047_smartlabs_audio.up.sql').read_text()
+  accepted=[]
+  for label,mutation in [('worker-job-update','GRANT UPDATE ON tanaghom.creative_jobs TO tanaghom_creative_worker;'),('worker-truncate','GRANT TRUNCATE ON tanaghom.creative_assets TO tanaghom_creative_worker;')]:
+   text='BEGIN;'+mutation+'\n'+up.replace('BEGIN;','').replace('COMMIT;','')+"\nSELECT 'UNSAFE_BASELINE_ACCEPTED'; ROLLBACK;"
+   probe=sql(cid,'baseline-'+label,text,required=False)
+   if probe.returncode==0:accepted.append(label)
+   else:assert b'0047 restricted role baseline required' in probe.stdout
+  assert not accepted,'unsafe baselines accepted: '+str(accepted)
+  if MODE!='red':
+   run('migration-verification',['node','scripts/smartlabs-migration-verification.mjs'],env=env)
+   sql(cid,'audio-contract',(ROOT/'packages/database/tests/smartlabs_audio.sql').read_text())
+   run('combined-native',['node','scripts/smartlabs-local-integration.mjs'],env=env)
+   sql(cid,'privileges',"SELECT rolname,rolsuper,rolcreaterole,rolcreatedb,rolreplication,rolbypassrls FROM pg_roles WHERE rolname IN ('tanaghom_api','tanaghom_creative_worker');SELECT count(*),max(version) FROM public.schema_migrations;")
+ finally:cleanup('database',cid,owner)
+ if MODE=='final':
+  cid,owner,p=cluster('foundation')
+  try:
+   run('foundation-db',['docker','exec',cid,'createdb','-U','postgres','creativefoundation242'])
+   run('foundation-native',['node','scripts/creative-foundation-integration.mjs'],env={'DATABASE_TEST_URL':f'postgresql://postgres@127.0.0.1:{p}/creativefoundation242','CREATIVE_TEST_AUTH_PORT':port(),'CREATIVE_TEST_DASHBOARD_PORT':port(),'CREATIVE_UPLOAD_DIR':str(OUT/'foundation-private'),'SMARTLABS_GEMMA_ENABLED':'false','SMARTLABS_TTS_ENABLED':'false','SMARTLABS_ASR_ENABLED':'false','NEXT_TELEMETRY_DISABLED':'1'})
+  finally:cleanup('foundation',cid,owner)
+except Exception:
+ failed=True;(OUT/'exception.txt').write_text(traceback.format_exc());print(traceback.format_exc(),flush=True)
+finally:
+ print('OUTPUT',OUT,flush=True)
+sys.exit(1 if failed else 0)

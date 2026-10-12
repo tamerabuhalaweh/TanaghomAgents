@@ -1,0 +1,9 @@
+{
+  "argv": [
+    "npm",
+    "run",
+    "check"
+  ],
+  "exit": 0,
+  "native_log_sha256": "98f14815816cc6cf4c0ea5f31e8decb4240ee449c7731da9ca6150c7ca0a7018"
+}

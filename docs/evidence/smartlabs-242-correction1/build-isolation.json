@@ -1,0 +1,11 @@
+{
+  "files_scanned": 2073,
+  "fake_marker_or_path_leaks": [],
+  "smartlabs_name_hits": [],
+  "generated_next_env_sha256": "1b59d4c6b83807db275d43f3cf2cc8e9323f465fab764eea091cc5becd5bad37",
+  "restored_next_env_sha256": "4e4da12aa061aac172fb1bcb48e9b6e4b293080d2f494327925fdba8f39632ac",
+  "package_lock_sha256": "e28945f1e087cf707c5948e5595252476ec9b48e0d95f56e54479a2dbe389dcf",
+  "ffmpeg_sha256": "589e50b766d251afdf181dd664d40bd94407e200b019989fd7468c7d118a28d0",
+  "decoder_installed_or_changed": false,
+  "normal_production_build": true
+}

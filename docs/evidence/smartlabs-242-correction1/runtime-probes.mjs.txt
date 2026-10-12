@@ -1,0 +1,54 @@
+// Independent read-only regression oracles; frozen imports, fake keys, loopback only.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createServer} from 'node:http';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {runInNewContext} from 'node:vm';
+import {createHash} from 'node:crypto';
+import * as sl from './tg-sl/packages/agent-runtime/providers/smartlabs.mjs';
+const root=new URL('./tg-sl/',import.meta.url),require=createRequire(new URL('package.json',root));
+const ts=require('typescript'),id='11111111-1111-4111-8111-111111111111';
+function wav(){const b=Buffer.alloc(4844);b.write('RIFF');b.writeUInt32LE(b.length-8,4);b.write('WAVEfmt ',8);b.writeUInt32LE(16,16);b.writeUInt16LE(1,20);b.writeUInt16LE(1,22);b.writeUInt32LE(24000,24);b.writeUInt32LE(48000,28);b.writeUInt16LE(2,32);b.writeUInt16LE(16,34);b.write('data',36);b.writeUInt32LE(4800,40);b.writeInt16LE(42,44);return b;}
+const bytes=wav(),sha256=createHash('sha256').update(bytes).digest('hex');
+const asset={id,versionId:id,asset_id:id,assetId:id,job_id:id,jobId:id,object_key:`t/${id}/voice/${id}/v1.wav`,bytes:bytes.length,mime:'audio/wav',sha256,organization_id:id,status:'draft'};
+const cfg=url=>({gemmaBaseUrl:url,gemmaKey:'review-fake-key',model:'gemma4-26b-a4b-canary',apiBaseUrl:url,apiKey:'review-fake-key',asrUrl:url+'/transcriptions',ttsBackend:'omnivoice',voiceId:'smarttts2-xms-default',language:'ar',gemmaEnabled:true,ttsEnabled:true,asrEnabled:true});
+async function socket(t,handler){const s=createServer(handler);s.listen(0,'127.0.0.1');await new Promise(r=>s.once('listening',r));t.after(()=>{s.closeAllConnections();return new Promise(r=>s.close(r));});return `http://127.0.0.1:${s.address().port}`;}
+const dependencies={ownedLoopbackTest:true,tokenCounter:()=>5,thinkingDisabled:true,readControlledAudio:async()=>({...asset,bytes})};
+async function capture(fn){try{return {result:await fn()};}catch(e){return {code:e.code,status:e.status,metadata:e.metadata};}}
+for(const backend of ['gemma','tts','asr'])test(`REGRESSION ${backend}: post-dispatch invalid success must quarantine second generation`,async t=>{
+ let calls=0;const url=await socket(t,(req,res)=>{calls++;req.resume();res.setHeader('content-type',backend==='tts'?'audio/wav':'application/json');res.end(backend==='tts'?'not-a-wav':'{');});
+ const action=a=>backend==='gemma'?a.gemma.complete({messages:[{role:'user',content:'مرحبا'}]}):backend==='tts'?a.tts.synthesize({text:'مرحبا'}):a.asr.transcribe({sourceVersionId:id});
+ const first=await capture(()=>action(sl.createSmartLabsAdapters(cfg(url),dependencies)));
+ const second=await capture(()=>action(sl.createSmartLabsAdapters(cfg(url),dependencies)));
+ console.log(JSON.stringify({backend,first,second,providerRequests:calls}));
+ assert.equal(second.code,'outcome_recovery_required','a rejected post-dispatch result must not reopen spending');assert.equal(calls,1);
+});
+function compiledFactory(url,status,stopped=false){
+ let reads=0,audits=0,controlReads=0;const db={query:async(sql,args)=>{
+  if(sql.includes('creative_controls')){controlReads++;return {rows:[{enabled:!stopped,emergency_stop:stopped}]};}
+  if(sql.includes('FROM tanaghom.app_users'))return {rows:[{id,organization_id:id,display_name:'fixture',role:'owner'}]};
+  if(sql.includes('FROM tanaghom.creative_asset_versions')){
+   assert.equal(args[1],id);assert.match(sql,/v\.status = 'approved'/);return {rows:status==='approved'?[{...asset,status}]:[]};
+  }
+  if(sql.includes('agent_actions_log')){audits++;return {rows:[{}]};}
+  throw new Error('Unexpected reviewer SQL');
+ }};
+ const compile=(relative,mapped)=>{const output=ts.transpileModule(readFileSync(new URL(relative,root),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},reportDiagnostics:true});assert.equal(output.diagnostics.filter(d=>d.category===ts.DiagnosticCategory.Error).length,0);const exports={};runInNewContext(output.outputText,{exports,Buffer,Date,URL,require:name=>{if(name==='server-only')return {};if(name in mapped)return mapped[name];if(name.startsWith('node:'))return require(name);throw new Error('Unmapped reviewer import '+name);},process:{env:{CREATIVE_STUDIO_ENABLED:'true',SMARTLABS_GEMMA_BASE_URL:url,SMARTLABS_API_BASE_URL:url,SMARTLABS_ASR_URL:url+'/transcriptions',SMARTLABS_API_KEY:'review-fake-key',SMARTLABS_ASR_ENABLED:'true'},cwd:()=>new URL('.',root).pathname,getBuiltinModule:()=>({createRequire:()=>()=>({...sl,createSmartLabsAdapters:(c,d)=>sl.createSmartLabsAdapters(c,{...d,ownedLoopbackTest:true})})})}});return exports;};
+ const auth={authenticate:async()=>({sub:id}),enforceSameOriginForCookieMutation(){}};
+ const authorization=compile('apps/dashboard/lib/server/authorization.ts',{'@/lib/server/auth':auth,'@/lib/server/database':{database:()=>db}});
+ const factory=compile('apps/dashboard/lib/server/smartlabs-runtime.ts',{'@/lib/server/authorization':authorization,'@/lib/server/auth':auth,'@/lib/server/database':{database:()=>db},'@/lib/server/creative/feature-control':compile('apps/dashboard/lib/server/creative/feature-control.ts',{}),'@/lib/server/creative/object-keys':{buildUploadObjectKey(){throw new Error('unused');}},'@/lib/server/creative/storage':{localStorage:()=>({get:async()=>{reads++;return {bytes,mime:'audio/wav'};}})}});
+ return {factory,counters:()=>({reads,audits,controlReads})};
+}
+for(const status of ['approved','draft','rejected'])test(`${status==='draft'?'REGRESSION':'CONTROL'} compiled factory ASR source ${status}`,async t=>{
+ let calls=0;const url=await socket(t,(req,res)=>{calls++;req.resume();res.setHeader('content-type','application/json');res.end(JSON.stringify({text:'مرحبا',language:'ar',duration:.1,processing_time_ms:1}));});
+ const mounted=compiledFactory(url,status),runtime=await mounted.factory.smartLabsRuntime({}),observed=await capture(()=>runtime.asr.transcribe({sourceVersionId:id}));
+ console.log(JSON.stringify({sourceStatus:status,observed,providerRequests:calls,...mounted.counters(),databaseBoundary:'SQL-consistent double, not native PostgreSQL'}));
+ if(status==='approved'){assert.ok(observed.result);assert.equal(calls,1);}else {assert.equal(observed.code,'controlled_audio_not_found','only an approved private source may be uploaded');assert.equal(calls,0);assert.equal(mounted.counters().reads,0);}
+});
+test('REGRESSION compiled factory ASR emergency stop must deny before private read/provider upload',async t=>{
+ let calls=0;const url=await socket(t,(req,res)=>{calls++;req.resume();res.setHeader('content-type','application/json');res.end(JSON.stringify({text:'مرحبا',language:'ar',duration:.1,processing_time_ms:1}));});
+ const mounted=compiledFactory(url,'approved',true),runtime=await mounted.factory.smartLabsRuntime({}),observed=await capture(()=>runtime.asr.transcribe({sourceVersionId:id}));
+ console.log(JSON.stringify({creativeControl:{enabled:false,emergency_stop:true},observed,providerRequests:calls,...mounted.counters(),databaseBoundary:'controlled double; actual factory/authorization/environment feature guard compiled unchanged'}));
+ assert.equal(calls,0,'database emergency stop must prohibit new ASR uploads');assert.equal(mounted.counters().reads,0);
+});

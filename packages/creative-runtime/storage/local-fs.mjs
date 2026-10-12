@@ -8,7 +8,7 @@ import path from "node:path";
 
 import { sha256Hex } from "./keys.mjs";
 
-const KEY_RE = /^t\/[0-9a-f-]{36}\/[a-z_]+\/[0-9a-f-]{36}\/v[0-9]+\.(png|jpg|jpeg|webp|mp4|wav|mp3|html)$/;
+const KEY_RE = /^t\/[0-9a-f-]{36}\/[a-z_]+\/[0-9a-f-]{36}\/v[0-9]+\.(png|jpg|jpeg|webp|mp4|wav|mp3|ogg|flac|aac|html)$/;
 const MIME_BY_EXT = Object.freeze({
   png: "image/png",
   jpg: "image/jpeg",
@@ -17,6 +17,7 @@ const MIME_BY_EXT = Object.freeze({
   mp4: "video/mp4",
   wav: "audio/wav",
   mp3: "audio/mpeg",
+  ogg:"audio/ogg", flac:"audio/flac", aac:"audio/aac",
   html: "text/html",
 });
 

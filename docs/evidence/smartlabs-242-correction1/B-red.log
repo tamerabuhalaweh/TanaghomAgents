@@ -1,0 +1,178 @@
+TAP version 13
+# Subtest: tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+not ok 1 - tts current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 415.3702
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    AdapterError: audio_invalid
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async startSubtestAfterBootstrap (node:internal/test_runner/harness:296:3)
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+not ok 2 - asr current Creative execution gate fails closed {"enabled":false,"emergency_stop":false}
+  ---
+  duration_ms: 51.9855
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    TypeError: Cannot read properties of undefined (reading 'startsWith')
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+not ok 3 - tts current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 43.5106
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    AdapterError: audio_invalid
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+not ok 4 - asr current Creative execution gate fails closed {"enabled":true,"emergency_stop":true}
+  ---
+  duration_ms: 41.1199
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    TypeError: Cannot read properties of undefined (reading 'startsWith')
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tts current Creative execution gate fails closed null
+not ok 5 - tts current Creative execution gate fails closed null
+  ---
+  duration_ms: 50.6958
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    AdapterError: audio_invalid
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: asr current Creative execution gate fails closed null
+not ok 6 - asr current Creative execution gate fails closed null
+  ---
+  duration_ms: 22.449
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    TypeError: Cannot read properties of undefined (reading 'startsWith')
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: tts current Creative execution gate fails closed "error"
+not ok 7 - tts current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 48.7333
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    AdapterError: audio_invalid
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+# Subtest: asr current Creative execution gate fails closed "error"
+not ok 8 - asr current Creative execution gate fails closed "error"
+  ---
+  duration_ms: 33.9371
+  type: 'test'
+  location: 'C:\\Users\\tamer\\AppData\\Local\\hermes\\cache\\scratch\\tg-sl\\tests\\smartlabs-server-factory.test.mjs:112:146'
+  failureType: 'testCodeFailure'
+  error: |-
+    The validation function is expected to return "true". Received false
+    
+    Caught error:
+    
+    TypeError: Cannot read properties of undefined (reading 'startsWith')
+  code: 'ERR_ASSERTION'
+  name: 'AssertionError'
+  stack: |-
+    process.processTicksAndRejections (node:internal/process/task_queues:105:5)
+    async TestContext.<anonymous> (file:///C:/Users/tamer/AppData/Local/hermes/cache/scratch/tg-sl/tests/smartlabs-server-factory.test.mjs:116:2)
+    async Test.run (node:internal/test_runner/test:1054:7)
+    async Test.processPendingSubtests (node:internal/test_runner/test:744:7)
+  ...
+1..8
+# tests 8
+# suites 0
+# pass 0
+# fail 8
+# cancelled 0
+# skipped 0
+# todo 0
+# duration_ms 898.7658

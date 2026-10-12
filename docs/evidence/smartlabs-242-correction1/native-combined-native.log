@@ -1,0 +1,10 @@
+PASS actual API/worker login restrictions, direct creative CRUD and role escalation denied
+PASS actual auth + file-only configured flags-OFF factory health has zero provider requests and no keys
+PASS built Next rendered secret isolation /login bytes=12804
+PASS built Next rendered secret isolation /workspace bytes=22390
+PASS built Next rendered secret isolation /creative bytes=23298
+PASS built Next rendered secret isolation /api/health bytes=93
+PASS current DB disabled and emergency-stop gates on previously claimed/running TTS job: zero private reads, provider creates and durable reservations
+PASS actual SQL draft ASR refusal and approved historical source disabled/emergency-stop refusal: zero additional private reads/uploads
+PASS combined mounted actual JWT auth/API tenant + durable controlled Creative lease/job + Gemma stub Arabic -> OmniVoice stub native WAV -> private filesystem/draft/version -> actual Next approval -> ASR same asset -> checksum/hash-only SQL provenance
+{"verdict":"PASS_LOCAL_STUB_ONLY","counts":{"gemma":1,"tts":1,"asr":1,"models":0},"jobStatus":"succeeded","versionStatus":"approved","wavBytes":4844,"sha256":"8c8a8b3f48179dc4fc9abb5e6afad9df40f28d48e53c9269bfde32eb500f4a4a","duration":0.1,"templateTokenCounter":"trusted-synthetic-fixture-only","productionTokenizer":"NOT_INSTALLED","factorySeam":"fresh TS compilation; actual auth/authorization + restricted DB/private storage; local HTTP harness only","nextApplication":"actual production build Next server and existing job/approval/rendered routes","realProviderCalls":0}

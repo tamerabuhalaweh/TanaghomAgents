@@ -1,0 +1,20 @@
+{
+  "id": "355f07c6fee659253042ebd0fa4d0580405539aa93491c16e7afb8fa8ae5f124",
+  "label": "issue242-b1f2263da8354c02a6f3f13edfd706e8",
+  "image": "sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94",
+  "mounts_before": [
+    {
+      "Type": "volume",
+      "Name": "748b110bc01035b372e48f4ff7bb1065b90c75c7b0159851dd28a7fd4769e95a",
+      "Source": "/var/lib/docker/volumes/748b110bc01035b372e48f4ff7bb1065b90c75c7b0159851dd28a7fd4769e95a/_data",
+      "Destination": "/var/lib/postgresql/data",
+      "Driver": "local",
+      "Mode": "",
+      "RW": true,
+      "Propagation": ""
+    }
+  ],
+  "remove_exit": 0,
+  "exact_id_absent": true,
+  "label_census": ""
+}

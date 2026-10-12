@@ -1,0 +1,5 @@
+BEGIN
+GRANT
+DO
+ERROR:  0047 restricted role baseline required
+CONTEXT:  PL/pgSQL function inline_code_block line 17 at RAISE

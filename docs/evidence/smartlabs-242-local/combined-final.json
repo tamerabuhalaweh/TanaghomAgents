@@ -1,0 +1,8 @@
+{
+  "command": [
+    "node",
+    "scripts/smartlabs-local-integration.mjs"
+  ],
+  "exit": 0,
+  "sha256": "379e884ecf76dc1b415f8fd5dd2d0410f5bf4e7854c69206edfbe17bd747f184"
+}
