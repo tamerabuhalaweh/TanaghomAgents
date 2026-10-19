@@ -3,6 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "exports": { ".": { "types": "./integration.d.ts", "default": "./integration.mjs" }, "./workspace": { "types": "./workspace.d.ts", "default": "./workspace.mjs" }, "./adapters": { "types": "./adapters/index.d.ts", "default": "./adapters/index.mjs" }, "./audio-decoder": { "types": "./adapters/decode-audio.d.ts", "default": "./adapters/decode-audio.mjs" }, "./smartlabs": { "types": "./providers/smartlabs.d.ts", "default": "./providers/smartlabs.mjs" } },
+  "exports": { ".": { "types": "./integration.d.ts", "default": "./integration.mjs" }, "./workspace": { "types": "./workspace.d.ts", "default": "./workspace.mjs" }, "./adapters": { "types": "./adapters/index.d.ts", "default": "./adapters/index.mjs" }, "./audio-decoder": { "types": "./adapters/decode-audio.d.ts", "default": "./adapters/decode-audio.mjs" }, "./smartlabs": { "types": "./providers/smartlabs.d.ts", "default": "./providers/smartlabs.mjs" }, "./content-policy": { "types": "./content-policy.d.ts", "default": "./content-policy.mjs" } },
   "dependencies": { "ajv": "^8.18.0", "ajv-formats": "^3.0.1" }
 }
