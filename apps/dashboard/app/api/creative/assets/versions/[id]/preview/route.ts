@@ -6,7 +6,7 @@ import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { apiFailure, noStore } from "@/lib/server/responses";
 import { requireCreativeStudio, CreativeDisabledError } from "@/lib/server/creative/feature-control";
-import { localStorage } from "@/lib/server/creative/storage";
+import { creativeStorage, MAX_OBJECT_READ_BYTES } from "@/lib/server/creative/storage";
 
 export const runtime = "nodejs";
 
@@ -34,7 +34,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!PREVIEWABLE_MIME.has(found.rows[0].mime)&&!video) {
       return noStore({ error: "preview_not_supported" }, { status: 415 });
     }
-    const stored = await localStorage().get(found.rows[0].object_key);
+    const stored = await creativeStorage().get(found.rows[0].object_key, MAX_OBJECT_READ_BYTES);
     if (!stored) return noStore({ error: "artifact_missing" }, { status: 410 });
     if(video){
       const ref=found.rows[0];

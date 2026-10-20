@@ -372,7 +372,8 @@ test("local filesystem storage round-trips with exclusive create", async () => {
     assert.equal(written.sha256, assertPngBytes(bytes, { width: 1080, height: 1080 }).sha256);
     assert.deepEqual((await storage.get(key)).bytes, bytes);
     await assert.rejects(storage.put(key, bytes, "image/png"), /object_key_exists/);
-    await assert.rejects(storage.put("../escape.png", bytes, "image/png"), /object_key_shape_violation/);
+    await assert.rejects(storage.put("../escape.png", bytes, "image/png"), /object_key_traversal/);
+    await assert.rejects(storage.put(`t/${ORG}/design/not-a-uuid/v1.png`, bytes, "image/png"), /object_key_shape_violation/);
     await assert.rejects(storage.put(key.replace(".png", ".jpg"), bytes, "image/png"), /mime_extension_mismatch/);
     assert.equal(await storage.get(key.replace("v1.png", "v9.png")), null);
   } finally {

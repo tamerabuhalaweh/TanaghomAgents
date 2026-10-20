@@ -13,8 +13,8 @@ test('R1 actual runner hands approved configuration to downloader without networ
  let downloads=0;
  const factory=config=>({artifactOrigins:config.artifactOrigins,testLoopback:false});
  await runInNewContext('(async()=>{'+source+'})()',{
-  process:{env:{CREATIVE_PROVIDER_EXECUTION_AUTHORIZED:'true',TALKING_HEAD_ENABLED:'true',DATABASE_URL:'fixture-only',CREATIVE_UPLOAD_DIR:'fixture-only',CREATIVE_PRESENTER_ARTIFACT_ORIGINS:JSON.stringify([origin])},argv:['node','runner','--operation=talking_head'],pid:1},
-  URL,console:{log:()=>{}},pg:{Client:class{async connect(){}async end(){}async query(){}}},createHeyGenAdapter:factory,createSyncAdapter:factory,createLocalFsStorage:()=>({}),claimPresenterJob:async()=>({job_id:'fixture-only'}),
+  process:{env:{CREATIVE_PROVIDER_EXECUTION_AUTHORIZED:'true',TALKING_HEAD_ENABLED:'true',DATABASE_URL:'fixture-only',CREATIVE_STORAGE_BACKEND:'local',CREATIVE_UPLOAD_DIR:'fixture-only',CREATIVE_PRESENTER_ARTIFACT_ORIGINS:JSON.stringify([origin])},argv:['node','runner','--operation=talking_head'],pid:1},
+  URL,console:{log:()=>{}},pg:{Client:class{async connect(){}async end(){}async query(){}}},createHeyGenAdapter:factory,createSyncAdapter:factory,createCreativeStorage:()=>({}),claimPresenterJob:async()=>({job_id:'fixture-only'}),
   downloadArtifact:params=>downloadArtifact({...params,resolveHost:async()=>['8.8.8.8'],pinnedRequest:async()=>{downloads++;return new Response('fixture');}}),
   executePresenterJob:async({provider,download})=>{const params={url:origin+'/x',allowedOrigins:provider.artifactOrigins,testLoopback:provider.testLoopback};assert.equal((await download(params)).bytes.toString(),'fixture');await assert.rejects(()=>download({...params,url:'https://sub.artifact.example/x'}));return {};}
  });

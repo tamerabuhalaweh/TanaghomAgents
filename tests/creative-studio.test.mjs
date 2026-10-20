@@ -72,18 +72,26 @@ test("creative server boundary stays provider-free with upload guards", async ()
   const upload = await read("apps/dashboard/lib/server/creative/upload.ts");
   const storage = await read("apps/dashboard/lib/server/creative/storage.ts");
   const keys = await read("apps/dashboard/lib/server/creative/object-keys.ts");
+  const contained = await read("packages/creative-runtime/storage/contained-fs.mjs");
+  const sharedKeys = await read("packages/creative-runtime/storage/keys.mjs");
   assert.match(upload, /requireCreativeStudio\(\)/);
   assert.match(upload, /authorize\(request, \["owner", "operator"\]\)/);
   assert.match(upload, /limitInputPixels/);
   assert.match(upload, /sharp\(bytes/);
-  assert.match(storage, /flag: "wx"/);
+  // Exclusive create and share-key validation now live in the shared
+  // contained-fs primitive; the dashboard storage module only delegates.
+  assert.match(contained, /flag: "wx"/);
+  assert.match(contained, /assertObjectKeyShape/);
+  assert.match(sharedKeys, /object_key_shape_violation/);
+  assert.match(sharedKeys, /object_key_traversal/);
+  assert.match(sharedKeys, /includes\('\.\.'\)/);
+  assert.match(storage, /import "server-only"/);
+  assert.match(storage, /storage\/factory/);
   assert.match(upload, /register_upload_asset/);
   assert.match(upload, /Idempotency-Replayed/);
   assert.match(upload, /agent_actions_log/);
   assert.doesNotMatch(upload, /fetch\(|https?:\/\/|comfyui|openai|anthropic|replicate|fal\.ai/i);
   assert.doesNotMatch(storage, /fetch\(|https?:\/\/|AWS_|S3_|secret|password|token/i);
-  assert.match(storage, /object_key_shape_violation/);
-  assert.match(storage, /\.\./);
   assert.match(keys, /png.*jpg.*webp|jpg.*png/);
   assert.match(keys, /`t\/\$\{args\.organizationId\}/);
   for (const route of [

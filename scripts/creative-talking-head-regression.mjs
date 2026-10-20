@@ -13,7 +13,7 @@ function cmd(program,args){const r=spawnSync(program,args,{encoding:'utf8'});if(
 for(const [suite,target] of suites.filter(([name])=>!selected.length||selected.includes(name))){
  const owner=randomUUID(),name='tanaghom-p5-reg-'+owner.slice(0,8);let container,temporary,db;
  const url='postgresql://postgres:p5-fixture-only@127.0.0.1:45448/p5_reg';
- const env={...process.env,DATABASE_TEST_URL:url,DATABASE_URL:url,DATABASE_MIGRATION_TARGET:target??'',CREATIVE_UPLOAD_DIR:process.env.P5_SCRATCH_DIR+'/reg-'+owner};
+ const env={...process.env,DATABASE_TEST_URL:url,DATABASE_URL:url,DATABASE_MIGRATION_TARGET:target??'',CREATIVE_STORAGE_BACKEND:'local',CREATIVE_UPLOAD_DIR:process.env.P5_SCRATCH_DIR+'/reg-'+owner};
  try{
   container=cmd('docker',['run','-d','--name',name,'--label','tanaghom.task=240','--label','tanaghom.owner='+owner,'-e','POSTGRES_PASSWORD=p5-fixture-only','-e','POSTGRES_DB=p5_reg','-p','127.0.0.1:45448:5432','postgres:16-alpine']);
   let ready=false;for(let i=0;i<80;i++){if(spawnSync('docker',['exec',container,'pg_isready','-h','127.0.0.1','-U','postgres','-d','p5_reg']).status===0){ready=true;break;}await new Promise(r=>setTimeout(r,250));}assert.ok(ready);

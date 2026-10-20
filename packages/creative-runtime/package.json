@@ -17,6 +17,10 @@
     "./storage/test-adapter": "./storage/test-adapter.mjs",
     "./storage/local-fs": "./storage/local-fs.mjs",
     "./storage/s3": "./storage/s3.mjs",
+    "./storage/factory": {
+      "types": "./storage/factory.d.mts",
+      "default": "./storage/factory.mjs"
+    },
     "./render/document": {
       "types": "./render/document.d.ts",
       "default": "./render/document.mjs"

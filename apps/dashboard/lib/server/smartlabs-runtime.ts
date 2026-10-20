@@ -3,7 +3,7 @@ import type {Pool} from "pg";
 import {buildUploadObjectKey} from "@/lib/server/creative/object-keys";
 import {randomUUID,createHash} from "node:crypto";
 import {database} from "@/lib/server/database";
-import {localStorage} from "@/lib/server/creative/storage";
+import {creativeStorage} from "@/lib/server/creative/storage";
 import {requireCreativeStudio} from "@/lib/server/creative/feature-control";
 import {enforceSameOriginForCookieMutation} from "@/lib/server/auth";
 import type { NextRequest } from "next/server";
@@ -23,7 +23,7 @@ export async function smartLabsRuntime(request:NextRequest,capabilities:Capabili
    JOIN tanaghom.creative_jobs j ON j.id=v.job_id AND j.organization_id=a.organization_id
    WHERE v.id=$1 AND a.organization_id=$2 AND v.status = 'approved'`,[versionId,user.organizationId])).rows[0];
   if(!row||Number(row.bytes)>25*1024*1024||Number(row.bytes)<1||!row.object_key.startsWith(`t/${user.organizationId}/`))return null;
-  const stored=await localStorage().get(row.object_key,25*1024*1024);
+  const stored=await creativeStorage().get(row.object_key,25*1024*1024);
   if(!stored||stored.bytes.length!==Number(row.bytes)||stored.mime!==row.mime)return null;
   return {bytes:stored.bytes,mime:row.mime,sha256:row.sha256,versionId:row.id,assetId:row.asset_id,jobId:row.job_id};
  }});
@@ -56,7 +56,7 @@ export async function smartLabsRuntime(request:NextRequest,capabilities:Capabili
    if(!guard)error("attempt_already_reserved",409);
    const result=await clients.tts.synthesize({text:input.text},options);
    const key=buildUploadObjectKey({organizationId:user.organizationId,capability:"voice",nonce:randomUUID(),version:1,mime:result.mime});
-   const storage=localStorage();let stored=false,commitAttempted=false;const worker=await capabilities.workerPool.connect();
+   const storage=creativeStorage();let stored=false,commitAttempted=false;const worker=await capabilities.workerPool.connect();
    try{
     const put=await storage.put(key,result.bytes,result.mime);stored=true;if(put.sha256!==result.sha256)error("storage_checksum_invalid",500);
     const read=await storage.get(key,25*1024*1024);if(!read||createHash('sha256').update(read.bytes).digest('hex')!==result.sha256)error("storage_readback_failed",500);

@@ -5,14 +5,14 @@
 // cutout, private storage, versioned lineage, controlled completion.
 //
 // Operable, not a daemon: no loops, no retries inside this process.
-// Requires DATABASE_URL and CREATIVE_UPLOAD_DIR. BiRefNet needs
+// Requires DATABASE_URL and CREATIVE_STORAGE_BACKEND. BiRefNet needs
 // ML_SEGMENTATION_BIREFNET_* env (deployment-provisioned). Exit codes:
 // 0 executed, 2 no segment job available, 1 failure.
 import pg from "pg";
 import { fileURLToPath } from "node:url";
 
 import { claimSegmentRenderJob, executeSegmentJob } from "../packages/creative-runtime/render/segment-worker.mjs";
-import { createLocalFsStorage } from "../packages/creative-runtime/storage/local-fs.mjs";
+import { createCreativeStorage } from "../packages/creative-runtime/storage/factory.mjs";
 
 const argv = process.argv.slice(2);
 const args = new Map();
@@ -29,9 +29,9 @@ for (let index = 0; index < argv.length; index += 1) {
   }
 }
 const worker = args.get("worker") ?? `segment-worker-${process.pid}`;
-const uploadDir = process.env.CREATIVE_UPLOAD_DIR;
+const hasStorageBackend = process.env.CREATIVE_STORAGE_BACKEND;
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
-if (!uploadDir) throw new Error("CREATIVE_UPLOAD_DIR is required");
+if (!hasStorageBackend) throw new Error("CREATIVE_STORAGE_BACKEND is required");
 
 const birefnet = process.env.ML_SEGMENTATION_BIREFNET_WEIGHTS
   ? {
@@ -54,7 +54,7 @@ try {
     console.log(JSON.stringify({ result: "idle", reason: "no_segment_job", worker }));
     process.exit(2);
   }
-  const storage = createLocalFsStorage({ dir: uploadDir });
+  const storage = createCreativeStorage({ env: process.env });
   const result = await executeSegmentJob({
     db: pool, storage, jobId: claimed.jobId, worker, birefnet,
   });

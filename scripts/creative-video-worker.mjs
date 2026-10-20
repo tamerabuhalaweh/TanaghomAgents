@@ -5,7 +5,7 @@
 // and controlled job completion.
 //
 // Operable, not a daemon: no loops, no retries inside this process.
-// Requires DATABASE_URL, CREATIVE_UPLOAD_DIR, and (for live runs) a
+// Requires DATABASE_URL, CREATIVE_STORAGE_BACKEND, and (for live runs) a
 // provider key via MINIMAX_API_KEY. Exit codes: 0 executed,
 // 2 no video job available, 1 failure.
 import pg from "pg";
@@ -13,7 +13,7 @@ import pg from "pg";
 import { createHttpVideoAdapter } from "../packages/creative-runtime/adapters/http-video.mjs";
 import { downloadArtifact } from "../packages/creative-runtime/adapters/http-image.mjs";
 import { claimVideoRenderJob, executeVideoJob } from "../packages/creative-runtime/render/video-worker.mjs";
-import { createLocalFsStorage } from "../packages/creative-runtime/storage/local-fs.mjs";
+import { createCreativeStorage } from "../packages/creative-runtime/storage/factory.mjs";
 
 const argv = process.argv.slice(2);
 const args = new Map();
@@ -30,9 +30,9 @@ for (let index = 0; index < argv.length; index += 1) {
   }
 }
 const worker = args.get("worker") ?? `video-worker-${process.pid}`;
-const uploadDir = process.env.CREATIVE_UPLOAD_DIR;
+const hasStorageBackend = process.env.CREATIVE_STORAGE_BACKEND;
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
-if (!uploadDir) throw new Error("CREATIVE_UPLOAD_DIR is required");
+if (!hasStorageBackend) throw new Error("CREATIVE_STORAGE_BACKEND is required");
 const apiKey = process.env.MINIMAX_API_KEY ?? null;
 const endpoint = process.env.MINIMAX_VIDEO_ENDPOINT ?? "https://api.minimax.io/v2/video_generation";
 const queryEndpoint = process.env.MINIMAX_VIDEO_QUERY_ENDPOINT ?? "https://api.minimax.io/v2/query/video_generation";
@@ -48,7 +48,7 @@ try {
     console.log(JSON.stringify({ result: "idle", reason: "no_video_job", worker }));
     process.exit(2);
   }
-  const storage = createLocalFsStorage({ dir: uploadDir });
+  const storage = createCreativeStorage({ env: process.env });
   const provider = createHttpVideoAdapter({
     name: "minimax-h3", endpoint, queryEndpoint, apiKey,
     model: "MiniMax-H3", adapterConfig: "creative.video-providers.v1",

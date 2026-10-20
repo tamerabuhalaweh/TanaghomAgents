@@ -43,7 +43,7 @@ BEGIN
   OR p_provenance IS NULL OR jsonb_typeof(p_provenance)<>'object'
   OR (p_prompt_ref IS NOT NULL AND length(p_prompt_ref) NOT BETWEEN 1 AND 300)
   OR (p_template_ref IS NOT NULL AND length(p_template_ref) NOT BETWEEN 1 AND 300)
-  OR p_method NOT IN ('mock','upload','render','edit','composite')
+  OR p_method NOT IN ('mock','upload','render','edit','composite','segment')
  THEN RAISE EXCEPTION 'invalid creative asset version'; END IF;
  SELECT * INTO j FROM tanaghom.creative_jobs WHERE id=p_job;
  IF j.id IS NULL THEN RAISE EXCEPTION 'unknown creative job'; END IF;
