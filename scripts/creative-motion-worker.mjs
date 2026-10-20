@@ -2,11 +2,11 @@
 // capability=motion job per invocation and executes it through the
 // Creative Runtime motion worker — pinned motion+design input, offline
 // Chromium frames with active network blocking, fixed-argv FFmpeg MP4
-// encode, pure-JS MP4 validation, private local-filesystem storage, and
-// controlled job completion.
+// encode, pure-JS MP4 validation, private object storage (factory-selected
+// backend), and controlled job completion.
 //
 // Operable, not a daemon: no loops, no retries inside this process.
-// Requires DATABASE_URL, CREATIVE_UPLOAD_DIR, and a deployment-provided
+// Requires DATABASE_URL, CREATIVE_STORAGE_BACKEND, and a deployment-provided
 // ffmpeg (FFMPEG_PATH or PATH). Exit codes: 0 executed,
 // 2 no motion job available, 1 failure.
 import pg from "pg";
@@ -14,7 +14,7 @@ import pg from "pg";
 import { capturePng } from "../packages/creative-runtime/render/chromium.mjs";
 import { claimMotionRenderJob, executeMotionRenderJob } from "../packages/creative-runtime/render/motion-worker.mjs";
 import { beginMp4Encode } from "../packages/creative-runtime/render/mp4.mjs";
-import { createLocalFsStorage } from "../packages/creative-runtime/storage/local-fs.mjs";
+import { createCreativeStorage } from "../packages/creative-runtime/storage/factory.mjs";
 
 const argv = process.argv.slice(2);
 const args = new Map();
@@ -31,9 +31,9 @@ for (let index = 0; index < argv.length; index += 1) {
   }
 }
 const worker = args.get("worker") ?? `motion-worker-${process.pid}`;
-const uploadDir = process.env.CREATIVE_UPLOAD_DIR;
+const hasStorageBackend = process.env.CREATIVE_STORAGE_BACKEND;
 if (!process.env.DATABASE_URL) throw new Error("DATABASE_URL is required");
-if (!uploadDir) throw new Error("CREATIVE_UPLOAD_DIR is required");
+if (!hasStorageBackend) throw new Error("CREATIVE_STORAGE_BACKEND is required");
 
 const { chromium } = await import("@playwright/test");
 const pool = new pg.Pool({ connectionString: process.env.DATABASE_URL, max: 2 });
@@ -43,7 +43,7 @@ try {
     console.log(JSON.stringify({ result: "idle", reason: "no_motion_job", worker }));
     process.exit(2);
   }
-  const storage = createLocalFsStorage({ dir: uploadDir });
+  const storage = createCreativeStorage({ env: process.env });
   const network = { attempted: 0, blocked: 0 };
   const result = await executeMotionRenderJob({
     db: pool,

@@ -7,7 +7,7 @@ import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { apiFailure, noStore } from "@/lib/server/responses";
 import { requireCreativeStudio, CreativeDisabledError } from "@/lib/server/creative/feature-control";
-import { localStorage } from "@/lib/server/creative/storage";
+import { creativeStorage, MAX_OBJECT_READ_BYTES } from "@/lib/server/creative/storage";
 
 export const runtime = "nodejs";
 
@@ -60,7 +60,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const background = designSpec.background as Record<string, unknown> | undefined;
     if (background && typeof background.image_version_id === "string") refs.add(background.image_version_id);
     const assets = new Map<string, { bytes: Buffer; mime: string }>();
-    const storage = localStorage();
+    const storage = creativeStorage();
     for (const ref of refs) {
       if (!UUID_RE.test(ref)) return noStore({ error: "invalid_motion:asset_ref" }, { status: 400 });
       const found = await database().query<{ object_key: string; mime: string }>(
@@ -71,7 +71,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         [ref, user.organizationId],
       );
       if (!found.rows[0]) return noStore({ error: "motion_asset_not_found" }, { status: 404 });
-      const stored = await storage.get(found.rows[0].object_key);
+      const stored = await storage.get(found.rows[0].object_key, MAX_OBJECT_READ_BYTES);
       if (!stored) return noStore({ error: "artifact_missing" }, { status: 410 });
       assets.set(ref, stored);
     }

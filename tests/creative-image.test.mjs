@@ -280,34 +280,42 @@ test("local sharp pipeline renders, composes, and enhances deterministically", a
   }), /relight/);
 });
 
-test("s3 adapter signs deterministically and round-trips objects", async () => {
+test("s3 adapter signs deterministically and round-trips immutable conditional objects", async () => {
   const s3 = await import("../packages/creative-runtime/storage/s3.mjs");
   assert.throws(() => s3.createS3Storage({ endpoint: "http://s3.test", region: "us-east-1", bucket: "b" }), /incomplete/);
-  const store = s3.createS3Storage({
+  const credentials = {
     endpoint: "http://s3.test", region: "us-east-1", bucket: "test-bucket",
     accessKeyId: "AKIDEXAMPLE", secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY",
-  });
+  };
   const key = "t/71000000-0000-4000-8000-000000000001/image/74000000-0000-4000-8000-000000000001/v1.png";
+  // Writes stay refused until the operator declares verified conditional semantics.
+  const unverified = s3.createS3Storage({ ...credentials, fetchImpl: async () => { throw new Error("must-not-fetch"); } });
+  await assert.rejects(unverified.put(key, Buffer.from([1, 2, 3]), "image/png"), /s3_conditional_writes_unverified/);
   const seen = [];
   const stubFetch = async (url, init) => {
-    seen.push({ url, method: init.method, auth: init.headers.Authorization });
+    seen.push({ url, method: init.method, auth: init.headers.Authorization, conditional: init.headers["if-none-match"] ?? init.headers["If-None-Match"] });
     if (!String(init.headers.Authorization).startsWith("AWS4-HMAC-SHA256 ")) throw new Error("unsigned");
-    if (init.method === "PUT") return { status: 200, headers: { get: () => '"etag-1"' } };
-    if (init.method === "GET") {
-      return { status: 200, headers: { get: () => null }, arrayBuffer: async () => new Uint8Array([1, 2, 3]).buffer };
-    }
-    if (init.method === "DELETE") return { status: 204, headers: { get: () => null } };
+    if (init.method === "PUT") return new Response(null, { status: 200, headers: { etag: '"etag-1"' } });
+    if (init.method === "GET") return new Response(new Uint8Array([1, 2, 3]), { status: 200 });
+    if (init.method === "DELETE") return new Response(null, { status: 204 });
     throw new Error("unexpected-method");
   };
-  const wired = s3.createS3Storage({
-    endpoint: "http://s3.test", region: "us-east-1", bucket: "test-bucket",
-    accessKeyId: "AKIDEXAMPLE", secretAccessKey: "wJalrXUtnFEMI/K7MDENG/bPxRfiCYEXAMPLEKEY", fetchImpl: stubFetch,
-  });
+  const wired = s3.createS3Storage({ ...credentials, conditionalWrites: true, fetchImpl: stubFetch });
   const put = await wired.put(key, Buffer.from([1, 2, 3]), "image/png");
   assert.equal(put.bytes, 3);
+  assert.equal(seen[0].conditional, "*");
   const got = await wired.get(key);
   assert.deepEqual(Buffer.from(got.bytes), Buffer.from([1, 2, 3]));
   assert.equal((await wired.remove(key)).deleted, true);
+  // Duplicate create, provider conflicts, and unsupported conditionals fail
+  // closed with distinct stable codes (no retry, no unconditional fallback).
+  for (const [status, expected] of [[412, /object_key_exists/], [409, /s3_conditional_conflict/], [501, /s3_conditional_writes_unverified/]]) {
+    const conflicted = s3.createS3Storage({
+      ...credentials, conditionalWrites: true,
+      fetchImpl: async (url, init) => (init.method === "PUT" ? new Response(null, { status }) : new Response(null, { status: 204 })),
+    });
+    await assert.rejects(conflicted.put(key, Buffer.from([1]), "image/png"), expected);
+  }
   await assert.rejects(wired.put(key, Buffer.alloc(0), "image/png"), /bytes_required/);
   await assert.rejects(wired.put("https://evil/x.png", Buffer.from([1]), "image/png"), /shape_violation/);
   await assert.rejects(wired.put(key, Buffer.from([1]), "application/pdf"), /mismatch/);
@@ -338,7 +346,6 @@ test("s3 adapter signs deterministically and round-trips objects", async () => {
   const kService = nodeHmac("sha256", kRegion).update("s3").digest();
   const kSigning = nodeHmac("sha256", kService).update("aws4_request").digest();
   assert.equal(nodeHmac("sha256", kSigning).update(toSign).digest("hex"), signature);
-  void store;
 });
 
 test("artifact downloads pin resolved public destinations; loopback needs test mode", async () => {

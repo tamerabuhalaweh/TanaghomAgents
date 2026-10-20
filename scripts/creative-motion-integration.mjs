@@ -139,8 +139,8 @@ try {
     dashboard = spawn(process.execPath, ["node_modules/next/dist/bin/next", "start", "apps/dashboard", "-p", String(dashboardPort)], {
       cwd: process.cwd(),
       env: {
-        ...process.env, APP_ENV: "integration", DATABASE_URL: databaseUrl,
-        SUPABASE_URL: authOrigin, SUPABASE_PUBLISHABLE_KEY: "integration-publishable-key", SUPABASE_SECRET_KEY: "integration-secret-key",
+        ...process.env, APP_ENV: "integration", NODE_ENV: "test", DATABASE_URL: databaseUrl,
+        SUPABASE_URL: authOrigin, SUPABASE_PUBLISHABLE_KEY: "integration-publishable-key", SUPABASE_SECRET_KEY: "integration-secret-key", CREATIVE_STORAGE_BACKEND: "local",
         ...extraEnv,
       },
       stdio: ["ignore", "pipe", "pipe"],

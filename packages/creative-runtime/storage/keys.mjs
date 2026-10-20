@@ -1,14 +1,19 @@
 // Object-key construction, parsing, checksums, and preview-token helpers.
 // Keys are tenant-scoped and immutable: t/<org>/<capability>/<asset>/<v>.<ext>
 import { createHash, createHmac, timingSafeEqual } from 'node:crypto';
-import { MIME_TYPES } from '../capabilities.mjs';
+import { CAPABILITIES, MIME_TYPES } from '../capabilities.mjs';
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
 const EXT_BY_MIME = Object.freeze({
   'image/png': 'png', 'image/jpeg': 'jpg', 'image/webp': 'webp',
   'video/mp4': 'mp4', 'audio/wav': 'wav', 'audio/mpeg': 'mp3', 'audio/ogg':'ogg', 'audio/flac':'flac', 'audio/aac':'aac', 'text/html': 'html',
 });
-const MIME_BY_EXT = Object.freeze(Object.fromEntries(Object.entries(EXT_BY_MIME).map(([mime, ext]) => [ext, mime])));
+const MIME_BY_EXT = Object.freeze(Object.fromEntries([
+  ...Object.entries(EXT_BY_MIME).map(([mime, ext]) => [ext, mime]),
+  // Legacy read compatibility: `.jpeg` maps like `.jpg`, but builders only
+  // ever emit `jpg`.
+  ['jpeg', 'image/jpeg'],
+]));
 const KEY_RE = /^t\/([0-9a-f-]{36})\/([a-z_]+)\/([0-9a-f-]{36})\/v(\d+)\.(png|jpg|jpeg|webp|mp4|wav|mp3|ogg|flac|aac|html)$/i;
 
 export function extensionForMime(mime) {
@@ -30,6 +35,48 @@ export function parseObjectKey(key) {
   if (!match) throw new Error('invalid_object_key');
   const [, organizationId, capability, assetId, version, ext] = match;
   return { organizationId, capability, assetId, version: Number(version), mime: MIME_BY_EXT[ext.toLowerCase()] };
+}
+
+// Conservative ceiling for any single object read. Matches the largest
+// governed provider artifact (0046 talking-head video gate, 100 MiB); the
+// migration caps object bytes at 500 MB, so nothing legitimately read by the
+// runtime exceeds this. Backends bound every read to maxBytes or this
+// ceiling, whichever is smaller.
+export const MAX_OBJECT_READ_BYTES = 100 * 1024 * 1024;
+
+export function validateReadLimit(maxBytes) {
+  const limit = maxBytes === undefined || maxBytes === null ? MAX_OBJECT_READ_BYTES : maxBytes;
+  if (!Number.isSafeInteger(limit) || limit < 1 || limit > MAX_OBJECT_READ_BYTES) {
+    throw new Error('object_read_bound_invalid');
+  }
+  return limit;
+}
+
+// Strict shape gate shared by every backend, applied before any I/O:
+// canonical t/<uuid>/<capability>/<uuid>/v<N>.<ext> only. Rejects traversal,
+// percent-encoded segments, empty/double separators, unsupported
+// capabilities/extensions, and bucket escapes. The database predicate keeps
+// its own (looser) legacy pattern; this gate is intentionally exact.
+const STRICT_UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/;
+const STRICT_KEY_SEGMENT_4_RE = /^v[0-9]{1,9}\.(png|jpg|jpeg|webp|mp4|wav|mp3|ogg|flac|aac|html)$/;
+
+export function assertObjectKeyShape(key) {
+  if (typeof key !== 'string' || key.length < 3 || key.length > 512) throw new Error('object_key_shape_violation');
+  if (key.includes('..')) throw new Error('object_key_traversal');
+  const segments = key.split('/');
+  if (segments.length !== 5 || segments[0] !== 't') throw new Error('object_key_shape_violation');
+  if (!STRICT_UUID_RE.test(segments[1]) || !STRICT_UUID_RE.test(segments[3])) throw new Error('object_key_shape_violation');
+  if (!CAPABILITIES.includes(segments[2])) throw new Error('object_key_shape_violation');
+  if (!STRICT_KEY_SEGMENT_4_RE.test(segments[4])) throw new Error('object_key_shape_violation');
+  return true;
+}
+
+export function mimeForObjectKey(key) {
+  assertObjectKeyShape(key);
+  const ext = key.slice(key.lastIndexOf('.') + 1).toLowerCase();
+  const mime = MIME_BY_EXT[ext];
+  if (!mime) throw new Error('unsupported_object_extension');
+  return mime;
 }
 
 export function sha256Hex(bytes) {

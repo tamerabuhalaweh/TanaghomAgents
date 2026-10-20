@@ -15,6 +15,7 @@ import {generateKeyPair,exportJWK,SignJWT} from 'jose';
 import pg from 'pg';
 import * as smartlabs from '../packages/agent-runtime/providers/smartlabs.mjs';
 import * as workspace from '../packages/agent-runtime/workspace.mjs';
+import * as creativeStorageFactory from '../packages/creative-runtime/storage/factory.mjs';
 const require=createRequire(import.meta.url),ts=require('typescript'),{NextRequest}=require('next/server');
 const url=new URL(process.env.DATABASE_TEST_URL??'');assert.equal(url.hostname,'127.0.0.1');assert.equal(url.pathname,'/smartlabs242');
 const owner=process.env.SMARTLABS_LOCAL_FIXTURE_OWNER;
@@ -62,11 +63,12 @@ try{
   }else{counts.models++;assert.equal(req.url,'/models');res.setHeader('content-type','application/json');res.end(JSON.stringify({data:[{id:'gemma4-26b-a4b-canary'}]}));}
  });
  const {writeFile}=await import('node:fs/promises');const gf=join(directory,'fake-gemma-key'),af=join(directory,'fake-api-key');await writeFile(gf,'fake-242-gemma-file\n');await writeFile(af,'fake-242-api-file\r\n');
- const appEnv={CREATIVE_STUDIO_ENABLED:'true',CREATIVE_UPLOAD_DIR:directory,SUPABASE_URL:authOrigin,SMARTLABS_GEMMA_API_KEY_FILE:gf,SMARTLABS_API_KEY_FILE:af,SMARTLABS_GEMMA_BASE_URL:providerOrigin,SMARTLABS_API_BASE_URL:providerOrigin,SMARTLABS_ASR_URL:providerOrigin+'/transcriptions',SMARTLABS_GEMMA_ENABLED:'true',SMARTLABS_TTS_ENABLED:'true',SMARTLABS_ASR_ENABLED:'true'};
+ const appEnv={CREATIVE_STUDIO_ENABLED:'true',CREATIVE_STORAGE_BACKEND:'local',CREATIVE_UPLOAD_DIR:directory,SUPABASE_URL:authOrigin,SMARTLABS_GEMMA_API_KEY_FILE:gf,SMARTLABS_API_KEY_FILE:af,SMARTLABS_GEMMA_BASE_URL:providerOrigin,SMARTLABS_API_BASE_URL:providerOrigin,SMARTLABS_ASR_URL:providerOrigin+'/transcriptions',SMARTLABS_GEMMA_ENABLED:'true',SMARTLABS_TTS_ENABLED:'true',SMARTLABS_ASR_ENABLED:'true'};
  const auth=compile('apps/dashboard/lib/server/auth.ts',{},appEnv);
  const authorization=compile('apps/dashboard/lib/server/authorization.ts',{'@/lib/server/auth':auth,'@/lib/server/database':{database:()=>api}},appEnv);
- const storage=compile('apps/dashboard/lib/server/creative/storage.ts',{},appEnv);let privateReads=0;
- const originalStorage=storage.localStorage;storage.localStorage=(...args)=>{const value=originalStorage(...args);return {...value,get:async(...input)=>{privateReads++;return value.get(...input);}};};
+ const storageSeam={createCreativeStorage:(options={})=>creativeStorageFactory.createCreativeStorage({...options,env:{...appEnv,...(options.env??{})}}),MAX_OBJECT_READ_BYTES:creativeStorageFactory.MAX_OBJECT_READ_BYTES};
+ const storage=compile('apps/dashboard/lib/server/creative/storage.ts',{'@tanaghom/creative-runtime/storage/factory':storageSeam},appEnv);let privateReads=0;
+ const originalStorage=storage.creativeStorage;storage.creativeStorage=(...args)=>{const value=originalStorage(...args);return {...value,get:async(...input)=>{privateReads++;return value.get(...input);}};};
  const keys=compile('apps/dashboard/lib/server/creative/object-keys.ts',{},appEnv);
  const control=compile('apps/dashboard/lib/server/creative/feature-control.ts',{},appEnv);
  const factory=compile('apps/dashboard/lib/server/smartlabs-runtime.ts',{'@/lib/server/auth':auth,'@/lib/server/authorization':authorization,'@/lib/server/database':{database:()=>api},'@/lib/server/creative/storage':storage,'@/lib/server/creative/object-keys':keys,'@/lib/server/creative/feature-control':control},appEnv);
@@ -91,7 +93,7 @@ try{
  async function call(path,headers,input){const r=await fetch(mountedOrigin+path,{method:input?'POST':'GET',headers:{...headers,'content-type':'application/json'},body:input?JSON.stringify(input):undefined});return {status:r.status,body:await r.json()};}
  // Actual production Next server with SmartLabs flags OFF and dummy markers.
  const portServer=createServer();portServer.listen(0,'127.0.0.1');await once(portServer,'listening');const port=portServer.address().port;await new Promise(r=>portServer.close(r));const nextOrigin='http://127.0.0.1:'+port;
- const nextEnv={...process.env,...appEnv,DATABASE_URL:roleUrl('tanaghom_api'),APP_ENV:'integration',NEXT_TELEMETRY_DISABLED:'1',SMARTLABS_GEMMA_ENABLED:'false',SMARTLABS_TTS_ENABLED:'false',SMARTLABS_ASR_ENABLED:'false'};
+ const nextEnv={...process.env,...appEnv,DATABASE_URL:roleUrl('tanaghom_api'),APP_ENV:'integration',NODE_ENV:'test',NEXT_TELEMETRY_DISABLED:'1',SMARTLABS_GEMMA_ENABLED:'false',SMARTLABS_TTS_ENABLED:'false',SMARTLABS_ASR_ENABLED:'false'};
  for(const key of ['NODE_OPTIONS','SMARTLABS_GEMMA_API_KEY','SMARTLABS_API_KEY'])delete nextEnv[key];
  next=spawn(process.execPath,['node_modules/next/dist/bin/next','start','apps/dashboard','-H','127.0.0.1','-p',String(port)],{env:nextEnv,stdio:['ignore','pipe','pipe']});let nextOutput='';next.stdout.on('data',b=>nextOutput+=b);next.stderr.on('data',b=>nextOutput+=b);
  let ready=false;for(let i=0;i<120;i++){assert.equal(next.exitCode,null,'Next must stay up');try{if((await fetch(nextOrigin+'/api/health')).status===200){ready=true;break;}}catch{}await new Promise(r=>setTimeout(r,250));}assert.ok(ready,'actual built Next ready');
@@ -125,7 +127,7 @@ try{
  await api.query('SELECT tanaghom.set_creative_control($1,true,false,$2)',[actor,'Owned positive control']);
  console.log('PASS actual SQL draft ASR refusal and approved historical source disabled/emergency-stop refusal: zero additional private reads/uploads');
  const foreignAsr=await call('/asr',foreignHeaders,{sourceVersionId:versionId});assert.equal(foreignAsr.status,404);assert.equal(counts.asr,0);
- const asr=await call('/asr',ownerHeaders,{sourceVersionId:versionId});assert.equal(asr.status,200);assert.equal(asr.body.text,text);assert.equal(asr.body.source.versionId,versionId);assert.equal(asr.body.source.jobId,jobId);assert.equal(asr.body.source.sha256,hash);
+ const asr=await call('/asr',ownerHeaders,{sourceVersionId:versionId});assert.equal(asr.status,200);assert.equal(asr.body.text,text);assert.equal(asr.body.source.versionId,versionId);assert.equal(asr.body.source.jobId,jobId);assert.equal(asr.body.source.sha256,hash);assert.ok(privateReads>beforeDraftReads,'approved ASR source must be read through private storage');
  const audit=(await api.query("SELECT correlation_id,payload FROM tanaghom.agent_actions_log WHERE action_type='smartlabs.asr.transcribed' AND entity_id=$1",[versionId])).rows;assert.equal(audit.length,1);assert.equal(audit[0].correlation_id,correlation);assert.equal(audit[0].payload.transcript_sha256,createHash('sha256').update(text).digest('hex'));assert.equal(JSON.stringify(audit).includes(text),false);
  const state=(await api.query('SELECT status,output_asset_ids FROM tanaghom.creative_jobs WHERE id=$1',[jobId])).rows[0];assert.equal(state.status,'succeeded');assert.ok(state.output_asset_ids.includes(tts.body.assetId));
  const before={...counts};const repeat=await call('/tts',ownerHeaders,{jobId,text});assert.equal(repeat.status,409);assert.deepEqual(counts,before);

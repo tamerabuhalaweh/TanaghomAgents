@@ -20,7 +20,7 @@ import {
 } from "@/lib/server/creative/idempotency";
 import { CreativeJobRequestError } from "@/lib/server/creative/jobs";
 import { buildUploadObjectKey } from "@/lib/server/creative/object-keys";
-import { localStorage, sha256Hex } from "@/lib/server/creative/storage";
+import { creativeStorage, sha256Hex } from "@/lib/server/creative/storage";
 
 const MAX_UPLOAD_BYTES = 10 * 1024 * 1024;
 const MAX_IMAGE_DIMENSION = 8192;
@@ -121,7 +121,7 @@ export async function uploadSourceImage(request: NextRequest) {
         response.headers.set("Idempotency-Replayed", "true");
         return response;
       }
-      const storage = localStorage();
+      const storage = creativeStorage();
       try {
         const written = await storage.put(objectKey, bytes, detected);
         if (written.sha256 !== sha256) throw new UploadRequestError("checksum_mismatch", 500);
@@ -179,7 +179,7 @@ export async function uploadSourceImage(request: NextRequest) {
       await client.query("ROLLBACK");
       if (stored) {
         try {
-          await localStorage().remove(objectKey);
+          await creativeStorage().remove(objectKey);
         } catch (cleanupError) {
           console.error("Creative upload cleanup failed", { object_key: objectKey, cleanupError });
         }

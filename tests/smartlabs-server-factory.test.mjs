@@ -37,8 +37,9 @@ test('actual private storage reader refuses oversize file before unbounded alloc
  const ts=process.env.SMARTLABS_TEST_TYPESCRIPT?require(process.env.SMARTLABS_TEST_TYPESCRIPT):require('typescript');const {mkdtemp,rm}=await import('node:fs/promises');const path=require('node:path');
  const directory=await mkdtemp(path.join(process.env.TMPDIR??tmpdir(),'sl-audio-'));t.after(()=>rm(directory,{recursive:true,force:true}));
  const output=ts.transpileModule(readFileSync(new URL('../apps/dashboard/lib/server/creative/storage.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,esModuleInterop:true}}).outputText;
- const exports={};runInNewContext(output,{exports,require:name=>name==='server-only'?{}:require(name),Buffer,process:{env:{},cwd:()=>process.cwd()}});const storage=exports.localStorage(directory),key=`t/${id}/voice/${id}/v1.wav`;
- await storage.put(key,audio(),'audio/wav');assert.deepEqual((await storage.get(key,5000)).bytes,audio());await assert.rejects(storage.get(key,100),e=>e.message==='object_size_exceeded');
+  const exports={};runInNewContext(output,{exports,require:name=>name==='server-only'?{}:require(name),Buffer,process:{env:{},cwd:()=>process.cwd()}});const storage=exports.creativeStorage({env:{CREATIVE_STORAGE_BACKEND:'local'},dir:directory}),key=`t/${id}/voice/${id}/v1.wav`;
+  await storage.put(key,audio(),'audio/wav');assert.deepEqual((await storage.get(key,5000)).bytes,audio());await assert.rejects(storage.get(key,100),e=>e.message==='object_size_exceeded');
+  await assert.rejects(storage.get(key,0),e=>e.message==='object_read_bound_invalid');await assert.rejects(storage.get(key,100*1024*1024+1),e=>e.message==='object_read_bound_invalid');
 });
 
 
@@ -126,7 +127,7 @@ function compileFactory(doubles={}){
  const ts=process.env.SMARTLABS_TEST_TYPESCRIPT?require(process.env.SMARTLABS_TEST_TYPESCRIPT):require('typescript');
  const compiled=ts.transpileModule(readFileSync(source,'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022},reportDiagnostics:true});
  assert.equal((compiled.diagnostics||[]).filter(d=>d.category===ts.DiagnosticCategory.Error).length,0);
- const exports={};const mapped={'server-only':{},'node:crypto':require('node:crypto'),'@/lib/server/authorization':{authorize:async()=>{doubles.calls?.push('authorize');return {id:'11111111-1111-4111-8111-111111111111',organizationId:'11111111-1111-4111-8111-111111111111',role:'owner'};}},'@/lib/server/auth':{enforceSameOriginForCookieMutation:()=>doubles.calls?.push('same-origin')},'@/lib/server/database':{database:()=>doubles.db},'@/lib/server/creative/feature-control':{requireCreativeStudio:()=>{}},'@/lib/server/creative/storage':{localStorage:()=>doubles.storage},'@/lib/server/creative/object-keys':{buildUploadObjectKey:a=>`t/${a.organizationId}/voice/${a.nonce}/v1.wav`}};
+ const exports={};const mapped={'server-only':{},'node:crypto':require('node:crypto'),'@/lib/server/authorization':{authorize:async()=>{doubles.calls?.push('authorize');return {id:'11111111-1111-4111-8111-111111111111',organizationId:'11111111-1111-4111-8111-111111111111',role:'owner'};}},'@/lib/server/auth':{enforceSameOriginForCookieMutation:()=>doubles.calls?.push('same-origin')},'@/lib/server/database':{database:()=>doubles.db},'@/lib/server/creative/feature-control':{requireCreativeStudio:()=>{}},'@/lib/server/creative/storage':{creativeStorage:()=>doubles.storage},'@/lib/server/creative/object-keys':{buildUploadObjectKey:a=>`t/${a.organizationId}/voice/${a.nonce}/v1.wav`}};
  runInNewContext(compiled.outputText,{exports,require:name=>{assert.ok(name in mapped,'unexpected import '+name);return mapped[name];},Buffer,Date,process:{env:doubles.env??{},cwd:()=>process.cwd(),getBuiltinModule:name=>name==='module'?{createRequire:()=>name=>name==='@tanaghom/agent-runtime/smartlabs'?{...smartlabs,createSmartLabsAdapters:(c,d)=>smartlabs.createSmartLabsAdapters(c,{...d,ownedLoopbackTest:c.gemmaBaseUrl.startsWith('http://127.0.0.1:')})}:name==='@tanaghom/agent-runtime/workspace'?workspace:null}:require(name)}});
  return exports;
 }
