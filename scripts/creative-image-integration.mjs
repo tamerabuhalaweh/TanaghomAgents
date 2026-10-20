@@ -108,11 +108,15 @@ const s3Server = createServer(async (request, response) => {
   }
   const key = decodeURIComponent(url.pathname.slice(1));
   if (request.method === "PUT") {
+    if (request.headers["if-none-match"] !== "*") {
+      response.writeHead(428).end();
+      return;
+    }
     const chunks = [];
     for await (const chunk of request) chunks.push(chunk);
     const bytes = Buffer.concat(chunks);
     if (s3Objects.has(key)) {
-      response.writeHead(409).end();
+      response.writeHead(412).end();
       return;
     }
     s3Objects.set(key, { bytes, contentType: request.headers["content-type"] ?? "application/octet-stream" });
@@ -314,6 +318,7 @@ try {
   const s3 = s3mod.createS3Storage({
     endpoint: s3Origin, region: "us-east-1", bucket: "creative-test",
     accessKeyId: "TESTKEY", secretAccessKey: "test-secret-at-least-16-chars",
+    conditionalWrites: true,
   });
   const worker = await workerPool.connect();
   const ledger = [];
@@ -502,7 +507,7 @@ try {
     const presigned = s3.presignGet(s3Key, 900, new Date("2026-10-08T00:00:00Z"));
     assert.ok(presigned.url.includes("X-Amz-Signature="));
     assert.equal(presigned.previewOnly, true);
-    await assert.rejects(s3.put(s3Key, PNG_1X1, "image/png"), /409/);
+    await assert.rejects(s3.put(s3Key, PNG_1X1, "image/png"), /object_key_exists/);
     assert.equal((await s3.remove(s3Key)).deleted, true);
     assert.equal(await s3.get(s3Key), null);
     console.log("PASS s3-compatible storage round-trip");
@@ -637,7 +642,7 @@ try {
     const s3signed = s3.presignGet(s3Key, 900, new Date("2026-10-08T00:00:00Z"));
     assert.ok(s3signed.url.includes("X-Amz-Signature="));
     assert.equal(s3signed.previewOnly, true);
-    await assert.rejects(s3.put(s3Key, PNG_1X1, "image/png"), /409/);
+    await assert.rejects(s3.put(s3Key, PNG_1X1, "image/png"), /object_key_exists/);
     assert.equal((await s3.remove(s3Key)).deleted, true);
     assert.equal(await s3.get(s3Key), null);
     console.log("PASS s3-compatible storage round-trip");
