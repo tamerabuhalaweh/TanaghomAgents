@@ -34,7 +34,7 @@ services:
       PGHOST: postgres
       PGUSER: postgres
       PGDATABASE: tanaghom_demo
-    secrets: [postgres_password, api_password]
+    secrets: [postgres_password, api_password, workspace_password]
     volumes:
       - ../../packages/database/migrations:/migrations:ro
       - ../../packages/database/seeds:/seeds:ro
@@ -150,6 +150,8 @@ services:
       NEXT_TELEMETRY_DISABLED: "1"
       AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED: "false"
       AGENCY_PILOT_GATEWAY_ENABLED: "false"
+      AGENCY_WORKSPACE_ENABLED: ${AGENCY_WORKSPACE_ENABLED:-false}
+      GEMINI_API_KEY_FILE: /run/secrets/gemini_api_key
       POSTIZ_HANDOFF_ENABLED: "false"
       POSTIZ_AUTOMATION_RUNTIME_READY: "false"
       POSTIZ_PERFORMANCE_SYNC_ENABLED: "false"
@@ -183,6 +185,9 @@ services:
       - supabase_jwks_url
       - s3_access_key
       - s3_secret_key
+      - workspace_database_url
+      - workspace_worker_token
+      - gemini_api_key
     ports:
       - "127.0.0.1:3210:3000"
     networks: [backend, edge]
@@ -200,6 +205,32 @@ services:
       timeout: 5s
       retries: 12
       start_period: 45s
+    logging: *bounded-logging
+
+  workspace-worker:
+    image: node:24.18.0-alpine3.24@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd
+    profiles: [workspace]
+    restart: unless-stopped
+    stop_grace_period: 20s
+    depends_on:
+      dashboard: { condition: service_healthy }
+    command: ["node", "/app/worker.mjs"]
+    user: node
+    environment:
+      DEMO_INTERNAL_BASE_URL: http://dashboard:3000
+      WORKSPACE_WORKER_TOKEN_FILE: /run/secrets/workspace_worker_token
+      WORKSPACE_WORKER_POLL_MS: "5000"
+    secrets: [workspace_worker_token]
+    volumes:
+      - ./worker.mjs:/app/worker.mjs:ro
+    networks: [backend]
+    read_only: true
+    tmpfs: ["/tmp:size=16m,mode=1777"]
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    cpus: 0.25
+    mem_limit: 128m
+    pids_limit: 80
     logging: *bounded-logging
 
 networks:
@@ -238,3 +269,11 @@ secrets:
     file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/s3_access_key
   s3_secret_key:
     file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/s3_secret_key
+  workspace_password:
+    file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/workspace_password
+  workspace_database_url:
+    file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/workspace_database_url
+  workspace_worker_token:
+    file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/workspace_worker_token
+  gemini_api_key:
+    file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/gemini_api_key

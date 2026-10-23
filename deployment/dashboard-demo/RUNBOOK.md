@@ -42,6 +42,47 @@ Read the private demo account passwords from
 `/opt/tanaghom-demo/runtime/secrets/demo-credentials.txt`. Never copy that file into git,
 logs, issue comments, or chat.
 
+The runtime also contains `workspace_password`, `workspace_database_url`,
+`workspace_worker_token`, and an empty `gemini_api_key` placeholder. The deploy script can add the
+workspace files to an existing #243 runtime without overwriting existing secrets. It never creates
+a fake provider key.
+
+## Gemini key and workspace activation
+
+The workspace is disabled by default and makes no provider call until an operator explicitly
+installs a key and activates the isolated worker. Keep the key outside the source tree and never
+put it in an environment variable, image, log, or evidence file.
+
+```sh
+# Operator-supplied key file; replace the path with the private local handoff path.
+test -s /path/to/private/gemini_api_key
+cp /path/to/private/gemini_api_key /opt/tanaghom-demo/runtime/secrets/gemini_api_key
+chmod 0444 /opt/tanaghom-demo/runtime/secrets/gemini_api_key
+
+cd /opt/tanaghom-demo/source
+TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
+AGENCY_WORKSPACE_ENABLED=true \
+  docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml \
+  --profile workspace up -d dashboard workspace-worker
+```
+
+The dashboard reads `/run/secrets/gemini_api_key` on each request; `cp` updates the existing bind
+mount in place. If the key is replaced with a new inode, recreate only the demo dashboard.
+Activation logs must contain no key material. Before a normal `deploy.sh`, stop the optional worker
+and leave `AGENCY_WORKSPACE_ENABLED` unset/false so the default deployment remains inert:
+
+```sh
+TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
+  docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml \
+  --profile workspace stop workspace-worker
+```
+
+The worker polls the internal dashboard endpoint with the 64-hex worker token. It has no host
+port, no database credentials, no provider key, and no external-action capability. The Gemini
+model (`gemini-2.5-flash`) is verified against the provider inventory (cached for ten minutes per
+dashboard process) before specialist requests; failures are recorded as explicit workspace errors and stop further inference for human
+review.
+
 ## Deploy
 
 Run this as root from a clean checkout. Use the exact reviewed SHA for both values. The
@@ -62,10 +103,10 @@ remove or modify the canary.
 Expected database marker:
 
 ```text
-DEMO_DATABASE_READY migrations=44
+DEMO_DATABASE_READY migrations=45
 ```
 
-There are 44 up migrations, ending at `0047_smartlabs_audio`; numbering gaps `0041`-`0043` are
+There are 45 up migrations, ending at `0048_gemini_workspace_model`; numbering gaps `0041`-`0043` are
 intentional. The role/ledger guard requires exactly that chain.
 
 ## Validate
@@ -140,10 +181,16 @@ bucket data only. Never run global Docker prune commands.
 ## Troubleshooting
 
 - Missing/partial runtime secrets: move the directory aside, rerun `prepare-runtime.sh`, and verify
-  the shared files are mode `0444` inside a mode `0700` directory.
+  the shared files are mode `0444` inside a mode `0700` directory. On an existing runtime, rerun
+  `deploy.sh`; it adds only the missing workspace files and the empty Gemini placeholder.
+- Workspace reports `workspace_model_not_configured`: confirm `AGENCY_WORKSPACE_ENABLED=true`, the
+  worker profile is running, and `gemini_api_key` is non-empty. No retry loop is created by a
+  missing key.
+- Workspace reports `provider_quota_exceeded` or `provider_request_rejected`: preserve the evidence
+  and wait for an operator decision; the database emergency stop blocks further inference.
 - `schema_migrations does not exist`: the fresh-database runner must check
   `to_regclass('public.schema_migrations')` before querying the ledger; rebuild from reviewed source.
-- `demo database must be at exact migration 0047 ledger`: confirm the runtime has all 44 up
+- `demo database must be at exact migration 0048 ledger`: confirm the runtime has all 45 up
   migrations and no extra/missing ledger rows.
 - Login `401`: read the synthetic credentials file again; do not rotate production credentials.
 - Login `503` or health not ready: check `auth` health and the dashboard secret mounts.

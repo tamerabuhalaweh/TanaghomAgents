@@ -32,13 +32,14 @@ for migration in /migrations/*.up.sql; do
 done
 
 API_PASSWORD="$(cat /run/secrets/api_password)"
-export API_PASSWORD
+WORKSPACE_PASSWORD="$(cat /run/secrets/workspace_password)"
+export API_PASSWORD WORKSPACE_PASSWORD
 $psql_base -f /demo-sql/configure-api-role.sql
-unset API_PASSWORD
+unset API_PASSWORD WORKSPACE_PASSWORD
 $psql_base -f /seeds/creative_templates.sql >/dev/null
 $psql_base -f /seeds/creative_motion_templates.sql >/dev/null
 $psql_base -f /demo-sql/demo_seed.sql
 
 count="$($psql_base -Atc "SELECT count(*) FROM public.schema_migrations")"
-test "$count" = "44"
+test "$count" = "45"
 echo "DEMO_DATABASE_READY migrations=$count"

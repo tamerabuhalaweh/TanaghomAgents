@@ -11,7 +11,7 @@ const password=randomBytes(24).toString('hex');
 const image='postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94';
 const docker=(args,options={})=>execFileSync('docker',args,{encoding:'utf8',maxBuffer:8e6,...options});
 let pool;let count=0;
-const org='10000000-0000-4000-8000-000000000001',owner='00000000-0000-4000-8000-000000000001',model='7d000000-0000-4000-8000-000000000002';
+const org='10000000-0000-4000-8000-000000000001',owner='00000000-0000-4000-8000-000000000001',model='7d000000-0000-4000-8000-000000000003';
 const query=(sql,args=[])=>pool.query(sql,args);
 async function reject(label,sql,args=[]){await assert.rejects(()=>query(sql,args));count++;console.log(`PASS ${label}`);}
 try{
@@ -26,6 +26,14 @@ try{
   if(f==='0035_agency_workspace.up.sql'){
    await query(readFileSync('packages/database/migrations/0035_agency_workspace.down.sql','utf8'));
    await query(readFileSync('packages/database/migrations/0035_agency_workspace.up.sql','utf8'));count++;console.log('PASS all migrations and unused 0035 down/up');
+  }
+  if(f==='0048_gemini_workspace_model.up.sql'){
+   await query(readFileSync('packages/database/migrations/0048_gemini_workspace_model.down.sql','utf8'));
+   assert.equal(Number((await query('SELECT count(*) FROM public.schema_migrations')).rows[0].count),44);
+   assert.equal(Number((await query("SELECT count(*) FROM tanaghom.agent_runtime_profiles WHERE id='7d000000-0000-4000-8000-000000000003'")).rows[0].count),0);
+   await query(readFileSync('packages/database/migrations/0048_gemini_workspace_model.up.sql','utf8'));
+   assert.equal(Number((await query('SELECT count(*) FROM public.schema_migrations')).rows[0].count),45);
+   count++;console.log('PASS unused 0048 down/up');
   }
  }
  await query(readFileSync('packages/database/seeds/staging.sql','utf8'));
@@ -58,7 +66,7 @@ try{
    const task=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;
    assert.ok(task);assert.equal(task.profile,codes[i]);assert.equal(task.shared_context.length,i);
    assert.equal((await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task,null);
-   const response=task.profile==='executive_summary'?null:{model:task.model,choices:[{finish_reason:'stop',message:{content:lang==='ar'?'هذه مسودة تجريبية عن دورة التصوير. المعلومات غير المؤكدة تتطلب مراجعة بشرية.':'This is an authored test draft about the photography course. Unknown details require human review.'}}]};
+   const response=task.profile==='executive_summary'?null:{modelVersion:task.model,candidates:[{finishReason:'STOP',content:{parts:[{text:lang==='ar'?'هذه مسودة تجريبية عن دورة التصوير. المعلومات غير المؤكدة تتطلب مراجعة بشرية.':'This is an authored test draft about the photography course. Unknown details require human review.'}]}}],usageMetadata:{promptTokenCount:10,candidatesTokenCount:10,totalTokenCount:20}};
    if(response){assert.ok(workspaceRequest(task,32768));generated++;}
    const artifact=workspaceArtifact(task,response,1);
    await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[task.task_id,task.lease_token,artifact]);
@@ -71,6 +79,7 @@ try{
   count++;console.log(`PASS ${lang}: six-step handoff, shared context, exact completion replay, human decision`);
  }
  await reject('used migration refuses destructive rollback',readFileSync('packages/database/migrations/0035_agency_workspace.down.sql','utf8'));
+ await reject('Gemini evidence refuses 0048 rollback',readFileSync('packages/database/migrations/0048_gemini_workspace_model.down.sql','utf8'));
  await query('ROLLBACK');
  const paused=await create('en',['content_creator']);await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,paused,[bindingIds[1]],model]);
  await query("SELECT tanaghom.decide_agency_workspace($1,$2,'pause',NULL,'')",[owner,paused]);assert.equal((await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task,null);

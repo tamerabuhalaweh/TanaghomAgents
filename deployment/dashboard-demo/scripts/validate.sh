@@ -6,8 +6,8 @@ compose=(docker compose -p tanaghom-dashboard-demo -f compose.yml)
 : "${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}"
 export TANAGHOM_DEMO_SECRETS_DIR
 
-"${compose[@]}" config --quiet
-"${compose[@]}" config --format json | python3 scripts/validate-compose.py
+"${compose[@]}" --profile workspace config --quiet
+"${compose[@]}" --profile workspace config --format json | python3 scripts/validate-compose.py
 
 for service in postgres auth storage dashboard; do
   id="$("${compose[@]}" ps -q "$service")"

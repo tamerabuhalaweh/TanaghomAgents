@@ -7,7 +7,7 @@ umask 077
 command -v openssl >/dev/null 2>&1 || { echo "openssl is required" >&2; exit 1; }
 mkdir -p "$directory"
 
-required="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem s3_access_key s3_secret_key demo-credentials.txt"
+required="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem s3_access_key s3_secret_key workspace_password workspace_database_url workspace_worker_token gemini_api_key demo-credentials.txt"
 for name in $required; do
   if [ -e "$directory/$name" ]; then
     echo "refusing to overwrite existing demo runtime secret: $name" >&2
@@ -17,6 +17,8 @@ done
 
 postgres_password="$(openssl rand -hex 32)"
 api_password="$(openssl rand -hex 32)"
+workspace_password="$(openssl rand -hex 32)"
+workspace_worker_token="$(openssl rand -hex 32)"
 s3_access_key="demo$(openssl rand -hex 12)"
 s3_secret_key="$(openssl rand -hex 32)"
 owner_password="${DEMO_OWNER_PASSWORD:-$(openssl rand -hex 24)}"
@@ -30,6 +32,10 @@ fi
 printf '%s\n' "$postgres_password" > "$directory/postgres_password"
 printf '%s\n' "$api_password" > "$directory/api_password"
 printf 'postgresql://tanaghom_api:%s@postgres:5432/tanaghom_demo\n' "$api_password" > "$directory/database_url"
+printf 'postgresql://tanaghom_agency_pilot_worker:%s@postgres:5432/tanaghom_demo\n' "$workspace_password" > "$directory/workspace_database_url"
+printf '%s\n' "$workspace_worker_token" > "$directory/workspace_worker_token"
+printf '%s\n' "$workspace_password" > "$directory/workspace_password"
+: > "$directory/gemini_api_key"
 printf '%s\n' 'http://auth:43191' > "$directory/supabase_url"
 printf '%s\n' 'demo-publishable-key' > "$directory/supabase_publishable_key"
 printf '%s\n' 'http://auth:43191/auth/v1/.well-known/jwks.json' > "$directory/supabase_jwks_url"
@@ -75,6 +81,10 @@ chmod 0444 \
   "$directory/auth_users.json" \
   "$directory/auth_private_key.pem" \
   "$directory/s3_access_key" \
-  "$directory/s3_secret_key"
+  "$directory/s3_secret_key" \
+  "$directory/workspace_password" \
+  "$directory/workspace_database_url" \
+  "$directory/workspace_worker_token" \
+  "$directory/gemini_api_key"
 chmod 0600 "$directory/demo-credentials.txt"
 echo "Demo runtime secrets created. Credentials are in $directory/demo-credentials.txt"

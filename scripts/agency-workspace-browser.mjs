@@ -1,10 +1,12 @@
 // Local disposable authentication and authored outputs only. No customer session
-// is imported, and no network request to Gemma/Postiz/GHL is made by this test.
+// is imported, and no network request to Gemini/Postiz/GHL is made by this test.
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { spawn } from 'node:child_process';
 import { once } from 'node:events';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync,mkdtempSync,rmSync,writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
 import { randomUUID } from 'node:crypto';
 import { generateKeyPair, exportJWK, SignJWT } from 'jose';
 import { chromium, expect } from '@playwright/test';
@@ -16,6 +18,8 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
  const key={...await exportJWK(publicKey),kid:'workspace-disposable',alg:'RS256',use:'sig'};
  const subject='90000000-0000-4000-8000-000000000001';
  const token=async sub=>new SignJWT({role:'authenticated',email:'owner@example.test'}).setProtectedHeader({alg:'RS256',kid:key.kid}).setIssuer(`${authOrigin}/auth/v1`).setAudience('authenticated').setSubject(sub).setIssuedAt().setExpirationTime('1h').sign(privateKey);
+ const keyDir=mkdtempSync(join(tmpdir(),'workspace-gemini-key-')),keyFile=join(keyDir,'gemini_api_key');
+ writeFileSync(keyFile,'fixture-only-gemini-key-1234567890',{mode:0o600});
  const server=createServer(async(req,res)=>{
   if(req.url==='/auth/v1/.well-known/jwks.json'){res.writeHead(200,{'content-type':'application/json'}).end(JSON.stringify({keys:[key]}));return;}
   if(req.method==='POST'&&req.url?.startsWith('/auth/v1/token')){
@@ -30,7 +34,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   server.listen(43191,'127.0.0.1');await once(server,'listening');
   app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','apps/dashboard','-p','43192','-H','127.0.0.1'],{env:{...process.env,
    APP_ENV:'integration',DATABASE_URL:databaseUrl,SUPABASE_URL:authOrigin,SUPABASE_JWKS_URL:`${authOrigin}/auth/v1/.well-known/jwks.json`,SUPABASE_PUBLISHABLE_KEY:'disposable-public-key',SUPABASE_SECRET_KEY:'',
-   AGENCY_WORKSPACE_ENABLED:'true',AGENCY_WORKSPACE_DATABASE_URL:workerUrl,GEMMA_API_KEY:'fixture',AGENCY_WORKSPACE_WORKER_TOKEN:'disposable-workspace-worker-token-32-characters',
+   AGENCY_WORKSPACE_ENABLED:'true',AGENCY_WORKSPACE_DATABASE_URL:workerUrl,GEMINI_API_KEY_FILE:keyFile,AGENCY_WORKSPACE_WORKER_TOKEN:'disposable-workspace-worker-token-32-characters',
    AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED:'false',AGENCY_PILOT_GATEWAY_ENABLED:'false',POSTIZ_HANDOFF_ENABLED:'false',GHL_CONTACT_HANDOFF_ENABLED:'false'},stdio:['ignore','pipe','pipe']});
   app.stdout.on('data',c=>{logs+=c});app.stderr.on('data',c=>{logs+=c});
   for(let i=0;i<100;i++){if(app.exitCode!==null)throw new Error(logs);try{if((await fetch(`${origin}/api/health`)).ok)break;}catch{}await new Promise(r=>setTimeout(r,250));}
@@ -51,8 +55,8 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   await page.getByRole('button',{name:'Start assignment',exact:true}).click();await expect(page.getByText('0 of 6 deliverables ready')).toBeVisible();
   for(let i=0;i<6;i++){
    const task=(await pool.query('SELECT tanaghom.claim_agency_workspace_task() AS t')).rows[0].t;assert.equal(task.workspace_id,wid);assert.equal(task.shared_context.length,i);
-   const content=`${['Campaign strategy','Content draft','Brand review','Discovery playbook','Support responses','Summary'][i]}\n\nAUTHORED TEST FIXTURE — not Gemma output.\n\nThe campaign introduces the six photography lessons through practical exposure and composition examples. Use organic Instagram only. Price and dates remain unconfirmed.\n\nProposed next step: ask interested learners which photography skill they want to improve. A human must review the final material before use.\n\nShared prior deliverables: ${i}.`;
-   const result=workspaceArtifact(task,task.profile==='executive_summary'?null:{model:task.model,choices:[{finish_reason:'stop',message:{content}}]},1);
+   const content=`${['Campaign strategy','Content draft','Brand review','Discovery playbook','Support responses','Summary'][i]}\n\nAUTHORED TEST FIXTURE — not Gemini output.\n\nThe campaign introduces the six photography lessons through practical exposure and composition examples. Use organic Instagram only. Price and dates remain unconfirmed.\n\nProposed next step: ask interested learners which photography skill they want to improve. A human must review the final material before use.\n\nShared prior deliverables: ${i}.`;
+   const result=workspaceArtifact(task,task.profile==='executive_summary'?null:{modelVersion:task.model,candidates:[{finishReason:'STOP',content:{parts:[{text:content}]}}],usageMetadata:{promptTokenCount:10,candidatesTokenCount:10,totalTokenCount:20}},1);
    await pool.query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[task.task_id,task.lease_token,result]);
   }
   await expect(page.getByRole('button',{name:'Approve work pack',exact:true})).toBeVisible({timeout:15000});
@@ -63,7 +67,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   await page.setViewportSize({width:390,height:844});await expect(page.locator('.sidebar')).toBeHidden();await page.screenshot({path:'tmp/workspace-qa/mobile.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no horizontal overflow at mobile width');
   await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:'Approve work pack',exact:true}).click();await expect(page.getByText('Approved by human',{exact:true}).first()).toBeVisible();
-  await page.getByRole('button',{name:/Fictional ar work pack/}).click();await expect(page.locator('.aw-document')).toHaveAttribute('dir','rtl');
+  await page.getByRole('button',{name:/Fictional ar work pack/}).click();await expect(page.locator('.aw-assignment-header h2')).toHaveText('Fictional ar work pack',{timeout:15000});await expect(page.locator('.aw-document')).toHaveAttribute('dir','rtl');
   await page.screenshot({path:'tmp/workspace-qa/arabic.png',fullPage:true});
   const csrf=await page.request.post(`${origin}/api/workspace`,{headers:{origin:'https://untrusted.test'},data:{action:'cancel',id:wid}});assert.equal(csrf.status(),401);
   // A real restricted-worker HTTP tick is exercised with the deterministic
@@ -87,5 +91,5 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   await pool.query("UPDATE tanaghom.app_users SET role='owner' WHERE id='00000000-0000-4000-8000-000000000001'");
   assert.deepEqual(failures,[]);console.log('PASS authenticated browser: login, create, start, six handoffs, context, mobile, approval, worker token and role boundaries; real inference calls=0');
  }catch(error){console.error(logs.slice(-6000));throw error;}
- finally{if(browser)await browser.close();if(app&&app.exitCode===null){app.kill();await once(app,'exit');}await new Promise(r=>server.close(r));}
+ finally{try{rmSync(keyDir,{recursive:true,force:true});}catch{}if(browser)await browser.close();if(app&&app.exitCode===null){app.kill();await once(app,'exit');}await new Promise(r=>server.close(r));}
 }

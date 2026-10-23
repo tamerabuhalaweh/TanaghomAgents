@@ -1,27 +1,30 @@
 import "server-only";
-import { timingSafeEqual } from "node:crypto";
+import { createHash,timingSafeEqual } from "node:crypto";
+import { readFileSync } from "node:fs";
 import { Pool } from "pg";
 import type { NextRequest } from "next/server";
 import { authorize } from "@/lib/server/authorization";
 import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
 import { database } from "@/lib/server/database";
 import { parseOrganizationAgentDraft, agentValidationReport } from "@/lib/server/agent-studio-validation";
-const { workspaceManifest, workspaceRequest, workspaceArtifact, modelEndpoint }: typeof import("@tanaghom/agent-runtime/workspace")
- = process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`)("@tanaghom/agent-runtime/workspace");
+const requireRuntime=process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`);
+const { workspaceManifest, workspaceRequest, workspaceArtifact }: typeof import("@tanaghom/agent-runtime/workspace")
+ = requireRuntime("@tanaghom/agent-runtime/workspace");
+const { createGeminiWorkspaceClient, GeminiWorkspaceError }: typeof import("@tanaghom/agent-runtime/gemini-workspace")
+ = requireRuntime("@tanaghom/agent-runtime/gemini-workspace");
 
 export class WorkspaceError extends Error { constructor(public code:string,public status=409) { super(code); } }
 const uuid=/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const profileId="7d000000-0000-4000-8000-000000000002";
-const expectedModel="gemma4-26b-a4b-canary";
+const profileId="7d000000-0000-4000-8000-000000000003";
 declare global { var tanaghomWorkspacePool:Pool|undefined; }
-const configured=()=>process.env.AGENCY_WORKSPACE_ENABLED==="true" && Boolean(process.env.GEMMA_API_KEY?.trim()) && Boolean(process.env.AGENCY_WORKSPACE_DATABASE_URL) && (process.env.AGENCY_WORKSPACE_WORKER_TOKEN?.length||0)>=32;
-async function responseJson(response:Response){
- const reader=response.body?.getReader();if(!reader)throw new WorkspaceError("output_rejected");
- const chunks:Uint8Array[]=[];let size=0;
- try{for(;;){const part=await reader.read();if(part.done)break;size+=part.value.byteLength;if(size>100000){await reader.cancel();throw new WorkspaceError("output_rejected");}chunks.push(part.value);}}
- finally{reader.releaseLock();}
- return JSON.parse(Buffer.concat(chunks).toString("utf8"));
+let inventoryCache:{model:string;key:string;expires:number;value:Awaited<ReturnType<ReturnType<typeof createGeminiWorkspaceClient>["inventory"]>>}|null=null;
+function geminiApiKey(){
+ try{
+  const value=readFileSync(/*turbopackIgnore: true*/ process.env.GEMINI_API_KEY_FILE||"/run/secrets/gemini_api_key","utf8").trim();
+  return value.length>=20&&value.length<=500&&!/\s/.test(value)?value:null;
+ }catch{return null;}
 }
+const configured=()=>process.env.AGENCY_WORKSPACE_ENABLED==="true" && Boolean(geminiApiKey()) && Boolean(process.env.AGENCY_WORKSPACE_DATABASE_URL) && (process.env.AGENCY_WORKSPACE_WORKER_TOKEN?.length||0)>=32;
 async function boundedBody(request:NextRequest) {
  const reader=request.body?.getReader(); if(!reader) throw new WorkspaceError("workspace_body_required",400);
  const chunks:Uint8Array[]=[];let size=0;
@@ -52,13 +55,13 @@ export async function workspaceRead(request:NextRequest){
   database().query(`SELECT id,event_type,actor_kind,actor_ref,evidence,occurred_at FROM tanaghom.agency_workspace_events
     WHERE workspace_id=$1 AND organization_id=$2 ORDER BY id LIMIT 100`,[selected.id,actor.organizationId]),
  ]):[{rows:[]},{rows:[]}];
- const c=control.rows[0];
+ const c=control.rows[0];const isConfigured=configured();
  return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
   assignments:list.rows,selected:selected?{...selected,steps:steps.rows,events:events.rows}:null,
   can_manage:actor.role==="owner",can_review:["owner","reviewer"].includes(actor.role),
-  runtime:{ready:configured()&&c?.enabled&&!c.emergency_stop&&!c.platform_stop,
-   reason:!configured()?"The test model worker is not connected yet.":!c?.enabled||c.emergency_stop?c?.reason:c.platform_stop?"Platform emergency stop is active.":"Draft-only model worker configured. Real task results are shown below; no provider actions.",
-   model:expectedModel,external_actions:false,quality_certified:false}};
+  runtime:{ready:isConfigured&&c?.enabled&&!c.emergency_stop&&!c.platform_stop,
+   reason:!isConfigured?"The Gemini model worker is not connected yet.":!c?.enabled||c.emergency_stop?c?.reason:c.platform_stop?"Platform emergency stop is active.":"Draft-only Gemini worker configured. Real task results are shown below; no provider actions.",
+   provider:workspaceManifest.provider.name,model:workspaceManifest.provider.model,external_actions:false,quality_certified:false}};
 }
 
 const policy={business_timezone:"Asia/Amman",business_hours:[],allowed_channels:["instagram","facebook","linkedin","whatsapp"],
@@ -122,12 +125,31 @@ export async function workspaceWrite(request:NextRequest){
  return {id,...r.rows[0]};
 }
 
+function workspaceFailure(error:unknown){
+ if(error instanceof WorkspaceError)return error.code;
+ if(error instanceof GeminiWorkspaceError)return error.code;
+ const code=typeof error==="object"&&error!==null&&"code" in error?(error as {code?:unknown}).code:null;
+ if(typeof code==="string"&&["provider_request_rejected","provider_quota_exceeded","output_rejected","model_unavailable","inference_failed","inference_outcome_unknown"].includes(code))return code;
+ if(code==="workspace_language_mismatch")return "output_rejected";
+ if(error instanceof Error&&["TimeoutError","AbortError"].includes(error.name))return "inference_outcome_unknown";
+ return "output_rejected";
+}
+
+async function verifiedInventory(client:ReturnType<typeof createGeminiWorkspaceClient>,model:string,apiKey:string){
+ const now=Date.now(),key=createHash("sha256").update(apiKey).digest("hex");
+ if(inventoryCache&&inventoryCache.model===model&&inventoryCache.key===key&&inventoryCache.expires>now)return inventoryCache.value;
+ const value=await client.inventory(model);
+ inventoryCache={model,key,expires:now+600000,value};
+ return value;
+}
+
 export async function workspaceTick(request:NextRequest){
  const expected=Buffer.from(process.env.AGENCY_WORKSPACE_WORKER_TOKEN||"");
  const actual=Buffer.from(request.headers.get("authorization")?.replace(/^Bearer /,"")||"");
  if(expected.length<32||actual.length!==expected.length||!timingSafeEqual(expected,actual))throw new WorkspaceError("unauthorized",401);
  const body=await boundedBody(request);closed(body,["action"]);if(body.action!=="tick")throw new WorkspaceError("workspace_action_invalid",400);
- if(!configured())throw new WorkspaceError("workspace_model_not_configured",503);
+ const apiKey=geminiApiKey();
+ if(!configured()||!apiKey)throw new WorkspaceError("workspace_model_not_configured",503);
  const pool=globalThis.tanaghomWorkspacePool??=new Pool({connectionString:process.env.AGENCY_WORKSPACE_DATABASE_URL,max:2,connectionTimeoutMillis:5000,application_name:"tanaghom-workspace-worker"});
  const task=(await pool.query("SELECT tanaghom.claim_agency_workspace_task() AS task")).rows[0].task;
  if(!task)return {claimed:false};
@@ -135,20 +157,15 @@ export async function workspaceTick(request:NextRequest){
  try{
   let output=null;
   if(task.profile!=="executive_summary"){
-   const authorization=`Bearer ${process.env.GEMMA_API_KEY}`;
-   const inventory=await fetch("https://api.thesmartlabs.net/gemma4/v1/models",{headers:{authorization},redirect:"error",signal:AbortSignal.timeout(10000),cache:"no-store"});
-   if(!inventory.ok)throw new WorkspaceError("model_unavailable");
-   const models=await responseJson(inventory);const model=Array.isArray(models.data)?models.data.find((m:{id:string})=>m.id===expectedModel):null;
-   if(!model||task.model!==expectedModel||!Number.isInteger(model.max_model_len))throw new WorkspaceError("model_unavailable");
-   const payload=workspaceRequest(task,model.max_model_len);
-   const response=await fetch(modelEndpoint,{method:"POST",headers:{authorization,"content-type":"application/json"},body:JSON.stringify(payload),
-    redirect:"error",signal:AbortSignal.timeout(workspaceManifest.timeout_ms),cache:"no-store"});
-   if(!response.ok)throw new WorkspaceError("inference_failed");
-   output=await responseJson(response);
+   const client=createGeminiWorkspaceClient({apiKey,timeoutMs:workspaceManifest.timeout_ms});
+   const inventory=await verifiedInventory(client,task.model,apiKey);
+   if(inventory.id!==task.model)throw new WorkspaceError("model_unavailable");
+   const payload=workspaceRequest(task,inventory.inputTokenLimit,inventory.outputTokenLimit);
+   if(!payload)throw new WorkspaceError("output_rejected");
+   output=await client.generate(task.model,payload);
   }
   artifact=workspaceArtifact(task,output,Date.now()-started);
- }catch(error){errorCode=error instanceof WorkspaceError?error.code:error instanceof Error&&["TimeoutError","AbortError","TypeError"].includes(error.name)?"inference_outcome_unknown":"output_rejected";}
+ }catch(error){errorCode=workspaceFailure(error);}
  const completed=(await pool.query("SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,$4) AS result",[task.task_id,task.lease_token,artifact,errorCode])).rows[0].result;
- // n8n receives status only; artifacts remain in the application database.
  return {claimed:true,task_id:task.task_id,...completed};
 }
