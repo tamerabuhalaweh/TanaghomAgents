@@ -2,6 +2,7 @@
   "contract_version": "agency.workspace.v1",
   "source_commit": "1454492577d1af4884722837f491fef14b501e21",
   "mode": "draft_documents_only",
+  "provider": {"code":"google_gemini","name":"Google Gemini","model":"gemini-2.5-flash"},
   "profiles": [
     {"code":"social_media_strategist","name":"Social Media Strategist","role":"Audience & campaign planning","deliverable":"Campaign strategy","instruction":"Prepare an actionable organic campaign strategy: audience needs, positioning, three content pillars, channel-specific messages and a practical one-week cadence. Use only channels explicitly named in the brief. If channels or essential facts are missing, make the missing decisions explicit rather than inventing them. A zero-budget assignment cannot propose paid execution."},
     {"code":"content_creator","name":"Content Creator","role":"Channel-ready writing","deliverable":"Content draft pack","instruction":"Use the shared strategy if present to write three distinct ready-to-review social post drafts with opening, body, call to action and a visual brief. Keep each copy usable, not a description of what someone should write. Respect the source facts and requested channels. Do not invent prices, dates, discounts, testimonials or outcomes. Name any missing information."},

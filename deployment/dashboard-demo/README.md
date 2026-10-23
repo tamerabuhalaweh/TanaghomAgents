@@ -8,6 +8,8 @@ This package runs the existing Tanaghom dashboard against isolated demo infrastr
 - fresh PostgreSQL 17.6 with the repository migration chain and synthetic demo fixtures;
 - a private RustFS bucket for creative uploads and previews;
 - a small internal RS256 auth service with the two synthetic demo accounts;
+- an optional, profile-gated workspace worker that uses a private Gemini key only after explicit
+  operator activation;
 - the dashboard published only on loopback `127.0.0.1:3210`.
 
 The existing canary on `127.0.0.1:3200`, production database, nginx, DNS, TLS, and all real
@@ -34,7 +36,10 @@ fresh demo volumes.
 - The auth service is demo-only and keeps refresh tokens in memory.
 - Image generation, video, segmentation, talking-head, publishing, Postiz/GHL and provider
   execution remain disabled. Disabled image generation returns `image_generation_disabled`.
-- No real database, object-store, provider, or customer credentials are used.
+- The Agency Workspace is disabled by default. Activation requires the operator to install
+  `/opt/tanaghom-demo/runtime/secrets/gemini_api_key` and start the `workspace` Compose profile.
+  The key is never an environment variable or image layer.
+- No real database, object-store, provider, or customer credentials are used by the default demo.
 - Cookies are non-Secure because the supported access path is a loopback SSH tunnel and
   `APP_ENV=demo`; do not expose this listener directly.
 
