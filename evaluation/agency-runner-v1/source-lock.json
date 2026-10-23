@@ -45,7 +45,7 @@
     },
     {
       "path": "evaluation/agency-v1/source-lock.json",
-      "sha256": "8dfdffe4430f3053f6cf1461ae70673f27d119df8a1c08ece63117ee33a24ee6"
+      "sha256": "5a527f541f9d053b2adc95eab5f9ea85bd81c200cdf2927b95625fe9d50fa9aa"
     },
     {
       "path": "scripts/agency-quality-runner.mjs",

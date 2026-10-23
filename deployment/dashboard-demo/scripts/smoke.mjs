@@ -142,7 +142,14 @@ await page(ownerJar, "/creative/templates", "Templates");
 await page(ownerJar, "/creative/designs", "Designs");
 await page(ownerJar, "/creative/motion", "Motion");
 await page(ownerJar, "/team", "Team &amp; access");
-pass("dashboard pages");
+await page(ownerJar, "/workspace", "AI workspace");
+const workspaceResponse = await request("/api/workspace", { jar: ownerJar });
+assert.equal(workspaceResponse.status, 200);
+const workspace = await json(workspaceResponse);
+assert.equal(workspace.runtime.provider, "Google Gemini");
+assert.equal(workspace.runtime.model, "gemini-2.5-flash");
+assert.equal(workspace.runtime.external_actions, false);
+pass("dashboard pages and workspace runtime boundary");
 
 const arabic = await request("/creative", { jar: ownerJar, headers: { Cookie: ownerJar.header("tanaghom_locale=ar") } });
 assert.equal(arabic.status, 200);
