@@ -16,6 +16,11 @@ A focused review found activation, retained-data recovery and compatibility
 gaps. Correction and re-review are needed before merge or deployment. Keep #250
 open until its live acceptance is met.
 
+Fresh registry audit on 2026-11-01 reports critical Next.js and moderate
+fast-uri advisories on main, and a moderate fast-uri advisory on #251. Track
+current patch-level remediation under [#254](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/254);
+historical green CI does not establish today's audit status.
+
 The latest [#243 deployment report](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/243#issuecomment-6336872612)
 records an owner-operated private CPU-VPS demo at `bd21258` on 2026-10-22;
 synthetic smoke passed and owner browser UAT was pending. This is historical,

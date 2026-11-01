@@ -77,6 +77,7 @@ The candidate customer scope and exclusions require explicit acceptance.
 | [#246](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/246) | Offline content policy, draft #247; not authorization to send. |
 | [#250](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/250) | Immediate Gemini workspace: #251 needs corrections and real EN/AR UAT. |
 | [#252](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/252) | Coordinate candidate scope, exclusions and release evidence. |
+| [#254](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/254) | Remediate newly reported Next.js and fast-uri dependency advisories. |
 
 ## Closed issues: historical index
 
