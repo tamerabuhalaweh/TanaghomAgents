@@ -1,8 +1,14 @@
 # Demo dashboard deployment runbook (#243)
 
+> **Release blocked:** This document is historical and does not authorize deployment,
+> activation, upgrade, rollback, or deletion on any host. Its original host and
+> activation instructions have not been reconciled with the current CPU test VPS.
+> Existing demo volumes and secrets must be preserved. A reviewed backup, restore,
+> compatibility and activation procedure, plus a separate deployment GO, are required.
+
 ## Target contract
 
-- Host: Astra `38.247.187.232`.
+- Historical host: Astra `38.247.187.232`; **not an authorized target for this release**.
 - Dashboard listener: only `127.0.0.1:3210`; access through a private SSH tunnel.
 - Existing canary: `127.0.0.1:3200`; never stop, rewrite, reuse, or proxy it.
 - Isolated project/volumes/networks are all prefixed `tanaghom-dashboard-demo`.
@@ -26,9 +32,8 @@ Check out the exact reviewed commit in `source`; the worktree must be clean.
 
 ## Prepare secrets
 
-The deploy script creates these if absent. To recover an empty/partial directory, move it aside
-and rerun `prepare-runtime.sh`; it refuses to overwrite existing files. If the demo database volume
-already exists, reset the disposable volumes too: Postgres applies its password only on first init.
+The deploy script creates these for a fresh demo only. If an existing runtime has missing or
+partial secrets, stop and restore the matching secrets; do not regenerate them or reset volumes.
 
 ```sh
 cd /opt/tanaghom-demo/source
@@ -53,18 +58,9 @@ The workspace is disabled by default and makes no provider call until an operato
 installs a key and activates the isolated worker. Keep the key outside the source tree and never
 put it in an environment variable, image, log, or evidence file.
 
-```sh
-# Operator-supplied key file; replace the path with the private local handoff path.
-test -s /path/to/private/gemini_api_key
-cp /path/to/private/gemini_api_key /opt/tanaghom-demo/runtime/secrets/gemini_api_key
-chmod 0444 /opt/tanaghom-demo/runtime/secrets/gemini_api_key
-
-cd /opt/tanaghom-demo/source
-TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
-AGENCY_WORKSPACE_ENABLED=true \
-  docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml \
-  --profile workspace up -d dashboard workspace-worker
-```
+**Do not activate yet.** Starting the worker and setting the environment flag alone do not
+enable the database workspace control or release the platform emergency stop. A reviewed,
+audited, demo-only control procedure and a full-stack test are still required.
 
 The dashboard reads `/run/secrets/gemini_api_key` on each request; `cp` updates the existing bind
 mount in place. If the key is replaced with a new inode, recreate only the demo dashboard.
@@ -124,14 +120,7 @@ Expected markers: `PARSED_DEMO_COMPOSE_BOUNDARIES_PASSED`, `PASS private S3 uplo
 (the write run also ends with `DEMO_SMOKE_PASSED`).
 
 The write run consumes two seeded approval fixtures and intentionally fails if they are already
-decided. Before rerunning it, reset only the disposable demo volumes, with the reviewed release exported:
-
-```sh
-export TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets
-export TANAGHOM_DEMO_RELEASE=<reviewed-sha>
-docker compose -p tanaghom-dashboard-demo -f compose.yml down --volumes
-docker compose -p tanaghom-dashboard-demo -f compose.yml up -d
-```
+decided. Do not reset retained volumes to repeat it; use an isolated disposable test environment.
 
 Only `127.0.0.1:3210` may be published. Postgres, auth, storage, migration, and bucket-init must
 have no host port bindings.
@@ -166,23 +155,13 @@ Never paste auth tokens, passwords, private keys, or secret files into evidence.
 
 ## Rollback
 
-This removes the demo containers/networks but preserves demo volumes and the canary:
-
-```sh
-cd /opt/tanaghom-demo/source/deployment/dashboard-demo
-TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
-TANAGHOM_DEMO_ROLLBACK_AUTHORIZATION=ROLLBACK-TANAGHOM-243-DEMO \
-  bash scripts/rollback.sh
-```
-
-For a disposable reset, add `TANAGHOM_DEMO_REMOVE_VOLUMES=1`; this deletes demo database and
-bucket data only. Never run global Docker prune commands.
+The old script stopped the application instead of restoring a previous release; it now refuses
+to run. No tested release rollback exists yet. Never delete volumes or run global Docker prune
+commands as a recovery step.
 
 ## Troubleshooting
 
-- Missing/partial runtime secrets: move the directory aside, rerun `prepare-runtime.sh`, and verify
-  the shared files are mode `0444` inside a mode `0700` directory. On an existing runtime, rerun
-  `deploy.sh`; it adds only the missing workspace files and the empty Gemini placeholder.
+- Missing/partial runtime secrets: stop and restore the matching secrets. Never reset retained data.
 - Workspace reports `workspace_model_not_configured`: confirm `AGENCY_WORKSPACE_ENABLED=true`, the
   worker profile is running, and `gemini_api_key` is non-empty. No retry loop is created by a
   missing key.
