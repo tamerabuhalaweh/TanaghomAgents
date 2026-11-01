@@ -62,6 +62,22 @@ put it in an environment variable, image, log, or evidence file.
 enable the database workspace control or release the platform emergency stop. A reviewed,
 audited, demo-only control procedure and a full-stack test are still required.
 
+The draft transaction is `sql/workspace-control.sql`. It requires the exact demo database,
+demo owner, migration baseline, a unique change reference, and the isolated-demo authorization
+marker. It refuses activation when the independent pilot lane, Postiz stop, other runtime jobs,
+or any queued or in-flight pilot/workspace task are unsafe. It atomically records before/after controls and
+either enables the workspace or restores both stops. This is an operator audit record, not
+tamper-proof evidence against the database administrator.
+
+**Critical:** the global stop also covers other agent runtimes. Database checks alone cannot
+prove other workers or gateways are stopped or prevent their concurrent activation. Before
+this transaction can be used, the operator must prove the exact disposable host and Compose
+project, verify all provider execution flags and unrelated workers are disabled, and confirm
+the database is exclusive to this demo. The SQL has only been exercised on disposable PostgreSQL
+18, not the pinned PostgreSQL 17 container. There is no authorization to run it on a server yet.
+Stopping future claims does not cancel an in-flight provider request; wait for it to settle and
+investigate unknown outcomes before taking further action.
+
 The dashboard reads `/run/secrets/gemini_api_key` on each request; `cp` updates the existing bind
 mount in place. If the key is replaced with a new inode, recreate only the demo dashboard.
 Activation logs must contain no key material. Before a normal `deploy.sh`, stop the optional worker
