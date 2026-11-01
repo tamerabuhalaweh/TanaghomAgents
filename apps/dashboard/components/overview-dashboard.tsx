@@ -26,23 +26,24 @@ export function OverviewDashboard() {
   const { data } = operations;
   const description = data.summary.campaigns_total
     ? `${data.summary.campaigns_active} active campaigns, ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`
-    : "The foundation is ready. No campaign or agent work has started yet.";
+    : "No campaign has been created yet. Start with a campaign brief.";
+  const canOperate = ["owner", "operator"].includes(data.current_user.role);
 
   return (
     <div className="page-stack">
-      <PageHeading title="Overview" description={description} actions={<button className="secondary-button" type="button" disabled title="Campaign creation is the next Phase 2 capability">Create campaign</button>} />
+      <PageHeading title="Overview" description={description} actions={canOperate ? <Link href="/campaigns?create=1" className="secondary-button" data-testid="overview-create-campaign-link">Create campaign</Link> : undefined} />
 
       <section className="attention-section" aria-labelledby="attention-title">
         <div className="section-heading">
           <div><div className="title-with-count"><h2 id="attention-title">Needs your attention</h2><span>{data.summary.approvals_pending}</span></div><p>Human decisions that currently block publishing work.</p></div>
           <Link href="/approvals" className="text-link">Open approvals <ArrowRight size={16} /></Link>
         </div>
-        {data.summary.approvals_pending === 0 ? <div className="attention-clear"><CheckCircle2 size={20} /><div><strong>No decisions are waiting</strong><span>New drafts will appear after Phase 3 agent work begins.</span></div></div> : <div className="attention-clear"><div><strong>{data.summary.approvals_pending} decisions are waiting</strong><span>Open the approval workspace to review source content and context.</span></div></div>}
+        {data.summary.approvals_pending === 0 ? <div className="attention-clear"><CheckCircle2 size={20} /><div><strong>No decisions are waiting</strong><span>New drafts appear here when agents submit work for human review.</span></div></div> : <div className="attention-clear"><div><strong>{data.summary.approvals_pending} decisions are waiting</strong><span>Open the approval workspace to review source content and context.</span></div></div>}
       </section>
 
       <section className="handoff-section" aria-labelledby="handoff-title">
         <div className="section-heading compact-heading"><div><h2 id="handoff-title">Agent handoff</h2><p>Current jobs from the authoritative agent queue.</p></div><Link href="/agents" className="text-link">View agents <ArrowRight size={16} /></Link></div>
-        {data.agents.length ? <ol className="handoff-rail">{data.agents.map((agent, index) => <li key={agent.id}><div className="agent-identity"><span className="agent-avatar">{agent.code.slice(0, 2).toUpperCase()}</span><div><strong>{agent.name}</strong><StatusPill tone={agent.current_job_status === "running" ? "working" : "neutral"}>{agent.current_job_status || agent.status}</StatusPill></div></div><p>{agent.current_job_type ? agent.current_job_type.replaceAll("_", " ") : "No live job"}</p>{index < data.agents.length - 1 ? <ArrowRight className="handoff-arrow" size={18} aria-hidden="true" /> : null}</li>)}</ol> : <DomainEmpty title="No agents are activated" description="Agent roles are defined, but the live workflows begin in Phase 3." detail="No hidden or simulated jobs are shown." />}
+        {data.agents.length ? <ol className="handoff-rail">{data.agents.map((agent, index) => <li key={agent.id}><div className="agent-identity"><span className="agent-avatar">{agent.code.slice(0, 2).toUpperCase()}</span><div><strong>{agent.name}</strong><StatusPill tone={agent.current_job_status === "running" ? "working" : "neutral"}>{agent.current_job_status || agent.status}</StatusPill></div></div><p>{agent.current_job_type ? agent.current_job_type.replaceAll("_", " ") : "No live job"}</p>{index < data.agents.length - 1 ? <ArrowRight className="handoff-arrow" size={18} aria-hidden="true" /> : null}</li>)}</ol> : <DomainEmpty title="No agents are activated" description="No agent job is currently queued or running." detail="No hidden or simulated jobs are shown." />}
       </section>
 
       <section className="campaign-section" aria-labelledby="campaign-title">

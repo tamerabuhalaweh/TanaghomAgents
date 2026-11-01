@@ -343,3 +343,13 @@ test("public dashboard ingress enables secure cookies without exposing n8n", asy
   assert.match(rollback, /rm -f "\$NGINX_TARGET"/);
   assert.doesNotMatch(compose + nginx + deploy + rollback, /5678|webhook|n8n/);
 });
+
+test("overview create-campaign entry links to the implemented campaign flow without stale phase copy", async () => {
+  const overview = await readFile(new URL("components/overview-dashboard.tsx", dashboard), "utf8");
+  const campaigns = await readFile(new URL("components/campaigns-view.tsx", dashboard), "utf8");
+  assert.match(overview, /<Link href="\/campaigns\?create=1"[^>]*>Create campaign<\/Link>/);
+  assert.match(overview, /\["owner", "operator"\]\.includes\(data\.current_user\.role\)/);
+  assert.doesNotMatch(overview, /Phase [0-9]|disabled title=/);
+  assert.match(campaigns, /get\("create"\) !== "1"/);
+  assert.match(campaigns, /if \(!canOperate/);
+});
