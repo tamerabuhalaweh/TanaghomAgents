@@ -160,7 +160,10 @@ export async function workspaceTick(request:NextRequest){
  const apiKey=geminiApiKey();
  if(!configured())throw new WorkspaceError("workspace_model_not_configured",503);
  const pool=globalThis.tanaghomWorkspacePool??=new Pool({connectionString:process.env.AGENCY_WORKSPACE_DATABASE_URL,max:2,connectionTimeoutMillis:5000,application_name:"tanaghom-workspace-worker"});
- const task=(await pool.query("SELECT tanaghom.claim_agency_workspace_task() AS task")).rows[0].task;
+ const availableModels:string[]=[];
+ if(process.env.GEMMA_API_KEY?.trim())availableModels.push("7d000000-0000-4000-8000-000000000002");
+ if(apiKey)availableModels.push("7d000000-0000-4000-8000-000000000003");
+ const task=(await pool.query("SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[]) AS task",[availableModels])).rows[0].task;
  if(!task)return {claimed:false};
  let artifact=null,errorCode:string|null=null;const started=Date.now();
  try{

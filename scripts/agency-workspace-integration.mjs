@@ -57,6 +57,8 @@ try{
  await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,id,bindingIds,model]);
  await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,id,bindingIds,model]);
  assert.equal(Number((await query('SELECT count(*) FROM tanaghom.agency_workspace_steps WHERE workspace_id=$1',[id])).rows[0].count),6);count++;console.log('PASS duplicate start creates exactly six tasks');
+ await reject('worker missing queued model credential refuses before claiming','SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[])',[["7d000000-0000-4000-8000-000000000002"]]);
+ assert.equal(Number((await query("SELECT count(*) FROM tanaghom.agency_pilot_tasks WHERE correlation_id=$1 AND status='in_progress'",[id])).rows[0].count),0);
  await query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=false,model_execution_enabled=true');
  assert.equal((await query('SELECT * FROM tanaghom.claim_agency_pilot()')).rowCount,0);count++;console.log('PASS frozen simulator cannot claim workspace lane');
  let generated=0;
