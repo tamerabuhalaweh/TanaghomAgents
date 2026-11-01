@@ -1,5 +1,42 @@
 # Tanaghom status and next work
 
+## Current release coordination — 2026-11-01
+
+Tamer directed the team to advance the go-live plan while deferring GoHighLevel
+for this pass. Track the candidate scope in [#252](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/252):
+real, human-reviewed specialist work, with Postiz separately accepted if included.
+Deferred GHL/WhatsApp work is not complete; the broader customer gate #125 stays
+open until its own criteria are met.
+
+GitHub main at this review was `bd21258ddba9a5b7dd0a66d18ed1c7fbf9a43856`.
+Draft [#251](https://github.com/tamerabuhalaweh/TanaghomAgents/pull/251),
+head `e5302b42f7003db58ca62984fe871326f8de0f40`, proposes the Gemini workspace
+under #250 and has 43/43 historical CI checks passed, with no real model calls.
+A focused review found activation, retained-data recovery and compatibility
+gaps. Correction and re-review are needed before merge or deployment. Keep #250
+open until its live acceptance is met.
+
+Fresh registry audit on 2026-11-01 reports critical Next.js and moderate
+fast-uri advisories on main, and a moderate fast-uri advisory on #251. Track
+current patch-level remediation under [#254](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/254);
+historical green CI does not establish today's audit status.
+
+The latest [#243 deployment report](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/243#issuecomment-6336872612)
+records an owner-operated private CPU-VPS demo at `bd21258` on 2026-10-22;
+synthetic smoke passed and owner browser UAT was pending. This is historical,
+not a fresh runtime observation. Later #243 comments make #250 the priority.
+Older 38.247/155.117 descriptions below are historical; do not infer current
+health or target a host from them. Preserve existing demo volumes and approval
+fixtures: stale reset/host guidance in the demo runbook is not an approved
+upgrade procedure. Synthetic auth and loopback access are not production auth.
+
+The [issue-by-issue release map](planning/GO_LIVE_ISSUE_MAP.md) records the
+backlog at this snapshot. The September 60/100 score below is historical for a
+different release scope, not a current measurement. Customer production remains
+NO-GO until applicable release gates have fresh evidence.
+
+## Historical status — 2026-09-06
+
 ## Latest authorized delivery: cooperating specialist workspace
 
 Tamer authorized implementation and test deployment of a customer-visible

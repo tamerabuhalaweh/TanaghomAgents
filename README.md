@@ -15,8 +15,10 @@ work while a human remains the required approval gate for public content.
 - [AI organization expansion plan and issue ownership](docs/planning/agency-expansion/README.md)
 - [Complete 273-profile future agent catalog](docs/planning/agency-expansion/CATALOG.md)
 
-The expansion is planning-only. Catalogued profiles are not imported, tested,
-available or active agents. GitHub records engineering decisions and source;
+The broader department catalog is a future roadmap, not a list of installed
+or certified agents. A bounded six-step workspace has source implementation;
+its Gemini successor needs review and live-model acceptance. See [current
+status](docs/STATUS.md). GitHub records engineering decisions and source;
 PostgreSQL remains the operational business-state authority.
 
 ## Product principles
@@ -65,10 +67,9 @@ npm run build:dashboard
 
 The n8n editor is an engineering console and is not the customer-facing product.
 
-The authenticated dashboard canary is available at
-[tanaghom.38-247-187-232.sslip.io](https://tanaghom.38-247-187-232.sslip.io/).
-The public virtual host proxies only the dashboard; n8n and webhook ingress
-remain private.
+The older public dashboard address in historical records is not a verified
+current product link. The latest documented installation is a private demo;
+consult [current status](docs/STATUS.md) and #243 before selecting a host.
 
 ## Browser testing
 
@@ -78,13 +79,13 @@ redirect, and protected Agent Studio API boundaries.
 
 ```bash
 npm run test:e2e:install
-PLAYWRIGHT_BASE_URL=https://tanaghom.38-247-187-232.sslip.io npm run test:e2e
+PLAYWRIGHT_BASE_URL=https://example.invalid npm run test:e2e
 ```
 
 In PowerShell, set the URL for the current process before running the suite:
 
 ```powershell
-$env:PLAYWRIGHT_BASE_URL = "https://tanaghom.38-247-187-232.sslip.io"
+$env:PLAYWRIGHT_BASE_URL = "https://example.invalid"
 npm run test:e2e
 ```
 

@@ -4,6 +4,13 @@ Read [STATUS.md](STATUS.md) first, then the linked active issue and architecture
 decisions. This file is the handoff contract; no developer should need a chat
 transcript to locate the current implementation or approved next step.
 
+**2026-11-01 handoff:** start with [STATUS.md](STATUS.md),
+[#252](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/252) and the
+[issue map](planning/GO_LIVE_ISSUE_MAP.md). Older environment statements below
+are dated history, not proof of a current host or deployment authority. #250
+proposes a Gemini demo; draft #251 needs correction and real-model acceptance.
+GHL is deferred for this pass. Do not change other projects or remove demo data.
+
 ## Project boundary
 
 - Repository: `tamerabuhalaweh/TanaghomAgents`.
