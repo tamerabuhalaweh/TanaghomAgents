@@ -293,12 +293,15 @@ test("remote reads are streamed, bounded, deadline-covered, and sanitized", asyn
   const make = (fetchImpl, deadlineMs = 5000) => createS3Storage({ ...credentials, fetchImpl, deadlineMs });
 
   let cancelled = 0;
-  const oversize = make(async () => new Response(streamOf([new Uint8Array(60), new Uint8Array(60)], () => { cancelled += 1; }), { status: 200 }));
+  // Keep unread data available after the limit is crossed. Otherwise a stream
+  // may pre-close before reader.cancel(), so its underlying cancel callback is
+  // not invoked even though the size guard correctly rejects the response.
+  const oversize = make(async () => new Response(streamOf([new Uint8Array(60), new Uint8Array(60), new Uint8Array(1)], () => { cancelled += 1; }), { status: 200 }));
   await assert.rejects(oversize.get(KEY, 100), /object_size_exceeded/);
   assert.equal(cancelled, 1);
 
   let declaredCancel = 0;
-  const lyingLength = make(async () => new Response(streamOf([new Uint8Array(1000)], () => { declaredCancel += 1; }), {
+  const lyingLength = make(async () => new Response(streamOf([new Uint8Array(1000), new Uint8Array(1)], () => { declaredCancel += 1; }), {
     status: 200, headers: { "content-length": "10" },
   }));
   await assert.rejects(lyingLength.get(KEY, 500), /object_size_exceeded/);

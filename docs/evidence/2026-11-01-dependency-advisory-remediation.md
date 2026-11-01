@@ -11,6 +11,13 @@ existing audit threshold. Regenerating the lockfile changed only those package
 versions and their associated `@next/*` components; npm also reconciled
 existing workspace/dependency metadata. It added or removed no lockfile entries.
 
+The original creative-storage streaming test also failed on the unchanged
+`bd21258` baseline under Windows Node 24.22.1: its short fake stream could close
+before the cancellation callback, despite correctly rejecting oversized input.
+The test fixture now leaves unread data after crossing the byte limit, so it
+continues to assert both bounded rejection and actual cancellation of an open
+stream. This is a test-fixture correction, not a storage runtime change.
+
 The agency evaluation source locks hash normalized UTF-8/LF text. The documented
 source freeze is re-taken solely because `package-lock.json` changed: its
 normalized hash is `e6580989388f6d7ed10b094c8f3fea24c548406516e9631680a2238f07a3c70d`.
