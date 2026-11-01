@@ -17,6 +17,7 @@
   },
   "scripts": {
     "test:agency-workspace": "node scripts/agency-workspace-integration.mjs --browser",
+    "test:demo-workspace-control": "node scripts/demo-workspace-control-integration.mjs",
     "test:agency-quality-runner": "node scripts/run-historical-agency-harness.mjs quality",
     "check:agency-quality-prerequisites": "node evaluation/agency-runner-v1/prerequisites.mjs",
     "test:agency-quality-preparation": "node scripts/agency-quality-preparation.mjs",
