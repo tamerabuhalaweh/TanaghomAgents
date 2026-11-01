@@ -1,6 +1,8 @@
 # Go-live issue map — 2026-11-01
 
-GitHub issue snapshot reviewed against main `bd21258ddba9a5b7dd0a66d18ed1c7fbf9a43856`.
+GitHub issue snapshot reviewed against main `bd21258ddba9a5b7dd0a66d18ed1c7fbf9a43856`;
+source-only creative issues #225 and #227 were closed after their historical
+merged implementation and CI evidence were reconciled later on 2026-11-01.
 Live issues and comments may change. This is an index and release disposition,
 not a claim that each acceptance criterion passed or a host was checked.
 
@@ -69,8 +71,6 @@ The candidate customer scope and exclusions require explicit acceptance.
 | Issue | Disposition |
 | --- | --- |
 | [#221](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/221) | Creative epic: source slices exist; real-provider/production gates are separate. |
-| [#225](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/225) | Creative foundation: reconcile acceptance against source and runtime gates. |
-| [#227](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/227) | Creative Studio/brand kits: acceptance remains open. |
 | [#229](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/229) | Real image lane: provider acceptance is not proven by stubs. |
 | [#239](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/239) | Talking-head/lip-sync broader acceptance open; #240 source slice closed. |
 | [#243](https://github.com/tamerabuhalaweh/TanaghomAgents/issues/243) | Deployment/demo history: reconcile actual host/state and protect other workloads. |
@@ -81,10 +81,10 @@ The candidate customer scope and exclusions require explicit acceptance.
 
 ## Closed issues: historical index
 
-At the snapshot, 41 issues were closed: #1, #2, #4, #7, #8, #12, #13, #31,
+At this snapshot, 43 issues were closed: #1, #2, #4, #7, #8, #12, #13, #31,
 #32, #35, #37, #39, #41, #49, #51, #52, #62, #85, #87, #89, #93, #98,
 #100, #108, #117, #128, #132, #133, #134, #135, #192, #200, #204, #205,
-#231, #232, #234, #236, #240, #242 and #245. Inspect linked source and dated
+#225, #227, #231, #232, #234, #236, #240, #242 and #245. Inspect linked source and dated
 evidence before claiming a closed implementation slice is active today.
 
 The old 60/100 scorecard predates this demo and excludes expansion/creative
