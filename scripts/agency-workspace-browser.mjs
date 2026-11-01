@@ -34,7 +34,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   server.listen(43191,'127.0.0.1');await once(server,'listening');
   app=spawn(process.execPath,['node_modules/next/dist/bin/next','start','apps/dashboard','-p','43192','-H','127.0.0.1'],{env:{...process.env,
    APP_ENV:'integration',DATABASE_URL:databaseUrl,SUPABASE_URL:authOrigin,SUPABASE_JWKS_URL:`${authOrigin}/auth/v1/.well-known/jwks.json`,SUPABASE_PUBLISHABLE_KEY:'disposable-public-key',SUPABASE_SECRET_KEY:'',
-   AGENCY_WORKSPACE_ENABLED:'true',AGENCY_WORKSPACE_DATABASE_URL:workerUrl,GEMINI_API_KEY_FILE:keyFile,AGENCY_WORKSPACE_WORKER_TOKEN:'disposable-workspace-worker-token-32-characters',
+   AGENCY_WORKSPACE_ENABLED:'true',AGENCY_WORKSPACE_PROVIDER:'gemini',AGENCY_WORKSPACE_DATABASE_URL:workerUrl,GEMINI_API_KEY_FILE:keyFile,AGENCY_WORKSPACE_WORKER_TOKEN:'disposable-workspace-worker-token-32-characters',
    AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED:'false',AGENCY_PILOT_GATEWAY_ENABLED:'false',POSTIZ_HANDOFF_ENABLED:'false',GHL_CONTACT_HANDOFF_ENABLED:'false'},stdio:['ignore','pipe','pipe']});
   app.stdout.on('data',c=>{logs+=c});app.stderr.on('data',c=>{logs+=c});
   for(let i=0;i<100;i++){if(app.exitCode!==null)throw new Error(logs);try{if((await fetch(`${origin}/api/health`)).ok)break;}catch{}await new Promise(r=>setTimeout(r,250));}

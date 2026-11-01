@@ -14,6 +14,7 @@ DO $$ BEGIN
 END $$;
 
 ALTER TABLE tanaghom.agent_runtime_profiles DISABLE TRIGGER agent_runtime_profile_immutable;
+DROP FUNCTION tanaghom.claim_agency_workspace_task_for_models(uuid[]);
 DELETE FROM tanaghom.agent_runtime_profiles WHERE id='7d000000-0000-4000-8000-000000000003';
 ALTER TABLE tanaghom.agent_runtime_profiles ENABLE TRIGGER agent_runtime_profile_immutable;
 

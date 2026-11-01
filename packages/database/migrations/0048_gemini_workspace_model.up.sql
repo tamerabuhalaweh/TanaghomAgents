@@ -97,5 +97,24 @@ DO $$ DECLARE original text; BEGIN
   '''model_unavailable'',''workspace_stopped'',''provider_request_rejected'',''provider_quota_exceeded''');
 END $$;
 
+-- Do not claim a retained task if this worker lacks the corresponding model
+-- credential. Use the same advisory lock as queue creation and claiming.
+CREATE FUNCTION tanaghom.claim_agency_workspace_task_for_models(p_models uuid[])
+RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=pg_catalog,pg_temp AS $$
+BEGIN
+ PERFORM pg_advisory_xact_lock(hashtextextended('workspace-claim',0));
+ IF p_models IS NULL OR cardinality(p_models)=0 OR array_position(p_models,NULL) IS NOT NULL
+ OR NOT (p_models <@ ARRAY['7d000000-0000-4000-8000-000000000002'::uuid,'7d000000-0000-4000-8000-000000000003'::uuid])
+ THEN RAISE EXCEPTION 'workspace worker model configuration invalid'; END IF;
+ IF EXISTS(SELECT 1 FROM tanaghom.agency_pilot_tasks a
+  JOIN tanaghom.agency_workspace_steps s ON s.task_id=a.id
+  JOIN tanaghom.agency_workspaces w ON w.id=s.workspace_id
+  WHERE a.status='queued' AND w.status IN ('queued','running') AND NOT (a.model_profile_id=ANY(p_models)))
+ THEN RAISE EXCEPTION 'workspace queued model is unavailable to worker'; END IF;
+ RETURN tanaghom.claim_agency_workspace_task();
+END $$;
+REVOKE ALL ON FUNCTION tanaghom.claim_agency_workspace_task_for_models(uuid[]) FROM PUBLIC;
+GRANT EXECUTE ON FUNCTION tanaghom.claim_agency_workspace_task_for_models(uuid[]) TO tanaghom_agency_pilot_worker;
+
 INSERT INTO public.schema_migrations(version) VALUES('0048_gemini_workspace_model');
 COMMIT;
