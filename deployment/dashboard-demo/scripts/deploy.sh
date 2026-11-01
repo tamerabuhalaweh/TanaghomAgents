@@ -16,8 +16,16 @@ test "$release" = "$expected_release"
 
 # This script is only safe for a fresh demo. An existing database requires a
 # separately reviewed, backup-verified upgrade and rollback procedure.
-if docker volume inspect tanaghom-dashboard-demo-pgdata >/dev/null 2>&1 ||
-   docker volume inspect tanaghom-dashboard-demo-rustfsdata >/dev/null 2>&1; then
+if ! docker info >/dev/null 2>&1; then
+  echo "DOCKER_UNAVAILABLE: cannot establish whether demo volumes exist" >&2
+  exit 1
+fi
+if ! volumes="$(docker volume ls --format '{{.Name}}')"; then
+  echo "DEMO_VOLUME_DISCOVERY_FAILED: cannot verify retained data" >&2
+  exit 1
+fi
+if grep -Fxq 'tanaghom-dashboard-demo-pgdata' <<<"$volumes" ||
+   grep -Fxq 'tanaghom-dashboard-demo-rustfsdata' <<<"$volumes"; then
   echo "EXISTING_DEMO_UPGRADE_BLOCKED: retain volumes and secrets; use a reviewed data-preserving upgrade" >&2
   exit 1
 fi
