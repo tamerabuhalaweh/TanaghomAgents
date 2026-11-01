@@ -14,6 +14,14 @@ test -z "$(git status --porcelain)"
 release="$(git rev-parse HEAD)"
 test "$release" = "$expected_release"
 
+# This script is only safe for a fresh demo. An existing database requires a
+# separately reviewed, backup-verified upgrade and rollback procedure.
+if docker volume inspect tanaghom-dashboard-demo-pgdata >/dev/null 2>&1 ||
+   docker volume inspect tanaghom-dashboard-demo-rustfsdata >/dev/null 2>&1; then
+  echo "EXISTING_DEMO_UPGRADE_BLOCKED: retain volumes and secrets; use a reviewed data-preserving upgrade" >&2
+  exit 1
+fi
+
 test "$(df --output=avail -BG / | tail -1 | tr -dc '0-9')" -ge 10
 required_secrets="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem s3_access_key s3_secret_key workspace_password workspace_database_url workspace_worker_token"
 augment_workspace_secrets() {
@@ -54,7 +62,7 @@ if [ ! -e "$secrets_dir/gemini_api_key" ] || [ -L "$secrets_dir/gemini_api_key" 
   missing="$missing gemini_api_key"
 fi
 if [ -n "$missing" ]; then
-  echo "partial or unsafe demo secrets:$missing; move $secrets_dir aside and reset demo volumes before regenerating" >&2
+  echo "partial or unsafe demo secrets:$missing; stop and restore the matching secrets" >&2
   exit 1
 fi
 for name in $required_secrets; do chmod 0444 "$secrets_dir/$name"; done

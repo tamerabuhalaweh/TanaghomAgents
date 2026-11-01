@@ -63,7 +63,8 @@ BEGIN
  OR NOT EXISTS(SELECT 1 FROM tanaghom.agent_runtime_controls WHERE NOT emergency_stop)
  THEN RAISE EXCEPTION 'workspace runtime stopped'; END IF;
  IF p_bindings IS NULL OR cardinality(p_bindings)<>cardinality(w.profile_codes) OR
- NOT EXISTS(SELECT 1 FROM tanaghom.agent_runtime_profiles WHERE id=p_model AND id='7d000000-0000-4000-8000-000000000003' AND lifecycle_state='validated')
+ NOT EXISTS(SELECT 1 FROM tanaghom.agent_runtime_profiles WHERE id=p_model AND id IN
+  ('7d000000-0000-4000-8000-000000000002','7d000000-0000-4000-8000-000000000003') AND lifecycle_state='validated')
  THEN RAISE EXCEPTION 'workspace bindings or model invalid'; END IF;
  FOR i IN 1..cardinality(w.profile_codes) LOOP
   SELECT * INTO b FROM tanaghom.agency_pilot_bindings WHERE id=p_bindings[i] AND organization_id=w.organization_id
