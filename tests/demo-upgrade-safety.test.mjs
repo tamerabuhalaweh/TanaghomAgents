@@ -8,8 +8,11 @@ test('demo bootstrap refuses existing data before modifying secrets or services'
   assert.ok(guard > 0);
   assert.ok(guard < script.indexOf('augment_workspace_secrets()'));
   assert.ok(guard < script.indexOf('"${compose[@]}" up -d'));
-  assert.match(script, /docker volume inspect tanaghom-dashboard-demo-pgdata/);
-  assert.match(script, /docker volume inspect tanaghom-dashboard-demo-rustfsdata/);
+  assert.ok(script.indexOf('DOCKER_UNAVAILABLE') < guard);
+  assert.match(script, /docker volume ls --format/);
+  assert.match(script, /DEMO_VOLUME_DISCOVERY_FAILED/);
+  assert.match(script, /grep -Fxq 'tanaghom-dashboard-demo-pgdata'/);
+  assert.match(script, /grep -Fxq 'tanaghom-dashboard-demo-rustfsdata'/);
 });
 
 test('unreviewed demo rollback cannot remove containers or volumes', async () => {
