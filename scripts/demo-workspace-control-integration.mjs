@@ -33,6 +33,12 @@ try {
  await pool.query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=false');
  assert.throws(()=>run('enable','pilot-open-001'));
  await pool.query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=true');
+ await pool.query("UPDATE tanaghom.automation_platform_controls SET emergency_stop=false WHERE provider='postiz'");
+ assert.throws(()=>run('enable','postiz-open-001'));
+ await pool.query("UPDATE tanaghom.automation_platform_controls SET emergency_stop=true WHERE provider='postiz'");
+ await pool.query('UPDATE tanaghom.agent_runtime_controls SET emergency_stop=false');
+ assert.throws(()=>run('enable','platform-open-01'));
+ await pool.query('UPDATE tanaghom.agent_runtime_controls SET emergency_stop=true');
  assert.deepEqual(await state(),stopped);
  run('enable','enable-test-001');
  assert.deepEqual(await state(),{enabled:true,emergency_stop:false,platform_stop:false});
@@ -41,7 +47,7 @@ try {
  assert.throws(()=>run('enable','enable-test-001'));
  assert.deepEqual(await state(),stopped,'duplicate audit key rolls the whole switch transaction back');
  assert.equal(Number((await pool.query('SELECT count(*) FROM tanaghom.demo_workspace_control_audit')).rows[0].count),2);
- console.log('PASS isolated PostgreSQL 17: demo control target, authorization, pilot stop, audited enable/stop and duplicate rollback');
+ console.log('PASS isolated PostgreSQL 17: target, authorization, pilot/Postiz/platform stops, audited enable/stop and duplicate rollback');
 } finally {
  if(pool)await pool.end();
  if(created){const owned=JSON.parse(docker(['inspect',name]))[0];
