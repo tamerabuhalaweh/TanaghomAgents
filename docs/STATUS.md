@@ -235,3 +235,24 @@ date and exact completion gate. A live issue is current work coordination;
 its versioned snapshot and PR evidence are the recoverable history. Do not
 reuse an old percentage as a new production-readiness measurement. Use the
 versioned scorecard and distinguish unknown runtime evidence from a broken feature.
+
+## 2026-11-05 — demo host: 0047→0048 upgrade proven, #250 blocked by billing
+
+On the disposable host `13.60.253.82` the #259 upgrade path was executed end to
+end against a baseline produced by the released revision (`99a95c5`, 44
+migrations, ledger `0047_smartlabs_audio`): `BACKUP_VERIFIED` → deliberate
+`RESTORE_COMPLETE` at `0047` → `UPGRADE_COMPLETE` at `0048`, with row-count
+deltas of exactly `schema_migrations 44->45` and `agent_runtime_profiles 2->3`,
+an unchanged object-store inventory, and a pre-upgrade canary row byte-identical
+across upgrade and restore. Eight defects in the backup/upgrade/restore scripts
+were found by that execution and fixed on `fix/259-upgrade-stack`.
+Details: [evidence](evidence/2026-11-05-demo-host-259-250.md).
+
+The six-specialist #250 acceptance was **attempted and did not pass**. The
+Gemini credential is valid (`models` list returns 200 with 60 models including
+`gemini-2.5-flash`) but `generateContent` returns 402 "prepayment credits are
+depleted", so the run failed closed: `social_media_strategist` recorded
+`inference_failed` and the remaining five steps stayed queued. No Gemini
+document exists and no acceptance claim is made. The workspace control is
+stopped, the polling worker is down and the key has been wiped from the host.
+Completing #250 needs credit on the Gemini project, not a code change.

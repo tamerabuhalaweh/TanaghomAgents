@@ -6,7 +6,7 @@ set -euo pipefail
 
 usage() {
   cat >&2 <<'EOF'
-usage: workspace-control.sh <status|enable|stop> [options]
+usage: workspace-control.sh <status|enable|stop|disable> [options]
 
   --change-id <ref>       required for enable/stop; 8-80 chars [A-Za-z0-9._:-]
   --authorization <marker> must be APPROVED-ISOLATED-DEMO-CONTROL for enable/stop
@@ -20,10 +20,13 @@ EOF
 
 action="${1:-}"
 case "$action" in
-  status|enable|stop) shift ;;
+  status|enable|stop|disable) shift ;;
   -h|--help) usage; exit 0 ;;
   *) usage; exit 2 ;;
 esac
+
+# "disable" is the fail-closed spelling operators ask for; it means the same stop.
+if [ "$action" = disable ]; then action=stop; fi
 
 compose_dir="$(cd "$(dirname "$0")/.." && pwd)"
 change_id=""
