@@ -256,3 +256,8 @@ depleted", so the run failed closed: `social_media_strategist` recorded
 document exists and no acceptance claim is made. The workspace control is
 stopped, the polling worker is down and the key has been wiped from the host.
 Completing #250 needs credit on the Gemini project, not a code change.
+
+The #259 remediation is green and stacked: `fix/259-upgrade-stack` rebases onto
+the #255 + #260 dependency-advisory stack, CI run `42017684024` passed 43/43
+jobs, and PR #261 is open against #260 for merge review. Closing #250 still
+needs Gemini credit; nothing else in the release gate is outstanding.
