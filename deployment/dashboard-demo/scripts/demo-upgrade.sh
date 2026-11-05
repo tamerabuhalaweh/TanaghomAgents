@@ -20,6 +20,7 @@ before_ledger="$(ledger_tail)"
   refuse "expected the 0047 baseline, found ledger '$before_ledger'"
 table_counts > "$dir/counts-upgrade-before.txt"
 before_profiles="$(psql_demo -c "SELECT count(*) FROM tanaghom.agent_runtime_profiles")"
+before_rows="$(ledger_count)"
 
 # Quiesce the application; the database stays up and keeps all rows.
 compose stop dashboard >/dev/null 2>&1 || true
@@ -37,7 +38,6 @@ table_counts > "$dir/counts-upgrade-after.txt"
 report="$(count_delta_report "$dir/counts-upgrade-before.txt" "$dir/counts-upgrade-after.txt")"
 # count_delta_report prints "table before->after" with a space, and the ledger grows
 # by exactly the migration that was just applied, whatever its number.
-before_rows="$(ledger_count)"
 unexpected="$(printf '%s\n' "$report" |
   grep -vE "^(public\.schema_migrations ${before_rows}->$((before_rows + 1))|tanaghom\.agent_runtime_profiles ${before_profiles}->[0-9]+)$" |
   grep -v '^$' || true)"
