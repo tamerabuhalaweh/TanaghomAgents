@@ -27,7 +27,7 @@ echo "Restoring database from $dir"
 # the two demo schemas are reset first and the dump is restored into them. This
 # replaces all rows by construction: nothing of the current state survives.
 compose exec -T postgres psql -X -v ON_ERROR_STOP=1 -U postgres -d tanaghom_demo \
-  -c "DROP SCHEMA IF EXISTS tanaghom CASCADE; DROP SCHEMA IF EXISTS public CASCADE; CREATE SCHEMA public;"
+  -c "DROP SCHEMA IF EXISTS tanaghom CASCADE; DROP SCHEMA IF EXISTS public CASCADE;"
 compose exec -T postgres pg_restore -U postgres -d tanaghom_demo \
   --no-owner --exit-on-error < "$dir/database.dump"
 
