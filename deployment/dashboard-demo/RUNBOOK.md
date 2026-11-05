@@ -62,7 +62,7 @@ put it in an environment variable, image, log, or evidence file.
 enable the database workspace control or release the platform emergency stop. A reviewed,
 audited, demo-only control procedure and a full-stack test are still required.
 
-The draft transaction is `sql/workspace-control.sql`. It requires the exact demo database,
+Activate only through the reviewed wrapper `scripts/workspace-control.sh enable --change-id <ref> --authorization APPROVED-ISOLATED-DEMO-CONTROL`, which runs `sql/workspace-control.sql` after proving no other compose project runs on the host. The transaction requires the exact demo database,
 demo owner, migration baseline, a unique change reference, and the isolated-demo authorization
 marker. It refuses activation when the independent pilot lane, Postiz stop, other runtime jobs,
 or any queued or in-flight pilot/workspace task are unsafe. It atomically records before/after controls and
@@ -169,10 +169,32 @@ curl --fail --silent http://127.0.0.1:3210/api/health
 
 Never paste auth tokens, passwords, private keys, or secret files into evidence.
 
+## Data-preserving upgrade and restore (#259)
+
+Both procedures require a verified snapshot and an explicit authorization marker, and neither
+deletes a volume. Run them on the disposable demo host only.
+
+```sh
+cd <source>
+export TANAGHOM_DEMO_ROOT=/opt/tanaghom-demo
+bash deployment/dashboard-demo/scripts/demo-backup.sh
+TANAGHOM_DEMO_UPGRADE_AUTHORIZATION=GO-UPGRADE-TANAGHOM-259-DEMO \
+  bash deployment/dashboard-demo/scripts/demo-upgrade.sh
+TANAGHOM_DEMO_RESTORE_AUTHORIZATION=GO-RESTORE-TANAGHOM-259-DEMO \
+  bash deployment/dashboard-demo/scripts/demo-restore.sh
+```
+
+`demo-backup.sh` writes a custom-format dump, a RustFS archive, per-table row counts and a
+checksum manifest, then verifies all three before linking `runtime/backups/latest`.
+`demo-upgrade.sh` refuses unless the ledger is exactly `0047_smartlabs_audio`, applies the pending
+migrations in place, and fails if any table's row count changes other than `schema_migrations`
+(+1) and `agent_runtime_profiles` (+1). `demo-restore.sh` restores the dump and the object archive
+and re-proves every row count and the object inventory against the manifest.
+
 ## Rollback
 
 The old script stopped the application instead of restoring a previous release; it now refuses
-to run. No tested release rollback exists yet. Never delete volumes or run global Docker prune
+to run. Use `scripts/demo-restore.sh`; it re-proves row counts and object inventory against the snapshot. Never delete volumes or run global Docker prune
 commands as a recovery step.
 
 ## Troubleshooting

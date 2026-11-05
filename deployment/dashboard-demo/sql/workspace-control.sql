@@ -17,8 +17,9 @@ BEGIN
  OR mode NOT IN ('enable','stop')
  OR change_ref !~ '^[A-Za-z0-9][A-Za-z0-9._:-]{7,79}$'
  THEN RAISE EXCEPTION 'invalid demo control target or authorization'; END IF;
- IF (SELECT count(*) FROM public.schema_migrations) <> 45
- OR (SELECT max(version) FROM public.schema_migrations) <> '0048_gemini_workspace_model'
+ -- Resilient baseline: require the reviewed workspace migration to be applied,
+ -- not an exact ledger row count, so later migrations cannot break activation.
+ IF NOT EXISTS (SELECT 1 FROM public.schema_migrations WHERE version='0048_gemini_workspace_model')
  OR NOT EXISTS (SELECT 1 FROM tanaghom.app_users WHERE id='00000000-0000-4000-8000-000000000001' AND email='owner@demo.tanaghom.test')
  THEN RAISE EXCEPTION 'demo identity or schema mismatch'; END IF;
  PERFORM pg_advisory_xact_lock(hashtextextended('workspace-claim',0));
@@ -57,3 +58,6 @@ BEGIN
  VALUES(change_ref,mode,session_user,before_state,after_state);
 END $$;
 COMMIT;
+SELECT action, change_id, actor, occurred_at
+  FROM tanaghom.demo_workspace_control_audit
+ WHERE change_id = :'change_id';

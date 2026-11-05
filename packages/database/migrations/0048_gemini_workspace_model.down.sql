@@ -8,7 +8,14 @@ DO $$ BEGIN
   SELECT 1 FROM tanaghom.agent_runtime_profiles
   WHERE id='7d000000-0000-4000-8000-000000000003' AND code='gemini_2_5_flash_workspace_v1'
  ) THEN RAISE EXCEPTION 'Gemini workspace profile is missing or changed'; END IF;
+ -- Any evidence of Gemini work blocks the downgrade: pilot tasks, workspace
+ -- steps, or a workspace whose steps were created under the Gemini profile.
  IF EXISTS(SELECT 1 FROM tanaghom.agency_pilot_tasks WHERE model_profile_id='7d000000-0000-4000-8000-000000000003')
+ OR EXISTS(SELECT 1 FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_pilot_tasks t ON t.id=s.task_id
+           WHERE t.model_profile_id='7d000000-0000-4000-8000-000000000003')
+ OR EXISTS(SELECT 1 FROM tanaghom.agency_workspaces w JOIN tanaghom.agency_workspace_steps s ON s.workspace_id=w.id
+           JOIN tanaghom.agency_pilot_tasks t ON t.id=s.task_id
+           WHERE t.model_profile_id='7d000000-0000-4000-8000-000000000003')
  THEN RAISE EXCEPTION '0048 down refuses: workspace profile is referenced by inference evidence';
  END IF;
 END $$;
