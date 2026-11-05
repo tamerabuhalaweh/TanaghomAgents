@@ -30,6 +30,10 @@ compose exec -T postgres psql -X -v ON_ERROR_STOP=1 -U postgres -d tanaghom_demo
   -c "DROP SCHEMA IF EXISTS tanaghom CASCADE; DROP SCHEMA IF EXISTS public CASCADE;"
 compose exec -T postgres pg_restore -U postgres -d tanaghom_demo \
   --no-owner --exit-on-error < "$dir/database.dump"
+# The dump carries the schema's objects but not the pgcrypto extension that
+# digest() lives in, and tanaghom.agent_runtime_sha256 fails without it.
+compose exec -T postgres psql -X -v ON_ERROR_STOP=1 -U postgres -d tanaghom_demo \
+  -c "CREATE EXTENSION IF NOT EXISTS pgcrypto;"
 
 echo "Restoring object store from $dir"
 # A glob leaves dotfiles, and the object store keeps runtime markers there, which
