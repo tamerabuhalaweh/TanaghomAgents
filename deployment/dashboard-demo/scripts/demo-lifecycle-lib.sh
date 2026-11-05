@@ -55,8 +55,19 @@ verify_backup() {
     refuse "backup database checksum does not match the manifest"
   [ "$(file_sha "$dir/rustfs.tar")" = "$(jq -r .rustfs_sha256 "$dir/manifest.json")" ] ||
     refuse "backup object archive checksum does not match the manifest"
-  compose exec -T postgres pg_restore -l < "$dir/database.dump" | grep -q 'TABLE DATA' ||
+  # grep -q closes the pipe as soon as it matches, which kills pg_restore with
+  # SIGPIPE; under pipefail that reads as a failed verification. List to a file.
+  local toc
+  toc="$(mktemp)"
+  if ! compose exec -T postgres pg_restore -l < "$dir/database.dump" > "$toc"; then
+    rm -f "$toc"
+    refuse "the backup dump cannot be listed"
+  fi
+  if ! grep -q 'TABLE DATA' "$toc"; then
+    rm -f "$toc"
     refuse "backup dump has no table data"
+  fi
+  rm -f "$toc"
   printf '%s\n' "$dir"
 }
 
