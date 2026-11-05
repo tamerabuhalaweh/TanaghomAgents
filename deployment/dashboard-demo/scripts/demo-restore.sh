@@ -32,7 +32,10 @@ compose exec -T postgres pg_restore -U postgres -d tanaghom_demo \
   --no-owner --exit-on-error < "$dir/database.dump"
 
 echo "Restoring object store from $dir"
-docker run --rm --entrypoint sh -v "$BLOB_VOLUME":/data "$SNAPSHOT_IMAGE" -c 'rm -rf /data/*'
+# A glob leaves dotfiles, and the object store keeps runtime markers there, which
+# would make the restored inventory larger than the snapshot it came from.
+docker run --rm --entrypoint sh -v "$BLOB_VOLUME":/data "$SNAPSHOT_IMAGE" \
+  -c 'find /data -mindepth 1 -maxdepth 1 -exec rm -rf {} +'
 docker run --rm --entrypoint sh -v "$BLOB_VOLUME":/data -v "$dir":/in:ro "$SNAPSHOT_IMAGE" \
   -c 'cd /data && tar -xf /in/rustfs.tar'
 
