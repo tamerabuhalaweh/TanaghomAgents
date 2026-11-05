@@ -35,8 +35,11 @@ after_ledger="$(ledger_tail)"
 
 table_counts > "$dir/counts-upgrade-after.txt"
 report="$(count_delta_report "$dir/counts-upgrade-before.txt" "$dir/counts-upgrade-after.txt")"
+# count_delta_report prints "table before->after" with a space, and the ledger grows
+# by exactly the migration that was just applied, whatever its number.
+before_rows="$(ledger_count)"
 unexpected="$(printf '%s\n' "$report" |
-  grep -vE "^(public\.schema_migrations=44->45|tanaghom\.agent_runtime_profiles=${before_profiles}->[0-9]+)$" |
+  grep -vE "^(public\.schema_migrations ${before_rows}->$((before_rows + 1))|tanaghom\.agent_runtime_profiles ${before_profiles}->[0-9]+)$" |
   grep -v '^$' || true)"
 if [ -n "$unexpected" ]; then
   echo "ROW_COUNT_DRIFT:" >&2
