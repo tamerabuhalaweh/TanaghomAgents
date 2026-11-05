@@ -45,7 +45,10 @@ fi
 [ "$(blob_count)" = "$want_blobs" ] || refuse "restored object count is $(blob_count), expected $want_blobs"
 [ "$(blob_names_hash)" = "$want_names" ] || refuse "restored object inventory differs from the snapshot"
 
-compose up -d >/dev/null
+# Bring the application back without re-running the migration service: a restore
+# must return the snapshot's schema exactly, and the upgrade stays deliberate.
+compose up -d --no-deps storage auth >/dev/null
+compose up -d --no-deps dashboard >/dev/null
 wait_healthy dashboard
 
 echo "RESTORE_COMPLETE ledger=$want_ledger blobs=$want_blobs tables=$(wc -l < "$dir/counts.txt") dir=$dir"
