@@ -57,7 +57,11 @@ try{
  await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,id,bindingIds,model]);
  await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,id,bindingIds,model]);
  assert.equal(Number((await query('SELECT count(*) FROM tanaghom.agency_workspace_steps WHERE workspace_id=$1',[id])).rows[0].count),6);count++;console.log('PASS duplicate start creates exactly six tasks');
- await reject('worker missing queued model credential refuses before claiming','SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[])',[["7d000000-0000-4000-8000-000000000002"]]);
+ // The claim is model-scoped: a worker holding only the Gemma profile gets
+ // nothing back instead of raising, so it cannot wedge a Gemini queue.
+ assert.equal((await query('SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[]) AS task',[["7d000000-0000-4000-8000-000000000002"]])).rows[0].task,null);
+ assert.equal(Number((await query("SELECT count(*) FROM tanaghom.agency_pilot_tasks WHERE correlation_id=$1 AND status='queued'",[id])).rows[0].count),6);
+ count++;console.log('PASS foreign model set claims nothing and leaves the queue unblocked');
  assert.equal(Number((await query("SELECT count(*) FROM tanaghom.agency_pilot_tasks WHERE correlation_id=$1 AND status='in_progress'",[id])).rows[0].count),0);
  await query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=false,model_execution_enabled=true');
  assert.equal((await query('SELECT * FROM tanaghom.claim_agency_pilot()')).rowCount,0);count++;console.log('PASS frozen simulator cannot claim workspace lane');
