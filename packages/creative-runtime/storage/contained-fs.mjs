@@ -32,7 +32,14 @@ export function createContainedFs({ dir, readLimitBytes } = {}) {
     if (!rootPromise) {
       rootPromise = (async () => {
         await mkdir(dir, { recursive: true });
-        const resolved = await realpath(dir);
+        // Tracing is opted out deliberately (#258): the local backend is
+        // development/test/harness only and factory.mjs denies it in
+        // production, so a build must never treat this runtime-configured
+        // root as a project asset directory and trace the whole tree into
+        // the standalone output. Containment is unaffected: the root is
+        // still pinned by device/inode below and every segment is still
+        // checked for symlinks and expected type on each operation.
+        const resolved = await realpath(/* turbopackIgnore: true */ dir);
         const info = await stat(resolved, { bigint: true });
         if (!info.isDirectory()) throw new Error("storage_root_invalid");
         return { real: resolved, dev: info.dev, ino: info.ino };
