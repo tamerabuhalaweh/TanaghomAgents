@@ -268,6 +268,19 @@ returns 200), but `generateContent` on `gemini-2.5-flash` now returns 404 "no
 longer available to new users" for new projects, including its `-001` and `-lite`
 variants, while `gemini-3.8-flash` and `gemini-3.5-flash` return 200 on the same
 key from the same host. The worker was not started, the key was wiped and the
-control stayed stopped with two audit rows. Closing #250 now needs a reviewed
-bump of the pinned model across the manifest, the 0048 profile and the
-inventory checks, not more credit.
+control stayed stopped with two audit rows. That gap was closed by moving the pin to `gemini-3.8-flash` on the same branch
+(commit `f4b795a`, CI run `42175435829`, 43/43 jobs), so 0048 no longer ships on
+a retired model. The host was reset to that commit, restored the verified
+`0047_smartlabs_audio` snapshot and upgraded again to 0048 with the new profile
+row (`gemini_3_8_flash_workspace_v1`, schema hash `4f9e1a16…`).
+
+The six-specialist acceptance still did not complete. Runtime readiness reported
+the new model, but `generateContent` on `gemini-3.8-flash` returns `503
+UNAVAILABLE` ("currently experiencing high demand"): 0 of 4 consecutive probes
+succeeded, with one earlier stall past 120 seconds. `gemini-3.6-flash` and
+`gemini-3.5-flash` answer 200 on the same key from the same host. The first step
+recorded `inference_outcome_unknown`, the other five stayed queued, the failed
+assignment was cancelled and the control was stopped with a closeout audit row.
+The key is wiped and the worker is down. No document exists and no acceptance
+claim is made: closing #250 needs capacity on 3.8, or a reviewed decision to pin
+a sibling that is currently serving.
