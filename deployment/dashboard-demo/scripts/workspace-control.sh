@@ -58,7 +58,8 @@ allow=(-e 'tanaghom-dashboard-demo')
 for project in $allowed_projects; do allow+=(-e "$project"); done
 other_projects="$(docker ps --filter 'label=com.docker.compose.project' \
   --format '{{.Label "com.docker.compose.project"}}' | sort -u | grep -vxF "${allow[@]}" || true)"
-if [ -n "$other_projects" ]; then
+# "status" is read-only: report the host state instead of refusing to look.
+if [ -n "$other_projects" ] && [ "$action" != status ]; then
   echo "WORKSPACE_CONTROL_REFUSED: other compose projects are running on this host: $other_projects (allow one with TANAGHOM_DEMO_ALLOWED_PROJECTS)" >&2
   exit 1
 fi
