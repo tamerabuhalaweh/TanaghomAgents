@@ -284,3 +284,24 @@ assignment was cancelled and the control was stopped with a closeout audit row.
 The key is wiped and the worker is down. No document exists and no acceptance
 claim is made: closing #250 needs capacity on 3.8, or a reviewed decision to pin
 a sibling that is currently serving.
+
+That block was resolved by pinning a serving sibling, and the acceptance then
+completed. The pin moved to `gemini-3.6-flash` in commit `c9a094e` after 3.8
+failed 0/4 availability probes; local suites passed (17/17 unit, 19/19 lock,
+`npm run check` 3396 files) and both source locks regenerated unchanged. The host
+re-proved #259 from the verified snapshot first: `RESTORE_COMPLETE` to
+`0047_smartlabs_audio`, then `UPGRADE_COMPLETE` to 0048 with rows 44→45, profiles
+2→3 and profile hash `be1678f1…`.
+
+The six-specialist acceptance then passed end to end. Assignment
+`33b0a427-2ca8-401a-9ff7-fa7a9a23c8ae` reached `waiting_review` with all six
+steps succeeded: five `gemini-3.6-flash` documents (5379, 5297, 3648, 6057 and
+4205 characters; artifact hashes `b505deae…`, `7f3d8d41…`, `87e09182…`,
+`9a2ce460…`, `77d954ce…`) plus the deterministic Executive Summary, 20 225 total
+tokens, no failed or pending step, and pilot events queued=6, claimed=6,
+succeeded=6.
+
+Closeout ran immediately after the capture: the control was stopped (audit
+`enable@15:29:22Z`, `stop@15:32:45Z`), the worker is down, the key is wiped and
+the ledger stays at 0048. #250 is closed on the pinned model; the 3.8 capacity
+measurement above remains the recorded reason for the second move.
