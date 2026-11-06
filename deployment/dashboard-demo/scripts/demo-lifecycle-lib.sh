@@ -14,7 +14,14 @@ BLOB_VOLUME=tanaghom-dashboard-demo-rustfsdata
 export TANAGHOM_DEMO_SECRETS_DIR="${TANAGHOM_DEMO_SECRETS_DIR:-${TANAGHOM_DEMO_ROOT:-/opt/tanaghom-demo}/runtime/secrets}"
 export TANAGHOM_DEMO_RELEASE="${TANAGHOM_DEMO_RELEASE:-local}"
 
-compose() { docker compose -p tanaghom-dashboard-demo -f "$COMPOSE_FILE" "$@"; }
+# An untracked .env beside the compose file carries host-only secrets such as
+# INTEGRATION_CREDENTIAL_KEY; load it explicitly so upgrades keep credentials readable.
+COMPOSE_ENV_FILE="${COMPOSE_FILE%/*}/.env"
+compose() {
+  local args=(-p tanaghom-dashboard-demo)
+  [ -f "$COMPOSE_ENV_FILE" ] && args+=(--env-file "$COMPOSE_ENV_FILE")
+  docker compose "${args[@]}" -f "$COMPOSE_FILE" "$@"
+}
 psql_demo() { compose exec -T postgres psql -X -At -v ON_ERROR_STOP=1 -U postgres -d tanaghom_demo "$@"; }
 refuse() { echo "DEMO_LIFECYCLE_REFUSED: $*" >&2; exit 1; }
 

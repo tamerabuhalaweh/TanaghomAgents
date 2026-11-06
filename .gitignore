@@ -22,3 +22,6 @@ secrets/
 
 # Postiz runtime secret (created on the host, never committed)
 deployment/postiz/postiz.env
+
+# Integration credential key for live provider connections (host-created)
+deployment/dashboard-demo/.env

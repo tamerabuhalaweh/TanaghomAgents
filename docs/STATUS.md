@@ -323,6 +323,25 @@ platform emergency stop is cleared so approved drafts may hand off; publishing
 stays human-gated and automatic mode stays unavailable. GHL writes and GPU
 rendering remain off.
 
-The host has no swap yet. Run `deployment/dashboard-demo/scripts/swap-hardening.sh`
-as root on the host to allocate and persist the 8 GiB swapfile; the agent cannot
-elevate privileges.
+Provider base URLs are https-only except for URLs an operator lists in
+`POSTIZ_ALLOWED_BASE_URLS` / `GHL_ALLOWED_BASE_URLS`: those exact entries may be
+plain http so a provider can live on the private compose network, which is how
+the co-located Postiz is reached.
+
+Swap is a deferred ops item. The host still reports `Swap: 0B`: the agent's
+privilege-elevation prompt was declined, this environment refuses privilege
+wrappers outright, and routing around that refusal inside a privileged container
+is not something the agent may do. Nothing else on `13.60.253.82` is affected —
+the 2 vCPU / 7.6 GiB box runs the dashboard, PostgreSQL, RustFS, the workspace
+worker and the Postiz stack comfortably inside memory, so Phase 1 is not blocked.
+
+Closing it takes one root command on the host, and it is idempotent:
+
+```bash
+bash /home/ubuntu/tanaghom-demo/source/deployment/dashboard-demo/scripts/swap-hardening.sh
+```
+
+`free -h` must then report ~8 GiB of swap and `swapon --show` must list
+`/swapfile`; the script also writes the `vm.swappiness=10` and
+`vm.vfs_cache_pressure=50` sysctls plus the matching `/etc/fstab` entry, so the
+swapfile survives a reboot.

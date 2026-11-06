@@ -84,15 +84,15 @@ export function validateProviderBaseUrl(provider: IntegrationProvider, rawUrl?: 
   const expected = definitions[provider].defaultBaseUrl;
   const candidate = normalizeProviderBaseUrl(provider, rawUrl || expected);
   const testUrls = testBaseUrls(provider);
-  const allowed = new Set([
-    expected,
-    ...configuredBaseUrls(provider).map((value) => normalizeProviderBaseUrl(provider, value)),
-    ...testUrls,
-  ]);
+  const operatorUrls = new Set(configuredBaseUrls(provider).map((value) => normalizeProviderBaseUrl(provider, value)));
+  const allowed = new Set([expected, ...operatorUrls, ...testUrls]);
   if (!allowed.has(candidate)) {
     throw new IntegrationProviderError("integration_base_url_not_allowed", 403);
   }
-  if (!candidate.startsWith("https://") && !testUrls.has(candidate)) {
+  // An operator allowlist entry is an explicit deployment decision, such as a
+  // Postiz container reachable only on the private network. Plain http stays
+  // confined to those exact URLs; every other provider URL still requires https.
+  if (!candidate.startsWith("https://") && !operatorUrls.has(candidate) && !testUrls.has(candidate)) {
     throw new IntegrationProviderError("integration_base_url_https_required");
   }
   return candidate;
