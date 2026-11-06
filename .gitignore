@@ -19,3 +19,6 @@ playwright/.auth/
 # Workflow exports and fixtures must remain secret-free.
 n8n/credentials/
 secrets/
+
+# Postiz runtime secret (created on the host, never committed)
+deployment/postiz/postiz.env

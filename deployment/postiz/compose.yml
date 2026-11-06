@@ -1,0 +1,131 @@
+name: postiz
+
+# Draft-only Postiz for the Tanaghom Phase 1 production host.
+#
+# Postiz runs as its own compose project next to tanaghom-dashboard-demo. The
+# Tanaghom dashboard reaches its public API internally at
+# http://postiz:5000/api over the demo backend network; the operator UI binds to
+# loopback only and is reached through an SSH tunnel. Publishing stays
+# human-gated: Tanaghom only queues approved drafts, and automatic draft mode
+# stays off because POSTIZ_AUTOMATION_RUNTIME_READY=false.
+#
+# postiz-postgres and postiz-redis are reachable only on the private
+# postiz-internal bridge, so the database trusts its network peers and keeps no
+# shared password. The JWT signing secret lives in ./postiz.env (mode 600, not
+# tracked); DATABASE_URL deliberately carries no credential.
+
+x-logging: &bounded-logging
+  driver: json-file
+  options: { max-size: 10m, max-file: "3" }
+
+services:
+  postiz-postgres:
+    image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: postiz
+      POSTGRES_USER: postiz
+      POSTGRES_HOST_AUTH_METHOD: trust
+    volumes: [postiz-pgdata:/var/lib/postgresql/data]
+    networks: [postiz-internal]
+    healthcheck:
+      test: [CMD-SHELL, "pg_isready -U postiz -d postiz"]
+      interval: 10s
+      timeout: 5s
+      retries: 15
+    cpus: 0.5
+    mem_limit: 512m
+    pids_limit: 150
+    security_opt: [no-new-privileges:true]
+    logging: *bounded-logging
+
+  postiz-redis:
+    image: redis:7.4-alpine
+    restart: unless-stopped
+    command: ["redis-server", "--save", "60", "1", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    volumes: [postiz-redisdata:/data]
+    networks: [postiz-internal]
+    healthcheck:
+      test: [CMD, "redis-cli", "ping"]
+      interval: 10s
+      timeout: 4s
+      retries: 12
+    cpus: 0.25
+    mem_limit: 320m
+    pids_limit: 100
+    security_opt: [no-new-privileges:true]
+    logging: *bounded-logging
+
+  # Postiz runs its workflow engine on Temporal; without it the backend exits at
+  # boot. The dev server keeps everything in one container for this single-host
+  # deployment.
+  postiz-temporal:
+    image: temporalio/temporal:latest
+    restart: unless-stopped
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--port", "7233"]
+    environment:
+      TEMPORAL_ADDRESS: postiz-temporal:7233
+    volumes: [postiz-temporaledata:/home/temporal]
+    networks: [postiz-internal]
+    healthcheck:
+      test: [CMD, "temporal", "operator", "cluster", "health", "--address", "postiz-temporal:7233"]
+      interval: 15s
+      timeout: 8s
+      retries: 20
+      start_period: 20s
+    cpus: 0.5
+    mem_limit: 768m
+    pids_limit: 200
+    security_opt: [no-new-privileges:true]
+    logging: *bounded-logging
+
+  postiz:
+    image: ghcr.io/gitroomhq/postiz-app:latest
+    restart: unless-stopped
+    depends_on:
+      postiz-postgres: { condition: service_healthy }
+      postiz-redis: { condition: service_healthy }
+      postiz-temporal: { condition: service_healthy }
+    env_file: [./postiz.env]
+    environment:
+      MAIN_URL: ${POSTIZ_PUBLIC_URL:-http://127.0.0.1:5000}
+      FRONTEND_URL: ${POSTIZ_PUBLIC_URL:-http://127.0.0.1:5000}
+      NEXT_PUBLIC_BACKEND_URL: ${POSTIZ_PUBLIC_URL:-http://127.0.0.1:5000}/api
+      BACKEND_INTERNAL_URL: http://localhost:3000
+      DATABASE_URL: postgresql://postiz@postiz-postgres:5432/postiz
+      REDIS_URL: redis://postiz-redis:6379
+      TEMPORAL_ADDRESS: postiz-temporal:7233
+      STORAGE_PROVIDER: local
+      UPLOAD_DIRECTORY: /uploads
+      NEXT_PUBLIC_UPLOAD_DIRECTORY: /uploads
+      IS_GENERAL: "true"
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+    volumes: [postiz-uploads:/uploads]
+    ports:
+      - "127.0.0.1:5000:5000"
+    networks: [postiz-internal, tanaghom-backend]
+    cpus: 1.0
+    mem_limit: 1536m
+    mem_reservation: 384m
+    pids_limit: 300
+    security_opt: [no-new-privileges:true]
+    logging: *bounded-logging
+
+networks:
+  postiz-internal:
+    name: postiz-internal
+    driver: bridge
+  tanaghom-backend:
+    name: tanaghom-dashboard-demo-backend
+    external: true
+
+volumes:
+  postiz-pgdata:
+    name: postiz-pgdata
+  postiz-redisdata:
+    name: postiz-redisdata
+  postiz-uploads:
+    name: postiz-uploads
+  postiz-temporaledata:
+    name: postiz-temporaledata
