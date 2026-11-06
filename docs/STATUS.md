@@ -305,3 +305,24 @@ Closeout ran immediately after the capture: the control was stopped (audit
 `enable@15:29:22Z`, `stop@15:32:45Z`), the worker is down, the key is wiped and
 the ledger stays at 0048. #250 is closed on the pinned model; the 3.8 capacity
 measurement above remains the recorded reason for the second move.
+
+Phase 4 cutover: `13.60.253.82` is now the Phase 1 production host. `#255`,
+`#260` and `#261` merged bottom-up into `main` (`5c570e9`, `21dfa8a`, `53cc8be`),
+each 43/43 green; `#251` and `#257` were closed as superseded, and `#254`,
+`#258`, `#259`, `#250` closed with the evidence reference. PR `#262`
+(`ecf7132`) replaced the "Postiz must be stopped" rule with an explicit
+coexistence rule, so the workspace can run while Postiz serves drafts.
+
+The host runs the dashboard, PostgreSQL 17, RustFS, the `gemini-3.6-flash`
+workspace worker and a draft-only Postiz stack (app, Postgres, Redis, Temporal),
+all healthy. The workspace is enabled (`audit postiz-live-20261106`), runtime
+readiness is `ready=true model=gemini-3.6-flash`, and workspace `33b0a427…`
+remains `waiting_review` with its six successful steps. Postiz is reachable from
+the dashboard at `http://postiz:5000/api/public/v1` (401 unauthenticated) and its
+platform emergency stop is cleared so approved drafts may hand off; publishing
+stays human-gated and automatic mode stays unavailable. GHL writes and GPU
+rendering remain off.
+
+The host has no swap yet. Run `deployment/dashboard-demo/scripts/swap-hardening.sh`
+as root on the host to allocate and persist the 8 GiB swapfile; the agent cannot
+elevate privileges.
