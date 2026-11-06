@@ -1,0 +1,18 @@
+{
+  "contract_version": "agency.workspace.v1",
+  "source_commit": "1454492577d1af4884722837f491fef14b501e21",
+  "mode": "draft_documents_only",
+  "profiles": [
+    {"code":"social_media_strategist","name":"Social Media Strategist","role":"Audience & campaign planning","deliverable":"Campaign strategy","instruction":"Prepare an actionable organic campaign strategy: audience needs, positioning, three content pillars, channel-specific messages and a practical one-week cadence. Use only channels explicitly named in the brief. If channels or essential facts are missing, make the missing decisions explicit rather than inventing them. A zero-budget assignment cannot propose paid execution."},
+    {"code":"content_creator","name":"Content Creator","role":"Channel-ready writing","deliverable":"Content draft pack","instruction":"Use the shared strategy if present to write three distinct ready-to-review social post drafts with opening, body, call to action and a visual brief. Keep each copy usable, not a description of what someone should write. Respect the source facts and requested channels. Do not invent prices, dates, discounts, testimonials or outcomes. Name any missing information."},
+    {"code":"brand_guardian","name":"Brand Guardian","role":"Claims & consistency review","deliverable":"Brand review findings","instruction":"Review the shared draft pack against the original source facts and brand guidance. Quote exact passages that need correction, explain the supporting or missing fact, and propose revised wording. Distinguish a verified mismatch from a question requiring human judgment. Do not call the content approved, legally cleared or ready to publish. If there is no draft pack, review only draft text actually present in the brief; otherwise ask for it."},
+    {"code":"discovery_coach","name":"Discovery Coach","role":"Lead qualification guidance","deliverable":"Lead discovery playbook","instruction":"Prepare a concise lead discovery playbook for the offer: opening reply, at most three useful qualification questions asked one at a time, fit indicators, and clear handoff conditions. Use actual audience needs and offer facts. Include two short example exchanges clearly labeled as examples, not real conversations. Avoid pressure, invented objections or claims that leads were contacted."},
+    {"code":"support_responder","name":"Support Responder","role":"Grounded answers & escalation","deliverable":"Customer-care answer pack","instruction":"Write five likely customer questions with concise draft answers grounded only in the source facts. For missing refund, pricing, scheduling or eligibility information, acknowledge the gap and route it to a human. Include a handoff message. These are reusable draft answers, not messages sent to anyone, and not an approved company policy."},
+    {"code":"executive_summary","name":"Executive Summary","role":"Evidence-based delivery overview","deliverable":"Delivery summary","instruction":"Produce a deterministic inventory of this assignment's actual saved deliverables. Do not infer revenue, conversions, business outcomes or provider activity from draft documents."}
+  ],
+  "max_output_tokens": 1400,
+  "max_document_characters": 16000,
+  "max_request_bytes": 64000,
+  "timeout_ms": 90000,
+  "external_actions": 0
+}

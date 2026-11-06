@@ -235,3 +235,73 @@ date and exact completion gate. A live issue is current work coordination;
 its versioned snapshot and PR evidence are the recoverable history. Do not
 reuse an old percentage as a new production-readiness measurement. Use the
 versioned scorecard and distinguish unknown runtime evidence from a broken feature.
+
+## 2026-11-05 — demo host: 0047→0048 upgrade proven, #250 blocked by billing
+
+On the disposable host `13.60.253.82` the #259 upgrade path was executed end to
+end against a baseline produced by the released revision (`99a95c5`, 44
+migrations, ledger `0047_smartlabs_audio`): `BACKUP_VERIFIED` → deliberate
+`RESTORE_COMPLETE` at `0047` → `UPGRADE_COMPLETE` at `0048`, with row-count
+deltas of exactly `schema_migrations 44->45` and `agent_runtime_profiles 2->3`,
+an unchanged object-store inventory, and a pre-upgrade canary row byte-identical
+across upgrade and restore. Eight defects in the backup/upgrade/restore scripts
+were found by that execution and fixed on `fix/259-upgrade-stack`.
+Details: [evidence](evidence/2026-11-05-demo-host-259-250.md).
+
+The six-specialist #250 acceptance was **attempted and did not pass**. The
+Gemini credential is valid (`models` list returns 200 with 60 models including
+`gemini-2.5-flash`) but `generateContent` returns 402 "prepayment credits are
+depleted", so the run failed closed: `social_media_strategist` recorded
+`inference_failed` and the remaining five steps stayed queued. No Gemini
+document exists and no acceptance claim is made. The workspace control is
+stopped, the polling worker is down and the key has been wiped from the host.
+Completing #250 needs a reviewed change to the pinned model; the 2026-11-06
+attempt below explains why.
+
+The #259 remediation is green and stacked: `fix/259-upgrade-stack` rebases onto
+the #255 + #260 dependency-advisory stack, CI run `42017684024` passed 43/43
+jobs, and PR #261 is open against #260 for merge review.
+
+A second #250 attempt on 2026-11-06 with a fresh free-tier key failed at
+pre-flight for a new reason. The credential is valid (`GET /v1beta/models`
+returns 200), but `generateContent` on `gemini-2.5-flash` now returns 404 "no
+longer available to new users" for new projects, including its `-001` and `-lite`
+variants, while `gemini-3.8-flash` and `gemini-3.5-flash` return 200 on the same
+key from the same host. The worker was not started, the key was wiped and the
+control stayed stopped with two audit rows. That gap was closed by moving the pin to `gemini-3.8-flash` on the same branch
+(commit `f4b795a`, CI run `42175435829`, 43/43 jobs), so 0048 no longer ships on
+a retired model. The host was reset to that commit, restored the verified
+`0047_smartlabs_audio` snapshot and upgraded again to 0048 with the new profile
+row (`gemini_3_8_flash_workspace_v1`, schema hash `4f9e1a16…`).
+
+The six-specialist acceptance still did not complete. Runtime readiness reported
+the new model, but `generateContent` on `gemini-3.8-flash` returns `503
+UNAVAILABLE` ("currently experiencing high demand"): 0 of 4 consecutive probes
+succeeded, with one earlier stall past 120 seconds. `gemini-3.6-flash` and
+`gemini-3.5-flash` answer 200 on the same key from the same host. The first step
+recorded `inference_outcome_unknown`, the other five stayed queued, the failed
+assignment was cancelled and the control was stopped with a closeout audit row.
+The key is wiped and the worker is down. No document exists and no acceptance
+claim is made: closing #250 needs capacity on 3.8, or a reviewed decision to pin
+a sibling that is currently serving.
+
+That block was resolved by pinning a serving sibling, and the acceptance then
+completed. The pin moved to `gemini-3.6-flash` in commit `c9a094e` after 3.8
+failed 0/4 availability probes; local suites passed (17/17 unit, 19/19 lock,
+`npm run check` 3396 files) and both source locks regenerated unchanged. The host
+re-proved #259 from the verified snapshot first: `RESTORE_COMPLETE` to
+`0047_smartlabs_audio`, then `UPGRADE_COMPLETE` to 0048 with rows 44→45, profiles
+2→3 and profile hash `be1678f1…`.
+
+The six-specialist acceptance then passed end to end. Assignment
+`33b0a427-2ca8-401a-9ff7-fa7a9a23c8ae` reached `waiting_review` with all six
+steps succeeded: five `gemini-3.6-flash` documents (5379, 5297, 3648, 6057 and
+4205 characters; artifact hashes `b505deae…`, `7f3d8d41…`, `87e09182…`,
+`9a2ce460…`, `77d954ce…`) plus the deterministic Executive Summary, 20 225 total
+tokens, no failed or pending step, and pilot events queued=6, claimed=6,
+succeeded=6.
+
+Closeout ran immediately after the capture: the control was stopped (audit
+`enable@15:29:22Z`, `stop@15:32:45Z`), the worker is down, the key is wiped and
+the ledger stays at 0048. #250 is closed on the pinned model; the 3.8 capacity
+measurement above remains the recorded reason for the second move.

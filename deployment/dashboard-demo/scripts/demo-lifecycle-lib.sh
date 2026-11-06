@@ -1,0 +1,90 @@
+#!/bin/bash
+# Shared helpers for the isolated demo backup/upgrade/restore procedure (#259).
+# Sourced by demo-backup.sh, demo-upgrade.sh and demo-restore.sh. It reads no
+# secret value: psql runs inside the postgres container as the local superuser.
+set -euo pipefail
+
+_lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+COMPOSE_FILE="${TANAGHOM_DEMO_COMPOSE_FILE:-$_lib_dir/../compose.yml}"
+BACKUP_ROOT="${TANAGHOM_DEMO_BACKUP_DIR:-${TANAGHOM_DEMO_ROOT:-/opt/tanaghom-demo}/runtime/backups}"
+SNAPSHOT_IMAGE="${TANAGHOM_DEMO_SNAPSHOT_IMAGE:-node:24.18.0-alpine3.24}"
+PG_VOLUME=tanaghom-dashboard-demo-pgdata
+BLOB_VOLUME=tanaghom-dashboard-demo-rustfsdata
+
+export TANAGHOM_DEMO_SECRETS_DIR="${TANAGHOM_DEMO_SECRETS_DIR:-${TANAGHOM_DEMO_ROOT:-/opt/tanaghom-demo}/runtime/secrets}"
+export TANAGHOM_DEMO_RELEASE="${TANAGHOM_DEMO_RELEASE:-local}"
+
+compose() { docker compose -p tanaghom-dashboard-demo -f "$COMPOSE_FILE" "$@"; }
+psql_demo() { compose exec -T postgres psql -X -At -v ON_ERROR_STOP=1 -U postgres -d tanaghom_demo "$@"; }
+refuse() { echo "DEMO_LIFECYCLE_REFUSED: $*" >&2; exit 1; }
+
+require_docker() { docker info >/dev/null 2>&1 || refuse "docker is unavailable"; }
+require_postgres() {
+  require_docker
+  [ -n "$(compose ps -q postgres 2>/dev/null)" ] || refuse "demo postgres is not running"
+  psql_demo -c "SELECT 1" >/dev/null 2>&1 || refuse "demo database is not reachable"
+}
+
+# Row counts for every table in the demo schemas; the unit of the data-preserving
+# proof. Deterministically ordered so two runs can be compared line by line.
+table_counts() {
+  psql_demo -c "SELECT n.nspname||'.'||c.relname||'='||(xpath('/row/c/text()', query_to_xml(format('SELECT count(*) AS c FROM %I.%I',n.nspname,c.relname),false,true,'')))[1]::text FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='r' AND n.nspname IN ('public','tanaghom') ORDER BY 1"
+}
+ledger_tail() { psql_demo -c "SELECT coalesce(max(version),'none') FROM public.schema_migrations"; }
+ledger_count() { psql_demo -c "SELECT count(*) FROM public.schema_migrations"; }
+profile_present() {
+  psql_demo -c "SELECT count(*) FROM tanaghom.agent_runtime_profiles WHERE id='7d000000-0000-4000-8000-000000000003'"
+}
+blob_count() {
+  docker run --rm --entrypoint sh -v "$BLOB_VOLUME":/data:ro "$SNAPSHOT_IMAGE" \
+    -c 'find /data -type f | wc -l' | tr -d '[:space:]'
+}
+blob_names_hash() {
+  docker run --rm --entrypoint sh -v "$BLOB_VOLUME":/data:ro "$SNAPSHOT_IMAGE" \
+    -c 'cd /data && find . -type f | sort | sha256sum' | cut -d' ' -f1
+}
+file_sha() { sha256sum "$1" | cut -d' ' -f1; }
+latest_backup() { [ -L "$BACKUP_ROOT/latest" ] && readlink -f "$BACKUP_ROOT/latest" || true; }
+
+verify_backup() {
+  local dir="$1"
+  [ -d "$dir" ] || refuse "backup directory not found: $dir"
+  [ -s "$dir/database.dump" ] || refuse "backup dump is missing: $dir/database.dump"
+  [ -f "$dir/manifest.json" ] || refuse "backup manifest is missing: $dir/manifest.json"
+  [ "$(file_sha "$dir/database.dump")" = "$(jq -r .dump_sha256 "$dir/manifest.json")" ] ||
+    refuse "backup database checksum does not match the manifest"
+  [ "$(file_sha "$dir/rustfs.tar")" = "$(jq -r .rustfs_sha256 "$dir/manifest.json")" ] ||
+    refuse "backup object archive checksum does not match the manifest"
+  # grep -q closes the pipe as soon as it matches, which kills pg_restore with
+  # SIGPIPE; under pipefail that reads as a failed verification. List to a file.
+  local toc
+  toc="$(mktemp)"
+  if ! compose exec -T postgres pg_restore -l < "$dir/database.dump" > "$toc"; then
+    rm -f "$toc"
+    refuse "the backup dump cannot be listed"
+  fi
+  if ! grep -q 'TABLE DATA' "$toc"; then
+    rm -f "$toc"
+    refuse "backup dump has no table data"
+  fi
+  rm -f "$toc"
+  printf '%s\n' "$dir"
+}
+
+# Prints "table=before->after" lines for every table whose row count changed.
+count_delta_report() {
+  awk -F= 'NR==FNR{b[$1]=$2; next} { if(!($1 in b)) print $1" new="$2; else if(b[$1]!=$2) print $1" "b[$1]"->"$2 }' "$1" "$2"
+}
+
+wait_healthy() {
+  local service="$1" id status
+  for _ in $(seq 1 60); do
+    id="$(compose ps -q "$service" 2>/dev/null || true)"
+    if [ -n "$id" ]; then
+      status="$(docker inspect --format '{{.State.Health.Status}}' "$id" 2>/dev/null || echo starting)"
+      [ "$status" = healthy ] && { echo "$service healthy"; return 0; }
+    fi
+    sleep 3
+  done
+  refuse "$service did not become healthy"
+}
