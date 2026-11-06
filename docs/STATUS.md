@@ -255,9 +255,19 @@ depleted", so the run failed closed: `social_media_strategist` recorded
 `inference_failed` and the remaining five steps stayed queued. No Gemini
 document exists and no acceptance claim is made. The workspace control is
 stopped, the polling worker is down and the key has been wiped from the host.
-Completing #250 needs credit on the Gemini project, not a code change.
+Completing #250 needs a reviewed change to the pinned model; the 2026-11-06
+attempt below explains why.
 
 The #259 remediation is green and stacked: `fix/259-upgrade-stack` rebases onto
 the #255 + #260 dependency-advisory stack, CI run `42017684024` passed 43/43
-jobs, and PR #261 is open against #260 for merge review. Closing #250 still
-needs Gemini credit; nothing else in the release gate is outstanding.
+jobs, and PR #261 is open against #260 for merge review.
+
+A second #250 attempt on 2026-11-06 with a fresh free-tier key failed at
+pre-flight for a new reason. The credential is valid (`GET /v1beta/models`
+returns 200), but `generateContent` on `gemini-2.5-flash` now returns 404 "no
+longer available to new users" for new projects, including its `-001` and `-lite`
+variants, while `gemini-3.8-flash` and `gemini-3.5-flash` return 200 on the same
+key from the same host. The worker was not started, the key was wiped and the
+control stayed stopped with two audit rows. Closing #250 now needs a reviewed
+bump of the pinned model across the manifest, the 0048 profile and the
+inventory checks, not more credit.
