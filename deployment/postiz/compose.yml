@@ -56,12 +56,36 @@ services:
     security_opt: [no-new-privileges:true]
     logging: *bounded-logging
 
+  # Postiz runs its workflow engine on Temporal; without it the backend exits at
+  # boot. The dev server keeps everything in one container for this single-host
+  # deployment.
+  postiz-temporal:
+    image: temporalio/temporal:latest
+    restart: unless-stopped
+    command: ["server", "start-dev", "--ip", "0.0.0.0", "--port", "7233"]
+    environment:
+      TEMPORAL_ADDRESS: postiz-temporal:7233
+    volumes: [postiz-temporaledata:/home/temporal]
+    networks: [postiz-internal]
+    healthcheck:
+      test: [CMD, "temporal", "operator", "cluster", "health", "--address", "postiz-temporal:7233"]
+      interval: 15s
+      timeout: 8s
+      retries: 20
+      start_period: 20s
+    cpus: 0.5
+    mem_limit: 768m
+    pids_limit: 200
+    security_opt: [no-new-privileges:true]
+    logging: *bounded-logging
+
   postiz:
     image: ghcr.io/gitroomhq/postiz-app:latest
     restart: unless-stopped
     depends_on:
       postiz-postgres: { condition: service_healthy }
       postiz-redis: { condition: service_healthy }
+      postiz-temporal: { condition: service_healthy }
     env_file: [./postiz.env]
     environment:
       MAIN_URL: ${POSTIZ_PUBLIC_URL:-http://127.0.0.1:5000}
@@ -70,6 +94,7 @@ services:
       BACKEND_INTERNAL_URL: http://localhost:3000
       DATABASE_URL: postgresql://postiz@postiz-postgres:5432/postiz
       REDIS_URL: redis://postiz-redis:6379
+      TEMPORAL_ADDRESS: postiz-temporal:7233
       STORAGE_PROVIDER: local
       UPLOAD_DIRECTORY: /uploads
       NEXT_PUBLIC_UPLOAD_DIRECTORY: /uploads
@@ -102,3 +127,5 @@ volumes:
     name: postiz-redisdata
   postiz-uploads:
     name: postiz-uploads
+  postiz-temporaledata:
+    name: postiz-temporaledata
