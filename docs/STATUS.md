@@ -323,6 +323,11 @@ platform emergency stop is cleared so approved drafts may hand off; publishing
 stays human-gated and automatic mode stays unavailable. GHL writes and GPU
 rendering remain off.
 
+Provider base URLs are https-only except for URLs an operator lists in
+`POSTIZ_ALLOWED_BASE_URLS` / `GHL_ALLOWED_BASE_URLS`: those exact entries may be
+plain http so a provider can live on the private compose network, which is how
+the co-located Postiz is reached.
+
 Swap is a deferred ops item. The host still reports `Swap: 0B`: the agent's
 privilege-elevation prompt was declined, this environment refuses privilege
 wrappers outright, and routing around that refusal inside a privileged container
