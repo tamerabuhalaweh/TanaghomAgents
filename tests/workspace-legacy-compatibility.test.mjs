@@ -39,6 +39,10 @@ test('0048 downgrade refuses while any workspace or step references the Gemini p
 test('demo control transaction requires the reviewed baseline, not an exact row count', () => {
   const sql=readFileSync('deployment/dashboard-demo/sql/workspace-control.sql','utf8');
   assert.match(sql,/version='0048_gemini_workspace_model'/);
+  assert.match(sql,/Postiz may stay connected/);
+  const control=readFileSync('deployment/dashboard-demo/scripts/workspace-control.sh','utf8');
+  assert.match(control,/TANAGHOM_DEMO_ALLOWED_PROJECTS/);
+  assert.match(control,/grep -vxF "\$\{allow\[@\]\}"/);
   assert.doesNotMatch(sql,/count\(\*\) FROM public\.schema_migrations\) <> 45/);
   assert.match(readFileSync('deployment/dashboard-demo/scripts/workspace-control.sh','utf8'),/APPROVED-ISOLATED-DEMO-CONTROL/);
 });

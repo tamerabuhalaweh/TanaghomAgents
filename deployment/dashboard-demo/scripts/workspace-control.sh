@@ -12,9 +12,11 @@ usage: workspace-control.sh <status|enable|stop|disable> [options]
   --authorization <marker> must be APPROVED-ISOLATED-DEMO-CONTROL for enable/stop
   --compose-dir <dir>     defaults to the demo package next to this script
 
-Refuses unless the compose project "tanaghom-dashboard-demo" is the only
-project on this host and the database is at migration 0048 or later. Run it on
-the disposable demo host only.
+Refuses unless the only running compose projects are this demo stack plus any
+project named in TANAGHOM_DEMO_ALLOWED_PROJECTS (space separated, for example
+"postiz"), and the database is at migration 0048 or later. Postiz may run next
+to the workspace, but its draft mode must stay manual and no Postiz job may be
+in flight.
 EOF
 }
 
@@ -51,10 +53,13 @@ if ! "${compose[@]}" ps -q postgres >/dev/null 2>&1 || [ -z "$("${compose[@]}" p
   echo "WORKSPACE_CONTROL_REFUSED: demo postgres is not running" >&2
   exit 1
 fi
+allowed_projects="${TANAGHOM_DEMO_ALLOWED_PROJECTS:-}"
+allow=(-e 'tanaghom-dashboard-demo')
+for project in $allowed_projects; do allow+=(-e "$project"); done
 other_projects="$(docker ps --filter 'label=com.docker.compose.project' \
-  --format '{{.Label "com.docker.compose.project"}}' | sort -u | grep -vx 'tanaghom-dashboard-demo' || true)"
+  --format '{{.Label "com.docker.compose.project"}}' | sort -u | grep -vxF "${allow[@]}" || true)"
 if [ -n "$other_projects" ]; then
-  echo "WORKSPACE_CONTROL_REFUSED: other compose projects are running on this host: $other_projects" >&2
+  echo "WORKSPACE_CONTROL_REFUSED: other compose projects are running on this host: $other_projects (allow one with TANAGHOM_DEMO_ALLOWED_PROJECTS)" >&2
   exit 1
 fi
 

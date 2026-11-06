@@ -213,3 +213,36 @@ commands as a recovery step.
 - Login `503` or health not ready: check `auth` health and the dashboard secret mounts.
 - Upload failure: check `storage`/`storage-init` completed and `DEMO_S3_BUCKET_READY` appears in logs.
 - Port already in use: stop only the conflicting demo project; never touch the canary on `3200`.
+
+## Postiz coexistence (production host)
+
+Postiz runs as its own compose project beside this stack, with the operator UI on
+`127.0.0.1:5000` and its public API reachable from the dashboard at
+`http://postiz:5000/api` over `tanaghom-dashboard-demo-backend`. Bring it up with:
+
+```
+cd deployment/postiz
+POSTIZ_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
+  docker compose -p postiz up -d
+```
+
+`postiz.env` must exist next to that compose file (mode 600, untracked) and hold
+`JWT_SECRET`. The Postiz database and Redis listen only on the private
+`postiz-internal` bridge.
+
+The workspace control deliberately allows Postiz to be running, but not to be
+executing: `workspace-control.sql` requires the Postiz control row to exist, no
+Postiz job in `queued`, `running` or `waiting_approval`, and no organization with
+`postiz_draft_mode='automatic'`. Enable the workspace while Postiz is up by
+naming its compose project once:
+
+```
+TANAGHOM_DEMO_ALLOWED_PROJECTS=postiz \
+  scripts/workspace-control.sh enable \
+  --change-id <ref> --authorization APPROVED-ISOLATED-DEMO-CONTROL
+```
+
+Any other running compose project still refuses activation. Publishing stays
+human-gated: `POSTIZ_HANDOFF_ENABLED` only queues approved drafts, and
+`POSTIZ_AUTOMATION_RUNTIME_READY` stays `false` so automatic mode cannot be
+selected.

@@ -33,9 +33,12 @@ try {
  await pool.query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=false');
  assert.throws(()=>run('enable','pilot-open-001'));
  await pool.query('UPDATE tanaghom.agency_pilot_controls SET emergency_stop=true');
+ // Postiz coexistence: a connected Postiz is allowed, but automatic draft mode
+ // is execution and must still block activation.
  await pool.query("UPDATE tanaghom.automation_platform_controls SET emergency_stop=false WHERE provider='postiz'");
+ await pool.query("UPDATE tanaghom.organization_automation_policies SET postiz_draft_mode='automatic'");
  assert.throws(()=>run('enable','postiz-open-001'));
- await pool.query("UPDATE tanaghom.automation_platform_controls SET emergency_stop=true WHERE provider='postiz'");
+ await pool.query("UPDATE tanaghom.organization_automation_policies SET postiz_draft_mode='manual'");
  await pool.query('UPDATE tanaghom.agent_runtime_controls SET emergency_stop=false');
  assert.throws(()=>run('enable','platform-open-01'));
  await pool.query('UPDATE tanaghom.agent_runtime_controls SET emergency_stop=true');

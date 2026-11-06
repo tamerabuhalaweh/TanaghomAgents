@@ -26,7 +26,9 @@ test('demo-only control transaction has explicit authorization, stops and audit'
   assert.match(sql, /current_database\(\) <> 'tanaghom_demo'/);
   assert.match(sql, /APPROVED-ISOLATED-DEMO-CONTROL/);
   assert.match(sql, /agency_pilot_controls WHERE emergency_stop AND NOT model_execution_enabled/);
-  assert.match(sql, /provider='postiz' AND emergency_stop/);
+  assert.match(sql, /automation_platform_controls WHERE provider='postiz'\)/);
+  assert.match(sql, /agent_jobs WHERE status IN \('queued','running','waiting_approval'\)/);
+  assert.match(sql, /postiz_draft_mode='automatic'/);
   assert.match(sql, /pg_advisory_xact_lock\(hashtextextended\('workspace-claim',0\)\)/);
   assert.match(sql, /demo_workspace_control_audit/);
   assert.match(sql, /change_id text NOT NULL UNIQUE/);

@@ -28,7 +28,12 @@ BEGIN
  IF mode='enable' AND (NOT EXISTS (SELECT 1 FROM tanaghom.agency_pilot_controls WHERE emergency_stop AND NOT model_execution_enabled)
  OR EXISTS (SELECT 1 FROM tanaghom.organization_agent_jobs WHERE status IN ('queued','running','waiting_approval'))
  OR EXISTS (SELECT 1 FROM tanaghom.agency_pilot_tasks WHERE status IN ('queued','in_progress'))
- OR NOT EXISTS (SELECT 1 FROM tanaghom.automation_platform_controls WHERE provider='postiz' AND emergency_stop))
+ -- Postiz may stay connected and serving next to the workspace (#262 coexistence).
+ -- What must be stopped is Postiz execution itself: the control row must exist,
+ -- no Postiz job may be in flight, and draft mode must stay human-gated.
+ OR NOT EXISTS (SELECT 1 FROM tanaghom.automation_platform_controls WHERE provider='postiz')
+ OR EXISTS (SELECT 1 FROM tanaghom.agent_jobs WHERE status IN ('queued','running','waiting_approval'))
+ OR EXISTS (SELECT 1 FROM tanaghom.organization_automation_policies WHERE postiz_draft_mode='automatic'))
  THEN RAISE EXCEPTION 'other runtime work or provider controls are not safely stopped'; END IF;
  SELECT jsonb_build_object('workspace_enabled',w.enabled,'workspace_stop',w.emergency_stop,
    'workspace_reason',w.reason,'platform_stop',r.emergency_stop,'platform_reason',r.reason)
