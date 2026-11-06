@@ -999,7 +999,10 @@ jobs:
     timeout-minutes: 20
     services:
       postgres:
-        image: postgres:16-alpine
+        # Must stay on the production major (17): the runner's pg_dump emits
+        # PG17-only GUCs such as "SET transaction_timeout = 0", which a 16
+        # server rejects so pg_restore --exit-on-error aborts the dump probe.
+        image: postgres:17-alpine
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: tanaghom_agents_phase5_resilience_test
