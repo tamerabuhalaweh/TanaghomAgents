@@ -91,7 +91,7 @@ TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
 
 The worker polls the internal dashboard endpoint with the 64-hex worker token. It has no host
 port, no database credentials, no provider key, and no external-action capability. The Gemini
-model (`gemini-3.8-flash`) is verified against the provider inventory (cached for ten minutes per
+model (`gemini-3.6-flash`) is verified against the provider inventory (cached for ten minutes per
 dashboard process) before specialist requests; failures are recorded as explicit workspace errors and stop further inference for human
 review.
 

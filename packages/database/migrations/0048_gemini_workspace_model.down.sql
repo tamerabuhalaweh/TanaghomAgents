@@ -6,7 +6,7 @@ DO $$ BEGIN
  THEN RAISE EXCEPTION '0048 down requires exact 0048 baseline'; END IF;
  IF NOT EXISTS(
   SELECT 1 FROM tanaghom.agent_runtime_profiles
-  WHERE id='7d000000-0000-4000-8000-000000000003' AND code='gemini_3_8_flash_workspace_v1'
+  WHERE id='7d000000-0000-4000-8000-000000000003' AND code='gemini_3_6_flash_workspace_v1'
  ) THEN RAISE EXCEPTION 'Gemini workspace profile is missing or changed'; END IF;
  -- Any evidence of Gemini work blocks the downgrade: pilot tasks, workspace
  -- steps, or a workspace whose steps were created under the Gemini profile.

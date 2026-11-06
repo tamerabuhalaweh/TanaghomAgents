@@ -5,7 +5,7 @@ import { once } from 'node:events';
 import { createGeminiWorkspaceClient,geminiGenerateEndpoint } from '../packages/agent-runtime/gemini-workspace.mjs';
 
 const key='fixture-only-gemini-key-1234567890';
-const model='gemini-3.8-flash';
+const model='gemini-3.6-flash';
 async function stub(t,handler){
  const server=createServer(handler);server.listen(0,'127.0.0.1');await once(server,'listening');
  t.after(()=>new Promise(resolve=>server.close(resolve)));
@@ -19,18 +19,18 @@ test('gemini adapter: exact inventory, key header, bounded request and no key in
   if(req.url==='/v1beta/models?pageSize=1000'){
    listCalls++;seenKey=req.headers['x-goog-api-key'];
    res.setHeader('content-type','application/json');
-   return res.end(JSON.stringify({models:[{name:'models/gemini-3.8-flash',inputTokenLimit:32768,outputTokenLimit:8192,supportedGenerationMethods:['generateContent']},{name:'models/other',inputTokenLimit:1,outputTokenLimit:1,supportedGenerationMethods:['generateContent']}]}));
+   return res.end(JSON.stringify({models:[{name:'models/gemini-3.6-flash',inputTokenLimit:32768,outputTokenLimit:8192,supportedGenerationMethods:['generateContent']},{name:'models/other',inputTokenLimit:1,outputTokenLimit:1,supportedGenerationMethods:['generateContent']}]}));
   }
-  if(req.url==='/v1beta/models/gemini-3.8-flash:generateContent'){
+  if(req.url==='/v1beta/models/gemini-3.6-flash:generateContent'){
    generateCalls++;seenBody=await body(req);res.setHeader('content-type','application/json');
    return res.end(JSON.stringify({modelVersion:model,candidates:[{finishReason:'STOP',content:{parts:[{text:'Authored fixture document for the bounded adapter test.'}]}}],usageMetadata:{promptTokenCount:1,candidatesTokenCount:2,totalTokenCount:3}}));
   }
   res.writeHead(404);res.end();
  });
  const client=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${base}/v1beta`});
- assert.equal(geminiGenerateEndpoint(model,`${base}/v1beta`),`${base}/v1beta/models/gemini-3.8-flash:generateContent`);
+ assert.equal(geminiGenerateEndpoint(model,`${base}/v1beta`),`${base}/v1beta/models/gemini-3.6-flash:generateContent`);
  const inventory=await client.inventory(model);
- assert.deepEqual(inventory,{id:model,resource:'models/gemini-3.8-flash',inputTokenLimit:32768,outputTokenLimit:8192});
+ assert.deepEqual(inventory,{id:model,resource:'models/gemini-3.6-flash',inputTokenLimit:32768,outputTokenLimit:8192});
  const result=await client.generate(model,{contents:[{role:'user',parts:[{text:'fixture'}]}]});
  assert.equal(result.modelVersion,model);assert.equal(listCalls,1);assert.equal(generateCalls,1);
  assert.equal(seenKey,key);assert.equal(seenBody.includes(key),false);assert.equal(seenBody.includes('fixture'),true);
@@ -77,7 +77,7 @@ test('gemini adapter: missing model, non-text model and credentials are rejected
  let calls=0;
  const base=await stub(t,async(req,res)=>{
   calls++;req.resume();res.setHeader('content-type','application/json');
-  res.end(JSON.stringify({models:[{name:'models/gemini-3.8-flash',inputTokenLimit:32768,outputTokenLimit:8192,supportedGenerationMethods:['embedContent']}]}));
+  res.end(JSON.stringify({models:[{name:'models/gemini-3.6-flash',inputTokenLimit:32768,outputTokenLimit:8192,supportedGenerationMethods:['embedContent']}]}));
  });
  const client=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${base}/v1beta`});
  await assert.rejects(client.inventory(model),e=>e.code==='model_unavailable');
