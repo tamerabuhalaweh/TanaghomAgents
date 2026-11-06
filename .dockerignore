@@ -1,6 +1,9 @@
 .git
 .env
 .env.*
+**/.env
+**/.env.*
+**/local-private
 **/node_modules
 **/.next
 archive

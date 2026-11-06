@@ -55,6 +55,7 @@
     "generate:phase7d-executors": "node scripts/generate-phase7d-executor-workflows.mjs",
     "test:phase7d-executor-import": "node scripts/phase7d-executor-n8n-import-integration.mjs",
     "test:phase7d-certification": "node scripts/phase7d-runtime-certification-integration.mjs",
+    "test:build-containment": "node scripts/verify-build-containment.mjs",
     "test:creative-foundation": "node scripts/creative-foundation-integration.mjs",
     "test:creative-image": "node scripts/creative-image-integration.mjs",
     "test:e2e": "playwright test",
