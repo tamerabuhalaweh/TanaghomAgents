@@ -17,7 +17,7 @@ Record results outside the secret files. Use the private SSH tunnel, not a publi
 - [ ] Image generation and other unavailable provider actions report the disabled state; no fake output appears.
 - [ ] With the workspace profile off, `/workspace` clearly reports that the Gemini worker is not connected and makes no provider call.
 - [ ] With an operator-installed key and the workspace profile on, one English assignment produces six ordered deliverables with provider, actual model and token evidence; no external action is claimed.
-- [ ] The five specialist documents are Gemini `gemini-2.5-flash` output; the Executive Summary is deterministic and reports no measured sales.
+- [ ] The five specialist documents are Gemini `gemini-3.8-flash` output; the Executive Summary is deterministic and reports no measured sales.
 - [ ] Arabic assignment renders RTL and stores Arabic specialist documents without language mismatch.
 - [ ] Owner approval/rejection is human-only, records feedback, and cannot be performed by the worker role.
 - [ ] A simulated quota/request failure is persisted with a provider error, triggers the emergency stop, and does not retry automatically.

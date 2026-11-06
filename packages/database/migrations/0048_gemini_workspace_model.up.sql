@@ -28,7 +28,7 @@ ALTER TABLE tanaghom.agent_runtime_profiles
     OR (
       planner_contract_version='agency.workspace.document.v1'
       AND planner_schema_ref='config/agency-workspace.v1.json'
-      AND planner_schema_hash='33c83ccab358eab21d62a592f5d010a5ada4fb953031f3a40a6051fa3c3301ac'
+      AND planner_schema_hash='4f9e1a1634dc97c74b5f79bad9eafe836c1c9050ab110db1dc832c6a48dcc260'
       AND prompt_version='agency-workspace-specialists.v1'
       AND prompt_hash='42725947ade76804d170581d934cc8bce49d5a5ffeb40ff9b2b4a3e732253c51'
       AND parser_version='google.gemini.generate-content.v1'
@@ -40,11 +40,11 @@ INSERT INTO tanaghom.agent_runtime_profiles (
   prompt_version,prompt_hash,parser_version,lifecycle_state
 ) VALUES (
   '7d000000-0000-4000-8000-000000000003',
-  'gemini_2_5_flash_workspace_v1',
-  'gemini-2.5-flash',
+  'gemini_3_8_flash_workspace_v1',
+  'gemini-3.8-flash',
   'agency.workspace.document.v1',
   'config/agency-workspace.v1.json',
-  '33c83ccab358eab21d62a592f5d010a5ada4fb953031f3a40a6051fa3c3301ac',
+  '4f9e1a1634dc97c74b5f79bad9eafe836c1c9050ab110db1dc832c6a48dcc260',
   'agency-workspace-specialists.v1',
   '42725947ade76804d170581d934cc8bce49d5a5ffeb40ff9b2b4a3e732253c51',
   'google.gemini.generate-content.v1',
