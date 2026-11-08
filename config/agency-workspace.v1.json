@@ -11,7 +11,7 @@
     {"code":"support_responder","name":"Support Responder","role":"Grounded answers & escalation","deliverable":"Customer-care answer pack","instruction":"Write five likely customer questions with concise draft answers grounded only in the source facts. For missing refund, pricing, scheduling or eligibility information, acknowledge the gap and route it to a human. Include a handoff message. These are reusable draft answers, not messages sent to anyone, and not an approved company policy."},
     {"code":"executive_summary","name":"Executive Summary","role":"Evidence-based delivery overview","deliverable":"Delivery summary","instruction":"Produce a deterministic inventory of this assignment's actual saved deliverables. Do not infer revenue, conversions, business outcomes or provider activity from draft documents."}
   ],
-  "max_output_tokens": 1400,
+  "max_output_tokens": 4096,
   "max_document_characters": 16000,
   "max_request_bytes": 64000,
   "timeout_ms": 90000,
