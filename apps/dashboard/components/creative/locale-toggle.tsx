@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 
+import { applyLocale } from "@/lib/client/use-locale";
 import { CREATIVE_LOCALE_COOKIE, t, type CreativeLocale } from "@/lib/i18n/creative";
 
 export function LocaleToggle({ locale }: { locale: CreativeLocale }) {
@@ -9,6 +10,7 @@ export function LocaleToggle({ locale }: { locale: CreativeLocale }) {
   function select(next: CreativeLocale) {
     if (next === locale) return;
     document.cookie = `${CREATIVE_LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+    applyLocale(next);
     router.refresh();
   }
   return (

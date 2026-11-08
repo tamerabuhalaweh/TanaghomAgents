@@ -24,26 +24,30 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "./brand-mark";
+import { LocaleToggle } from "./creative/locale-toggle";
 import { SessionProfile } from "./session-profile";
+import { useLocale } from "@/lib/client/use-locale";
 
 const primaryNavigation = [
-  { href: "/", label: "Overview", icon: LayoutDashboard },
-  { href: "/workspace", label: "AI workspace", icon: UsersRound },
-  { href: "/inbox", label: "Supervisor inbox", icon: MessagesSquare },
-  { href: "/campaigns", label: "Campaigns", icon: BriefcaseBusiness },
-  { href: "/approvals", label: "Approvals", icon: CheckCheck },
-  { href: "/actions", label: "Agent actions", icon: ClipboardCheck },
-  { href: "/content", label: "Content", icon: LibraryBig },
-  { href: "/creative", label: "Creative Studio", icon: Palette },
-  { href: "/knowledge", label: "Knowledge", icon: BookOpenCheck },
-  { href: "/agents", label: "Agents", icon: Bot },
-  { href: "/leads", label: "Leads", icon: ContactRound },
-  { href: "/reports", label: "Reports", icon: ChartNoAxesCombined },
-  { href: "/quality", label: "Quality & rollout", icon: ShieldCheck },
+  { href: "/", label: "Overview", arabic: "نظرة عامة", icon: LayoutDashboard },
+  { href: "/workspace", label: "AI workspace", arabic: "مساحة العمل الذكية", icon: UsersRound },
+  { href: "/inbox", label: "Supervisor inbox", arabic: "صندوق المشرف", icon: MessagesSquare },
+  { href: "/campaigns", label: "Campaigns", arabic: "الحملات", icon: BriefcaseBusiness },
+  { href: "/approvals", label: "Approvals", arabic: "الاعتمادات", icon: CheckCheck },
+  { href: "/actions", label: "Agent actions", arabic: "إجراءات الوكلاء", icon: ClipboardCheck },
+  { href: "/content", label: "Content", arabic: "المحتوى", icon: LibraryBig },
+  { href: "/creative", label: "Creative Studio", arabic: "استوديو الإبداع", icon: Palette },
+  { href: "/knowledge", label: "Knowledge", arabic: "المعرفة", icon: BookOpenCheck },
+  { href: "/agents", label: "Agents", arabic: "الوكلاء", icon: Bot },
+  { href: "/leads", label: "Leads", arabic: "العملاء المحتملون", icon: ContactRound },
+  { href: "/reports", label: "Reports", arabic: "التقارير", icon: ChartNoAxesCombined },
+  { href: "/quality", label: "Quality & rollout", arabic: "الجودة والطرح", icon: ShieldCheck },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
 
@@ -63,32 +67,35 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (returnFocus) menuButtonRef.current?.focus();
   }
 
+  const navLabel = (item: (typeof primaryNavigation)[number]) => (ar ? item.arabic : item.label);
+
   return (
     <div className="app-shell">
-      <a className="skip-link" href="#main-content">Skip to main content</a>
+      <a className="skip-link" href="#main-content">{ar ? "تخطَّ إلى المحتوى الرئيسي" : "Skip to main content"}</a>
       <header className="mobile-header">
-        <Link className="brand" href="/" aria-label="Tanaghom overview">
+        <Link className="brand" href="/" aria-label={ar ? "نظرة عامة على تناغم" : "Tanaghom overview"}>
           <BrandMark />
           <span>Tanaghom</span>
         </Link>
-        <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? "Close navigation" : "Open navigation"}>
+        <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? (ar ? "إغلاق التنقل" : "Close navigation") : (ar ? "فتح التنقل" : "Open navigation")}>
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
       </header>
 
       <aside className={`sidebar ${menuOpen ? "sidebar-open" : ""}`}>
-        <Link className="brand desktop-brand" href="/" aria-label="Tanaghom overview">
+        <Link className="brand desktop-brand" href="/" aria-label={ar ? "نظرة عامة على تناغم" : "Tanaghom overview"}>
           <BrandMark />
           <span>Tanaghom</span>
         </Link>
 
-        <nav id="primary-navigation" className="primary-navigation" aria-label="Primary navigation">
-          {primaryNavigation.map(({ href, label, icon: Icon }) => {
+        <nav id="primary-navigation" className="primary-navigation" aria-label={ar ? "التنقل الأساسي" : "Primary navigation"}>
+          {primaryNavigation.map((item) => {
+            const { href, icon: Icon } = item;
             const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
             return (
               <Link key={href} href={href} className={`nav-link ${active ? "nav-link-active" : ""}`} aria-current={active ? "page" : undefined} onClick={() => closeMenu()}>
                 <Icon size={18} strokeWidth={1.8} />
-                <span>{label}</span>
+                <span>{navLabel(item)}</span>
               </Link>
             );
           })}
@@ -97,31 +104,32 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="sidebar-footer">
           <Link href="/team" className={`nav-link ${pathname.startsWith("/team") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/team") ? "page" : undefined} onClick={() => closeMenu()}>
             <UsersRound size={18} />
-            <span>Team & access</span>
+            <span>{ar ? "الفريق والصلاحيات" : "Team & access"}</span>
           </Link>
           <Link href="/system" className={`nav-link ${pathname.startsWith("/system") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/system") ? "page" : undefined} onClick={() => closeMenu()}>
             <Bell size={18} />
-            <span>Alerts</span>
+            <span>{ar ? "التنبيهات" : "Alerts"}</span>
           </Link>
           <Link href="/settings/integrations" className={`nav-link ${pathname.startsWith("/settings") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/settings") ? "page" : undefined} onClick={() => closeMenu()}>
             <Settings size={18} />
-            <span>Settings</span>
+            <span>{ar ? "الإعدادات" : "Settings"}</span>
           </Link>
           <SessionProfile />
         </div>
       </aside>
 
-      {menuOpen ? <button className="sidebar-backdrop" type="button" aria-label="Close navigation" onClick={() => closeMenu({ returnFocus: true })} /> : null}
+      {menuOpen ? <button className="sidebar-backdrop" type="button" aria-label={ar ? "إغلاق التنقل" : "Close navigation"} onClick={() => closeMenu({ returnFocus: true })} /> : null}
 
       <div className="workspace">
         <header className="topbar">
-          <span className="environment-badge">Staging</span>
+          <span className="environment-badge">{ar ? "بيئة العرض" : "Staging"}</span>
           <div className="topbar-actions">
-            <Link className="icon-button notification-button" href="/system" aria-label="Open system alerts">
+            <LocaleToggle locale={locale} />
+            <Link className="icon-button notification-button" href="/system" aria-label={ar ? "فتح تنبيهات النظام" : "Open system alerts"}>
               <Bell size={19} />
               <span aria-hidden="true" />
             </Link>
-            <button className="icon-button" type="button" aria-label="Open help">
+            <button className="icon-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"}>
               <CircleHelp size={19} />
             </button>
           </div>
@@ -129,13 +137,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main id="main-content" className="main-content">{children}</main>
       </div>
 
-      <nav className="mobile-navigation" aria-label="Mobile navigation">
-        {primaryNavigation.slice(0, 5).map(({ href, label, icon: Icon }) => {
+      <nav className="mobile-navigation" aria-label={ar ? "تنقل الجوال" : "Mobile navigation"}>
+        {primaryNavigation.slice(0, 5).map((item) => {
+          const { href, icon: Icon } = item;
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (
             <Link key={href} href={href} className={active ? "mobile-nav-active" : ""} aria-current={active ? "page" : undefined}>
               <span className="mobile-nav-icon"><Icon size={20} /></span>
-              <span>{label}</span>
+              <span>{navLabel(item)}</span>
             </Link>
           );
         })}
