@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
+import { CreativeSubnav } from "@/components/creative/creative-subnav";
 
 interface DesignRow {
   template_id: string;
@@ -91,6 +92,7 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
   }
   return (
     <div className="creative-page" dir={dir} lang={locale}>
+      <CreativeSubnav locale={locale} />
       <div className="creative-head"><h1>{t(locale, "designs.title")}</h1></div>
       {canAdmin && (
         <form className="creative-form" onSubmit={create}>
@@ -123,8 +125,12 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
           <ul className="creative-grid">
             {designs.data.designs.map((design) => (
               <li key={`${design.template_id}`} className="creative-card">
+                <div className="creative-thumb">
+                  <iframe title={design.name} src={`/api/creative/designs/${design.template_id}/preview?format=1:1`} loading="lazy" tabIndex={-1} />
+                </div>
                 <h2><Link href={`/creative/designs/${design.template_id}`}>{design.name}</Link></h2>
                 <p>{design.kind} · {t(locale, "common.version")}{design.version} · {design.organization_id ? "org" : "global"}</p>
+                <Link className="creative-card-action" href={`/creative/designs/${design.template_id}`}>{locale === "ar" ? "تعديل التصميم" : "Edit design"}</Link>
               </li>
             ))}
           </ul>

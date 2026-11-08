@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
+import { CreativeSubnav } from "@/components/creative/creative-subnav";
 
 interface KitRow {
   kit_id: string;
@@ -67,6 +68,7 @@ export function BrandKitsView({ locale, dir }: { locale: CreativeLocale; dir: "r
   }
   return (
     <div className="creative-page" dir={dir} lang={locale}>
+      <CreativeSubnav locale={locale} />
       <div className="creative-head"><h1>{t(locale, "brands.title")}</h1></div>
       {canAdmin && (
         <form className="creative-form" onSubmit={create}>
@@ -139,6 +141,7 @@ export function BrandKitDetailView({ locale, dir, kitId }: { locale: CreativeLoc
   }
   return (
     <div className="creative-page" dir={dir} lang={locale}>
+      <CreativeSubnav locale={locale} />
       <p><Link href="/creative/brand-kits">{t(locale, "common.back")}</Link></p>
       {detail.loading ? <Loading locale={locale} /> : detail.error ? <LoadError locale={locale} error={detail.error} onRetry={detail.reload} />
         : detail.data && (

@@ -4,6 +4,7 @@ import { useState } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
+import { CreativeSubnav } from "@/components/creative/creative-subnav";
 
 interface TemplateRow {
   template_id: string;
@@ -64,6 +65,7 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
   }
   return (
     <div className="creative-page" dir={dir} lang={locale}>
+      <CreativeSubnav locale={locale} />
       <div className="creative-head"><h1>{t(locale, "templates.title")}</h1></div>
       {canAdmin && (
         <form className="creative-form" onSubmit={create}>
