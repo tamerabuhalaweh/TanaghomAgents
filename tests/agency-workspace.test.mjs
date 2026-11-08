@@ -2,6 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { workspaceManifest,workspaceRequest,workspaceArtifact } from '../packages/agent-runtime/workspace.mjs';
+import { createGeminiWorkspaceClient } from '../packages/agent-runtime/gemini-workspace.mjs';
 test('workspace deployment validates the ledger as administrator without widening API permissions',()=>{
  const probe=readFileSync('deployment/agency-workspace/validate.cjs','utf8');
  assert.doesNotMatch(probe,/query\(['"`]SELECT[^;\n]*schema_migrations/);
@@ -84,6 +85,18 @@ test('workspace: migration 0048 registers Gemini without replacing the Gemma pro
  assert.match(up,/provider_request_rejected/);
  assert.match(up,/provider_quota_exceeded/);
  assert.doesNotMatch(up,/DELETE FROM tanaghom\.agent_runtime_profiles/);
- assert.match(down,/refuses.*referenced by inference evidence/i);
- assert.match(down,/DELETE FROM public\.schema_migrations WHERE version='0048_gemini_workspace_model'/);
+ assert.match(down,/refuses.*referenced by inference evidence/i);  assert.match(down,/DELETE FROM public\.schema_migrations WHERE version='0048_gemini_workspace_model'/);
+});
+test('workspace: a transient 503 retries with bounded backoff and stays explicit when it persists',async()=>{
+ const ok=()=>new Response(JSON.stringify({candidates:[{finishReason:'STOP',content:{parts:[{text:'A useful draft for the fictional course.'}]}}]}),{status:200,headers:{'content-type':'application/json'}});
+ const busy=()=>new Response('{"error":{"status":"UNAVAILABLE"}}',{status:503});
+ const delays=[];let calls=0;
+ const client=createGeminiWorkspaceClient({apiKey:'k'.repeat(32),fetch:async()=>{calls+=1;return calls===1?busy():ok();},sleep:async(ms)=>{delays.push(ms);}});
+ const body=await client.generate('gemini-3.6-flash',{contents:[]});
+ assert.equal(body.candidates[0].finishReason,'STOP');
+ assert.equal(calls,2);assert.deepEqual(delays,[2000]);
+ const persistent=[];let attempts=0;
+ const failing=createGeminiWorkspaceClient({apiKey:'k'.repeat(32),fetch:async()=>{attempts+=1;return busy();},sleep:async(ms)=>{persistent.push(ms);}});
+ await assert.rejects(()=>failing.generate('gemini-3.6-flash',{contents:[]}),e=>e.code==='inference_outcome_unknown'&&e.status===502);
+ assert.equal(attempts,4);assert.deepEqual(persistent,[2000,5000,10000]);
 });

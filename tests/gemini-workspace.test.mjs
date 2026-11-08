@@ -36,19 +36,21 @@ test('gemini adapter: exact inventory, key header, bounded request and no key in
  assert.equal(seenKey,key);assert.equal(seenBody.includes(key),false);assert.equal(seenBody.includes('fixture'),true);
 });
 
-test('gemini adapter: quota, reject, unavailable and uncertain failures are explicit with no retry',async t=>{
+test('gemini adapter: quota, reject and not-found fail without retry; unavailable retries then fails explicitly',async t=>{
  const statuses=[429,400,404,503];
  let calls=0;
  const base=await stub(t,async(req,res)=>{
   const status=statuses[Math.min(calls,statuses.length-1)];calls++;req.resume();
   res.writeHead(status,{'content-type':'application/json'});res.end(JSON.stringify({error:{message:'private provider detail'}}));
  });
- const client=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${base}/v1beta`});
+ const delays=[];
+ const client=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${base}/v1beta`,sleep:async(ms)=>{delays.push(ms);}});
  await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='provider_quota_exceeded');
  await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='provider_request_rejected');
  await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='model_unavailable');
  await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='inference_outcome_unknown');
- assert.equal(calls,4);
+ // 503 is retried three times with bounded backoff before it is classified.
+ assert.equal(calls,7);assert.deepEqual(delays,[2000,5000,10000]);
 });
 
 test('gemini adapter: inventory quota is explicit and not retried',async t=>{
