@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import { RootFrame } from "@/components/root-frame";
+import { creativeLocale } from "@/lib/creative-locale";
 import "./globals.css";
 import "./workspace.css";
 import "./creative.css";
@@ -19,9 +20,16 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default async function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+  let locale: "en" | "ar" = "en";
+  let dir: "ltr" | "rtl" = "ltr";
+  try {
+    ({ locale, dir } = await creativeLocale());
+  } catch {
+    // A missing cookie store must never break rendering; default to English.
+  }
   return (
-    <html lang="en" dir="ltr">
+    <html lang={locale} dir={dir}>
       <body className={inter.variable}>
         <RootFrame>{children}</RootFrame>
       </body>

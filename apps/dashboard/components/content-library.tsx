@@ -14,6 +14,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -60,15 +61,15 @@ interface Integration {
   reason: string;
 }
 
-const tabs: { value: LibraryFilter; label: string }[] = [
-  { value: "all", label: "All" },
-  { value: "pending_approval", label: "Pending" },
-  { value: "approved", label: "Approved" },
-  { value: "scheduled", label: "Scheduled" },
-  { value: "sent_to_postiz", label: "Postiz handoff" },
-  { value: "posted", label: "Published" },
-  { value: "rejected", label: "Rejected" },
-  { value: "cancelled", label: "Cancelled" },
+const tabs: { value: LibraryFilter; label: string; arabic: string }[] = [
+  { value: "all", label: "All", arabic: "الكل" },
+  { value: "pending_approval", label: "Pending", arabic: "قيد الانتظار" },
+  { value: "approved", label: "Approved", arabic: "معتمد" },
+  { value: "scheduled", label: "Scheduled", arabic: "مجدول" },
+  { value: "sent_to_postiz", label: "Postiz handoff", arabic: "تسليم بوستيز" },
+  { value: "posted", label: "Published", arabic: "منشور" },
+  { value: "rejected", label: "Rejected", arabic: "مرفوض" },
+  { value: "cancelled", label: "Cancelled", arabic: "ملغى" },
 ];
 
 const statusLabel: Record<ContentStatus, string> = {
@@ -79,6 +80,15 @@ const statusLabel: Record<ContentStatus, string> = {
   scheduled: "Scheduled",
   posted: "Published",
   cancelled: "Cancelled",
+};
+const statusLabelAr: Record<ContentStatus, string> = {
+  draft: "مسودة",
+  pending_approval: "بانتظار المراجعة",
+  approved: "معتمد",
+  rejected: "مرفوض",
+  scheduled: "مجدول",
+  posted: "منشور",
+  cancelled: "ملغى",
 };
 const statusTone: Record<ContentStatus, "neutral" | "attention" | "success" | "danger" | "working"> = {
   draft: "neutral",
@@ -111,6 +121,8 @@ function handoffLabel(item: ContentItem) {
 }
 
 export function ContentLibrary() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [items, setItems] = useState<ContentItem[]>([]);
   const [integration, setIntegration] = useState<Integration | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "error">("loading");
@@ -194,8 +206,8 @@ export function ContentLibrary() {
 
   return <div className="page-stack">
     <PageHeading
-      title="Content Library"
-      description="The permanent record of generated, reviewed, scheduled, and published content."
+      title={ar ? "مكتبة المحتوى" : "Content Library"}
+      description={ar ? "السجل الدائم للمحتوى المولَّد والمراجَع والمجدول والمنشور." : "The permanent record of generated, reviewed, scheduled, and published content."}
     />
     {state === "loading" ? <LibraryLoading /> : null}
     {state === "error" ? <section className="operations-state operations-state-error">
@@ -218,19 +230,19 @@ export function ContentLibrary() {
             aria-selected={tab === item.value}
             className={tab === item.value ? "library-tab library-tab-active" : "library-tab"}
             onClick={() => setTab(item.value)}
-          >{item.label}<span>{count(item.value)}</span></button>)}
+          >{ar ? item.arabic : item.label}<span>{count(item.value)}</span></button>)}
         </div>
         <label className="search-field">
           <Search size={17} />
           <span className="sr-only">Search content</span>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder="Search campaign, channel, or copy" />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={ar ? "ابحث في الحملة أو القناة أو النص" : "Search campaign, channel, or copy"} />
         </label>
       </section>
       {!visible.length ? <section className="library-empty">
         <LibraryBig size={28} />
         <div>
-          <h2>No content in this view</h2>
-          <p>{items.length ? "Choose another status or clear the search." : "Generated drafts will appear here and remain visible after every approval decision."}</p>
+          <h2>{ar ? "لا يوجد محتوى في هذا العرض" : "No content in this view"}</h2>
+          <p>{items.length ? (ar ? "اختر حالة أخرى أو امسح البحث." : "Choose another status or clear the search.") : (ar ? "ستظهر المسودات المولَّدة هنا وتبقى مرئية بعد كل قرار اعتماد." : "Generated drafts will appear here and remain visible after every approval decision.")}</p>
         </div>
       </section> : null}
       <section className="content-records" aria-label="Content records">
@@ -251,25 +263,25 @@ export function ContentLibrary() {
                 <span className="channel-tile">{item.channel.slice(0, 2).toUpperCase()}</span>
                 <div><p>{item.campaign_name}</p><h2>{item.channel} · {item.content_type.replaceAll("_", " ")}</h2></div>
               </div>
-              <StatusPill tone={statusTone[item.status]}>{statusLabel[item.status]}</StatusPill>
+              <StatusPill tone={statusTone[item.status]}>{ar ? statusLabelAr[item.status] : statusLabel[item.status]}</StatusPill>
             </header>
-            <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`}>{item.draft_copy}</p>
+            <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto">{item.draft_copy}</p>
             <div className="content-record-meta">
               <span>Generation {item.generation}</span>
               <span>Strategy v{item.strategy_version}</span>
               <span>Updated {date(item.updated_at)}</span>
             </div>
             {isExpanded ? <div className="content-details">
-              <section><h3>Media brief</h3><p>{item.media_brief}</p></section>
+              <section><h3>{ar ? "الموجز الإعلامي" : "Media brief"}</h3><p dir="auto">{item.media_brief}</p></section>
               <section>
-                <h3>Human decision</h3>
+                <h3>{ar ? "القرار البشري" : "Human decision"}</h3>
                 {item.decision
                   ? <p><CheckCircle2 size={16} /> {item.decision === "approved" ? "Approved" : "Rejected"} by {item.decided_by_name} · {date(item.decided_at)}</p>
                   : <p><Clock3 size={16} /> No decision recorded for this generation.</p>}
                 {item.rejection_reason ? <blockquote>{item.rejection_reason}</blockquote> : null}
               </section>
               <section>
-                <h3>Postiz handoff</h3>
+                <h3>{ar ? "تسليم بوستيز" : "Postiz handoff"}</h3>
                 <p>{item.post_status
                   ? <><CheckCircle2 size={16} /> Postiz {item.post_status} created · last synced {date(item.last_synced_at)}</>
                   : item.handoff_status
@@ -285,11 +297,11 @@ export function ContentLibrary() {
             </div> : null}
             <footer>
               <button className="text-button" type="button" onClick={() => setExpanded(isExpanded ? "" : item.id)}>
-                {isExpanded ? "Show less" : "View details"}
+                {isExpanded ? (ar ? "عرض أقل" : "Show less") : (ar ? "عرض التفاصيل" : "View details")}
               </button>
               <div>
-                {item.status === "pending_approval" ? <Link className="secondary-button compact-button" href="/approvals">
-                  Review now <ExternalLink size={14} />
+                {item.status === "pending_approval" ? <Link className="secondary-button compact-button" href={`/approvals?id=${encodeURIComponent(item.id)}`}>
+                  {ar ? "راجع الآن" : "Review now"} <ExternalLink size={14} />
                 </Link> : null}
                 {canHandoff && !hasHandoff ? <button
                   className="primary-button compact-button"
