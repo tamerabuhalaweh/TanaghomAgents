@@ -43,6 +43,9 @@ while [ $# -gt 0 ]; do
 done
 
 compose=(docker compose -p tanaghom-dashboard-demo -f "$compose_dir/compose.yml")
+# Match demo-lifecycle-lib.sh: read the untracked host .env when it exists so the
+# control wrapper sees the same credentials and switches as the running stack.
+[ -f "$compose_dir/.env" ] && compose+=(--env-file "$compose_dir/.env")
 psql_demo() { "${compose[@]}" exec -T postgres psql -X -At -U postgres -d tanaghom_demo "$@"; }
 
 if ! docker info >/dev/null 2>&1; then

@@ -80,6 +80,10 @@ export TANAGHOM_DEMO_SECRETS_DIR="$secrets_dir"
 export TANAGHOM_DEMO_RELEASE="$release"
 
 compose=(docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml)
+# The untracked host .env carries INTEGRATION_CREDENTIAL_KEY, the workspace switch
+# and the Postiz allowlist; without it every compose default falls back to inert.
+compose_env_file="deployment/dashboard-demo/.env"
+[ -f "$compose_env_file" ] && compose+=(--env-file "$compose_env_file")
 committed=false
 trap 'if ! $committed; then echo "DEMO_DEPLOYMENT_NOT_COMMITTED: services left for inspection; canary untouched" >&2; "${compose[@]}" ps || true; fi' EXIT
 

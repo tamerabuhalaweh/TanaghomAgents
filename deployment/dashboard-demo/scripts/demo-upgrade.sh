@@ -49,6 +49,9 @@ fi
 
 compose up -d dashboard >/dev/null
 wait_healthy dashboard
+# The worker was stopped above to quiesce the run; restore it when the host
+# contract keeps the workspace enabled, otherwise the upgrade silently disables it.
+start_workspace_worker
 
 echo "UPGRADE_COMPLETE baseline=$before_ledger ledger=$after_ledger backup=$dir"
 echo "ROW_COUNT_DELTAS:"

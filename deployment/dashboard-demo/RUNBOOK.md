@@ -1,22 +1,24 @@
-# Demo dashboard deployment runbook (#243)
+# Dashboard deployment runbook (#243) — Phase 1 production host
 
-> **Release blocked:** This document is historical and does not authorize deployment,
-> activation, upgrade, rollback, or deletion on any host. Its original host and
-> activation instructions have not been reconciled with the current CPU test VPS.
-> Existing demo volumes and secrets must be preserved. A reviewed backup, restore,
-> compatibility and activation procedure, plus a separate deployment GO, are required.
+> **Current target:** `13.60.253.82`, root `/home/ubuntu/tanaghom-demo`. This runbook
+> documents the Phase 1 cutover that runs there today: dashboard, PostgreSQL 17,
+> RustFS, the `gemini-3.6-flash` workspace worker and a draft-only Postiz stack.
+> The historical Astra host is retired and is not a target for any step below.
+> Take a verified backup (`demo-backup.sh`) before changing anything.
 
 ## Target contract
 
-- Historical host: Astra `38.247.187.232`; **not an authorized target for this release**.
+- Production host: `13.60.253.82`, operator `ubuntu`, root `/home/ubuntu/tanaghom-demo`.
 - Dashboard listener: only `127.0.0.1:3210`; access through a private SSH tunnel.
+- Postiz UI: only `127.0.0.1:5000`; the dashboard reaches its API internally at
+  `http://postiz:5000/api/public/v1`.
 - Existing canary: `127.0.0.1:3200`; never stop, rewrite, reuse, or proxy it.
 - Isolated project/volumes/networks are all prefixed `tanaghom-dashboard-demo`.
 - Fresh demo database, private demo bucket, synthetic owner/reviewer accounts.
 - No nginx, DNS, TLS, production flag, real provider, sending, or publishing change.
-- Sol must not SSH or deploy. Astra executes only after package review and a separate deployment GO.
+- Only a reviewed release runs here, reached over SSH with the operator key.
 
-## Prerequisites on Astra
+## Prerequisites on the production host
 
 Docker Engine with Compose v2, `bash`, `openssl`, `python3`, `curl`, `ss`, at least 10 GB free
 space, and port `3210` unused. Do not use host port `5432`; it belongs to an unrelated container.
@@ -24,8 +26,8 @@ space, and port `3210` unused. Do not use host port `5432`; it belongs to an unr
 Place the reviewed source and private runtime outside canary paths:
 
 ```sh
-/opt/tanaghom-demo/source
-/opt/tanaghom-demo/runtime/secrets
+/home/ubuntu/tanaghom-demo/source
+/home/ubuntu/tanaghom-demo/runtime/secrets
 ```
 
 Check out the exact reviewed commit in `source`; the worktree must be clean.
@@ -36,15 +38,15 @@ The deploy script creates these for a fresh demo only. If an existing runtime ha
 partial secrets, stop and restore the matching secrets; do not regenerate them or reset volumes.
 
 ```sh
-cd /opt/tanaghom-demo/source
-bash deployment/dashboard-demo/scripts/prepare-runtime.sh /opt/tanaghom-demo/runtime/secrets
-chmod 0700 /opt/tanaghom-demo/runtime/secrets
+cd /home/ubuntu/tanaghom-demo/source
+bash deployment/dashboard-demo/scripts/prepare-runtime.sh /home/ubuntu/tanaghom-demo/runtime/secrets
+chmod 0700 /home/ubuntu/tanaghom-demo/runtime/secrets
 # The script makes shared secret files 0444 so non-root containers can read the bind mounts.
 # demo-credentials.txt stays 0600. Do not chmod all files to 0600.
 ```
 
 Read the private demo account passwords from
-`/opt/tanaghom-demo/runtime/secrets/demo-credentials.txt`. Never copy that file into git,
+`/home/ubuntu/tanaghom-demo/runtime/secrets/demo-credentials.txt`. Never copy that file into git,
 logs, issue comments, or chat.
 
 The runtime also contains `workspace_password`, `workspace_database_url`,
@@ -80,11 +82,12 @@ investigate unknown outcomes before taking further action.
 
 The dashboard reads `/run/secrets/gemini_api_key` on each request; `cp` updates the existing bind
 mount in place. If the key is replaced with a new inode, recreate only the demo dashboard.
-Activation logs must contain no key material. Before a normal `deploy.sh`, stop the optional worker
-and leave `AGENCY_WORKSPACE_ENABLED` unset/false so the default deployment remains inert:
+Activation logs must contain no key material. This host keeps the workspace enabled through
+`deployment/dashboard-demo/.env`; `deploy.sh` refuses an existing database, so data changes go
+through the backup-verified upgrade. To quiesce the worker by hand for an inspection:
 
 ```sh
-TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
+TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
   docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml \
   --profile workspace stop workspace-worker
 ```
@@ -95,16 +98,57 @@ model (`gemini-3.6-flash`) is verified against the provider inventory (cached fo
 dashboard process) before specialist requests; failures are recorded as explicit workspace errors and stop further inference for human
 review.
 
+## Host configuration contract (`deployment/dashboard-demo/.env`)
+
+`compose.yml` defaults every Phase 1 switch to its inert value, so an unset key
+silently disables a feature instead of failing. The live host state therefore
+lives in an untracked `.env` beside the compose file (mode `0600`, git-ignored).
+`deploy.sh`, `demo-backup.sh`, `demo-upgrade.sh`, `demo-restore.sh` and
+`workspace-control.sh` all pass it with `--env-file` when it exists, so a rebuild
+keeps the same behaviour. Start from the tracked template:
+
+```sh
+cp deployment/dashboard-demo/.env.example deployment/dashboard-demo/.env
+chmod 0600 deployment/dashboard-demo/.env
+```
+
+| Key | This host | Meaning |
+| --- | --- | --- |
+| `AGENCY_WORKSPACE_ENABLED` | `true` | Offer the Agency workspace and let the worker run |
+| `INTEGRATION_CREDENTIAL_KEY` | generated, kept | Base64 of 32 random bytes (`openssl rand -base64 32`); losing it makes stored provider credentials undecryptable |
+| `INTEGRATION_CREDENTIAL_KEY_VERSION` | `1` | Version bound to each encrypted credential row |
+| `POSTIZ_ALLOWED_BASE_URLS` | `http://postiz:5000/api/public/v1` | Exact plain-http exception for the private Postiz API |
+| `POSTIZ_HANDOFF_ENABLED` | `true` | Queue approved content as Postiz drafts only |
+| `POSTIZ_AUTOMATION_RUNTIME_READY` | `false` | Keeps automatic draft mode unavailable |
+| `POSTIZ_PERFORMANCE_SYNC_ENABLED` | `false` | Analytics sync stays off for Phase 1 |
+
+## Workspace worker lifecycle
+
+`AGENCY_WORKSPACE_ENABLED=true` is only half the contract: the worker container
+must be running too, and it lives in the `workspace` compose profile, so a plain
+`up -d` does not start it. `demo-upgrade.sh` and `demo-restore.sh` stop it to
+quiesce the stack and now restart it after the dashboard is healthy whenever the
+flag is `true`, printing `WORKSPACE_WORKER_STARTED enabled` (or
+`WORKSPACE_WORKER_SKIPPED disabled`). Start it by hand with:
+
+```sh
+docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml \
+  --env-file deployment/dashboard-demo/.env --profile workspace up -d workspace-worker
+```
+
+A healthy worker logs `workspace_task_finished status=succeeded` and then
+`workspace_worker_waiting_for_activation`.
+
 ## Deploy
 
 Run this as root from a clean checkout. Use the exact reviewed SHA for both values. The
 authorization string is an explicit operator guard, not a production secret.
 
 ```sh
-cd /opt/tanaghom-demo/source
+cd /home/ubuntu/tanaghom-demo/source
 TANAGHOM_DEMO_DEPLOY_AUTHORIZATION=GO-DEPLOY-TANAGHOM-243-DEMO \
 EXPECTED_DEMO_RELEASE=<reviewed-sha> \
-TANAGHOM_DEMO_ROOT=/opt/tanaghom-demo \
+TANAGHOM_DEMO_ROOT=/home/ubuntu/tanaghom-demo \
 bash deployment/dashboard-demo/scripts/deploy.sh
 ```
 
@@ -124,10 +168,10 @@ intentional. The role/ledger guard requires exactly that chain.
 ## Validate
 
 ```sh
-cd /opt/tanaghom-demo/source/deployment/dashboard-demo
-TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets TANAGHOM_DEMO_RELEASE=<reviewed-sha> \
+cd /home/ubuntu/tanaghom-demo/source/deployment/dashboard-demo
+TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets TANAGHOM_DEMO_RELEASE=<reviewed-sha> \
   SMOKE_WRITE=0 bash scripts/validate.sh
-TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets TANAGHOM_DEMO_RELEASE=<reviewed-sha> \
+TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets TANAGHOM_DEMO_RELEASE=<reviewed-sha> \
   SMOKE_WRITE=1 SMOKE_REJECT=1 bash scripts/validate.sh
 ```
 
@@ -146,7 +190,7 @@ have no host port bindings.
 Use the SSH identity supplied by Astra:
 
 ```sh
-ssh -N -L 3210:127.0.0.1:3210 <astra-user>@38.247.187.232
+ssh -N -i <operator-key> -L 3210:127.0.0.1:3210 -L 5000:127.0.0.1:5000 ubuntu@13.60.253.82
 ```
 
 Open `http://127.0.0.1:3210` locally and sign in with the generated owner or reviewer account.
@@ -159,10 +203,10 @@ Use `UAT.md`. Record pass/fail and any defect outside the private credentials.
 ## Logs and health
 
 ```sh
-cd /opt/tanaghom-demo/source
-TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
+cd /home/ubuntu/tanaghom-demo/source
+TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
   docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml ps -a
-TANAGHOM_DEMO_SECRETS_DIR=/opt/tanaghom-demo/runtime/secrets \
+TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
   docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml logs --no-color --tail=200
 curl --fail --silent http://127.0.0.1:3210/api/health
 ```
@@ -176,7 +220,7 @@ deletes a volume. Run them on the disposable demo host only.
 
 ```sh
 cd <source>
-export TANAGHOM_DEMO_ROOT=/opt/tanaghom-demo
+export TANAGHOM_DEMO_ROOT=/home/ubuntu/tanaghom-demo
 bash deployment/dashboard-demo/scripts/demo-backup.sh
 TANAGHOM_DEMO_UPGRADE_AUTHORIZATION=GO-UPGRADE-TANAGHOM-259-DEMO \
   bash deployment/dashboard-demo/scripts/demo-upgrade.sh
@@ -246,3 +290,50 @@ Any other running compose project still refuses activation. Publishing stays
 human-gated: `POSTIZ_HANDOFF_ENABLED` only queues approved drafts, and
 `POSTIZ_AUTOMATION_RUNTIME_READY` stays `false` so automatic mode cannot be
 selected.
+
+The stack is reproducible from source. Images are pinned by digest in
+`deployment/postiz/compose.yml`; `deployment/postiz/postiz.env.example` documents
+the `JWT_SECRET` this host needs in `postiz.env`; and the owner organization,
+user and API key are seeded idempotently by:
+
+```sh
+POSTIZ_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
+  bash deployment/postiz/scripts/postiz-bootstrap.sh
+```
+
+It prints `POSTIZ_BOOTSTRAP_OK ... role=ADMIN`, never rotates an existing key,
+never resets an existing password and never prints a secret.
+
+Then verify the dashboard side. In Settings → Integrations → Postiz, save the
+internal base URL and the organization key, and run **Test connection**: the row
+must report `connected` with `last_test_status=passed`. The same two steps are
+`PUT /api/admin/integrations/postiz` followed by
+`POST /api/admin/integrations/postiz/test`, and the stored credential is encrypted
+with `INTEGRATION_CREDENTIAL_KEY`, so a `secure_storage_configured=false` response
+means that key is missing from the running container.
+
+## Scheduled backups
+
+`demo-backup.sh` is the verified snapshot; `scheduled-backup.sh` wraps it, adds a
+`postiz-postgres` dump (checksummed and re-listed with `pg_restore -l`) and prunes
+old snapshots while keeping the newest `TANAGHOM_BACKUP_RETENTION` (default 7) and
+every `latest` target. Run it by hand:
+
+```sh
+TANAGHOM_DEMO_ROOT=/home/ubuntu/tanaghom-demo \
+  bash deployment/dashboard-demo/scripts/scheduled-backup.sh
+```
+
+Install the daily cron entry as the operator (no privilege escalation needed;
+the user is in the `docker` group):
+
+```sh
+mkdir -p /home/ubuntu/tanaghom-demo/runtime/backups
+(crontab -l 2>/dev/null; echo '15 3 * * * TANAGHOM_DEMO_ROOT=/home/ubuntu/tanaghom-demo bash /home/ubuntu/tanaghom-demo/source/deployment/dashboard-demo/scripts/scheduled-backup.sh >> /home/ubuntu/tanaghom-demo/runtime/backups/scheduled.log 2>&1') | crontab -
+crontab -l | tail -1
+```
+
+Expected markers: `BACKUP_VERIFIED`, `POSTIZ_BACKUP_VERIFIED`,
+`RETENTION_KEPT` and `SCHEDULED_BACKUP_COMPLETE`. Restore remains deliberate:
+`demo-restore.sh` refuses without its authorization marker and re-proves row
+counts and the object inventory.

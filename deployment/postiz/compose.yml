@@ -40,7 +40,7 @@ services:
     logging: *bounded-logging
 
   postiz-redis:
-    image: redis:7.4-alpine
+    image: redis:7.4-alpine@sha256:c5d34a98396a4775e223c74e929162c35c5a2182901ba26b50ade939941ce14b
     restart: unless-stopped
     command: ["redis-server", "--save", "60", "1", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
     volumes: [postiz-redisdata:/data]
@@ -60,7 +60,7 @@ services:
   # boot. The dev server keeps everything in one container for this single-host
   # deployment.
   postiz-temporal:
-    image: temporalio/temporal:latest
+    image: temporalio/temporal@sha256:003508da05989e7cf0d583cfce521c4bb2732e733574e3040db8f1284783baa2
     restart: unless-stopped
     command: ["server", "start-dev", "--ip", "0.0.0.0", "--port", "7233"]
     environment:
@@ -80,7 +80,7 @@ services:
     logging: *bounded-logging
 
   postiz:
-    image: ghcr.io/gitroomhq/postiz-app:latest
+    image: ghcr.io/gitroomhq/postiz-app@sha256:1e376ff2cb781022d528f171719cf174cf693a985a30cb40eefb13eae3ddda13
     restart: unless-stopped
     depends_on:
       postiz-postgres: { condition: service_healthy }

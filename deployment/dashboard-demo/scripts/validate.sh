@@ -3,6 +3,9 @@ set -euo pipefail
 
 cd "$(dirname "$0")/.."
 compose=(docker compose -p tanaghom-dashboard-demo -f compose.yml)
+# Validate the configuration the host actually runs: the untracked .env carries
+# the workspace switch, the credential key and the Postiz allowlist.
+[ -f .env ] && compose+=(--env-file .env)
 : "${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}"
 export TANAGHOM_DEMO_SECRETS_DIR
 
