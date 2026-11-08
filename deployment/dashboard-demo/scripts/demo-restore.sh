@@ -57,5 +57,8 @@ fi
 compose up -d --no-deps storage auth >/dev/null
 compose up -d --no-deps dashboard >/dev/null
 wait_healthy dashboard
+# The worker was stopped above to quiesce the run; restore it when the host
+# contract keeps the workspace enabled, otherwise the restore silently disables it.
+start_workspace_worker
 
 echo "RESTORE_COMPLETE ledger=$want_ledger blobs=$want_blobs tables=$(wc -l < "$dir/counts.txt") dir=$dir"

@@ -95,3 +95,28 @@ wait_healthy() {
   done
   refuse "$service did not become healthy"
 }
+
+# Phase 1 contract: the host .env sets AGENCY_WORKSPACE_ENABLED=true and the
+# worker runs in the "workspace" profile, so a plain `up -d` never starts it.
+# Upgrade and restore stop the worker to quiesce the stack; they must bring it
+# back or the host silently loses its model worker while the flag stays true.
+# Reads the environment first, then the untracked compose .env, and never prints
+# a value: only the resolved boolean.
+workspace_enabled() {
+  local value="${AGENCY_WORKSPACE_ENABLED:-}"
+  if [ -z "$value" ] && [ -f "$COMPOSE_ENV_FILE" ]; then
+    value="$(sed -n 's/^AGENCY_WORKSPACE_ENABLED=//p' "$COMPOSE_ENV_FILE" | tail -n 1)"
+  fi
+  value="${value%\"}"
+  value="${value#\"}"
+  [ "${value:-false}" = "true" ]
+}
+
+start_workspace_worker() {
+  if ! workspace_enabled; then
+    echo "WORKSPACE_WORKER_SKIPPED disabled"
+    return 0
+  fi
+  compose --profile workspace up -d workspace-worker >/dev/null
+  echo "WORKSPACE_WORKER_STARTED enabled"
+}
