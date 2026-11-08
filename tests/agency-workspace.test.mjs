@@ -23,7 +23,7 @@ test('workspace: six bounded profiles and no model compiler/tool request',()=>{
  assert.deepEqual(workspaceManifest.provider,{code:'google_gemini',name:'Google Gemini',model:'gemini-3.6-flash'});
  const request=workspaceRequest(task,32768);
  assert.deepEqual(Object.keys(request).sort(),['contents','generationConfig','systemInstruction']);
- assert.deepEqual(request.generationConfig,{temperature:0.3,maxOutputTokens:1400,responseMimeType:'text/plain',thinkingConfig:{thinkingBudget:0}});
+ assert.deepEqual(request.generationConfig,{temperature:0.3,maxOutputTokens:4096,responseMimeType:'text/plain',thinkingConfig:{thinkingBudget:0}});
  assert.match(request.systemInstruction.parts[0].text,/unapproved proposals/);
  assert.match(request.systemInstruction.parts[0].text,/Human review/);
  assert.match(request.systemInstruction.parts[0].text,/chain-of-thought/);
