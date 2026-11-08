@@ -79,12 +79,17 @@ for flag in [
     "IMAGE_GENERATION_ENABLED", "GENERATIVE_VIDEO_ENABLED", "ML_SEGMENTATION_ENABLED",
     "TALKING_HEAD_ENABLED", "LIP_SYNC_ENABLED", "CUSTOM_AVATAR_ENABLED",
     "AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED", "AGENCY_PILOT_GATEWAY_ENABLED",
-    "POSTIZ_HANDOFF_ENABLED", "POSTIZ_AUTOMATION_RUNTIME_READY",
+    "POSTIZ_AUTOMATION_RUNTIME_READY",
     "POSTIZ_PERFORMANCE_SYNC_ENABLED", "GHL_CONTACT_SYNC_ENABLED",
     "GHL_CONTACT_HANDOFF_ENABLED", "GHL_WEBHOOK_INGRESS_ENABLED",
     "GHL_ACTION_RUNTIME_ENABLED", "GHL_ACTION_RUNTIME_READY", "ALLOW_STAGING_PUBLISH",
 ]:
     assert env[flag] == "false", f"{flag} must remain disabled"
+# POSTIZ_HANDOFF_ENABLED is operator-controlled since the compose file reads it
+# from the host .env: the Phase 1 host enables draft handoff. It only queues
+# approved drafts, so it must be an explicit boolean and cannot imply publishing.
+assert env["POSTIZ_HANDOFF_ENABLED"] in {"true", "false"}, "POSTIZ handoff must be explicit"
+assert env["ALLOW_STAGING_PUBLISH"] == "false", "publishing stays disabled"
 
 secrets_dir = Path(os.environ["TANAGHOM_DEMO_SECRETS_DIR"])
 assert (secrets_dir / "postgres_password").stat().st_size < 200

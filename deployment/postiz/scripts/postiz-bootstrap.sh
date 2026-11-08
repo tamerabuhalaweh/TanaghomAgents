@@ -119,4 +119,4 @@ role="$(q "SELECT role FROM \"UserOrganization\"
   WHERE \"organizationId\"='$org_id' AND \"userId\"=(SELECT id FROM \"User\" WHERE email='$owner_email' AND \"providerName\"='LOCAL')")"
 integrations="$(q "SELECT count(*) FROM \"Integration\"")"
 
-echo "POSTIZ_BOOTSTRAP_OK project=$project org=$org_id org_state=$org_state user_state=$user_state role=${role:-missing} integrations=$integrations api_key_length=${#org_key_len} key_matches_runtime=$key_verified owner_password=$password_state"
+echo "POSTIZ_BOOTSTRAP_OK project=$project org=$org_id org_state=$org_state user_state=$user_state role=${role:-missing} integrations=$integrations api_key_length=$org_key_len key_matches_runtime=$key_verified owner_password=$password_state"

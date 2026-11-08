@@ -41,7 +41,9 @@ if docker ps --format '{{.Names}}' | grep -Fxq "$postiz_container"; then
   chmod 0600 "$postiz_dir/postiz.dump"
   ( cd "$postiz_dir" && sha256sum postiz.dump > postiz.dump.sha256 )
   chmod 0600 "$postiz_dir/postiz.dump.sha256"
-  docker exec "$postiz_container" pg_restore -l < "$postiz_dir/postiz.dump" > "$postiz_dir/postiz.toc" ||
+  # -i is required: without it docker exec does not attach stdin and pg_restore
+  # reads an empty stream, which reports "input file is too short".
+  docker exec -i "$postiz_container" pg_restore -l < "$postiz_dir/postiz.dump" > "$postiz_dir/postiz.toc" ||
     refuse "the Postiz dump cannot be listed"
   chmod 0600 "$postiz_dir/postiz.toc"
   ln -sfn "$postiz_dir" "$BACKUP_ROOT/postiz-latest"

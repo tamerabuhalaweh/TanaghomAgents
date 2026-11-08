@@ -34,9 +34,13 @@ test('upgrade and restore restart the workspace worker when the host enables it'
 });
 
 test('every host script loads the untracked compose .env when it exists', async () => {
-  for (const script of ['deploy.sh', 'workspace-control.sh']) {
+  for (const script of ['deploy.sh', 'workspace-control.sh', 'validate.sh']) {
     const body = await read(`deployment/dashboard-demo/scripts/${script}`);
-    assert.match(body, /\[ -f "\$[A-Za-z_]+[^"]*" \] && compose\+=\{?\}?\(?--env-file/, `${script} must pass --env-file`);
+    assert.match(
+      body,
+      /\[ -f (?:"\$[A-Za-z_][^"]*"|\.env) \] && compose\+=\(?"?--env-file/,
+      `${script} must pass --env-file`,
+    );
   }
   const lib = await read('deployment/dashboard-demo/scripts/demo-lifecycle-lib.sh');
   assert.match(lib, /\[ -f "\$COMPOSE_ENV_FILE" \] && args\+=\{?\}?\(?--env-file/);
@@ -106,7 +110,7 @@ test('the scheduled backup covers Postiz and prunes with bounded retention', asy
   assert.match(script, /TANAGHOM_BACKUP_RETENTION/);
   assert.match(script, /demo-backup\.sh/);
   assert.match(script, /postiz-postgres|POSTIZ_DB_CONTAINER/);
-  assert.match(script, /pg_restore -l/, 'the Postiz dump must be proven readable');
+  assert.match(script, /docker exec -i "\$postiz_container" pg_restore -l/, 'the Postiz dump must be listed through attached stdin');
   assert.match(script, /retention.*-ge 2|must keep at least 2 snapshots/);
   assert.match(script, /\[ "\$dir" = "\$target" \] && continue/, 'never prune the latest snapshot');
   assert.match(script, /SCHEDULED_BACKUP_COMPLETE/);
