@@ -71,6 +71,8 @@ export function createGeminiWorkspaceClient({
   fetch: fetchImpl = globalThis.fetch,
   timeoutMs = 90000,
   inventoryTimeoutMs = 10000,
+  retryDelaysMs = [2000, 5000, 10000],
+  sleep = (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
 } = {}) {
   const key = apiKey(providedKey);
   if (typeof fetchImpl !== 'function') throw new GeminiWorkspaceError('model_unavailable', 503);
@@ -120,18 +122,30 @@ export function createGeminiWorkspaceClient({
       throw new GeminiWorkspaceError('inference_failed', 400);
     }
     if (Buffer.byteLength(body, 'utf8') > 64000) throw new GeminiWorkspaceError('inference_failed', 400);
+    const send = () => fetchImpl(geminiGenerateEndpoint(model, base), {
+      method: 'POST',
+      headers: { 'x-goog-api-key': key, accept: 'application/json', 'content-type': 'application/json' },
+      body,
+      redirect: 'error',
+      cache: 'no-store',
+      signal: AbortSignal.timeout(timeoutMs),
+    });
     let response;
     try {
-      response = await fetchImpl(geminiGenerateEndpoint(model, base), {
-        method: 'POST',
-        headers: { 'x-goog-api-key': key, accept: 'application/json', 'content-type': 'application/json' },
-        body,
-        redirect: 'error',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(timeoutMs),
-      });
+      response = await send();
     } catch {
       throw new GeminiWorkspaceError('inference_outcome_unknown', 502);
+    }
+    // A 503 is Google's transient high-demand signal. Workspace generation is
+    // pure text (external_actions: 0), so repeating the identical request is
+    // safe; any other status is classified immediately by statusError().
+    for (let attempt = 0; response.status === 503 && attempt < retryDelaysMs.length; attempt += 1) {
+      await sleep(retryDelaysMs[attempt]);
+      try {
+        response = await send();
+      } catch {
+        throw new GeminiWorkspaceError('inference_outcome_unknown', 502);
+      }
     }
     if (!response.ok) throw statusError(response.status);
     return boundedJson(response);
