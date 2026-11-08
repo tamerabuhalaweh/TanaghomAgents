@@ -304,6 +304,14 @@ POSTIZ_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
 It prints `POSTIZ_BOOTSTRAP_OK ... role=ADMIN`, never rotates an existing key,
 never resets an existing password and never prints a secret.
 
+Then verify the dashboard side. In Settings → Integrations → Postiz, save the
+internal base URL and the organization key, and run **Test connection**: the row
+must report `connected` with `last_test_status=passed`. The same two steps are
+`PUT /api/admin/integrations/postiz` followed by
+`POST /api/admin/integrations/postiz/test`, and the stored credential is encrypted
+with `INTEGRATION_CREDENTIAL_KEY`, so a `secure_storage_configured=false` response
+means that key is missing from the running container.
+
 ## Scheduled backups
 
 `demo-backup.sh` is the verified snapshot; `scheduled-backup.sh` wraps it, adds a
