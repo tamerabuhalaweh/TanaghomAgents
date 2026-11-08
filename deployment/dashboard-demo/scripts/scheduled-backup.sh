@@ -56,13 +56,16 @@ fi
 prune_kind() {
   local prefix="$1" link="$2" keep="$retention" dir target removed=0
   target="$(readlink -f "$BACKUP_ROOT/$link" 2>/dev/null || true)"
+  # ${prefix}*/ matches the timestamp directories themselves (20* or
+  # postiz-20*). A trailing slash in the glob would require one more level and
+  # silently match nothing, which is how retention once pruned nothing at all.
   while IFS= read -r dir; do
     [ -n "$dir" ] || continue
-    [ "$dir" = "$target" ] && continue
+    [ "$(readlink -f "$BACKUP_ROOT/$dir")" = "$target" ] && continue
     rm -rf "${BACKUP_ROOT:?}/$dir"
     echo "PRUNED $prefix/$dir"
     removed=$((removed + 1))
-  done < <(cd "$BACKUP_ROOT" && ls -1dt "$prefix"/*/ 2>/dev/null | sed "s|^$prefix/||; s|/$||" | tail -n +"$((keep + 1))")
+  done < <(cd "$BACKUP_ROOT" && ls -1dt ${prefix}*/ 2>/dev/null | sed 's:/*$::' | tail -n +"$((keep + 1))")
   echo "RETENTION_KEPT $prefix count=$keep pruned=$removed"
 }
 

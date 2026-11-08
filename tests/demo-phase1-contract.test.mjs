@@ -112,7 +112,9 @@ test('the scheduled backup covers Postiz and prunes with bounded retention', asy
   assert.match(script, /postiz-postgres|POSTIZ_DB_CONTAINER/);
   assert.match(script, /docker exec -i "\$postiz_container" pg_restore -l/, 'the Postiz dump must be listed through attached stdin');
   assert.match(script, /retention.*-ge 2|must keep at least 2 snapshots/);
-  assert.match(script, /\[ "\$dir" = "\$target" \] && continue/, 'never prune the latest snapshot');
+  assert.match(script, /readlink -f "\$BACKUP_ROOT\/\$dir"\)" = "\$target" \] && continue/, 'never prune the latest snapshot');
+  assert.match(script, /ls -1dt \$\{prefix\}\*\//, 'the retention glob must match the timestamp directories');
+  assert.doesNotMatch(script, /\$prefix"\/\*\//, 'a stricter glob would match nothing');
   assert.match(script, /SCHEDULED_BACKUP_COMPLETE/);
 });
 
