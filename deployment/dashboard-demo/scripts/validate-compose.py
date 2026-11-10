@@ -48,7 +48,10 @@ assert caddy["read_only"] is True
 assert set(caddy["networks"]) == {"edge", "backend"}
 caddy_ports = {(int(item["published"]), int(item["target"])) for item in caddy.get("ports") or []}
 assert caddy_ports == {(80, 80), (443, 443)}, "caddy must publish only 80/443"
-assert caddy["environment"]["TANAGHOM_PUBLIC_DOMAIN"].startswith("${"), "public domain must come from the host env"
+# Compose resolves ${TANAGHOM_PUBLIC_DOMAIN:-} to an empty string until the host
+# .env supplies it; the entrypoint refuses to start in that state.
+assert "TANAGHOM_PUBLIC_DOMAIN" in caddy["environment"], "public domain must come from the host env"
+assert "TANAGHOM_POSTIZ_DOMAIN" in caddy["environment"]
 assert caddy["entrypoint"] == ["/bin/sh", "/entrypoint.sh"]
 
 assert services["auth"]["environment"]["AUTH_STORE_FILE"] == "/data/auth-users.json"
