@@ -255,6 +255,9 @@ test("the public edge and onboarding guardrails are declared in source", async (
   assert.match(onboarding, /ONBOARD_BRAND_VOICE_AR/);
   assert.match(onboarding, /Demo Summer Camp/);
   assert.match(onboarding, /DEMO_CREDENTIALS_RETIRED/);
+  // app_users_invitation_lifecycle requires auth_subject, invited_at and
+  // accepted_at to be null together, so retirement must detach all three.
+  assert.match(onboarding, /auth_subject = NULL, invited_at = NULL, accepted_at = NULL/);
 
   if (process.platform !== "win32") {
     const syntax = spawnSync("bash", ["-n", onboardingScript], { encoding: "utf8" });
