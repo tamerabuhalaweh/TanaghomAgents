@@ -12,10 +12,10 @@ migrations = sorted((root / "packages/database/migrations").glob("*.up.sql"))
 assert len(migrations) == 45, "demo source must contain the exact 45-migration chain"
 assert migrations[-1].name == "0048_gemini_workspace_model.up.sql"
 assert len({path.name.split("_", 1)[0] for path in migrations}) == 45
-expected = {"postgres", "migrate", "auth", "storage", "storage-init", "dashboard", "workspace-worker"}
+expected = {"postgres", "migrate", "auth", "storage", "storage-init", "dashboard", "workspace-worker", "caddy"}
 assert set(services) == expected, "unexpected demo services"
 
-for name in expected - {"dashboard"}:
+for name in expected - {"dashboard", "caddy"}:
     assert not services[name].get("ports"), f"{name}: host port is forbidden"
 
 node_image = "node:24.18.0-alpine3.24@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd"
@@ -40,6 +40,25 @@ assert port.get("host_ip") == "127.0.0.1", "dashboard must bind only loopback"
 assert int(port.get("published")) == 3210, "dashboard must use private port 3210"
 assert int(port.get("target")) == 3000, "dashboard container port must be 3000"
 assert all("3200" not in str(value) for value in [ports, services["dashboard"].get("environment")])
+
+caddy = services["caddy"]
+assert caddy["profiles"] == ["https"], "caddy must be profile-gated"
+assert caddy["image"].startswith("caddy:2.10.2-alpine@sha256:"), "caddy must be pinned by digest"
+assert caddy["read_only"] is True
+assert set(caddy["networks"]) == {"edge", "backend"}
+caddy_ports = {(int(item["published"]), int(item["target"])) for item in caddy.get("ports") or []}
+assert caddy_ports == {(80, 80), (443, 443)}, "caddy must publish only 80/443"
+# Compose resolves ${TANAGHOM_PUBLIC_DOMAIN:-} to an empty string until the host
+# .env supplies it; the entrypoint refuses to start in that state.
+assert "TANAGHOM_PUBLIC_DOMAIN" in caddy["environment"], "public domain must come from the host env"
+assert "TANAGHOM_POSTIZ_DOMAIN" in caddy["environment"]
+assert caddy["entrypoint"] == ["/bin/sh", "/entrypoint.sh"]
+
+assert services["auth"]["environment"]["AUTH_STORE_FILE"] == "/data/auth-users.json"
+assert services["auth"]["environment"]["AUTH_SEED_FILE"] == "/run/secrets/auth_users"
+assert int(services["auth"]["environment"]["AUTH_ACCESS_TTL_SECONDS"]) <= 3600
+assert int(services["auth"]["environment"]["AUTH_ABSOLUTE_TTL_SECONDS"]) <= 86400
+assert any(mount.get("target") == "/data" for mount in services["auth"].get("volumes", [])), "auth store volume is required"
 
 def secret_names(service):
     return {item if isinstance(item, str) else item["source"] for item in service.get("secrets", [])}
@@ -104,7 +123,9 @@ assert (secrets_dir / "supabase_url").read_text().strip() == "http://auth:43191"
 assert (secrets_dir / "supabase_jwks_url").read_text().strip() == "http://auth:43191/auth/v1/.well-known/jwks.json"
 assert (secrets_dir / "supabase_url").read_text().strip().find("supabase.co") < 0
 users = json.loads((secrets_dir / "auth_users.json").read_text())
-assert {item["email"] for item in users["users"]} == {
+# The seed is only used once, when the account store is created. It may be
+# emptied after the demo accounts are retired.
+assert {item["email"] for item in users["users"]} <= {
     "owner@demo.tanaghom.test", "reviewer@demo.tanaghom.test",
 }
 assert all(len(item["password"]) >= 16 for item in users["users"])

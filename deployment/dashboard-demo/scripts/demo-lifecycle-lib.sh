@@ -62,6 +62,13 @@ verify_backup() {
     refuse "backup database checksum does not match the manifest"
   [ "$(file_sha "$dir/rustfs.tar")" = "$(jq -r .rustfs_sha256 "$dir/manifest.json")" ] ||
     refuse "backup object archive checksum does not match the manifest"
+  local auth_hash
+  auth_hash="$(jq -r '.auth_sha256 // "none"' "$dir/manifest.json")"
+  if [ "$auth_hash" != "none" ]; then
+    [ -s "$dir/auth-users.json" ] || refuse "backup account store is missing: $dir/auth-users.json"
+    [ "$(file_sha "$dir/auth-users.json")" = "$auth_hash" ] ||
+      refuse "backup account-store checksum does not match the manifest"
+  fi
   # grep -q closes the pipe as soon as it matches, which kills pg_restore with
   # SIGPIPE; under pipefail that reads as a failed verification. List to a file.
   local toc

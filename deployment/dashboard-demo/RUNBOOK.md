@@ -9,7 +9,8 @@
 ## Target contract
 
 - Production host: `13.60.253.82`, operator `ubuntu`, root `/home/ubuntu/tanaghom-demo`.
-- Dashboard listener: only `127.0.0.1:3210`; access through a private SSH tunnel.
+- Dashboard listener: only `127.0.0.1:3210`; access through a private SSH tunnel,
+  or through Caddy on `80`/`443` once `TANAGHOM_PUBLIC_DOMAIN` is configured.
 - Postiz UI: only `127.0.0.1:5000`; the dashboard reaches its API internally at
   `http://postiz:5000/api/public/v1`.
 - Existing canary: `127.0.0.1:3200`; never stop, rewrite, reuse, or proxy it.
@@ -212,6 +213,140 @@ curl --fail --silent http://127.0.0.1:3210/api/health
 ```
 
 Never paste auth tokens, passwords, private keys, or secret files into evidence.
+
+## Public HTTPS with Caddy (pre-customer round)
+
+The dashboard still publishes only `127.0.0.1:3210`. Caddy is the single public
+listener and lives behind the `https` compose profile, so an ordinary deploy is
+unchanged and cannot accidentally expose a half-configured host.
+
+Prerequisites:
+
+- An A record for the dashboard hostname (and optionally a Postiz hostname)
+  pointing at `13.60.253.82`.
+- Inbound TCP 80 and 443 (and UDP 443 for HTTP/3) in the AWS security group.
+- These keys in the untracked `deployment/dashboard-demo/.env`:
+
+```sh
+TANAGHOM_PUBLIC_DOMAIN=dashboard.example.com
+TANAGHOM_POSTIZ_DOMAIN=postiz.example.com
+TANAGHOM_ACME_EMAIL=ops@example.com
+TANAGHOM_DEMO_BASE_URL=https://dashboard.example.com
+```
+
+Recreate the dashboard so it learns the https origin (which also marks the
+session cookies `Secure`), then start Caddy:
+
+```sh
+cd /home/ubuntu/tanaghom-demo/source
+export TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets
+compose=(docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml --env-file deployment/dashboard-demo/.env)
+"${compose[@]}" up -d --force-recreate dashboard
+"${compose[@]}" --profile https up -d caddy
+```
+
+Caddy refuses to start with a missing, loopback, `example`, or `.invalid`
+domain, so a half-configured host fails closed instead of serving plain HTTP.
+Certificates persist in `tanaghom-dashboard-demo-caddy-data`. Caddy sets
+`X-Forwarded-Proto`/`X-Forwarded-Host`, and the dashboard's same-origin checks
+accept the forwarded host. Postiz keeps its own loopback binding and is only
+proxied on its subdomain.
+
+Verify:
+
+```sh
+curl -sS -o /dev/null -w '%{http_code}\n' https://<domain>/login
+curl -sSI https://<domain>/login | grep -i strict-transport-security
+echo | openssl s_client -connect <domain>:443 -servername <domain> 2>/dev/null | openssl x509 -noout -subject -dates
+```
+
+`http://13.60.253.82:3210` must stay unreachable from the internet; keep 3210
+and 5000 closed in the security group.
+
+## Accounts, sessions, and password reset
+
+The `auth` service is the account authority. It stores scrypt hashes
+(N=32768, r=8, p=1, 16-byte salt, 64-byte key) in
+`/home/ubuntu/tanaghom-demo/runtime/auth/auth-users.json` (mode 0600, bind
+mounted at `/data`). The `auth_users.json` secret seeds that store once and is
+not authoritative afterwards. Every `demo-backup.sh` snapshot includes the
+store and checksums it.
+
+| Setting | Default | Meaning |
+| --- | --- | --- |
+| `AUTH_ACCESS_TTL_SECONDS` | 900 | access-token lifetime; the browser refreshes it |
+| `AUTH_IDLE_TTL_SECONDS` | 1800 | no refresh for 30 minutes ends the session |
+| `AUTH_ABSOLUTE_TTL_SECONDS` | 43200 | hard 12-hour ceiling per session |
+| `AUTH_LOGIN_EMAIL_LIMIT` | 5 | failed sign-ins per email per 15 minutes |
+| `AUTH_LOGIN_IP_LIMIT` | 20 | failed sign-ins per source IP per 15 minutes |
+| `AUTH_LOGIN_PAIR_LIMIT` | 8 | failed sign-ins per email+IP pair |
+
+Refresh tokens rotate on every use, are held hashed in memory, and are revoked
+on password change, operator reset, and account disable. The API answers `429`
+with `Retry-After` when a limit is reached; the login form shows the wait.
+
+Users change their own password in **Settings → Security**. A successful change
+signs every other session out. Operators create or reset an account from the
+host:
+
+```sh
+cd /home/ubuntu/tanaghom-demo/source
+compose=(docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml --env-file deployment/dashboard-demo/.env)
+TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
+  "${compose[@]}" exec -T auth node /app/admin.mjs reset --email owner@customer.test --generate
+# or pipe a chosen password:
+#   ... reset --email owner@customer.test --stdin-password < /path/to/password
+TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
+  "${compose[@]}" exec -T auth node /app/admin.mjs list
+```
+
+The CLI prints `EMAIL`, `SUB`, `STATUS`, `MUST_CHANGE_PASSWORD` and, with
+`--generate`, the one-time password. It never echoes a supplied password and
+never prints a hash. `upsert` creates or resets, `disable`/`enable` toggle
+access. A reset marks the account `must_change_password`; the next sign-in is
+sent to Settings → Security. The service reloads the store when its modification
+time changes, so a CLI write applies to the next request. Never edit the JSON by
+hand.
+
+## Customer onboarding (real organization)
+
+`scripts/onboard-organization.sh` creates the customer organization, its first
+brand-kit version, and its owner account, then archives the demo fixtures and
+retires the demo credentials. It is idempotent: the same slug and email are
+updated in place.
+
+```sh
+cd /home/ubuntu/tanaghom-demo/source
+export TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets
+export ONBOARD_ORGANIZATION_NAME="Customer name"
+export ONBOARD_ORGANIZATION_SLUG="customer-slug"
+export ONBOARD_OWNER_EMAIL="owner@customer.test"
+export ONBOARD_OWNER_NAME="Owner name"
+export ONBOARD_BRAND_LOGO_URL="https://cdn.example.com/logo.svg"
+export ONBOARD_BRAND_COLORS='{"primary":"#0f766e","secondary":"#f8fafc","accent":"#e2e8f0"}'
+export ONBOARD_BRAND_VOICE_AR="صوت عربي واضح وعملي"
+export ONBOARD_BRAND_VOICE_EN="Clear, practical Arabic and English voice"
+bash deployment/dashboard-demo/scripts/onboard-organization.sh
+```
+
+Both voices are required and stored in `brand_kit_versions.rules.voice`; the
+logo goes to `logos.primary`, the palette to `colors`, and fonts/tone to their
+own columns. The script prints `ONBOARD_ORG`, `ONBOARD_OWNER`,
+`ONBOARD_BRAND_KIT`, `ONBOARD_DEMO_CAMPAIGNS_ARCHIVED`, and
+`DEMO_CREDENTIALS_RETIRED`. The temporary owner password is written to
+`runtime/credentials/<slug>-owner.txt` (mode 0600) and never printed.
+
+`ONBOARD_RETIRE_DEMO=1` (the default) closes the `Demo Summer Camp` campaign,
+deactivates both demo `app_users` rows, disables their auth accounts, empties the
+plaintext `auth_users.json` seed, and removes `demo-credentials.txt`. Demo rows
+stay for audit continuity but no customer view or sign-in reaches them. After
+retirement the seed cannot bootstrap a fresh store: restore
+`runtime/auth/auth-users.json` from a backup instead. `validate.sh` then needs
+`SMOKE_EMAIL`/`SMOKE_PASSWORD` for the real owner; demo-only checks are skipped.
+
+Verify by signing in as the new owner over HTTPS: the first sign-in lands on
+Settings → Security, the change succeeds, the old password stops working, and
+`/api/auth/session` reports role `owner` for the new organization.
 
 ## Data-preserving upgrade and restore (#259)
 

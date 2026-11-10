@@ -25,15 +25,29 @@ export async function POST(request: NextRequest) {
   try {
     upstream = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=password`, {
       method: "POST",
-      headers: { apikey: publishableKey, "Content-Type": "application/json" },
+      headers: {
+        apikey: publishableKey,
+        "Content-Type": "application/json",
+        // Preserve the real client address for the auth service's per-IP limit.
+        ...(request.headers.get("x-forwarded-for")
+          ? { "x-forwarded-for": request.headers.get("x-forwarded-for")! }
+          : {}),
+      },
       body: JSON.stringify({ email: body.email.trim(), password: body.password }),
       cache: "no-store",
-      signal: AbortSignal.timeout(8_000),
+      signal: AbortSignal.timeout(10_000),
     });
   } catch {
     return noStore({ error: "authentication_unavailable" }, { status: 503 });
   }
   if (!upstream.ok) {
+    if (upstream.status === 429) {
+      const retryAfter = Number(upstream.headers.get("retry-after")) || 0;
+      return noStore(
+        { error: "too_many_attempts", retry_after: retryAfter },
+        { status: 429, headers: retryAfter > 0 ? { "Retry-After": String(retryAfter) } : undefined },
+      );
+    }
     const invalidCredentials = upstream.status === 400 || upstream.status === 401;
     return noStore({ error: invalidCredentials ? "invalid_credentials" : "authentication_unavailable" }, {
       status: invalidCredentials ? 401 : 503,
@@ -44,8 +58,9 @@ export async function POST(request: NextRequest) {
     access_token: string;
     refresh_token: string;
     expires_in: number;
+    must_change_password?: boolean;
   };
-  const response = noStore({ ok: true });
+  const response = noStore({ ok: true, must_change_password: session.must_change_password === true });
   setSessionCookies(response, session);
   return response;
 }
