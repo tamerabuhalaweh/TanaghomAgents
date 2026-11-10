@@ -8,6 +8,7 @@ import {
   BriefcaseBusiness,
   ChartNoAxesCombined,
   CheckCheck,
+  ChevronDown,
   ClipboardCheck,
   CircleHelp,
   ContactRound,
@@ -28,19 +29,26 @@ import { LocaleToggle } from "./creative/locale-toggle";
 import { SessionProfile } from "./session-profile";
 import { useLocale } from "@/lib/client/use-locale";
 
-const primaryNavigation = [
+type NavItem = { href: string; label: string; arabic: string; icon: typeof LayoutDashboard };
+
+// The five customer workflow pillars stay visible at all times.
+const customerNavigation: NavItem[] = [
   { href: "/", label: "Overview", arabic: "نظرة عامة", icon: LayoutDashboard },
   { href: "/workspace", label: "AI workspace", arabic: "مساحة العمل الذكية", icon: UsersRound },
-  { href: "/inbox", label: "Supervisor inbox", arabic: "صندوق المشرف", icon: MessagesSquare },
-  { href: "/campaigns", label: "Campaigns", arabic: "الحملات", icon: BriefcaseBusiness },
-  { href: "/approvals", label: "Approvals", arabic: "الاعتمادات", icon: CheckCheck },
-  { href: "/actions", label: "Agent actions", arabic: "إجراءات الوكلاء", icon: ClipboardCheck },
-  { href: "/content", label: "Content", arabic: "المحتوى", icon: LibraryBig },
   { href: "/creative", label: "Creative Studio", arabic: "استوديو الإبداع", icon: Palette },
+  { href: "/approvals", label: "Approvals", arabic: "الاعتمادات", icon: CheckCheck },
+  { href: "/content", label: "Content", arabic: "المحتوى", icon: LibraryBig },
+];
+
+// Operator and administration destinations live behind one disclosure.
+const operationsNavigation: NavItem[] = [
+  { href: "/campaigns", label: "Campaigns", arabic: "الحملات", icon: BriefcaseBusiness },
+  { href: "/leads", label: "Leads", arabic: "العملاء المحتملون", icon: ContactRound },
+  { href: "/inbox", label: "Supervisor inbox", arabic: "صندوق المشرف", icon: MessagesSquare },
+  { href: "/reports", label: "Reports", arabic: "التقارير", icon: ChartNoAxesCombined },
+  { href: "/actions", label: "Agent actions", arabic: "إجراءات الوكلاء", icon: ClipboardCheck },
   { href: "/knowledge", label: "Knowledge", arabic: "المعرفة", icon: BookOpenCheck },
   { href: "/agents", label: "Agents", arabic: "الوكلاء", icon: Bot },
-  { href: "/leads", label: "Leads", arabic: "العملاء المحتملون", icon: ContactRound },
-  { href: "/reports", label: "Reports", arabic: "التقارير", icon: ChartNoAxesCombined },
   { href: "/quality", label: "Quality & rollout", arabic: "الجودة والطرح", icon: ShieldCheck },
 ];
 
@@ -67,7 +75,19 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     if (returnFocus) menuButtonRef.current?.focus();
   }
 
-  const navLabel = (item: (typeof primaryNavigation)[number]) => (ar ? item.arabic : item.label);
+  const navLabel = (item: NavItem) => (ar ? item.arabic : item.label);
+  const moreActive = operationsNavigation.some((item) => pathname.startsWith(item.href));
+
+  function renderNavLink(item: NavItem) {
+    const { href, icon: Icon } = item;
+    const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
+    return (
+      <Link key={href} href={href} className={`nav-link ${active ? "nav-link-active" : ""}`} aria-current={active ? "page" : undefined} onClick={() => closeMenu()}>
+        <Icon size={18} strokeWidth={1.8} />
+        <span>{navLabel(item)}</span>
+      </Link>
+    );
+  }
 
   return (
     <div className="app-shell">
@@ -89,16 +109,16 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
 
         <nav id="primary-navigation" className="primary-navigation" aria-label={ar ? "التنقل الأساسي" : "Primary navigation"}>
-          {primaryNavigation.map((item) => {
-            const { href, icon: Icon } = item;
-            const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
-            return (
-              <Link key={href} href={href} className={`nav-link ${active ? "nav-link-active" : ""}`} aria-current={active ? "page" : undefined} onClick={() => closeMenu()}>
-                <Icon size={18} strokeWidth={1.8} />
-                <span>{navLabel(item)}</span>
-              </Link>
-            );
-          })}
+          {customerNavigation.map(renderNavLink)}
+          <details className="sidebar-more" open={moreActive}>
+            <summary>
+              <ChevronDown size={16} aria-hidden="true" />
+              <span>{ar ? "المزيد والعمليات" : "More & operations"}</span>
+            </summary>
+            <div className="sidebar-more-links">
+              {operationsNavigation.map(renderNavLink)}
+            </div>
+          </details>
         </nav>
 
         <div className="sidebar-footer">
@@ -138,7 +158,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </div>
 
       <nav className="mobile-navigation" aria-label={ar ? "تنقل الجوال" : "Mobile navigation"}>
-        {primaryNavigation.slice(0, 5).map((item) => {
+        {customerNavigation.map((item) => {
           const { href, icon: Icon } = item;
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
           return (

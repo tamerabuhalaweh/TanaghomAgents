@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
+import { CreativeSubnav } from "@/components/creative/creative-subnav";
 
 interface MotionRow {
   template_id: string;
@@ -81,6 +82,7 @@ export function MotionsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
   }
   return (
     <div className="creative-page" dir={dir} lang={locale}>
+      <CreativeSubnav locale={locale} />
       <div className="creative-head"><h1>{t(locale, "motions.title")}</h1></div>
       <p>{t(locale, "motions.noPublish")}</p>
       {canAdmin && (

@@ -41,6 +41,7 @@ export function AgencyWorkspace() {
   const requestGeneration = useRef(0);
   const abort = useRef<AbortController | null>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const startAfterSave = useRef(false);
 
   const stateLabel = (status: string) => (ar ? labelsAr[status] : labels[status]) || status;
   const reason = (code: string | null) => (ar ? errorTextAr[code || ""] : errorText[code || ""]) || (ar ? "يحتاج هذا العمل إلى مراجعة المشغّل. الأعمال المكتملة محفوظة." : "This assignment needs operator review. Completed artifacts are preserved.");
@@ -101,6 +102,7 @@ export function AgencyWorkspace() {
               : (ar ? "تم تحديث حالة المهمة." : "Assignment state updated."));
       }
       await load(result.id || selectedId, true);
+      return result.id ?? null;
     } catch (e) {
       setError(errorText[(e as Error).message] || (ar ? "لم تُقبل العملية. أعد التحميل للتحقق من الحالة؛ ولا يُفترض أي اعتماد." : "The action was not accepted. Refresh to check the latest state; no approval is assumed."));
     } finally { setBusy(false); }
@@ -109,13 +111,35 @@ export function AgencyWorkspace() {
   function create(event: FormEvent) {
     event.preventDefault();
     key.current ??= crypto.randomUUID();
-    void command({ action: "create", title, brief, source_facts: facts, language, profile, idempotency_key: key.current });
+    const startNow = startAfterSave.current;
+    startAfterSave.current = false;
+    void (async () => {
+      const id = await command({ action: "create", title, brief, source_facts: facts, language, profile, idempotency_key: key.current });
+      if (startNow && id) await command({ action: "start", id });
+    })();
   }
 
   function newAssignment() {
+    startAfterSave.current = false;
     setCreating(true); setError(""); setNotice(""); key.current = null;
     setLanguage(locale === "ar" ? "ar" : "en");
     setTimeout(() => heading.current?.focus(), 0);
+  }
+
+  function fillExample(kind: "ar" | "en") {
+    const example = kind === "ar"
+      ? {
+        title: "حملة دورة التسويق الرقمي — دفعة يناير",
+        brief: "أطلق حملة عضوية لدورة التسويق الرقمي (8 جلسات، حضوري وأونلاين) لرواد الأعمال في الأردن. نريد مسودات عربية لإنستغرام ولينكدإن: منشور إعلان، كاروسيل من 4 شرائح، ونص لصفحة الهبوط. لا إعلانات مدفوعة ولا ادعاءات غير مثبتة.",
+        facts: "السعر 180 ديناراً بدلاً من 240 عند التسجيل قبل 20 يناير. تشمل الدورة 8 جلسات أسبوعية وورشة عملية وشهادة حضور. تبدأ في 3 فبراير في عمّان بعدد مقاعد 18. المدرب ممارس معتمد في التسويق الرقمي. لا يوجد ضمان توظيف ولا يجوز ذكر أرقام مبيعات غير مؤكدة.",
+      }
+      : {
+        title: "Digital marketing course — January cohort",
+        brief: "Launch an organic campaign for our 8-session digital marketing course (in person and online) aimed at small-business owners in Jordan. Prepare English Instagram and LinkedIn drafts: one announcement post, a 4-slide carousel, and landing-page copy. No paid ads and no unverified claims.",
+        facts: "The price is 180 JOD instead of 240 when registering before 20 January. The course includes 8 weekly sessions, a hands-on workshop and an attendance certificate. It starts on 3 February in Amman with 18 seats. The trainer is a certified digital marketing practitioner. There is no job guarantee, and unverified sales figures must not be used.",
+      };
+    setTitle(example.title); setBrief(example.brief); setFacts(example.facts); setLanguage(kind);
+    key.current = null; startAfterSave.current = false; setError("");
   }
 
   function download() {
@@ -164,6 +188,10 @@ export function AgencyWorkspace() {
         <section className="aw-main">
           {creating ? <form className="aw-create" onSubmit={create}>
             <header><h2 ref={heading} tabIndex={-1}>{ar ? "على ماذا يعمل فريقك؟" : "What should your team work on?"}</h2><p>{ar ? "قدّم الهدف والحقائق مرة واحدة، ويعمل كل مختص من السياق المحفوظ نفسه." : "Supply the outcome and facts once. Every specialist works from the same saved context."}</p></header>
+            <div className="aw-actions">
+              <button type="button" className="button button-secondary" onClick={() => fillExample("ar")}>{ar ? "تعبئة مثال عربي" : "Fill Arabic example"}</button>
+              <button type="button" className="button button-secondary" onClick={() => fillExample("en")}>{ar ? "تعبئة مثال إنجليزي" : "Fill English example"}</button>
+            </div>
             <div className="aw-form-row">
               <label>{ar ? "عنوان المهمة" : "Assignment title"}<input required minLength={3} maxLength={120} value={title} onChange={(e) => { setTitle(e.target.value); key.current = null; }} placeholder={ar ? "حزمة عمل حملة الدورة الصيفية" : "Summer course campaign work pack"} /></label>
               <label>{ar ? "لغة المخرجات" : "Output language"}<select value={language} onChange={(e) => { setLanguage(e.target.value); key.current = null; }}><option value="en">English</option><option value="ar">العربية — Arabic</option></select></label>
@@ -173,7 +201,11 @@ export function AgencyWorkspace() {
             <label>{ar ? "موجز المهمة" : "Task brief"}<textarea required minLength={30} maxLength={6000} rows={4} value={brief} onChange={(e) => { setBrief(e.target.value); key.current = null; }} placeholder={ar ? "صف الجمهور والهدف والقنوات المسموح بها والنبرة والمخرجات. مثال: مسودات إنستغرام عضوية لدورتنا دون إعلانات مدفوعة." : "Describe the audience, outcome, allowed channels, tone and deliverables. For example: prepare organic Instagram drafts for our course; no paid ads."} /></label>
             <label>{ar ? "حقائق المصدر المشتركة وإرشادات العلامة" : "Shared source facts & brand guidance"}<textarea required minLength={20} maxLength={6000} rows={6} value={facts} onChange={(e) => { setFacts(e.target.value); key.current = null; }} placeholder={ar ? "أضف الحقائق التي يجوز للفريق الاعتماد عليها: ما يشمله العرض، التواريخ أو الأسعار المؤكدة، الادعاءات المعتمدة، نبرة العلامة، وما هو غير معروف. لا تُدرج كلمات مرور أو بيانات عملاء حساسة." : "Add the facts the team may rely on: what the offer includes, confirmed dates or prices, approved claims, brand tone, and what is unknown. Do not include passwords or customer-sensitive data."} /></label>
             <p className="aw-muted">{ar ? "يُحفظ الموجز والحقائق كنسخة غير قابلة للتغيير. تُشارك مخرجات المختصين السابقة كمقترحات غير معتمدة، لا كحقائق جديدة. لا نشر ولا رسائل ولا مشتريات ولا تحديثات CRM." : "Source facts and the brief are saved as an immutable version. Earlier specialist outputs are shared as unapproved proposals—not new facts. No publishing, messaging, purchases or CRM updates."}</p>
-            <div className="aw-actions"><button type="submit" className="button button-primary" disabled={busy}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "حفظ المهمة" : "Save assignment")}<ChevronRight size={17} /></button><button type="button" className="button button-secondary" onClick={() => setCreating(false)} disabled={busy}>{ar ? "إلغاء" : "Cancel"}</button></div>
+            <div className="aw-actions">
+              <button type="submit" className="button button-primary" disabled={busy || !data.runtime.ready} onClick={() => { startAfterSave.current = true; }} title={data.runtime.ready ? undefined : data.runtime.reason}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "حفظ وبدء التنفيذ فوراً" : "Save & start now")}<ChevronRight size={17} /></button>
+              <button type="submit" className="button button-secondary" disabled={busy} onClick={() => { startAfterSave.current = false; }}>{ar ? "حفظ المهمة" : "Save assignment"}</button>
+              <button type="button" className="button button-secondary" onClick={() => setCreating(false)} disabled={busy}>{ar ? "إلغاء" : "Cancel"}</button>
+            </div>
           </form> : selected ? <>
             <header className="aw-assignment-header">
               <div><span className={`aw-state aw-state-${selected.status}`}>{stateLabel(selected.status)}</span><h2>{selected.title}</h2><p>{selected.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")} · {selected.profile_codes.length} {ar ? "مختص" : `specialist${selected.profile_codes.length === 1 ? "" : "s"}`} · {ar ? "أُنشئت" : "Created"} {date(selected.created_at)}</p></div>
