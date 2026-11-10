@@ -20,9 +20,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     if (!UUID_RE.test(id)) return noStore({ error: "invalid_template_id" }, { status: 400 });
     const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
     const versionParam = request.nextUrl.searchParams.get("version");
-    const formatParam = request.nextUrl.searchParams.get("format") ?? "1:1";
-    const format = DESIGN_FORMATS[formatParam];
-    if (!format) return noStore({ error: "invalid_format" }, { status: 400 });
+    const formatParam = request.nextUrl.searchParams.get("format");
+    if (formatParam !== null && !DESIGN_FORMATS[formatParam]) return noStore({ error: "invalid_format" }, { status: 400 });
     const head = await database().query<{ spec: unknown; kind: string; version: number; organization_id: string | null }>(
       `SELECT spec, kind, version, organization_id FROM tanaghom.creative_templates WHERE id = $1`,
       [id],
@@ -48,9 +47,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       version = pinned.rows[0].version as number;
     }
     void version;
-    const canvas = (spec.canvas ?? {}) as { width: number; height: number };
-    if (canvas.width !== format.width || canvas.height !== format.height) {
-      return noStore({ error: "format_canvas_mismatch" }, { status: 400 });
+    const canvas = (spec.canvas ?? {}) as { width?: number; height?: number };
+    // An explicit ?format= must match the saved canvas. When it is omitted the
+    // design renders at its own aspect ratio, so 4:5 and 9:16 gallery
+    // thumbnails never fail with format_canvas_mismatch.
+    if (formatParam !== null) {
+      const format = DESIGN_FORMATS[formatParam];
+      if (canvas.width !== format.width || canvas.height !== format.height) {
+        return noStore({ error: "format_canvas_mismatch" }, { status: 400 });
+      }
     }
     // Collect every referenced asset version id from the validated shape.
     const refs = new Set<string>();

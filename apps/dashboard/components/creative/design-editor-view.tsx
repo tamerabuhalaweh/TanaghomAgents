@@ -70,7 +70,6 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
   );
   const kits = useCreativeFetch<{ kits: BrandKitRow[] }>(locale, "/api/creative/brand-kits");
   const [spec, setSpec] = useState<DesignSpec | null>(null);
-  const [chosenFormat, setChosenFormat] = useState<DesignFormat | null>(null);
   const [dirty, setDirty] = useState(false);
   const [notice, setNotice] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
@@ -80,7 +79,9 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
   const loaded = detail.data?.design;
   const activeSpec = spec ?? (loaded?.spec as DesignSpec | undefined) ?? null;
   const isCarousel = (loaded?.kind ?? "ad") === "carousel";
-  const previewFormat = chosenFormat ?? formatOfSpec(activeSpec);
+  // The preview always renders the saved version's canvas, so an explicit
+  // ?format= can never disagree with the stored spec (format_canvas_mismatch).
+  const previewFormat = formatOfSpec((loaded?.spec as DesignSpec | undefined) ?? null);
 
   function mutate(next: DesignSpec) {
     setSpec(next);
@@ -203,7 +204,7 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
             {notice && <div className="creative-notice" role="status"><p>{notice}</p></div>}
             <div className="creative-editor-split">
               <aside className="creative-editor-preview" aria-label={t(locale, "designs.preview")}>
-                <h2>{t(locale, "designs.preview")}</h2>
+                <h2>{t(locale, "designs.preview")} <span className="creative-format-badge" dir="ltr">{previewFormat}</span></h2>
                 <div className="creative-format-pills" role="group" aria-label={t(locale, "designs.format")}>
                   {FORMATS.map((format) => (
                     <button
@@ -211,7 +212,8 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
                       type="button"
                       className={`creative-format-pill ${previewFormat === format ? "creative-format-pill-active" : ""}`}
                       aria-pressed={previewFormat === format}
-                      onClick={() => setChosenFormat(format)}
+                      disabled={previewFormat !== format}
+                      title={previewFormat === format ? undefined : (ar ? `الحجم المحفوظ ${previewFormat}` : `Saved size is ${previewFormat}`)}
                     >
                       {format}
                     </button>

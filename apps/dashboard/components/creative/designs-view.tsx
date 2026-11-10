@@ -123,10 +123,10 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
         : !designs.data?.designs.length ? <p>{t(locale, "designs.empty")}</p>
         : (
           <ul className="creative-grid">
-            {designs.data.designs.map((design) => (
+            {[...designs.data.designs].sort((a, b) => Number(Boolean(b.organization_id)) - Number(Boolean(a.organization_id))).map((design) => (
               <li key={`${design.template_id}`} className="creative-card">
                 <div className="creative-thumb">
-                  <iframe title={design.name} src={`/api/creative/designs/${design.template_id}/preview?format=1:1`} loading="lazy" tabIndex={-1} />
+                  <iframe title={design.name} src={`/api/creative/designs/${design.template_id}/preview`} loading="lazy" tabIndex={-1} />
                 </div>
                 <h2><Link href={`/creative/designs/${design.template_id}`}>{design.name}</Link></h2>
                 <p>{design.kind} · {t(locale, "common.version")}{design.version} · {design.organization_id ? "org" : "global"}</p>

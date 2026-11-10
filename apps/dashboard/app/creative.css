@@ -323,6 +323,22 @@
   color: #fff;
 }
 
+.creative-format-pill:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+
+.creative-format-badge {
+  display: inline-block;
+  padding: 0.15rem 0.55rem;
+  border-radius: 999px;
+  background: var(--primary, #0f766e);
+  color: #fff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  vertical-align: middle;
+}
+
 .creative-editor-actions {
   margin-block-start: 1rem;
   padding: 0.85rem 1rem;
