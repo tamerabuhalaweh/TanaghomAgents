@@ -1,6 +1,6 @@
 "use client";
 
-import { BellRing, Bot, LibraryBig, PlugZap } from "lucide-react";
+import { BellRing, Bot, KeyRound, LibraryBig, PlugZap } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -9,6 +9,7 @@ const links = [
   { href: "/settings/skills", label: "Skill Library", icon: LibraryBig },
   { href: "/settings/agents", label: "Agent Studio", icon: Bot },
   { href: "/settings/notifications", label: "Notifications", icon: BellRing },
+  { href: "/settings/security", label: "Security", icon: KeyRound },
 ];
 
 export function SettingsNavigation() {

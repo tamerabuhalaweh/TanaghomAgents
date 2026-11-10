@@ -7,6 +7,13 @@ umask 077
 command -v openssl >/dev/null 2>&1 || { echo "openssl is required" >&2; exit 1; }
 mkdir -p "$directory"
 
+# Writable account store for the auth service. It sits beside the secrets so an
+# operator can inspect and back it up, and is owned by uid 1000 (the node user)
+# because bind mounts do not inherit image ownership.
+runtime_root="$(dirname "$directory")"
+mkdir -p "$runtime_root/auth"
+chmod 0700 "$runtime_root/auth"
+
 required="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem s3_access_key s3_secret_key workspace_password workspace_database_url workspace_worker_token gemini_api_key demo-credentials.txt"
 for name in $required; do
   if [ -e "$directory/$name" ]; then

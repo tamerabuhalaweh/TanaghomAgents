@@ -59,10 +59,24 @@ services:
     environment:
       DEMO_AUTH_PORT: "43191"
       DEMO_AUTH_ISSUER: http://auth:43191/auth/v1
+      AUTH_STORE_FILE: /data/auth-users.json
+      AUTH_SEED_FILE: /run/secrets/auth_users
+      AUTH_ACCESS_TTL_SECONDS: ${AUTH_ACCESS_TTL_SECONDS:-900}
+      AUTH_IDLE_TTL_SECONDS: ${AUTH_IDLE_TTL_SECONDS:-1800}
+      AUTH_ABSOLUTE_TTL_SECONDS: ${AUTH_ABSOLUTE_TTL_SECONDS:-43200}
+      AUTH_LOGIN_EMAIL_LIMIT: ${AUTH_LOGIN_EMAIL_LIMIT:-5}
+      AUTH_LOGIN_IP_LIMIT: ${AUTH_LOGIN_IP_LIMIT:-20}
+      AUTH_LOGIN_PAIR_LIMIT: ${AUTH_LOGIN_PAIR_LIMIT:-8}
     secrets: [auth_users, auth_private_key]
     volumes:
       - ./auth/server.mjs:/app/server.mjs:ro
+      - ./auth/passwords.mjs:/app/passwords.mjs:ro
+      - ./auth/store.mjs:/app/store.mjs:ro
+      - ./auth/admin.mjs:/app/admin.mjs:ro
       - ./scripts/smoke.mjs:/app/demo-smoke.mjs:ro
+      # Writable account store (scrypt hashes only). The directory is created by
+      # prepare-runtime.sh and owned by uid 1000, which is the node user.
+      - ${TANAGHOM_DEMO_ROOT:-/home/ubuntu/tanaghom-demo}/runtime/auth:/data
     networks: [backend]
     read_only: true
     tmpfs: ["/tmp:size=16m,mode=1777"]
@@ -211,6 +225,43 @@ services:
       start_period: 45s
     logging: *bounded-logging
 
+  # Public HTTPS edge. Profile-gated and domain-validated: a missing or
+  # placeholder domain refuses to start instead of serving plain HTTP. The
+  # dashboard and Postiz keep their loopback-only bindings behind this proxy.
+  caddy:
+    image: caddy:2.10.2-alpine@sha256:4c6e91c6ed0e2fa03efd5b44747b625fec79bc9cd06ac5235a779726618e530d
+    profiles: [https]
+    restart: unless-stopped
+    depends_on:
+      dashboard: { condition: service_healthy }
+    environment:
+      TANAGHOM_PUBLIC_DOMAIN: ${TANAGHOM_PUBLIC_DOMAIN:-}
+      TANAGHOM_POSTIZ_DOMAIN: ${TANAGHOM_POSTIZ_DOMAIN:-}
+      TANAGHOM_ACME_EMAIL: ${TANAGHOM_ACME_EMAIL:-}
+    volumes:
+      - ./caddy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - ./caddy/entrypoint.sh:/entrypoint.sh:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    entrypoint: ["/bin/sh", "/entrypoint.sh"]
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks: [edge, backend]
+    read_only: true
+    tmpfs: ["/tmp:size=32m,mode=1777"]
+    security_opt: [no-new-privileges:true]
+    cpus: 0.5
+    mem_limit: 256m
+    pids_limit: 100
+    healthcheck:
+      test: ["CMD", "caddy", "version"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+    logging: *bounded-logging
+
   workspace-worker:
     image: node:24.18.0-alpine3.24@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd
     profiles: [workspace]
@@ -251,6 +302,10 @@ volumes:
     name: tanaghom-dashboard-demo-pgdata
   rustfsdata:
     name: tanaghom-dashboard-demo-rustfsdata
+  caddy_data:
+    name: tanaghom-dashboard-demo-caddy-data
+  caddy_config:
+    name: tanaghom-dashboard-demo-caddy-config
 
 secrets:
   postgres_password:

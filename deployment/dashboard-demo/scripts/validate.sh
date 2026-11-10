@@ -35,6 +35,8 @@ echo
 "${compose[@]}" exec -T \
   -e DEMO_BASE_URL=http://dashboard:3000 \
   -e DEMO_AUTH_USERS_FILE=/run/secrets/auth_users \
+  -e SMOKE_EMAIL="${SMOKE_EMAIL:-}" \
+  -e SMOKE_PASSWORD="${SMOKE_PASSWORD:-}" \
   -e SMOKE_WRITE="${SMOKE_WRITE:-0}" \
   -e SMOKE_REJECT="${SMOKE_REJECT:-0}" \
   auth node /app/demo-smoke.mjs

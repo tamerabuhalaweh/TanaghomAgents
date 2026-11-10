@@ -31,6 +31,14 @@ docker run --rm --entrypoint sh -v "$BLOB_VOLUME":/data:ro -v "$dir":/out "$SNAP
   -c 'cd /data && tar -cf /out/rustfs.tar .'
 tar -tf "$dir/rustfs.tar" > "$dir/rustfs.list"
 
+# Account hashes live outside PostgreSQL; without this copy a restore would need
+# every user to set a new password through the operator CLI.
+auth_store="${TANAGHOM_DEMO_ROOT:-/home/ubuntu/tanaghom-demo}/runtime/auth/auth-users.json"
+if [ -f "$auth_store" ]; then
+  cp "$auth_store" "$dir/auth-users.json"
+  chmod 0600 "$dir/auth-users.json"
+fi
+
 blobs="$(blob_count)"
 names="$(blob_names_hash)"
 
@@ -43,8 +51,10 @@ jq -n \
   --arg rustfs "$(file_sha "$dir/rustfs.tar")" \
   --arg blobs "$blobs" \
   --arg names "$names" \
+  --arg auth "$([ -f "$dir/auth-users.json" ] && file_sha "$dir/auth-users.json" || echo none)" \
   '{release:$release,created_at:$created,ledger:$ledger,ledger_rows:($ledger_rows|tonumber),
-    dump_sha256:$dump,rustfs_sha256:$rustfs,blob_count:($blobs|tonumber),blob_names_sha256:$names}' \
+    dump_sha256:$dump,rustfs_sha256:$rustfs,blob_count:($blobs|tonumber),blob_names_sha256:$names,
+    auth_sha256:$auth}' \
   > "$dir/manifest.json"
 
 verify_backup "$dir" >/dev/null

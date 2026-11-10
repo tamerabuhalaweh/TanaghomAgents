@@ -19,13 +19,20 @@ export function LoginForm() {
     });
 
     if (response.ok) {
-      window.location.assign("/");
+      const body = await response.json().catch(() => ({})) as { must_change_password?: boolean };
+      window.location.assign(body.must_change_password ? "/settings/security" : "/");
       return;
     }
 
+    const retryAfter = response.status === 429
+      ? Number(response.headers.get("retry-after")) || 0
+      : 0;
+    const minutes = Math.max(1, Math.ceil(retryAfter / 60));
     setError(response.status === 401
       ? "That email and password do not match an active Tanaghom account."
-      : "Tanaghom could not sign you in. Please try again in a moment.");
+      : response.status === 429
+        ? `Too many sign-in attempts. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`
+        : "Tanaghom could not sign you in. Please try again in a moment.");
     setSubmitting(false);
   }
 
@@ -38,7 +45,7 @@ export function LoginForm() {
       <div className="form-field">
         <div className="field-label-row">
           <label htmlFor="password">Password</label>
-          <span>Supabase-secured</span>
+          <span>Encrypted in transit</span>
         </div>
         <input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>

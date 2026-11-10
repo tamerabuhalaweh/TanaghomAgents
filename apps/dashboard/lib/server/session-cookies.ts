@@ -10,7 +10,10 @@ interface AuthSession {
 }
 
 function secureCookies() {
-  return process.env.APP_ENV === "production";
+  // The demo host is reached over plain HTTP on loopback until Caddy is enabled;
+  // once APP_BASE_URL is the public https origin the cookies must be Secure.
+  return process.env.APP_ENV === "production"
+    || (process.env.APP_BASE_URL ?? "").startsWith("https://");
 }
 
 export function setSessionCookies(response: NextResponse, session: AuthSession) {
