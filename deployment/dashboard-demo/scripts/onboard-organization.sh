@@ -149,7 +149,7 @@ UPDATE tanaghom.campaigns
 \echo ONBOARD_DEMO_CAMPAIGNS_ARCHIVED :ROW_COUNT
 
 UPDATE tanaghom.app_users
-   SET is_active = false, auth_subject = NULL
+   SET is_active = false, auth_subject = NULL, invited_at = NULL, accepted_at = NULL
  WHERE organization_id = '10000000-0000-4000-8000-000000000001'
    AND email IN ('owner@demo.tanaghom.test', 'reviewer@demo.tanaghom.test');
 
