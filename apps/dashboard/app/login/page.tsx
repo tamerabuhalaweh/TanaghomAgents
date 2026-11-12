@@ -36,6 +36,9 @@ export default function LoginPage() {
           <h2 id="login-title">Welcome back</h2>
           <p className="login-intro">Sign in with the owner or reviewer account connected to Tanaghom.</p>
           <LoginForm />
+          <p className="login-support">
+            New to Tanaghom? <a href="/signup">Create a workspace</a>
+          </p>
           <p className="login-support">Access is managed by your Tanaghom administrator.</p>
         </div>
       </section>

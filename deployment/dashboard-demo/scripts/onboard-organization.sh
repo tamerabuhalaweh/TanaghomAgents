@@ -88,7 +88,7 @@ PY
 owner_password="$(openssl rand -base64 48 | tr -d '/+=' | cut -c1-28)"
 [ "${#owner_password}" -ge 12 ] || { echo "password generation failed" >&2; exit 1; }
 
-admin_output="$(printf '%s\n' "$owner_password" | "${compose[@]}" exec -T auth node /app/admin.mjs upsert \
+admin_output="$(printf '%s\n' "$owner_password" | "${compose[@]}" exec -T auth node /app/auth/admin.mjs upsert \
   --email "$owner_email" --name "$owner_name" --stdin-password)"
 owner_sub="$(printf '%s\n' "$admin_output" | sed -n 's/^SUB=//p')"
 [[ "$owner_sub" =~ ^[0-9a-f-]{36}$ ]] || { echo "auth service did not return an account subject" >&2; exit 1; }
@@ -114,6 +114,10 @@ ON CONFLICT (email) DO UPDATE SET
   is_active = true,
   accepted_at = coalesce(tanaghom.app_users.accepted_at, now())
 RETURNING id AS owner_id \gset
+
+INSERT INTO tanaghom.memberships (user_id, organization_id, role, is_active)
+VALUES (:'owner_sub'::uuid, :'org_id'::uuid, 'owner', true)
+ON CONFLICT (user_id, organization_id) DO UPDATE SET role = 'owner', is_active = true;
 
 SELECT count(*) AS kit_count FROM tanaghom.brand_kits WHERE organization_id = :'org_id' \gset
 
@@ -147,6 +151,22 @@ UPDATE tanaghom.campaigns
    AND name = 'Demo Summer Camp'
    AND status <> 'closed';
 \echo ONBOARD_DEMO_CAMPAIGNS_ARCHIVED :ROW_COUNT
+
+UPDATE tanaghom.users
+   SET disabled = true, session_epoch = session_epoch + 1
+ WHERE email IN ('owner@demo.tanaghom.test', 'reviewer@demo.tanaghom.test');
+
+UPDATE tanaghom.sessions s
+   SET expires_at = now()
+  FROM tanaghom.users u
+ WHERE u.id = s.user_id
+   AND u.email IN ('owner@demo.tanaghom.test', 'reviewer@demo.tanaghom.test');
+
+UPDATE tanaghom.memberships m
+   SET is_active = false
+  FROM tanaghom.users u
+ WHERE u.id = m.user_id
+   AND u.email IN ('owner@demo.tanaghom.test', 'reviewer@demo.tanaghom.test');
 
 UPDATE tanaghom.app_users
    SET is_active = false, auth_subject = NULL, invited_at = NULL, accepted_at = NULL
@@ -182,7 +202,7 @@ printf '%s\n' "$sql_output"
 
 if [ "$retire_demo" = "1" ]; then
   for email in owner@demo.tanaghom.test reviewer@demo.tanaghom.test; do
-    "${compose[@]}" exec -T auth node /app/admin.mjs disable --email "$email" >/dev/null 2>&1 || true
+    "${compose[@]}" exec -T auth node /app/auth/admin.mjs disable --email "$email" >/dev/null 2>&1 || true
   done
   seed="$TANAGHOM_DEMO_SECRETS_DIR/auth_users.json"
   if [ -f "$seed" ]; then

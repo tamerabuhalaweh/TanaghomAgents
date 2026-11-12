@@ -1,14 +1,28 @@
 import { NextResponse, type NextRequest } from "next/server";
 
-export function proxy(request: NextRequest) {
-  const authenticated = request.cookies.has("tanaghom_access_token");
-  const loginRoute = request.nextUrl.pathname === "/login" || request.nextUrl.pathname === "/accept-invite";
+// Public entry points. Everything else is gated here optimistically (cookie
+// presence); the API and server components still verify the session row and the
+// tenant membership through `authorize`/`requireTenant`.
+const PUBLIC_PAGES = new Set([
+  "/login",
+  "/signup",
+  "/verify-email",
+  "/forgot-password",
+  "/reset-password",
+  "/accept-invite",
+]);
 
-  if (!authenticated && !loginRoute) {
+export function proxy(request: NextRequest) {
+  const pathname = request.nextUrl.pathname;
+  const authenticated = request.cookies.has("tanaghom_access_token");
+  const publicPage = PUBLIC_PAGES.has(pathname);
+
+  if (!authenticated && !publicPage) {
     const login = new URL("/login", request.url);
-    login.searchParams.set("next", `${request.nextUrl.pathname}${request.nextUrl.search}`);
+    login.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(login);
   }
+
   return NextResponse.next();
 }
 

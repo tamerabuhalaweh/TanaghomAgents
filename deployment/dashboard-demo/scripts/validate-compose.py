@@ -9,9 +9,9 @@ config = json.load(sys.stdin)
 services = config["services"]
 root = Path(__file__).resolve().parents[3]
 migrations = sorted((root / "packages/database/migrations").glob("*.up.sql"))
-assert len(migrations) == 45, "demo source must contain the exact 45-migration chain"
-assert migrations[-1].name == "0048_gemini_workspace_model.up.sql"
-assert len({path.name.split("_", 1)[0] for path in migrations}) == 45
+assert len(migrations) == 46, "demo source must contain the exact 46-migration chain"
+assert migrations[-1].name == "0049_tenant_auth.up.sql"
+assert len({path.name.split("_", 1)[0] for path in migrations}) == 46
 expected = {"postgres", "migrate", "auth", "storage", "storage-init", "dashboard", "workspace-worker", "caddy"}
 assert set(services) == expected, "unexpected demo services"
 
@@ -23,7 +23,7 @@ postgres_image = "postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59f
 rustfs_image = "rustfs/rustfs:latest@sha256:9ca9559533b537d10482fe923288b676ad08f92a7069d9a17327fbae3cab688b"
 assert services["postgres"]["image"] == postgres_image
 assert services["migrate"]["image"] == postgres_image
-assert services["auth"]["image"] == node_image
+assert services["auth"]["image"].startswith("tanaghom-dashboard-demo:")
 assert services["storage-init"]["image"] == node_image
 assert services["storage"]["image"] == rustfs_image
 assert services["dashboard"]["image"].startswith("tanaghom-dashboard-demo:")
@@ -56,15 +56,18 @@ assert caddy["entrypoint"] == ["/bin/sh", "/entrypoint.sh"]
 
 assert services["auth"]["environment"]["AUTH_STORE_FILE"] == "/data/auth-users.json"
 assert services["auth"]["environment"]["AUTH_SEED_FILE"] == "/run/secrets/auth_users"
+assert services["auth"]["environment"]["AUTH_DATABASE_URL_FILE"] == "/run/secrets/database_url"
+assert services["auth"]["environment"]["AUTH_INTERNAL_TOKEN_FILE"] == "/run/secrets/auth_internal_token"
 assert int(services["auth"]["environment"]["AUTH_ACCESS_TTL_SECONDS"]) <= 3600
-assert int(services["auth"]["environment"]["AUTH_ABSOLUTE_TTL_SECONDS"]) <= 86400
-assert any(mount.get("target") == "/data" for mount in services["auth"].get("volumes", [])), "auth store volume is required"
+legacy_mounts = {mount.get("target"): mount for mount in services["auth"].get("volumes", [])}
+assert "/data" in legacy_mounts, "legacy account store mount is required for the one-time import"
+assert legacy_mounts["/data"].get("read_only") is True, "the legacy account store is import-only"
 
 def secret_names(service):
     return {item if isinstance(item, str) else item["source"] for item in service.get("secrets", [])}
 
 assert "auth_users" not in secret_names(services["dashboard"])
-assert {"auth_users", "auth_private_key"} <= secret_names(services["auth"])
+assert {"auth_users", "auth_private_key", "auth_internal_token", "database_url"} <= secret_names(services["auth"])
 assert {"workspace_database_url", "workspace_worker_token", "gemini_api_key"} <= secret_names(services["dashboard"])
 assert secret_names(services["workspace-worker"]) == {"workspace_worker_token"}
 assert "workspace_password" in secret_names(services["migrate"])
@@ -132,6 +135,7 @@ assert all(len(item["password"]) >= 16 for item in users["users"])
 assert len((secrets_dir / "s3_access_key").read_text().strip()) >= 16
 assert len((secrets_dir / "s3_secret_key").read_text().strip()) >= 32
 assert (secrets_dir / "auth_private_key.pem").read_text().startswith("-----BEGIN PRIVATE KEY-----")
+assert len((secrets_dir / "auth_internal_token").read_text().strip()) == 64
 workspace_password = (secrets_dir / "workspace_password").read_text().strip()
 assert len(workspace_password) == 64
 assert set(workspace_password) <= set("0123456789abcdef")

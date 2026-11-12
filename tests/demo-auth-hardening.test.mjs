@@ -1,237 +1,71 @@
 import assert from "node:assert/strict";
-import { spawn, spawnSync } from "node:child_process";
-import { generateKeyPairSync } from "node:crypto";
-import { mkdtemp, readFile, rm, writeFile } from "node:fs/promises";
-import { createServer } from "node:net";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { spawnSync } from "node:child_process";
+import { readFile } from "node:fs/promises";
 import test from "node:test";
 
-const authDir = fileURLToPath(new URL("../deployment/dashboard-demo/auth/", import.meta.url));
-const composePath = fileURLToPath(new URL("../deployment/dashboard-demo/compose.yml", import.meta.url));
-const caddyfilePath = fileURLToPath(new URL("../deployment/dashboard-demo/caddy/Caddyfile", import.meta.url));
-const caddyEntrypoint = fileURLToPath(new URL("../deployment/dashboard-demo/caddy/entrypoint.sh", import.meta.url));
-const onboardingScript = fileURLToPath(new URL("../deployment/dashboard-demo/scripts/onboard-organization.sh", import.meta.url));
+import {
+  hashPassword,
+  passwordPolicyError,
+  verifyPassword,
+} from "../deployment/dashboard-demo/auth/passwords.mjs";
 
-function freePort() {
-  return new Promise((resolve, reject) => {
-    const server = createServer();
-    server.on("error", reject);
-    server.listen(0, "127.0.0.1", () => {
-      const { port } = server.address();
-      server.close(() => resolve(port));
-    });
-  });
-}
+const root = new URL("../", import.meta.url);
+const authDir = new URL("deployment/dashboard-demo/auth/", root);
+const composePath = new URL("deployment/dashboard-demo/compose.yml", root);
+const caddyfilePath = new URL("deployment/dashboard-demo/caddy/Caddyfile", root);
+const caddyEntrypoint = new URL("deployment/dashboard-demo/caddy/entrypoint.sh", root);
+const onboardingScript = new URL("deployment/dashboard-demo/scripts/onboard-organization.sh", root);
+const migrationPath = new URL("packages/database/migrations/0049_tenant_auth.up.sql", root);
 
-async function startAuth({ accessTtl = 900, idleTtl = 1800, seedUsers } = {}) {
-  const directory = await mkdtemp(join(tmpdir(), "tanaghom-auth-"));
-  const { privateKey } = generateKeyPairSync("rsa", {
-    modulusLength: 2048,
-    privateKeyEncoding: { type: "pkcs8", format: "pem" },
-    publicKeyEncoding: { type: "spki", format: "pem" },
-  });
-  const keyFile = join(directory, "auth_private_key.pem");
-  const seedFile = join(directory, "seed.json");
-  const storeFile = join(directory, "auth-users.json");
-  await writeFile(keyFile, privateKey, { mode: 0o600 });
-  await writeFile(seedFile, JSON.stringify({
-    users: seedUsers ?? [
-      {
-        email: "owner@example.test",
-        password: "correct-horse-battery-staple",
-        sub: "90000000-0000-4000-8000-000000000001",
-      },
-      {
-        email: "second@example.test",
-        password: "another-long-demo-passphrase",
-        sub: "90000000-0000-4000-8000-000000000002",
-      },
-    ],
-  }), { mode: 0o600 });
+test("passwords are scrypt-hashed, verified in constant time, and policy-checked", async () => {
+  const hash = await hashPassword("correct-horse-battery-staple");
+  assert.match(hash, /^scrypt\$32768\$8\$1\$[A-Za-z0-9+/=]+\$[A-Za-z0-9+/=]+$/);
+  assert.ok(!hash.includes("correct-horse-battery-staple"));
+  assert.equal(await verifyPassword(hash, "correct-horse-battery-staple"), true);
+  assert.equal(await verifyPassword(hash, "correct-horse-battery-stapl"), false);
+  assert.equal(await verifyPassword("not-a-hash", "correct-horse-battery-staple"), false);
 
-  const port = await freePort();
-  const child = spawn(process.execPath, [join(authDir, "server.mjs")], {
-    cwd: authDir,
-    env: {
-      ...process.env,
-      DEMO_AUTH_PORT: String(port),
-      DEMO_AUTH_ISSUER: `http://127.0.0.1:${port}/auth/v1`,
-      AUTH_STORE_FILE: storeFile,
-      AUTH_SEED_FILE: seedFile,
-      AUTH_PRIVATE_KEY_FILE: keyFile,
-      AUTH_ACCESS_TTL_SECONDS: String(accessTtl),
-      AUTH_IDLE_TTL_SECONDS: String(idleTtl),
-      AUTH_ABSOLUTE_TTL_SECONDS: "3600",
-    },
-    stdio: ["ignore", "pipe", "pipe"],
-  });
-  let logs = "";
-  child.stdout.on("data", (chunk) => { logs += chunk; });
-  child.stderr.on("data", (chunk) => { logs += chunk; });
-
-  const base = `http://127.0.0.1:${port}`;
-  const deadline = Date.now() + 20_000;
-  for (;;) {
-    if (child.exitCode !== null) throw new Error(`auth server exited early: ${logs}`);
-    try {
-      const response = await fetch(`${base}/health`);
-      if (response.ok) break;
-    } catch {
-      // not listening yet
-    }
-    if (Date.now() > deadline) throw new Error(`auth server did not become healthy: ${logs}`);
-    await new Promise((resolve) => setTimeout(resolve, 100));
-  }
-
-  return {
-    base,
-    directory,
-    storeFile,
-    seedFile,
-    keyFile,
-    async stop() {
-      child.kill("SIGTERM");
-      await new Promise((resolve) => {
-        if (child.exitCode !== null) return resolve();
-        child.once("exit", resolve);
-        setTimeout(() => { child.kill("SIGKILL"); resolve(); }, 5_000);
-      });
-      await rm(directory, { recursive: true, force: true });
-    },
-  };
-}
-
-async function login(base, email, password) {
-  const response = await fetch(`${base}/auth/v1/token?grant_type=password`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  return { status: response.status, body: await response.json().catch(() => ({})) };
-}
-
-test("accounts are stored as scrypt hashes, login is rate limited, and password change revokes sessions", async () => {
-  const auth = await startAuth();
-  try {
-    for (let attempt = 0; attempt < 5; attempt += 1) {
-      const failure = await login(auth.base, "owner@example.test", `wrong-password-${attempt}`);
-      assert.equal(failure.status, 401);
-    }
-    const blocked = await login(auth.base, "owner@example.test", "correct-horse-battery-staple");
-    assert.equal(blocked.status, 429, "the sixth attempt must be rate limited");
-    assert.ok(blocked.body.retry_after > 0);
-
-    const storeText = await readFile(auth.storeFile, "utf8");
-    assert.ok(storeText.includes("scrypt$"), "store must contain scrypt hashes");
-    assert.ok(!storeText.includes("correct-horse-battery-staple"), "plaintext must not survive migration");
-    assert.ok(!storeText.includes("another-long-demo-passphrase"));
-    assert.equal((await readFile(auth.storeFile)).length > 0, true);
-
-    const session = await login(auth.base, "second@example.test", "another-long-demo-passphrase");
-    assert.equal(session.status, 200);
-    assert.ok(session.body.access_token);
-    assert.equal(session.body.expires_in, 900);
-
-    const wrongCurrent = await fetch(`${auth.base}/auth/v1/password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.body.access_token}` },
-      body: JSON.stringify({ current_password: "not-the-password", new_password: "brand-new-long-passphrase" }),
-    });
-    assert.equal(wrongCurrent.status, 400);
-    assert.equal((await wrongCurrent.json()).error, "invalid_current_password");
-
-    const weak = await fetch(`${auth.base}/auth/v1/password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.body.access_token}` },
-      body: JSON.stringify({
-        current_password: "another-long-demo-passphrase",
-        new_password: "tanaghom-password",
-      }),
-    });
-    assert.equal(weak.status, 400);
-    assert.ok(["password_too_common", "password_too_simple", "password_contains_email"].includes((await weak.json()).error));
-
-    const changed = await fetch(`${auth.base}/auth/v1/password`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${session.body.access_token}` },
-      body: JSON.stringify({
-        current_password: "another-long-demo-passphrase",
-        new_password: "a-fresh-and-unrelated-passphrase",
-      }),
-    });
-    assert.equal(changed.status, 200);
-
-    const refresh = await fetch(`${auth.base}/auth/v1/token?grant_type=refresh_token`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refresh_token: session.body.refresh_token }),
-    });
-    assert.equal(refresh.status, 401, "password change must revoke refresh tokens");
-
-    assert.equal((await login(auth.base, "second@example.test", "another-long-demo-passphrase")).status, 401);
-    const fresh = await login(auth.base, "second@example.test", "a-fresh-and-unrelated-passphrase");
-    assert.equal(fresh.status, 200);
-
-    const identity = await fetch(`${auth.base}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${fresh.body.access_token}` },
-    });
-    assert.equal(identity.status, 200);
-    assert.equal((await identity.json()).email, "second@example.test");
-  } finally {
-    await auth.stop();
-  }
+  assert.equal(passwordPolicyError("short", "owner@example.test"), "password_too_short");
+  assert.equal(passwordPolicyError("tanaghom-password", "owner@example.test"), "password_too_common");
+  assert.equal(passwordPolicyError("owner-name-is-long", "owner@example.test"), "password_contains_email");
+  assert.equal(passwordPolicyError("correct-horse-battery-staple", "owner@example.test"), null);
 });
 
-test("access tokens expire, and an operator-created account must choose a password", async () => {
-  const auth = await startAuth({ accessTtl: 1 });
-  try {
-    const session = await login(auth.base, "owner@example.test", "correct-horse-battery-staple");
-    assert.equal(session.status, 200);
-    await new Promise((resolve) => setTimeout(resolve, 1_300));
-    const expired = await fetch(`${auth.base}/auth/v1/user`, {
-      headers: { Authorization: `Bearer ${session.body.access_token}` },
-    });
-    assert.equal(expired.status, 401);
+test("auth accounts and sessions live in PostgreSQL, not the JSON store", async () => {
+  const server = await readFile(new URL("server.mjs", authDir), "utf8");
+  const store = await readFile(new URL("store.mjs", authDir), "utf8");
+  const admin = await readFile(new URL("admin.mjs", authDir), "utf8");
 
-    const created = spawnSync(process.execPath, [
-      join(authDir, "admin.mjs"),
-      "upsert",
-      "--email", "operator-created@example.test",
-      "--name", "Operator Created",
-      "--stdin-password",
-    ], {
-      cwd: authDir,
-      input: "operator-chosen-long-passphrase-2026\n",
-      env: {
-        ...process.env,
-        AUTH_STORE_FILE: auth.storeFile,
-        AUTH_SEED_FILE: auth.seedFile,
-      },
-      encoding: "utf8",
-    });
-    assert.equal(created.status, 0, created.stderr);
-    assert.match(created.stdout, /SUB=[0-9a-f-]{36}/);
-    assert.ok(!created.stdout.includes("operator-chosen-long-passphrase-2026"), "the CLI must never echo a password");
-
-    const firstLogin = await login(auth.base, "operator-created@example.test", "operator-chosen-long-passphrase-2026");
-    assert.equal(firstLogin.status, 200);
-    assert.equal(firstLogin.body.must_change_password, true);
-
-    const setPassword = await fetch(`${auth.base}/auth/v1/user`, {
-      method: "PUT",
-      headers: { "Content-Type": "application/json", Authorization: `Bearer ${firstLogin.body.access_token}` },
-      body: JSON.stringify({ password: "chosen-on-first-sign-in-2026" }),
-    });
-    assert.equal(setPassword.status, 200);
-
-    const afterChange = await login(auth.base, "operator-created@example.test", "chosen-on-first-sign-in-2026");
-    assert.equal(afterChange.status, 200);
-    assert.equal(afterChange.body.must_change_password, false);
-  } finally {
-    await auth.stop();
+  for (const table of ["tanaghom.users", "tanaghom.memberships", "tanaghom.sessions", "tanaghom.organizations"]) {
+    assert.ok(store.includes(table), `store must use ${table}`);
   }
+  assert.match(store, /import \{ Pool \} from "pg"/);
+  assert.match(store, /token_hash/);
+  assert.doesNotMatch(store, /writeFileSync|renameSync|fsyncSync/, "the JSON store must not be written anymore");
+  assert.match(store, /importLegacyIfEmpty/);
+
+  assert.match(server, /\/auth\/v1\/signup/);
+  assert.match(server, /\/auth\/v1\/sessions/);
+  assert.match(server, /x-auth-internal-token/);
+  assert.match(server, /changePassword/);
+  assert.doesNotMatch(server, /sessions\.set\(/, "sessions must not live in process memory");
+  assert.match(admin, /await store\.list\(\)/);
+});
+
+test("the tenant auth migration creates the WS2 tables, constraints, and grants", async () => {
+  const sql = await readFile(migrationPath, "utf8");
+  for (const table of ["users", "memberships", "auth_tokens", "sessions"]) {
+    assert.match(sql, new RegExp(`CREATE TABLE tanaghom\\.${table}`));
+  }
+  assert.match(sql, /status text NOT NULL DEFAULT 'trialing'/);
+  assert.match(sql, /stripe_customer_id text UNIQUE/);
+  assert.match(sql, /default_locale text NOT NULL DEFAULT 'en'/);
+  assert.match(sql, /PRIMARY KEY \(user_id, organization_id\)/);
+  assert.match(sql, /purpose text NOT NULL CHECK \(purpose IN \('verify_email', 'reset_password', 'invite'\)\)/);
+  assert.match(sql, /token_hash text NOT NULL UNIQUE/);
+  assert.match(sql, /GRANT SELECT, INSERT, UPDATE ON tanaghom\.users TO tanaghom_api/);
+  assert.match(sql, /GRANT SELECT, INSERT, UPDATE, DELETE ON tanaghom\.sessions TO tanaghom_api/);
+  assert.match(sql, /0049_tenant_auth/);
 });
 
 test("the public edge and onboarding guardrails are declared in source", async () => {
@@ -241,6 +75,8 @@ test("the public edge and onboarding guardrails are declared in source", async (
   assert.match(compose, /"80:80"/);
   assert.match(compose, /"443:443"/);
   assert.match(compose, /127\.0\.0\.1:3210:3000/);
+  assert.match(compose, /AUTH_DATABASE_URL_FILE: \/run\/secrets\/database_url/);
+  assert.match(compose, /AUTH_INTERNAL_TOKEN_FILE: \/run\/secrets\/auth_internal_token/);
   assert.match(compose, /AUTH_STORE_FILE: \/data\/auth-users\.json/);
   assert.match(compose, /AUTH_ACCESS_TTL_SECONDS/);
 
@@ -255,9 +91,11 @@ test("the public edge and onboarding guardrails are declared in source", async (
   assert.match(onboarding, /ONBOARD_BRAND_VOICE_AR/);
   assert.match(onboarding, /Demo Summer Camp/);
   assert.match(onboarding, /DEMO_CREDENTIALS_RETIRED/);
+  assert.match(onboarding, /INSERT INTO tanaghom\.memberships/);
   // app_users_invitation_lifecycle requires auth_subject, invited_at and
   // accepted_at to be null together, so retirement must detach all three.
   assert.match(onboarding, /auth_subject = NULL, invited_at = NULL, accepted_at = NULL/);
+  assert.match(onboarding, /UPDATE tanaghom\.users\s+SET disabled = true/);
 
   if (process.platform !== "win32") {
     const syntax = spawnSync("bash", ["-n", onboardingScript], { encoding: "utf8" });
