@@ -5,19 +5,21 @@ import {
   randomBytes,
   randomUUID,
   sign,
+  timingSafeEqual,
   verify as verifySignature,
 } from "node:crypto";
 import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 
-import { burnPasswordCheck, hashPassword, passwordPolicyError, verifyPassword } from "./passwords.mjs";
-import { createUserStore } from "./store.mjs";
+import { burnPasswordCheck, passwordPolicyError, verifyPassword } from "./passwords.mjs";
+import { createUserStore, StoreError } from "./store.mjs";
 
 const KEY_FILE = process.env.AUTH_PRIVATE_KEY_FILE ?? "/run/secrets/auth_private_key";
 const PORT = Number(process.env.DEMO_AUTH_PORT ?? "43191");
 const ISSUER = (process.env.DEMO_AUTH_ISSUER ?? "http://auth:43191/auth/v1").replace(/\/$/, "");
 const STORE_FILE = process.env.AUTH_STORE_FILE ?? "/data/auth-users.json";
 const SEED_FILE = process.env.AUTH_SEED_FILE ?? "/run/secrets/auth_users";
+const INTERNAL_TOKEN_FILE = process.env.AUTH_INTERNAL_TOKEN_FILE ?? "/run/secrets/auth_internal_token";
 const MAX_BODY_BYTES = 64 * 1024;
 
 function positiveInt(name, fallback) {
@@ -26,12 +28,9 @@ function positiveInt(name, fallback) {
   return value;
 }
 
-// Access tokens are short-lived; the refresh token carries the idle and the
-// absolute session lifetime, so a stolen access token is useless quickly and a
-// dormant browser tab stops refreshing after the idle window.
+// Access tokens are short-lived; the opaque refresh token is the Postgres
+// session row, so revocation is immediate and survives a restart.
 const ACCESS_TTL_SECONDS = positiveInt("AUTH_ACCESS_TTL_SECONDS", 900);
-const IDLE_TTL_MS = positiveInt("AUTH_IDLE_TTL_SECONDS", 1800) * 1000;
-const ABSOLUTE_TTL_MS = positiveInt("AUTH_ABSOLUTE_TTL_SECONDS", 12 * 60 * 60) * 1000;
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LIMITS = {
   email: positiveInt("AUTH_LOGIN_EMAIL_LIMIT", 5),
@@ -50,15 +49,16 @@ function readSecret(path) {
   try {
     const value = readFileSync(path, "utf8");
     if (!value.trim()) throw new Error("empty");
-    return value;
+    return value.trim();
   } catch {
     throw new Error(`required demo auth secret unavailable: ${path}`);
   }
 }
 
-const store = createUserStore({ file: STORE_FILE, seedFile: SEED_FILE });
+const internalToken = readSecret(INTERNAL_TOKEN_FILE);
+const store = createUserStore({ legacyFile: STORE_FILE, seedFile: SEED_FILE });
 await store.load();
-if (store.size < 1) throw new Error("auth store must contain at least one account");
+if ((await store.count()) < 1) throw new Error("auth store must contain at least one account");
 
 const privateKey = createPrivateKey(readSecret(KEY_FILE));
 const publicKey = createPublicKey(privateKey);
@@ -71,8 +71,6 @@ const jwks = {
   keys: [{ ...publicJwk, kid: keyId, use: "sig", alg: "RS256" }],
 };
 
-// refresh token hash -> session. Tokens are never stored in plaintext.
-const sessions = new Map();
 // key -> { count, resetAt }
 const failures = new Map();
 
@@ -84,10 +82,6 @@ function compactJson(value) {
   return base64url(JSON.stringify(value));
 }
 
-function hashToken(token) {
-  return createHash("sha256").update(token, "utf8").digest("base64url");
-}
-
 function mintAccessToken(user, sessionId) {
   const issuedAt = Math.floor(Date.now() / 1000);
   const header = { alg: "RS256", typ: "JWT", kid: keyId };
@@ -97,6 +91,8 @@ function mintAccessToken(user, sessionId) {
     aud: "authenticated",
     role: "authenticated",
     email: user.email,
+    organization_id: user.organizationId,
+    membership_role: user.role,
     session_id: sessionId,
     session_epoch: user.sessionEpoch,
     must_change_password: user.mustChangePassword,
@@ -109,32 +105,24 @@ function mintAccessToken(user, sessionId) {
   return `${signingInput}.${signature.toString("base64url")}`;
 }
 
-function issueSession(user) {
-  const sessionId = randomUUID();
-  const refreshToken = randomBytes(48).toString("base64url");
-  const now = Date.now();
-  sessions.set(hashToken(refreshToken), {
-    sub: user.sub,
-    sessionId,
-    epoch: user.sessionEpoch,
-    createdAt: now,
-    lastSeenAt: now,
-    absoluteExpiresAt: now + ABSOLUTE_TTL_MS,
+async function issueSession(user, userAgent) {
+  if (!user.organizationId) {
+    throw Object.assign(new Error("workspace_required"), { status: 403, code: "workspace_required" });
+  }
+  const session = await store.createSession({
+    userId: user.sub,
+    organizationId: user.organizationId,
+    userAgent: userAgent ?? null,
   });
   return {
-    access_token: mintAccessToken(user, sessionId),
+    access_token: mintAccessToken(user, session.id),
     token_type: "bearer",
     expires_in: ACCESS_TTL_SECONDS,
     expires_at: Math.floor(Date.now() / 1000) + ACCESS_TTL_SECONDS,
-    refresh_token: refreshToken,
+    refresh_token: session.token,
     must_change_password: user.mustChangePassword,
+    organization: { id: user.organizationId, name: user.organizationName, role: user.role },
   };
-}
-
-function revokeSessionsFor(sub) {
-  for (const [key, entry] of sessions) {
-    if (entry.sub === sub) sessions.delete(key);
-  }
 }
 
 function verifyAccessToken(token) {
@@ -164,6 +152,7 @@ function verifyAccessToken(token) {
   if (claims.iss !== ISSUER || claims.aud !== "authenticated") return null;
   if (typeof claims.exp !== "number" || claims.exp <= now) return null;
   if (typeof claims.sub !== "string" || !UUID_RE.test(claims.sub)) return null;
+  if (typeof claims.session_id !== "string" || !UUID_RE.test(claims.session_id)) return null;
   return claims;
 }
 
@@ -273,11 +262,26 @@ function bearerToken(request) {
   return match ? match[1] : null;
 }
 
-function requireIdentity(request) {
+function requireInternal(request) {
+  // The dashboard's server-side admin client authenticates with apikey/Bearer;
+  // operator scripts may send the explicit header instead.
+  const header = request.headers["x-auth-internal-token"]
+    ?? request.headers.apikey
+    ?? (typeof request.headers.authorization === "string"
+      ? request.headers.authorization.replace(/^Bearer\s+/i, "")
+      : "");
+  const provided = Buffer.from(typeof header === "string" ? header : "", "utf8");
+  const expected = Buffer.from(internalToken, "utf8");
+  if (provided.length !== expected.length || !timingSafeEqual(provided, expected)) {
+    throw Object.assign(new Error("forbidden"), { status: 403 });
+  }
+}
+
+async function requireIdentity(request) {
   const token = bearerToken(request);
   const claims = token ? verifyAccessToken(token) : null;
   if (!claims) throw Object.assign(new Error("unauthenticated"), { status: 401, code: "session_expired" });
-  const user = store.findBySub(claims.sub);
+  const user = await store.findBySub(claims.sub);
   if (!user || user.disabled) {
     throw Object.assign(new Error("unauthenticated"), { status: 401, code: "session_expired" });
   }
@@ -291,7 +295,6 @@ async function handleToken(request, response) {
   const url = new URL(request.url ?? "/", "http://demo-auth");
   const grantType = url.searchParams.get("grant_type");
   const body = await readJson(request);
-  await store.refreshIfChanged();
 
   if (grantType === "password") {
     const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
@@ -306,7 +309,7 @@ async function handleToken(request, response) {
       send(response, 429, { error: "too_many_attempts", retry_after: retryAfter }, { "Retry-After": String(retryAfter) });
       return;
     }
-    const user = store.findByEmail(email);
+    const user = await store.findByEmail(email);
     const passwordMatches = user && !user.disabled
       ? await verifyPassword(user.passwordHash, password)
       : await burnPasswordCheck(password);
@@ -316,38 +319,46 @@ async function handleToken(request, response) {
       return;
     }
     clearLoginFailures(address, email);
-    send(response, 200, issueSession(user));
+    let session;
+    try {
+      session = await issueSession(user, request.headers["user-agent"]);
+    } catch (error) {
+      send(response, error.status ?? 400, { error: error.code ?? "login_failed" });
+      return;
+    }
+    await store.touchLogin(user.sub);
+    send(response, 200, session);
     return;
   }
 
   if (grantType === "refresh_token") {
     const refreshToken = typeof body.refresh_token === "string" ? body.refresh_token : "";
-    const key = refreshToken ? hashToken(refreshToken) : null;
-    const entry = key ? sessions.get(key) : null;
-    if (!entry) {
+    const session = refreshToken ? await store.findSession(refreshToken) : null;
+    if (!session) {
       send(response, 401, { error: "invalid_grant", error_description: "Invalid refresh token" });
       return;
     }
-    const now = Date.now();
-    if (entry.absoluteExpiresAt <= now || now - entry.lastSeenAt > IDLE_TTL_MS) {
-      sessions.delete(key);
-      send(response, 401, { error: "session_expired", error_description: "Session expired" });
-      return;
-    }
-    const user = store.findBySub(entry.sub);
-    if (!user || user.disabled || user.sessionEpoch !== entry.epoch) {
-      sessions.delete(key);
+    const user = await store.findBySub(session.user_id);
+    if (!user || user.disabled || user.organizationId !== session.organization_id) {
+      await store.revokeSessionByToken(refreshToken);
       send(response, 401, { error: "session_revoked", error_description: "Session revoked" });
       return;
     }
-    sessions.delete(key);
-    send(response, 200, issueSession(user));
+    const token = await store.rotateSession(session, { userAgent: request.headers["user-agent"] });
+    send(response, 200, {
+      access_token: mintAccessToken(user, session.id),
+      token_type: "bearer",
+      expires_in: ACCESS_TTL_SECONDS,
+      expires_at: Math.floor(Date.now() / 1000) + ACCESS_TTL_SECONDS,
+      refresh_token: token,
+      must_change_password: user.mustChangePassword,
+    });
     return;
   }
 
   if (grantType === "logout") {
     const refreshToken = typeof body.refresh_token === "string" ? body.refresh_token : "";
-    if (refreshToken) sessions.delete(hashToken(refreshToken));
+    if (refreshToken) await store.revokeSessionByToken(refreshToken);
     sendEmpty(response, 204);
     return;
   }
@@ -356,16 +367,16 @@ async function handleToken(request, response) {
 }
 
 async function handleLogout(request, response) {
-  await readJson(request).catch(() => ({}));
-  const token = request.headers["x-refresh-token"];
-  if (typeof token === "string" && token) sessions.delete(hashToken(token));
+  const body = await readJson(request).catch(() => ({}));
+  const token = typeof body.refresh_token === "string" ? body.refresh_token : request.headers["x-refresh-token"];
+  if (typeof token === "string" && token) await store.revokeSessionByToken(token);
   sendEmpty(response, 204);
 }
 
 async function handlePassword(request, response) {
   let identity;
   try {
-    identity = requireIdentity(request);
+    identity = await requireIdentity(request);
   } catch (error) {
     send(response, 401, { error: error.code ?? "unauthenticated" });
     return;
@@ -391,7 +402,6 @@ async function handlePassword(request, response) {
     return;
   }
   await store.changePassword(identity.user.email, next);
-  revokeSessionsFor(identity.user.sub);
   send(response, 200, { ok: true, reauthenticate: true });
 }
 
@@ -401,7 +411,7 @@ async function handlePassword(request, response) {
 async function handleUserUpdate(request, response) {
   let identity;
   try {
-    identity = requireIdentity(request);
+    identity = await requireIdentity(request);
   } catch (error) {
     send(response, 401, { error: error.code ?? "unauthenticated" });
     return;
@@ -432,16 +442,107 @@ async function handleUserUpdate(request, response) {
     return;
   }
   await store.changePassword(identity.user.email, next);
-  revokeSessionsFor(identity.user.sub);
   send(response, 200, { ok: true, reauthenticate: true });
+}
+
+async function handleSignup(request, response) {
+  const body = await readJson(request);
+  try {
+    const result = await store.signup({
+      email: body.email,
+      password: body.password,
+      fullName: body.full_name,
+      organizationName: body.organization_name,
+      locale: body.locale,
+      userAgent: request.headers["user-agent"],
+    });
+    send(response, 201, {
+      access_token: mintAccessToken(result.user, result.session.id),
+      token_type: "bearer",
+      expires_in: ACCESS_TTL_SECONDS,
+      expires_at: Math.floor(Date.now() / 1000) + ACCESS_TTL_SECONDS,
+      refresh_token: result.session.token,
+      must_change_password: false,
+      organization: {
+        id: result.organizationId,
+        name: result.organizationName,
+        role: "owner",
+      },
+    });
+  } catch (error) {
+    if (error instanceof StoreError) {
+      const status = error.message === "email_taken" ? 409 : 400;
+      send(response, status, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+}
+
+async function handleSessions(request, response) {
+  let identity;
+  try {
+    identity = await requireIdentity(request);
+  } catch (error) {
+    send(response, 401, { error: error.code ?? "unauthenticated" });
+    return;
+  }
+  const url = new URL(request.url ?? "/", "http://demo-auth");
+  if (request.method === "GET") {
+    const sessions = await store.listSessions(identity.user.sub, identity.claims.session_id);
+    send(response, 200, { sessions });
+    return;
+  }
+  if (request.method === "DELETE") {
+    const id = url.searchParams.get("id") ?? "";
+    if (!UUID_RE.test(id)) {
+      send(response, 400, { error: "invalid_session" });
+      return;
+    }
+    const revoked = await store.revokeSession(id, identity.user.sub);
+    if (!revoked) {
+      send(response, 404, { error: "session_not_found" });
+      return;
+    }
+    send(response, 200, { ok: true, reauthenticate: id === identity.claims.session_id });
+    return;
+  }
+  send(response, 405, { error: "method_not_allowed" }, { Allow: "GET, DELETE" });
+}
+
+async function handleInvite(request, response) {
+  requireInternal(request);
+  const body = await readJson(request);
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  if (!email.includes("@")) {
+    send(response, 400, { error: "invalid_email" });
+    return;
+  }
+  const password = randomBytes(24).toString("base64url");
+  const user = await store.upsert({
+    email,
+    displayName: typeof body.display_name === "string" ? body.display_name : null,
+    password,
+    mustChangePassword: true,
+  });
+  send(response, 201, { id: user.sub, email: user.email });
+}
+
+async function handleAdminDelete(request, response, userId) {
+  requireInternal(request);
+  if (!UUID_RE.test(userId)) {
+    send(response, 400, { error: "invalid_user" });
+    return;
+  }
+  await store.deleteUser(userId);
+  sendEmpty(response, 204);
 }
 
 async function handle(request, response) {
   const url = new URL(request.url ?? "/", "http://demo-auth");
-  await store.refreshIfChanged();
 
   if (request.method === "GET" && url.pathname === "/health") {
-    send(response, 200, { ok: true, service: "tanaghom-auth", accounts: store.size });
+    send(response, 200, { ok: true, service: "tanaghom-auth", accounts: await store.count() });
     return;
   }
   if (request.method === "GET" && url.pathname === "/auth/v1/.well-known/jwks.json") {
@@ -454,6 +555,18 @@ async function handle(request, response) {
       return;
     }
     await handleToken(request, response);
+    return;
+  }
+  if (url.pathname === "/auth/v1/signup") {
+    if (request.method !== "POST") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "POST" });
+      return;
+    }
+    await handleSignup(request, response);
+    return;
+  }
+  if (url.pathname === "/auth/v1/sessions") {
+    await handleSessions(request, response);
     return;
   }
   if (url.pathname === "/auth/v1/logout") {
@@ -472,11 +585,28 @@ async function handle(request, response) {
     await handlePassword(request, response);
     return;
   }
+  if (url.pathname === "/auth/v1/invite") {
+    if (request.method !== "POST") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "POST" });
+      return;
+    }
+    await handleInvite(request, response);
+    return;
+  }
+  const adminUser = url.pathname.match(/^\/auth\/v1\/admin\/users\/([0-9a-f-]{36})$/i);
+  if (adminUser) {
+    if (request.method !== "DELETE") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "DELETE" });
+      return;
+    }
+    await handleAdminDelete(request, response, adminUser[1]);
+    return;
+  }
   if (url.pathname === "/auth/v1/user") {
     if (request.method === "GET") {
       let identity;
       try {
-        identity = requireIdentity(request);
+        identity = await requireIdentity(request);
       } catch (error) {
         send(response, 401, { error: error.code ?? "unauthenticated" });
         return;
@@ -484,6 +614,8 @@ async function handle(request, response) {
       send(response, 200, {
         sub: identity.user.sub,
         email: identity.user.email,
+        organization_id: identity.user.organizationId,
+        role: identity.user.role,
         must_change_password: identity.user.mustChangePassword,
       });
       return;
@@ -505,7 +637,8 @@ const server = createServer((request, response) => {
       return;
     }
     const status = Number.isInteger(error?.status) ? error.status : 400;
-    send(response, status, { error: status === 413 ? "body_too_large" : "invalid_request" });
+    if (status >= 500) console.error("tanaghom-auth request failed", error);
+    send(response, status, { error: status === 413 ? "body_too_large" : status === 403 ? "forbidden" : "invalid_request" });
   });
 });
 server.headersTimeout = 10_000;
@@ -517,19 +650,8 @@ server.on("clientError", (_error, socket) => {
 
 const sweep = setInterval(() => {
   const now = Date.now();
-  for (const [key, entry] of sessions) {
-    if (entry.absoluteExpiresAt <= now || now - entry.lastSeenAt > IDLE_TTL_MS) sessions.delete(key);
-  }
   for (const [key, entry] of failures) {
     if (entry.resetAt <= now) failures.delete(key);
-  }
-  if (sessions.size > 5000) {
-    const excess = sessions.size - 5000;
-    let removed = 0;
-    for (const token of sessions.keys()) {
-      sessions.delete(token);
-      if (++removed >= excess) break;
-    }
   }
 }, 60 * 1000);
 sweep.unref();
@@ -538,15 +660,16 @@ server.listen(PORT, "0.0.0.0", () => {
   console.log(JSON.stringify({
     service: "tanaghom-auth",
     status: "ready",
-    accounts: store.size,
+    accounts: "postgres",
     access_ttl_seconds: ACCESS_TTL_SECONDS,
-    idle_ttl_seconds: Math.round(IDLE_TTL_MS / 1000),
-    absolute_ttl_seconds: Math.round(ABSOLUTE_TTL_MS / 1000),
   }));
 });
 
 function shutdown() {
-  server.close(() => process.exit(0));
+  server.close(async () => {
+    await store.close().catch(() => {});
+    process.exit(0);
+  });
   setTimeout(() => process.exit(1), 10_000).unref();
 }
 process.on("SIGTERM", shutdown);

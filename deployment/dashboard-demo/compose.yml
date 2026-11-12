@@ -52,31 +52,39 @@ services:
     logging: *bounded-logging
 
   auth:
-    image: node:24.18.0-alpine3.24@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd
+    # The auth service keeps its HTTP contract but stores every account and
+    # session in PostgreSQL, so it runs on the application image (which bundles
+    # the pg driver) instead of the bare Node base image.
+    image: tanaghom-dashboard-demo:${TANAGHOM_DEMO_RELEASE:-local}
+    build:
+      context: ../..
+      dockerfile: deployment/dashboard-demo/Dockerfile
     restart: unless-stopped
-    command: ["node", "/app/server.mjs"]
+    depends_on:
+      postgres: { condition: service_healthy }
+    entrypoint: ["node", "/app/auth/server.mjs"]
     user: node
     environment:
       DEMO_AUTH_PORT: "43191"
       DEMO_AUTH_ISSUER: http://auth:43191/auth/v1
       AUTH_STORE_FILE: /data/auth-users.json
       AUTH_SEED_FILE: /run/secrets/auth_users
+      AUTH_DATABASE_URL_FILE: /run/secrets/database_url
+      AUTH_INTERNAL_TOKEN_FILE: /run/secrets/auth_internal_token
       AUTH_ACCESS_TTL_SECONDS: ${AUTH_ACCESS_TTL_SECONDS:-900}
-      AUTH_IDLE_TTL_SECONDS: ${AUTH_IDLE_TTL_SECONDS:-1800}
-      AUTH_ABSOLUTE_TTL_SECONDS: ${AUTH_ABSOLUTE_TTL_SECONDS:-43200}
       AUTH_LOGIN_EMAIL_LIMIT: ${AUTH_LOGIN_EMAIL_LIMIT:-5}
       AUTH_LOGIN_IP_LIMIT: ${AUTH_LOGIN_IP_LIMIT:-20}
       AUTH_LOGIN_PAIR_LIMIT: ${AUTH_LOGIN_PAIR_LIMIT:-8}
-    secrets: [auth_users, auth_private_key]
+    secrets: [auth_users, auth_private_key, auth_internal_token, database_url]
     volumes:
-      - ./auth/server.mjs:/app/server.mjs:ro
-      - ./auth/passwords.mjs:/app/passwords.mjs:ro
-      - ./auth/store.mjs:/app/store.mjs:ro
-      - ./auth/admin.mjs:/app/admin.mjs:ro
+      - ./auth/server.mjs:/app/auth/server.mjs:ro
+      - ./auth/passwords.mjs:/app/auth/passwords.mjs:ro
+      - ./auth/store.mjs:/app/auth/store.mjs:ro
+      - ./auth/admin.mjs:/app/auth/admin.mjs:ro
       - ./scripts/smoke.mjs:/app/demo-smoke.mjs:ro
-      # Writable account store (scrypt hashes only). The directory is created by
-      # prepare-runtime.sh and owned by uid 1000, which is the node user.
-      - ${TANAGHOM_DEMO_ROOT:-/home/ubuntu/tanaghom-demo}/runtime/auth:/data
+      # Legacy JSON accounts are imported into Postgres once, then this mount is
+      # read-only and no longer authoritative.
+      - ${TANAGHOM_DEMO_ROOT:-/home/ubuntu/tanaghom-demo}/runtime/auth:/data:ro
     networks: [backend]
     read_only: true
     tmpfs: ["/tmp:size=16m,mode=1777"]
@@ -201,6 +209,7 @@ services:
       - supabase_url
       - supabase_publishable_key
       - supabase_jwks_url
+      - auth_internal_token
       - s3_access_key
       - s3_secret_key
       - workspace_database_url
@@ -324,6 +333,8 @@ secrets:
     file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/auth_users.json
   auth_private_key:
     file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/auth_private_key.pem
+  auth_internal_token:
+    file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/auth_internal_token
   s3_access_key:
     file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/s3_access_key
   s3_secret_key:

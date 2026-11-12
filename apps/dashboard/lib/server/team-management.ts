@@ -71,6 +71,12 @@ export async function inviteTeamMember(request: NextRequest) {
       [email, displayName, role, authUser.id, owner.id, owner.organizationId],
     );
     await client.query(
+      `INSERT INTO tanaghom.memberships (user_id, organization_id, role, is_active)
+       VALUES ($1, $2, $3, true)
+       ON CONFLICT (user_id, organization_id) DO UPDATE SET role = EXCLUDED.role, is_active = true`,
+      [authUser.id, owner.organizationId, role],
+    );
+    await client.query(
       `INSERT INTO tanaghom.agent_actions_log
         (correlation_id, actor_user_id, action_type, entity_type, entity_id, payload, result)
        VALUES ($1, $2, 'team.user_invited', 'app_user', $3, $4::jsonb, 'success')`,
@@ -123,6 +129,13 @@ export async function updateTeamMember(request: NextRequest, userId: string) {
     await client.query(
       `UPDATE tanaghom.app_users SET role = $2, is_active = $3
         WHERE id = $1 AND organization_id = $4`,
+      [userId, role, isActive, owner.organizationId],
+    );
+    await client.query(
+      `UPDATE tanaghom.memberships m SET role = $2, is_active = $3
+        FROM tanaghom.app_users au
+       WHERE au.id = $1 AND au.organization_id = $4 AND m.user_id = au.auth_subject
+         AND m.organization_id = $4`,
       [userId, role, isActive, owner.organizationId],
     );
     await client.query(

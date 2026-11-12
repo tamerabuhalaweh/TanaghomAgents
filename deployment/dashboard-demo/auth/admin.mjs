@@ -95,7 +95,7 @@ async function main() {
   await store.load();
 
   if (options.command === "list") {
-    for (const user of store.list()) {
+    for (const user of await store.list()) {
       console.log([
         user.email,
         user.sub,
@@ -109,14 +109,14 @@ async function main() {
 
   const email = requireEmail(options);
   if (options.command === "disable" || options.command === "enable") {
-    const user = store.setDisabled(email, options.command === "disable");
+    const user = await store.setDisabled(email, options.command === "disable");
     summarize(user);
     return;
   }
 
   if (options.sub && !UUID_RE.test(options.sub)) throw new Error("--sub must be a UUID");
   const password = await passwordFrom(options, email);
-  const existing = store.findByEmail(email);
+  const existing = await store.findByEmail(email);
   if (options.command === "upsert" && existing) {
     const user = await store.changePassword(email, password, { mustChangePassword: true });
     summarize(user);

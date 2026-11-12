@@ -25,7 +25,7 @@ export function setSessionCookies(response: NextResponse, session: AuthSession) 
     httpOnly: true, secure, sameSite: "lax", path: "/", maxAge: accessMaxAge,
   });
   response.cookies.set(REFRESH_COOKIE, session.refresh_token, {
-    httpOnly: true, secure, sameSite: "strict", path: "/api/auth", maxAge: 60 * 60 * 24 * 30,
+    httpOnly: true, secure, sameSite: "strict", path: "/api/auth", maxAge: 60 * 60 * 24 * 14,
   });
 }
 

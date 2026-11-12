@@ -265,25 +265,30 @@ and 5000 closed in the security group.
 
 ## Accounts, sessions, and password reset
 
-The `auth` service is the account authority. It stores scrypt hashes
-(N=32768, r=8, p=1, 16-byte salt, 64-byte key) in
-`/home/ubuntu/tanaghom-demo/runtime/auth/auth-users.json` (mode 0600, bind
-mounted at `/data`). The `auth_users.json` secret seeds that store once and is
-not authoritative afterwards. Every `demo-backup.sh` snapshot includes the
-store and checksums it.
+The `auth` service is the account authority. Since WS2 it stores scrypt hashes
+(N=32768, r=8, p=1, 16-byte salt, 64-byte key) and browser sessions in
+PostgreSQL (`tanaghom.users`, `tanaghom.memberships`, `tanaghom.sessions`,
+`tanaghom.auth_tokens`), not in the JSON file. On first start it imports
+`/home/ubuntu/tanaghom-demo/runtime/auth/auth-users.json` once (read-only mount)
+so existing passwords keep working; after that the file is inert and Postgres is
+the only source of truth. Public signup at `/signup` creates the organization,
+owner membership, and `app_users` profile in one transaction.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `AUTH_ACCESS_TTL_SECONDS` | 900 | access-token lifetime; the browser refreshes it |
-| `AUTH_IDLE_TTL_SECONDS` | 1800 | no refresh for 30 minutes ends the session |
-| `AUTH_ABSOLUTE_TTL_SECONDS` | 43200 | hard 12-hour ceiling per session |
 | `AUTH_LOGIN_EMAIL_LIMIT` | 5 | failed sign-ins per email per 15 minutes |
 | `AUTH_LOGIN_IP_LIMIT` | 20 | failed sign-ins per source IP per 15 minutes |
 | `AUTH_LOGIN_PAIR_LIMIT` | 8 | failed sign-ins per email+IP pair |
 
-Refresh tokens rotate on every use, are held hashed in memory, and are revoked
-on password change, operator reset, and account disable. The API answers `429`
-with `Retry-After` when a limit is reached; the login form shows the wait.
+Refresh tokens rotate on every use and are stored hashed as session rows. A
+session ends after 30 minutes without refresh and never outlives 14 days; it is
+revoked immediately on password change, operator reset, account disable, or
+**Settings → Security → Active sessions → Revoke**. The API answers `429` with
+`Retry-After` when a limit is reached; the login form shows the wait.
+
+Every request resolves its tenant from the session row plus an active
+membership; `organization_id` is never read from the request body or query.
 
 Users change their own password in **Settings → Security**. A successful change
 signs every other session out. Operators create or reset an account from the
@@ -293,11 +298,11 @@ host:
 cd /home/ubuntu/tanaghom-demo/source
 compose=(docker compose -p tanaghom-dashboard-demo -f deployment/dashboard-demo/compose.yml --env-file deployment/dashboard-demo/.env)
 TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
-  "${compose[@]}" exec -T auth node /app/admin.mjs reset --email owner@customer.test --generate
+  "${compose[@]}" exec -T auth node /app/auth/admin.mjs reset --email owner@customer.test --generate
 # or pipe a chosen password:
 #   ... reset --email owner@customer.test --stdin-password < /path/to/password
 TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
-  "${compose[@]}" exec -T auth node /app/admin.mjs list
+  "${compose[@]}" exec -T auth node /app/auth/admin.mjs list
 ```
 
 The CLI prints `EMAIL`, `SUB`, `STATUS`, `MUST_CHANGE_PASSWORD` and, with

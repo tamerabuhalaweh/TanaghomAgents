@@ -14,7 +14,7 @@ runtime_root="$(dirname "$directory")"
 mkdir -p "$runtime_root/auth"
 chmod 0700 "$runtime_root/auth"
 
-required="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem s3_access_key s3_secret_key workspace_password workspace_database_url workspace_worker_token gemini_api_key demo-credentials.txt"
+required="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem auth_internal_token s3_access_key s3_secret_key workspace_password workspace_database_url workspace_worker_token gemini_api_key demo-credentials.txt"
 for name in $required; do
   if [ -e "$directory/$name" ]; then
     echo "refusing to overwrite existing demo runtime secret: $name" >&2
@@ -67,6 +67,7 @@ cat > "$directory/auth_users.json" <<EOF
 EOF
 
 openssl genpkey -algorithm RSA -pkeyopt rsa_keygen_bits:2048 -out "$directory/auth_private_key.pem" 2>/dev/null
+openssl rand -hex 32 > "$directory/auth_internal_token"
 
 cat > "$directory/demo-credentials.txt" <<EOF
 Tanaghom demo accounts (synthetic; private handoff only)
@@ -87,6 +88,7 @@ chmod 0444 \
   "$directory/supabase_jwks_url" \
   "$directory/auth_users.json" \
   "$directory/auth_private_key.pem" \
+  "$directory/auth_internal_token" \
   "$directory/s3_access_key" \
   "$directory/s3_secret_key" \
   "$directory/workspace_password" \

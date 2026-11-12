@@ -1066,6 +1066,29 @@ td a, td > strong { font-weight: 670; }
   *, *::before, *::after { scroll-behavior: auto !important; transition-duration: 0.01ms !important; animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; }
 }
 
+.session-list {
+  display: grid;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.session-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-block: 0.75rem;
+  border-block-start: 1px solid color-mix(in srgb, currentColor 12%, transparent);
+}
+
+.session-list-item small {
+  display: block;
+  margin-block-start: 0.25rem;
+  opacity: 0.72;
+}
+
 .login-page { display: grid; min-height: 100svh; grid-template-columns: minmax(0, 1.08fr) minmax(26rem, 0.92fr); background: var(--bg); }
 .login-context { display: flex; min-height: 100%; flex-direction: column; justify-content: space-between; padding: clamp(2rem, 5vw, 5.5rem); background: var(--primary); color: var(--bg); }
 .login-brand { width: fit-content; color: var(--bg); font-size: 1.05rem; }

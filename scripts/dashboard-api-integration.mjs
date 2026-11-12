@@ -187,6 +187,14 @@ async function waitForDashboard(child) {
 }
 
 const pool = new pg.Pool({ connectionString: databaseUrl, max: 2 });
+// The fake auth server owns credentials, so seed the account row the invited
+// membership will reference (the real auth service creates it on invite).
+await pool.query(
+  `INSERT INTO tanaghom.users (id, email, password_hash, full_name)
+   VALUES ($1, 'reviewer@example.test', 'scrypt$32768$8$1$c2FsdA==$aGFzaA==', 'Integration Reviewer')
+   ON CONFLICT DO NOTHING`,
+  [invitedSubject],
+);
 let dashboard;
 try {
   authServer.listen(authPort, "127.0.0.1");
