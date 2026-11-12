@@ -42,7 +42,7 @@ $psql_base -f /demo-sql/demo_seed.sql
 
 # Resilient to later migrations: require the reviewed workspace baseline, not
 # an exact row count that any future migration would invalidate.
-test "$($psql_base -Atc "SELECT count(*) FROM public.schema_migrations WHERE version='0048_gemini_workspace_model'")" = "1"
+test "$($psql_base -Atc "SELECT count(*) FROM public.schema_migrations WHERE version='0049_tenant_auth'")" = "1"
 count="$($psql_base -Atc "SELECT count(*) FROM public.schema_migrations")"
 last="$($psql_base -Atc "SELECT max(version) FROM public.schema_migrations")"
 echo "DEMO_DATABASE_READY migrations=$count ledger=$last"
