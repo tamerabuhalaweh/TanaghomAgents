@@ -165,7 +165,43 @@ test("the onboarding profile route is owner-only, same-origin, and closed", asyn
   const form = await read("apps/dashboard/components/onboarding-profile-form.tsx");
   assert.match(form, /tenantDisplayName/);
   const page = await read("apps/dashboard/app/onboarding/page.tsx");
-  assert.match(page, /OnboardingProfileForm/);
+  assert.match(page, /OnboardingWizard/);
+});
+
+test("onboarding steps 2 and 3 reuse the existing brand-kit and knowledge APIs", async () => {
+  const wizard = await read("apps/dashboard/components/onboarding-wizard.tsx");
+  const brand = await read("apps/dashboard/components/onboarding-brand-step.tsx");
+  const knowledge = await read("apps/dashboard/components/onboarding-knowledge-step.tsx");
+  const categories = await read("apps/dashboard/lib/onboarding-knowledge.ts");
+  const service = await read("apps/dashboard/lib/server/knowledge-management.ts");
+
+  assert.match(wizard, /OnboardingProfileForm/);
+  assert.match(wizard, /OnboardingBrandStep/);
+  assert.match(wizard, /OnboardingKnowledgeStep/);
+  assert.match(wizard, /copy\.brandTitle/);
+  assert.match(wizard, /copy\.knowledgeTitle/);
+
+  // Brand kit: the creative endpoint owns validation, authorization, and the
+  // brand-kit version; onboarding only supplies the form body.
+  assert.match(brand, /\/api\/creative\/brand-kits/);
+  assert.match(brand, /method: "POST"/);
+  assert.match(brand, /idempotency-key/);
+  assert.match(brand, /colors/);
+  assert.match(brand, /brandDisabled/);
+  assert.doesNotMatch(brand, /organizationId|organization_id/);
+
+  // Knowledge: drafts only, through the owner-only admin endpoint.
+  assert.match(knowledge, /\/api\/admin\/knowledge/);
+  assert.match(knowledge, /provenance_type: "customer_entry"/);
+  assert.match(knowledge, /source_key/);
+  assert.match(knowledge, /structured_facts: \[\]/);
+  assert.match(knowledge, /knowledgeDraftNote/);
+  assert.doesNotMatch(knowledge, /transition/);
+
+  // Every onboarding category must exist in the server allowlist.
+  const offered = [...categories.matchAll(/^\s+"([a-z_]+)",$/gm)].map((match) => match[1]);
+  assert.ok(offered.length >= 6, "expected onboarding knowledge categories");
+  for (const category of offered) assert.match(service, new RegExp(`"${category}"`));
 });
 
 test("demo smoke refuses the retired demo accounts instead of signing in", async () => {
