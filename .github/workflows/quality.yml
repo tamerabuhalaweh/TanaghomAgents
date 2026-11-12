@@ -641,6 +641,8 @@ jobs:
       SUPABASE_URL: http://127.0.0.1:43191
       SUPABASE_PUBLISHABLE_KEY: integration-publishable-key
       APP_ENV: integration
+      # This job exercises current auth tables, not the historical 0033 baseline.
+      DATABASE_MIGRATION_TARGET: ""
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
