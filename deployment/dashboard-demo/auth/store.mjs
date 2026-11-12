@@ -90,9 +90,8 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
   // Postgres exactly once, preserving ids so app_users.auth_subject keeps
   // pointing at the same subject.
   async function importLegacyIfEmpty() {
-    const count = await pool.query("SELECT count(*)::int AS count FROM tanaghom.users");
-    if (count.rows[0].count > 0) return;
-
+    // Idempotent on every start: import any JSON account that Postgres does not
+    // have yet, without touching accounts created through signup.
     const file = legacyFile && existsSync(legacyFile) ? legacyFile : seedFile;
     if (!file || !existsSync(file)) return;
     const parsed = JSON.parse(readFileSync(file, "utf8"));

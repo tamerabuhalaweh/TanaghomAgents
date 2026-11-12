@@ -50,6 +50,38 @@ export async function requireTenant(request: NextRequest): Promise<TenantContext
   const identity = await authenticate(request);
   const sessionId = typeof identity.session_id === "string" ? identity.session_id : "";
   const organizationId = typeof identity.organization_id === "string" ? identity.organization_id : "";
+
+  // Access tokens minted before WS2 carry no session/tenant claims. They are
+  // valid for at most the 15-minute access lifetime, so resolve their tenant
+  // from the profile row once instead of locking live users out mid-session.
+  // Every token issued from now on takes the strict path below.
+  if (!sessionId && !organizationId) {
+    const profile = await database().query<{
+      id: string;
+      organization_id: string;
+      display_name: string;
+      role: ApplicationRole;
+    }>(
+      `SELECT id, organization_id, display_name, role
+         FROM tanaghom.app_users
+        WHERE auth_subject = $1::uuid
+          AND kind = 'human'
+          AND is_active = true
+          AND accepted_at IS NOT NULL`,
+      [identity.sub],
+    );
+    const legacyUser = profile.rows[0];
+    if (!legacyUser) throw new AuthorizationError("User is not authorized");
+    return {
+      id: legacyUser.id,
+      authUserId: identity.sub,
+      organizationId: legacyUser.organization_id,
+      displayName: legacyUser.display_name,
+      role: legacyUser.role,
+      sessionId: "",
+    };
+  }
+
   if (!UUID_RE.test(sessionId) || !UUID_RE.test(organizationId)) {
     throw new AuthenticationError("Session is missing its tenant binding");
   }

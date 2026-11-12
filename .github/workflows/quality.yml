@@ -131,6 +131,9 @@ jobs:
           --health-retries 10
     env:
       DATABASE_URL: postgresql://postgres:postgres@localhost:5432/tanaghom_tenant_test
+      # The workflow-level 0033 baseline only applies to the historical UAT
+      # packages; this job needs the complete chain through 0049.
+      DATABASE_MIGRATION_TARGET: ""
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4

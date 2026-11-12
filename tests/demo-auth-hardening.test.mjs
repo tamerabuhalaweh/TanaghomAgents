@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { spawnSync } from "node:child_process";
 import { readFile } from "node:fs/promises";
+import { fileURLToPath } from "node:url";
 import test from "node:test";
 
 import {
@@ -98,9 +99,9 @@ test("the public edge and onboarding guardrails are declared in source", async (
   assert.match(onboarding, /UPDATE tanaghom\.users\s+SET disabled = true/);
 
   if (process.platform !== "win32") {
-    const syntax = spawnSync("bash", ["-n", onboardingScript], { encoding: "utf8" });
+    const syntax = spawnSync("bash", ["-n", fileURLToPath(onboardingScript)], { encoding: "utf8" });
     assert.equal(syntax.status, 0, syntax.stderr);
-    const refused = spawnSync("sh", [caddyEntrypoint], {
+    const refused = spawnSync("sh", [fileURLToPath(caddyEntrypoint)], {
       env: { ...process.env, TANAGHOM_PUBLIC_DOMAIN: "localhost", TANAGHOM_POSTIZ_DOMAIN: "localhost" },
       encoding: "utf8",
     });
