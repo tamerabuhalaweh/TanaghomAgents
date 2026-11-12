@@ -1,5 +1,26 @@
 # Tanaghom status and next work
 
+## 2026-11-12 — WS2 tenant auth deployed; next: WS5 (WS3 blocked on owner Stripe inputs)
+
+PR #276 (WS2: Postgres tenant auth, self-signup, sessions) squash-merged to
+`main` as `cb176c0`, and the deploy gap it exposed was fixed by PR #277
+(ledger guard advanced to 0049), merged as `51aa163`. Both PRs were 43/43 CI
+green. The live host `13.60.253.82` runs `51aa163` at ledger `0049_tenant_auth`
+(46 migrations); the `users`, `memberships`, `auth_tokens` and `sessions`
+tables exist, `auth_internal_token` was generated in `runtime/secrets`, and
+the JSON account store is imported once and mounted read-only. Verified on
+the host: `/api/health` 200, `/signup` and `/login` 200, owner login issues a
+session cookie, `GET /api/auth/sessions` lists it, a fresh signup returns 201
+and its tenant sees only its own organization, and a wrong password returns
+401. Pre- and post-deploy backups verified (`20261112T105811Z` at 0048,
+`20261112T113614Z` at 0049, Postiz included, retention 7). Existing browser
+sessions require a fresh sign-in. Email-dependent flows (`/verify-email`,
+`/forgot-password`, `/reset-password`) are intentionally absent until WS6
+provides a transactional email provider. Next workstream: WS5 (tenant
+onboarding wizard + demo-data removal) — WS3 (Stripe UK) is blocked on the
+owner's Stripe keys, price and VAT decision; WS1 on the domain; WS4 on the
+Meta/social developer apps.
+
 ## Current release coordination — 2026-11-01
 
 Tamer directed the team to advance the go-live plan while deferring GoHighLevel
@@ -331,7 +352,7 @@ the co-located Postiz is reached.
 Swap is a deferred ops item. The host still reports `Swap: 0B`: the agent's
 privilege-elevation prompt was declined, this environment refuses privilege
 wrappers outright, and routing around that refusal inside a privileged container
-is not something the agent may do. Nothing else on `13.60.253.82` is affected �
+is not something the agent may do. Nothing else on `13.60.253.82` is affected �
 the 2 vCPU / 7.6 GiB box runs the dashboard, PostgreSQL, RustFS, the workspace
 worker and the Postiz stack comfortably inside memory, so Phase 1 is not blocked.
 
