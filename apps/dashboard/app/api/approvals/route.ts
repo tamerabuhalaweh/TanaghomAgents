@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
-    await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
+    const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
     const result = await database().query(
       `SELECT content.id,
               content.campaign_id,
@@ -26,8 +26,10 @@ export async function GET(request: NextRequest) {
          JOIN tanaghom.campaigns AS campaign ON campaign.id = content.campaign_id
          JOIN tanaghom.campaign_strategies AS strategy ON strategy.id = content.strategy_id
         WHERE content.status = 'pending_approval'
+          AND campaign.organization_id = $1::uuid
         ORDER BY content.created_at ASC
         LIMIT 100`,
+      [user.organizationId],
     );
 
     return noStore({ items: result.rows });
