@@ -56,7 +56,7 @@ export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeL
   }
 
   return (
-    <form className="login-form" onSubmit={submit} noValidate={false}>
+    <form className="login-form" method="post" onSubmit={submit} noValidate={false}>
       <div className="form-field">
         <label htmlFor="organization_name">{copy.organizationLabel}</label>
         <input

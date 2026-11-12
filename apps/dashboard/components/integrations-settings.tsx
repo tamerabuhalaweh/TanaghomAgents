@@ -500,7 +500,7 @@ function ProviderPanel({ record, storageReady, mappings, onChanged }: {
       </div>
     </div> : null}
 
-    {editing ? <form className="integration-form" onSubmit={(event) => { event.preventDefault(); void request("save"); }}>
+    {editing ? <form className="integration-form" method="post" onSubmit={(event) => { event.preventDefault(); void request("save"); }}>
       <div className="form-field"><label htmlFor={`${record.provider}-secret`}>{record.provider === "postiz" ? "Postiz API key or OAuth token" : "GoHighLevel private integration token"}</label><input id={`${record.provider}-secret`} type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} minLength={8} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">Write-only: Tanaghom will never display this value again.</span></div>
       <div className="form-field"><label htmlFor={`${record.provider}-base-url`}>Approved API base URL</label><input id={`${record.provider}-base-url`} type="url" value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">{record.provider === "postiz" ? "Use the Public API base ending in /public/v1. Tanaghom adds /is-connected and /integrations safely." : "Only explicitly approved HTTPS provider base URLs are accepted."}</span></div>
       {record.provider === "ghl" ? <>

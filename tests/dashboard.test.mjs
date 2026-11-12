@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { X509Certificate } from "node:crypto";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import test from "node:test";
 
 const dashboard = new URL("../apps/dashboard/", import.meta.url);
@@ -91,6 +91,27 @@ test("server API verifies Supabase JWTs and keeps fixture UI disconnected", asyn
   assert.match(approvals, /pending_approval/);
   assert.doesNotMatch(approvals, /UPDATE|INSERT|DELETE/);
   assert.match(readme, /They do not call n8n or an external service/);
+});
+
+test("every form with a password field submits as POST", async () => {
+  const directory = new URL("components/", dashboard);
+  const names = (await readdir(directory)).filter((name) => name.endsWith(".tsx"));
+  let checked = 0;
+  for (const name of names) {
+    const source = await readFile(new URL(name, directory), "utf8");
+    if (!source.includes('type="password"')) continue;
+    const forms = [...source.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map((match) => match[0]);
+    const passwordForms = forms.filter((form) => form.includes('type="password"'));
+    assert.ok(passwordForms.length > 0, `${name} has a password field outside a form`);
+    for (const form of passwordForms) {
+      const openingTag = form.slice(0, form.indexOf(">") + 1);
+      // A native submit without a method falls back to GET and would put the
+      // password in the URL and browser history before React can prevent it.
+      assert.match(openingTag, /method="post"/, `${name} password form must submit as POST`);
+      checked += 1;
+    }
+  }
+  assert.ok(checked >= 5, `expected at least 5 password forms, found ${checked}`);
 });
 
 test("approvals and audit responses are scoped to the caller's tenant", async () => {
