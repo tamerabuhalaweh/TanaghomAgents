@@ -76,7 +76,7 @@ export function SecuritySettings() {
         </section>
       ) : (
         <section className="panel">
-          <form className="login-form" onSubmit={submit}>
+          <form className="login-form" method="post" onSubmit={submit}>
             <div className="form-field">
               <label htmlFor="current-password">Current password</label>
               <input

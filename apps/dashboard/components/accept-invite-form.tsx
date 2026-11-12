@@ -73,7 +73,7 @@ export function AcceptInviteForm() {
         <p className="login-access-label">INVITED ACCESS</p>
         <h1 id="invite-title">Join Tanaghom</h1>
         <p className="login-intro">Set a private password to activate the role your admin assigned.</p>
-        <form className="login-form" onSubmit={submit}>
+        <form className="login-form" method="post" onSubmit={submit}>
           <div className="form-field"><label htmlFor="invite-password">Password</label><input id="invite-password" type="password" autoComplete="new-password" minLength={12} maxLength={128} value={password} onChange={(event) => setPassword(event.target.value)} required /><span className="field-help">At least 12 characters. Do not reuse your server password.</span></div>
           <div className="form-field"><label htmlFor="invite-confirmation">Confirm password</label><input id="invite-confirmation" type="password" autoComplete="new-password" minLength={12} maxLength={128} value={confirmation} onChange={(event) => setConfirmation(event.target.value)} required /></div>
           <p className="login-error" role="alert">{error}</p>
