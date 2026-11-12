@@ -201,8 +201,12 @@ test("approvals and audit activity load live data with honest operational states
 test("shared shell uses live session identity and no fixture notification counts", async () => {
   const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
   const profile = await readFile(new URL("components/session-profile.tsx", dashboard), "utf8");
+  const identity = await readFile(new URL("lib/client/session-identity.ts", dashboard), "utf8");
   assert.match(shell, /SessionProfile/);
-  assert.match(profile, /authenticatedFetch\("\/api\/auth\/session"/);
+  assert.match(profile, /loadSessionIdentity/);
+  // The live session endpoint is read once through the shared loader.
+  assert.match(identity, /authenticatedFetch\("\/api\/auth\/session"/);
+  assert.doesNotMatch(profile, /@\/data\/fixtures/);
   assert.doesNotMatch(shell, /Kim Morgan|count: 3|2 alerts/);
 });
 

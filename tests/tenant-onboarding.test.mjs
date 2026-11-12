@@ -2,6 +2,9 @@ import assert from "node:assert/strict";
 import { readdir, readFile } from "node:fs/promises";
 import test from "node:test";
 
+import { onboardingStrings } from "../apps/dashboard/lib/i18n/onboarding.ts";
+import { tenantDisplayName } from "../apps/dashboard/lib/tenant-name.ts";
+
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
@@ -17,6 +20,7 @@ test("0050 adds resumable onboarding state to the tenant record", async () => {
   assert.match(sql, /<> 46/);
   assert.match(sql, /0049_tenant_auth/);
 
+  assert.match(sql, /ADD COLUMN business_name_en text/);
   assert.match(sql, /ADD COLUMN business_name_ar text/);
   assert.match(sql, /ADD COLUMN industry text/);
   assert.match(sql, /ADD COLUMN location text/);
@@ -28,7 +32,7 @@ test("0050 adds resumable onboarding state to the tenant record", async () => {
   // lifecycle status or Stripe linkage.
   assert.match(
     sql,
-    /GRANT UPDATE \(business_name_ar, industry, location, onboarding_completed_at\)\s+ON tanaghom\.organizations TO tanaghom_api/,
+    /GRANT UPDATE \(business_name_en, business_name_ar, industry, location, onboarding_completed_at\)\s+ON tanaghom\.organizations TO tanaghom_api/,
   );
   assert.match(sql, /INSERT INTO public\.schema_migrations\(version\)\s+VALUES \('0050_tenant_onboarding'\)/);
 });
@@ -71,6 +75,7 @@ test("the down migration reverses only the schema change", async () => {
   assert.match(sql, /DROP COLUMN IF EXISTS location/);
   assert.match(sql, /DROP COLUMN IF EXISTS industry/);
   assert.match(sql, /DROP COLUMN IF EXISTS business_name_ar/);
+  assert.match(sql, /DROP COLUMN IF EXISTS business_name_en/);
   assert.match(sql, /DELETE FROM public\.schema_migrations WHERE version = '0050_tenant_onboarding'/);
 
   // Demo-tenant retirement is deliberately one-way.
@@ -103,4 +108,60 @@ test("the demo ledger guards track the 47-migration chain", async () => {
   assert.match(runbook, /47 up migrations, ending at `0050_tenant_onboarding`/);
   assert.match(runbook, /demo database must be at exact migration 0050 ledger/);
   assert.match(runbook, /all 47 up/);
+});
+
+test("tenant display names resolve per locale without rewriting the canonical name", () => {
+  const both = { name: "al-nada", businessNameEn: "Al Nada Roastery", businessNameAr: "محمصة الندى" };
+  assert.equal(tenantDisplayName(both, "en"), "Al Nada Roastery");
+  assert.equal(tenantDisplayName(both, "ar"), "محمصة الندى");
+
+  // Missing or blank localized names fall back through the other language and
+  // finally to the canonical workspace name.
+  assert.equal(tenantDisplayName({ name: "al-nada", businessNameEn: "  " }, "ar"), "al-nada");
+  assert.equal(tenantDisplayName({ name: "al-nada", businessNameAr: "محمصة الندى" }, "en"), "محمصة الندى");
+  assert.equal(tenantDisplayName({ name: "  al-nada  " }, "en"), "al-nada");
+  assert.equal(tenantDisplayName({ name: "al-nada", businessNameEn: "  " }, "en"), "al-nada");
+});
+
+test("onboarding copy is complete in both locales", () => {
+  const en = onboardingStrings.en;
+  const ar = onboardingStrings.ar;
+  assert.deepEqual(Object.keys(en).sort(), Object.keys(ar).sort());
+  assert.deepEqual(Object.keys(en.industries).sort(), Object.keys(ar.industries).sort());
+  for (const key of Object.keys(en)) {
+    const value = en[key];
+    if (typeof value === "string") assert.ok(value.trim(), `en.${key} is empty`);
+    else assert.ok(Object.keys(value).length > 0, `en.${key} is empty`);
+  }
+  for (const key of Object.keys(ar)) {
+    const value = ar[key];
+    if (typeof value === "string") assert.ok(value.trim(), `ar.${key} is empty`);
+    else assert.ok(Object.keys(value).length > 0, `ar.${key} is empty`);
+  }
+});
+
+test("the onboarding profile route is owner-only, same-origin, and closed", async () => {
+  const service = await read("apps/dashboard/lib/server/onboarding.ts");
+  const route = await read("apps/dashboard/app/api/settings/onboarding/route.ts");
+
+  assert.match(service, /authorize\(request, \["owner"\]\)/);
+  assert.match(service, /enforceSameOriginForCookieMutation\(request\)/);
+  assert.match(service, /unexpected_field/);
+  assert.match(service, /empty_update/);
+  assert.match(service, /business_name_en = \$2/);
+  assert.match(service, /organizationId/);
+  assert.doesNotMatch(service, /organization_id\s*=\s*body|body\.organization|searchParams\.get\("organization/);
+  assert.match(route, /export async function GET/);
+  assert.match(route, /export async function PATCH/);
+
+  const session = await read("apps/dashboard/app/api/auth/session/route.ts");
+  assert.match(session, /business_name_en, business_name_ar/);
+  assert.match(session, /businessNameEn/);
+
+  const shell = await read("apps/dashboard/components/app-shell.tsx");
+  assert.match(shell, /TenantName/);
+  const form = await read("apps/dashboard/components/onboarding-profile-form.tsx");
+  assert.match(form, /tenantDisplayName/);
+  const page = await read("apps/dashboard/app/onboarding/page.tsx");
+  assert.match(page, /OnboardingProfileForm/);
 });

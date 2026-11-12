@@ -27,6 +27,7 @@ import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "./brand-mark";
 import { LocaleToggle } from "./creative/locale-toggle";
 import { SessionProfile } from "./session-profile";
+import { TenantName } from "./tenant-name";
 import { useLocale } from "@/lib/client/use-locale";
 
 type NavItem = { href: string; label: string; arabic: string; icon: typeof LayoutDashboard };
@@ -97,6 +98,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <BrandMark />
           <span>Tanaghom</span>
         </Link>
+        <TenantName variant="mobile" />
         <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? (ar ? "إغلاق التنقل" : "Close navigation") : (ar ? "فتح التنقل" : "Open navigation")}>
           {menuOpen ? <X size={20} /> : <Menu size={20} />}
         </button>
@@ -142,6 +144,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <div className="workspace">
         <header className="topbar">
+          <TenantName />
           <span className="environment-badge">{ar ? "بيئة العرض" : "Staging"}</span>
           <div className="topbar-actions">
             <LocaleToggle locale={locale} />

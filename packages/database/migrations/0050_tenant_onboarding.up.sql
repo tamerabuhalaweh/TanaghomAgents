@@ -13,6 +13,9 @@ DO $$ BEGIN
 END $$;
 
 ALTER TABLE tanaghom.organizations
+  ADD COLUMN business_name_en text CHECK (
+    business_name_en IS NULL OR length(trim(business_name_en)) BETWEEN 2 AND 120
+  ),
   ADD COLUMN business_name_ar text CHECK (
     business_name_ar IS NULL OR length(trim(business_name_ar)) BETWEEN 2 AND 120
   ),
@@ -28,7 +31,7 @@ ALTER TABLE tanaghom.organizations
   ),
   ADD COLUMN onboarding_completed_at timestamptz;
 
-GRANT UPDATE (business_name_ar, industry, location, onboarding_completed_at)
+GRANT UPDATE (business_name_en, business_name_ar, industry, location, onboarding_completed_at)
   ON tanaghom.organizations TO tanaghom_api;
 
 -- Retire the synthetic tenant that powers the operator demo. Customer views
