@@ -824,6 +824,61 @@ try {
   );
   assert.deepEqual(rolledBack.rows[0], { status: "pending_approval", approvals: 0, audit: 0, idempotency: 0 });
 
+  // Cross-tenant isolation: seed a second organisation with its own pending
+  // content and audit row, then prove the owner's reads never include them.
+  const tenantBOrganization = "90000000-0000-4000-8000-000000000010";
+  const tenantBActor = "90000000-0000-4000-8000-000000000011";
+  const tenantBCampaignId = "90000000-0000-4000-8000-000000000012";
+  const tenantBContentId = "90000000-0000-4000-8000-000000000013";
+  await pool.query(
+    `INSERT INTO tanaghom.organizations (id, slug, name, status)
+     VALUES ($1, 'isolation-tenant-b', 'Isolation Tenant B', 'trialing')`,
+    [tenantBOrganization],
+  );
+  await pool.query(
+    `INSERT INTO tanaghom.app_users
+       (id, email, display_name, kind, role, organization_id, auth_subject, accepted_at)
+     VALUES ($1, 'isolation-tenant-b@example.test', 'Isolation Tenant B Owner', 'human', 'owner', $2, $3, now())`,
+    [tenantBActor, tenantBOrganization, "90000000-0000-4000-8000-000000000014"],
+  );
+  await pool.query(
+    `INSERT INTO tanaghom.campaigns
+       (id, organization_id, name, brief, product_type, target_audience, status, currency, created_by)
+     VALUES ($1, $2, 'Isolation tenant B campaign', 'Must never appear in tenant A reads.', 'course', '{}'::jsonb, 'draft', 'USD', $3)`,
+    [tenantBCampaignId, tenantBOrganization, tenantBActor],
+  );
+  const tenantBStrategy = await pool.query(
+    `INSERT INTO tanaghom.campaign_strategies
+       (campaign_id, version, positioning, key_messages, channels, posting_cadence, content_pillars, model_name, prompt_version)
+     VALUES ($1, 1, 'Isolation strategy', '["private"]', '["instagram"]', '{"instagram":{"posts_per_week":1}}', '["private"]', 'fake-model', 'integration-v1')
+     RETURNING id`,
+    [tenantBCampaignId],
+  );
+  await pool.query(
+    `INSERT INTO tanaghom.content_items
+       (id, campaign_id, strategy_id, generation, channel, content_type, draft_copy, media_brief, status)
+     VALUES ($1, $2, $3, 1, 'instagram', 'post', 'Isolation tenant B draft', 'No external media', 'pending_approval')`,
+    [tenantBContentId, tenantBCampaignId, tenantBStrategy.rows[0].id],
+  );
+  const tenantBAudit = await pool.query(
+    `INSERT INTO tanaghom.agent_actions_log
+       (correlation_id, actor_user_id, action_type, entity_type, entity_id, result)
+     VALUES (gen_random_uuid(), $1, 'isolation_tenant_b_probe', 'campaign', $2, 'success')
+     RETURNING id`,
+    [tenantBActor, tenantBCampaignId],
+  );
+  const ownPendingId = await createContent(4);
+  const approvalQueue = await fetch(`${dashboardOrigin}/api/approvals`, { headers: { Cookie: jar.join("; ") } });
+  assert.equal(approvalQueue.status, 200);
+  const approvalIds = (await approvalQueue.json()).items.map((item) => item.id);
+  assert.ok(approvalIds.includes(ownPendingId), "the owner's pending content must be visible");
+  assert.ok(!approvalIds.includes(tenantBContentId), "tenant B pending content leaked into tenant A approvals");
+  const auditFeed = await fetch(`${dashboardOrigin}/api/audit?limit=200`, { headers: { Cookie: jar.join("; ") } });
+  assert.equal(auditFeed.status, 200);
+  const auditIds = (await auditFeed.json()).actions.map((action) => action.id);
+  assert.ok(auditIds.length > 0);
+  assert.ok(!auditIds.includes(tenantBAudit.rows[0].id), "tenant B audit row leaked into tenant A activity");
+
   const invalidRefresh = await fetch(`${dashboardOrigin}/api/auth/refresh`, {
     method: "POST",
     headers: { Cookie: "tanaghom_refresh_token=invalid", Origin: dashboardOrigin },

@@ -8,7 +8,7 @@ export const runtime = "nodejs";
 
 export async function GET(request: NextRequest) {
   try {
-    await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
+    const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
     const requestedLimit = Number(request.nextUrl.searchParams.get("limit") || 50);
     const limit = Number.isInteger(requestedLimit)
       ? Math.min(Math.max(requestedLimit, 1), 200)
@@ -26,9 +26,10 @@ export async function GET(request: NextRequest) {
          FROM tanaghom.agent_actions_log AS log
          LEFT JOIN tanaghom.agents AS agent ON agent.id = log.agent_id
          LEFT JOIN tanaghom.app_users AS actor ON actor.id = log.actor_user_id
+        WHERE actor.organization_id = $1::uuid
         ORDER BY log.created_at DESC
-        LIMIT $1`,
-      [limit],
+        LIMIT $2`,
+      [user.organizationId, limit],
     );
 
     return noStore({ actions: result.rows });

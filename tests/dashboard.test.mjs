@@ -93,6 +93,25 @@ test("server API verifies Supabase JWTs and keeps fixture UI disconnected", asyn
   assert.match(readme, /They do not call n8n or an external service/);
 });
 
+test("approvals and audit responses are scoped to the caller's tenant", async () => {
+  const approvals = await readFile(new URL("app/api/approvals/route.ts", dashboard), "utf8");
+  const audit = await readFile(new URL("app/api/audit/route.ts", dashboard), "utf8");
+
+  // Both routes used to discard authorize()'s tenant and return every tenant's
+  // rows. The caller's organization id must be the only scope, bound as a
+  // parameter rather than interpolated.
+  for (const [name, source, scope] of [
+    ["approvals", approvals, /campaign\.organization_id = \$1::uuid/],
+    ["audit", audit, /actor\.organization_id = \$1::uuid/],
+  ]) {
+    assert.match(source, /const user = await authorize\(request, \["owner", "reviewer", "operator", "viewer"\]\)/);
+    assert.match(source, scope, `${name} must filter by tenant`);
+    assert.match(source, /\[user\.organizationId/, `${name} must bind the session tenant`);
+    assert.doesNotMatch(source, /searchParams\.get\("organization|body\.organization|organizationId\s*\+/, `${name} must not accept a tenant from the request`);
+  }
+  assert.match(audit, /LIMIT \$2/);
+});
+
 test("approval decisions are transactional, idempotent, audited, and queued", async () => {
   const source = await readFile(new URL("lib/server/content-decision.ts", dashboard), "utf8");
   assert.match(source, /api_idempotency_keys/);
