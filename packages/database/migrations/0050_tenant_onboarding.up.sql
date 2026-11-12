@@ -39,15 +39,15 @@ GRANT UPDATE (business_name_en, business_name_ar, industry, location, onboarding
 -- detached below, so no customer session can resolve into it. Rows remain for
 -- audit history; sessions expire, memberships deactivate, and invitation
 -- columns are detached together as app_users_invitation_lifecycle requires.
+-- The organization row itself stays active: access is severed by the disabled
+-- accounts, expired sessions and inactive memberships, while the integration
+-- suites seed synthetic profiles into this fixture and campaign functions
+-- require an active organization.
 UPDATE tanaghom.campaigns
    SET status = 'closed',
        blocked_reason = 'Archived synthetic demo fixture; not a customer campaign.'
  WHERE organization_id = '10000000-0000-4000-8000-000000000001'
    AND status <> 'closed';
-
-UPDATE tanaghom.organizations
-   SET is_active = false
- WHERE id = '10000000-0000-4000-8000-000000000001';
 
 UPDATE tanaghom.integration_connections
    SET status = 'disconnected',

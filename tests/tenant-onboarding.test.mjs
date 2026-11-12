@@ -44,7 +44,9 @@ test("0050 retires the synthetic demo tenant without deleting history", async ()
   assert.ok(retirement.includes(demoOrganization), "retirement must target the synthetic demo tenant");
   assert.match(retirement, /UPDATE tanaghom\.campaigns[\s\S]*SET status = 'closed'/);
   assert.match(retirement, /blocked_reason = 'Archived synthetic demo fixture; not a customer campaign\.'/);
-  assert.match(retirement, /UPDATE tanaghom\.organizations\s+SET is_active = false/);
+  // The organization row stays active so synthetic integration fixtures can
+  // still seed profiles into it; customer access is severed below.
+  assert.doesNotMatch(retirement, /UPDATE tanaghom\.organizations[\s\S]*is_active = false/);
   assert.match(retirement, /UPDATE tanaghom\.integration_connections[\s\S]*SET status = 'disconnected'/);
   assert.match(retirement, /credential_ciphertext = NULL/);
   assert.match(retirement, /secret_last_four = NULL/);
