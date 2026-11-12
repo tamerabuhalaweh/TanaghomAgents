@@ -12,9 +12,9 @@ BEGIN
   IF current_database() <> 'tanaghom_demo' THEN
     RAISE EXCEPTION 'demo database name required';
   END IF;
-  IF (SELECT count(*) FROM public.schema_migrations) <> 45
-     OR (SELECT max(version) FROM public.schema_migrations) IS DISTINCT FROM '0048_gemini_workspace_model' THEN
-    RAISE EXCEPTION 'demo database must be at exact migration 0048 ledger (45 migrations)';
+  IF (SELECT count(*) FROM public.schema_migrations) <> 46
+     OR (SELECT max(version) FROM public.schema_migrations) IS DISTINCT FROM '0049_tenant_auth' THEN
+    RAISE EXCEPTION 'demo database must be at exact migration 0049 ledger (46 migrations)';
   END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_roles
