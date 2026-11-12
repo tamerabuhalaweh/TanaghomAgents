@@ -165,3 +165,23 @@ test("the onboarding profile route is owner-only, same-origin, and closed", asyn
   const page = await read("apps/dashboard/app/onboarding/page.tsx");
   assert.match(page, /OnboardingProfileForm/);
 });
+
+test("demo smoke refuses the retired demo accounts instead of signing in", async () => {
+  const smoke = await read("deployment/dashboard-demo/scripts/smoke.mjs");
+
+  assert.match(smoke, /const authenticated = Boolean\(smokeEmail \|\| smokePassword\)/);
+  assert.match(smoke, /SMOKE_EMAIL and a 12\+ character SMOKE_PASSWORD are required together/);
+  assert.match(smoke, /retired demo credentials must be refused/);
+  assert.match(smoke, /DEMO_SMOKE_PUBLIC_ONLY/);
+  assert.match(smoke, /SMOKE_WRITE=1 requires SMOKE_EMAIL and SMOKE_PASSWORD/);
+  assert.match(smoke, /retiredDemoAccounts/);
+
+  // The demo accounts may only be used to prove refusal, never to sign in.
+  assert.doesNotMatch(smoke, /login\([^)]*demo/i);
+  assert.doesNotMatch(smoke, /demoFixtures/);
+  assert.doesNotMatch(smoke, /Demo Summer Camp|Demo Brand Kit/);
+
+  const runbook = await read("deployment/dashboard-demo/RUNBOOK.md");
+  assert.match(runbook, /retired demo credentials are refused with 401/);
+  assert.match(runbook, /DEMO_SMOKE_PUBLIC_ONLY/);
+});

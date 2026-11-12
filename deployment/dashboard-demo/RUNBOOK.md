@@ -347,7 +347,10 @@ plaintext `auth_users.json` seed, and removes `demo-credentials.txt`. Demo rows
 stay for audit continuity but no customer view or sign-in reaches them. After
 retirement the seed cannot bootstrap a fresh store: restore
 `runtime/auth/auth-users.json` from a backup instead. `validate.sh` then needs
-`SMOKE_EMAIL`/`SMOKE_PASSWORD` for the real owner; demo-only checks are skipped.
+`SMOKE_EMAIL`/`SMOKE_PASSWORD` for the real owner to run the authenticated
+checks. Without them it runs only the public checks and asserts that the
+retired demo credentials are refused with 401, printing
+`DEMO_SMOKE_PUBLIC_ONLY`.
 
 Verify by signing in as the new owner over HTTPS: the first sign-in lands on
 Settings → Security, the change succeeds, the old password stops working, and

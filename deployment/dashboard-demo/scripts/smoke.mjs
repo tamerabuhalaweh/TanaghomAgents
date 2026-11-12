@@ -13,22 +13,25 @@ const smokeApprovalId = process.env.SMOKE_APPROVAL_ID ?? "22000000-0000-4000-800
 const smokeRejectId = process.env.SMOKE_REJECT_ID ?? "22000000-0000-4000-8000-000000000002";
 const pass = (message) => console.log(`PASS ${message}`);
 
-// Demo fixtures are the default. A production host passes SMOKE_EMAIL and
-// SMOKE_PASSWORD for its real owner account; demo-only assertions are skipped.
+// WS5 retires the synthetic demo tenant, so the demo accounts are never used
+// to sign in. Authenticated checks require a real owner account through
+// SMOKE_EMAIL/SMOKE_PASSWORD; without them the smoke only proves the public
+// surface and that the retired demo credentials are refused.
 const smokeEmail = process.env.SMOKE_EMAIL || "";
 const smokePassword = process.env.SMOKE_PASSWORD || "";
-const demoFixtures = !smokeEmail;
-let owner;
-let reviewer;
-if (demoFixtures) {
+const authenticated = Boolean(smokeEmail || smokePassword);
+if (authenticated) {
+  assert.ok(
+    smokeEmail && smokePassword.length >= 12,
+    "SMOKE_EMAIL and a 12+ character SMOKE_PASSWORD are required together",
+  );
+}
+
+function retiredDemoAccounts() {
   const users = JSON.parse(readFileSync(usersFile, "utf8")).users;
-  owner = users.find((user) => user.email === "owner@demo.tanaghom.test");
-  reviewer = users.find((user) => user.email === "reviewer@demo.tanaghom.test");
-  assert.ok(owner && reviewer, "demo owner and reviewer fixtures are required without SMOKE_EMAIL");
-} else {
-  assert.ok(smokePassword.length >= 12, "SMOKE_PASSWORD is required with SMOKE_EMAIL");
-  owner = { email: smokeEmail, password: smokePassword };
-  reviewer = owner;
+  return users.filter((user) =>
+    ["owner@demo.tanaghom.test", "reviewer@demo.tanaghom.test"].includes(user.email),
+  );
 }
 
 class CookieJar {
@@ -92,6 +95,33 @@ assert.equal((await request("/api/admin/users", { unauth: true })).status, 401);
 assert.equal((await request("/login")).status, 200);
 pass("private routes reject unauthenticated access");
 
+if (!authenticated) {
+  assert.equal(
+    writeMode,
+    false,
+    "SMOKE_WRITE=1 requires SMOKE_EMAIL and SMOKE_PASSWORD for a real owner account",
+  );
+  const retired = retiredDemoAccounts();
+  assert.ok(retired.length >= 1, "the demo accounts are required to prove retirement");
+  for (const account of retired) {
+    const refused = await request("/api/auth/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ email: account.email, password: account.password }),
+    });
+    assert.equal(
+      refused.status,
+      401,
+      `retired demo credentials must be refused for ${account.email}`,
+    );
+  }
+  pass("retired demo credentials refused");
+  console.log("DEMO_SMOKE_PUBLIC_ONLY");
+  process.exit(0);
+}
+
+const owner = { email: smokeEmail, password: smokePassword };
+
 const badLogin = await request("/api/auth/login", {
   method: "POST",
   headers: { "Content-Type": "application/json" },
@@ -120,37 +150,23 @@ pass("health endpoint");
 
 const campaignsResponse = await request("/api/campaigns", { jar: ownerJar });
 assert.equal(campaignsResponse.status, 200);
-const campaigns = await json(campaignsResponse);
-if (demoFixtures) {
-  assert.ok(campaigns.campaigns.some((campaign) => campaign.name === "Demo Summer Camp"));
-}
+await json(campaignsResponse);
 pass("campaign list");
 
 const approvalsResponse = await request("/api/approvals", { jar: ownerJar });
 assert.equal(approvalsResponse.status, 200);
 const approvals = await json(approvalsResponse);
-assert.ok(approvals.items.length >= 1, "a pending seeded approval item is required");
+assert.ok(Array.isArray(approvals.items), "the approval inbox must return a list");
 pass("approval inbox");
 
 const teamResponse = await request("/api/admin/users", { jar: ownerJar });
 assert.equal(teamResponse.status, 200);
-const team = await json(teamResponse);
-if (demoFixtures) {
-  assert.ok(team.users.some((user) => user.email === "reviewer@demo.tanaghom.test"));
-}
+await json(teamResponse);
 pass("team permissions");
 
 const templates = await json(await request("/api/creative/templates", { jar: ownerJar }));
 assert.ok(templates.templates.length >= 8);
-if (demoFixtures) {
-  const designs = await json(await request("/api/creative/designs", { jar: ownerJar }));
-  assert.ok(designs.designs.length >= 8);
-  const motions = await json(await request("/api/creative/motions", { jar: ownerJar }));
-  assert.ok(motions.motions.length >= 3);
-  const kits = await json(await request("/api/creative/brand-kits", { jar: ownerJar }));
-  assert.ok(kits.kits.some((kit) => kit.name === "Demo Brand Kit"));
-}
-pass("creative templates, brand kit, design and motion starters");
+pass("creative templates");
 
 await page(ownerJar, "/", "Tanaghom");
 await page(ownerJar, "/campaigns", "Campaigns");
@@ -185,16 +201,7 @@ assert.equal(disabledGeneration.status, 503);
 assert.equal((await json(disabledGeneration)).error, "image_generation_disabled");
 pass("provider generation clearly disabled");
 
-if (demoFixtures) {
-  const reviewerJar = await login(reviewer.email, reviewer.password);
-  const reviewerApprovals = await request("/api/approvals", { jar: reviewerJar });
-  assert.equal(reviewerApprovals.status, 200);
-  const reviewerAdmin = await request("/api/admin/users", { jar: reviewerJar });
-  assert.equal(reviewerAdmin.status, 403);
-  pass("reviewer permissions");
-}
-
-if (writeMode && demoFixtures) {
+if (writeMode) {
   const png = Buffer.from(
     "iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAAXNSR0IArs4c6QAAAARnQU1BAACxjwv8YQUAAAAJcEhZcwAADsMAAA7DAcdvqGQAAAANSURBVBhXY+Avy/sPAAN+AfOGGscwAAAAAElFTkSuQmCC",
     "base64",
@@ -216,46 +223,42 @@ if (writeMode && demoFixtures) {
   assert.ok((await preview.arrayBuffer()).byteLength > 0);
   pass("private S3 upload and preview");
 
-  const pending = await json(await request("/api/approvals", { jar: reviewerJar }));
+  const pending = await json(await request("/api/approvals", { jar: ownerJar }));
   assert.ok(
     pending.items.some((item) => item.id === smokeApprovalId),
-    "SMOKE_WRITE=1 requires a pending approval fixture; reset demo data before rerunning",
+    "SMOKE_WRITE=1 requires a pending approval fixture; seed the approval before rerunning",
   );
-  {
-    const decision = await request(`/api/approvals/${smokeApprovalId}/decision`, {
+  const decision = await request(`/api/approvals/${smokeApprovalId}/decision`, {
+    method: "POST",
+    jar: ownerJar,
+    headers: {
+      "Content-Type": "application/json",
+      Origin: baseUrl,
+      "Idempotency-Key": `demo-decision-${Date.now()}`,
+    },
+    body: JSON.stringify({ decision: "approved", rejection_reason: null }),
+  });
+  assert.equal(decision.status, 200);
+  pass("approval decision");
+
+  if (process.env.SMOKE_REJECT === "1") {
+    const pendingReject = await json(await request("/api/approvals", { jar: ownerJar }));
+    assert.ok(
+      pendingReject.items.some((item) => item.id === smokeRejectId),
+      "SMOKE_REJECT=1 requires a pending rejection fixture; seed the approval before rerunning",
+    );
+    const rejection = await request(`/api/approvals/${smokeRejectId}/decision`, {
       method: "POST",
-      jar: reviewerJar,
+      jar: ownerJar,
       headers: {
         "Content-Type": "application/json",
         Origin: baseUrl,
-        "Idempotency-Key": `demo-decision-${Date.now()}`,
+        "Idempotency-Key": `demo-rejection-${Date.now()}`,
       },
-      body: JSON.stringify({ decision: "approved", rejection_reason: null }),
+      body: JSON.stringify({ decision: "rejected", rejection_reason: "Synthetic demo rejection" }),
     });
-    assert.equal(decision.status, 200);
-    pass("reviewer approval decision");
-  }
-
-  if (process.env.SMOKE_REJECT === "1") {
-    const pendingReject = await json(await request("/api/approvals", { jar: reviewerJar }));
-    assert.ok(
-      pendingReject.items.some((item) => item.id === smokeRejectId),
-      "SMOKE_REJECT=1 requires a pending rejection fixture; reset demo data before rerunning",
-    );
-    {
-      const rejection = await request(`/api/approvals/${smokeRejectId}/decision`, {
-        method: "POST",
-        jar: reviewerJar,
-        headers: {
-          "Content-Type": "application/json",
-          Origin: baseUrl,
-          "Idempotency-Key": `demo-rejection-${Date.now()}`,
-        },
-        body: JSON.stringify({ decision: "rejected", rejection_reason: "Synthetic demo rejection" }),
-      });
-      assert.equal(rejection.status, 200);
-      pass("reviewer rejection decision");
-    }
+    assert.equal(rejection.status, 200);
+    pass("rejection decision");
   }
 }
 
