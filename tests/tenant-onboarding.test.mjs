@@ -142,6 +142,16 @@ test("onboarding copy is complete in both locales", () => {
   }
 });
 
+test("public auth routes render outside the authenticated shell", async () => {
+  const frame = await read("apps/dashboard/components/root-frame.tsx");
+  for (const route of ["/login", "/signup", "/verify-email", "/forgot-password", "/reset-password", "/accept-invite"]) {
+    assert.match(frame, new RegExp(`"${route}"`), `${route} must bypass the shell`);
+  }
+  // The shell loads /api/operations and refreshes the session; signed-out
+  // visitors on signup would be redirected to login before they can register.
+  assert.match(frame, /if \(PUBLIC_ROUTES\.has\(pathname\)\) return children;/);
+});
+
 test("the onboarding profile route is owner-only, same-origin, and closed", async () => {
   const service = await read("apps/dashboard/lib/server/onboarding.ts");
   const route = await read("apps/dashboard/app/api/settings/onboarding/route.ts");
