@@ -9,9 +9,9 @@ config = json.load(sys.stdin)
 services = config["services"]
 root = Path(__file__).resolve().parents[3]
 migrations = sorted((root / "packages/database/migrations").glob("*.up.sql"))
-assert len(migrations) == 46, "demo source must contain the exact 46-migration chain"
-assert migrations[-1].name == "0049_tenant_auth.up.sql"
-assert len({path.name.split("_", 1)[0] for path in migrations}) == 46
+assert len(migrations) == 47, "demo source must contain the exact 47-migration chain"
+assert migrations[-1].name == "0050_tenant_onboarding.up.sql"
+assert len({path.name.split("_", 1)[0] for path in migrations}) == 47
 expected = {"postgres", "migrate", "auth", "storage", "storage-init", "dashboard", "workspace-worker", "caddy"}
 assert set(services) == expected, "unexpected demo services"
 
