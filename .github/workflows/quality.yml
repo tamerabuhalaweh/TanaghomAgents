@@ -78,7 +78,10 @@ jobs:
     timeout-minutes: 5
     services:
       postgres:
-        image: postgres:16-alpine
+        # Keep the dump source on the same 17.6 image as the restore proof.
+        # postgres:16-alpine now resolves to 16.16, whose dumps contain
+        # pg_attver, a column option the pinned 17.6 restore server rejects.
+        image: postgres:17.6-alpine3.22@sha256:ef257d85f76e48da1c64832459b59fcaba1a4dac97bf5d7450c77753542eee94
         env:
           POSTGRES_PASSWORD: postgres
           POSTGRES_DB: tanaghom_agents_test
