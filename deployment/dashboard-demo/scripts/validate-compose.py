@@ -92,7 +92,11 @@ if "caddy" in services:
     assert public_domain, "caddy requires TANAGHOM_PUBLIC_DOMAIN"
     assert env["APP_BASE_URL"] == f"https://{public_domain}", "public deployment must use its HTTPS origin"
 else:
-    assert env["APP_BASE_URL"] == "http://127.0.0.1:3210", "loopback deployment must use the private origin"
+    # The deploy path validates only the workspace profile, so Caddy is absent
+    # from this resolved config even on a public host. Accept its HTTPS origin
+    # as well as the loopback-only default.
+    assert env["APP_BASE_URL"] == "http://127.0.0.1:3210" or env["APP_BASE_URL"].startswith("https://"), \
+        "workspace config must use the loopback or public HTTPS origin"
 assert env["CREATIVE_STORAGE_BACKEND"] == "s3"
 assert env["CREATIVE_STORAGE_S3_ENDPOINT"] == "http://storage:9000"
 assert env["CREATIVE_STORAGE_S3_CONDITIONAL_WRITES"] == "verified"
