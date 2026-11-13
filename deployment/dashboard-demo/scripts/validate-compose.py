@@ -85,7 +85,14 @@ assert services["postgres"].get("read_only") is not True
 
 env = services["dashboard"]["environment"]
 assert env["APP_ENV"] == "demo" and env["NODE_ENV"] == "production"
-assert env["APP_BASE_URL"].startswith("http://127.0.0.1:3210")
+if "caddy" in services:
+    # A public deployment must issue links and secure cookies for the public
+    # origin, not the loopback listener behind the proxy.
+    public_domain = caddy["environment"]["TANAGHOM_PUBLIC_DOMAIN"]
+    assert public_domain, "caddy requires TANAGHOM_PUBLIC_DOMAIN"
+    assert env["APP_BASE_URL"] == f"https://{public_domain}", "public deployment must use its HTTPS origin"
+else:
+    assert env["APP_BASE_URL"] == "http://127.0.0.1:3210", "loopback deployment must use the private origin"
 assert env["CREATIVE_STORAGE_BACKEND"] == "s3"
 assert env["CREATIVE_STORAGE_S3_ENDPOINT"] == "http://storage:9000"
 assert env["CREATIVE_STORAGE_S3_CONDITIONAL_WRITES"] == "verified"
