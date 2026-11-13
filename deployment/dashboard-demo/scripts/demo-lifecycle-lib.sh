@@ -5,11 +5,14 @@
 set -euo pipefail
 
 _lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+_repo_root="$(cd "$_lib_dir/../../.." && pwd)"
+PROJECT="${TANAGHOM_DEMO_PROJECT:-tanaghom-dashboard-demo}"
+MIGRATIONS_DIR="${TANAGHOM_DEMO_MIGRATIONS_DIR:-$_repo_root/packages/database/migrations}"
 COMPOSE_FILE="${TANAGHOM_DEMO_COMPOSE_FILE:-$_lib_dir/../compose.yml}"
 BACKUP_ROOT="${TANAGHOM_DEMO_BACKUP_DIR:-${TANAGHOM_DEMO_ROOT:-/opt/tanaghom-demo}/runtime/backups}"
 SNAPSHOT_IMAGE="${TANAGHOM_DEMO_SNAPSHOT_IMAGE:-node:24.18.0-alpine3.24}"
-PG_VOLUME=tanaghom-dashboard-demo-pgdata
-BLOB_VOLUME=tanaghom-dashboard-demo-rustfsdata
+PG_VOLUME="${TANAGHOM_DEMO_PG_VOLUME:-${PROJECT}-pgdata}"
+BLOB_VOLUME="${TANAGHOM_DEMO_BLOB_VOLUME:-${PROJECT}-rustfsdata}"
 
 export TANAGHOM_DEMO_SECRETS_DIR="${TANAGHOM_DEMO_SECRETS_DIR:-${TANAGHOM_DEMO_ROOT:-/opt/tanaghom-demo}/runtime/secrets}"
 export TANAGHOM_DEMO_RELEASE="${TANAGHOM_DEMO_RELEASE:-local}"
@@ -18,7 +21,7 @@ export TANAGHOM_DEMO_RELEASE="${TANAGHOM_DEMO_RELEASE:-local}"
 # INTEGRATION_CREDENTIAL_KEY; load it explicitly so upgrades keep credentials readable.
 COMPOSE_ENV_FILE="${COMPOSE_FILE%/*}/.env"
 compose() {
-  local args=(-p tanaghom-dashboard-demo)
+  local args=(-p "$PROJECT")
   [ -f "$COMPOSE_ENV_FILE" ] && args+=(--env-file "$COMPOSE_ENV_FILE")
   docker compose "${args[@]}" -f "$COMPOSE_FILE" "$@"
 }
@@ -39,6 +42,48 @@ table_counts() {
 }
 ledger_tail() { psql_demo -c "SELECT coalesce(max(version),'none') FROM public.schema_migrations"; }
 ledger_count() { psql_demo -c "SELECT count(*) FROM public.schema_migrations"; }
+ledger_versions() {
+  psql_demo -c "SELECT string_agg(version, ',' ORDER BY version) FROM public.schema_migrations"
+}
+migration_versions() {
+  find "$MIGRATIONS_DIR" -maxdepth 1 -name '*.up.sql' -printf '%f\n' | sed 's/\.up\.sql$//' | sort
+}
+migration_total() { migration_versions | wc -l | tr -d '[:space:]'; }
+latest_migration_version() { migration_versions | tail -n 1; }
+
+# Proves the ledger advanced to exactly the reviewed migration chain. Leaving a
+# host half-migrated is the one state the deployment must never accept.
+verify_ledger_advanced() {
+  local before_count="$1" total latest after_count actual expected
+  total="$(migration_total)"
+  latest="$(latest_migration_version)"
+  after_count="$(ledger_count)"
+  [ "$after_count" = "$total" ] ||
+    refuse "ledger has $after_count migrations, expected $total"
+  [ "$(ledger_tail)" = "$latest" ] ||
+    refuse "ledger ends at $(ledger_tail), expected $latest"
+  actual="$(ledger_versions)"
+  expected="$(migration_versions | paste -sd, -)"
+  [ "$actual" = "$expected" ] ||
+    refuse "ledger rows do not match the reviewed migration chain"
+  [ "$after_count" -gt "$before_count" ] ||
+    refuse "no migration was applied"
+  printf '%s\n' "$after_count"
+}
+
+# The only row-count change a schema upgrade may cause is the ledger itself.
+verify_no_row_drift() {
+  local before="$1" after="$2" report unexpected
+  report="$(count_delta_report "$before" "$after")"
+  unexpected="$(printf '%s\n' "$report" |
+    grep -vE '^public\.schema_migrations [0-9]+->[0-9]+$' |
+    grep -v '^$' || true)"
+  if [ -n "$unexpected" ]; then
+    echo "ROW_COUNT_DRIFT:" >&2
+    printf '%s\n' "$unexpected" >&2
+    refuse "the upgrade changed rows it must not touch"
+  fi
+}
 profile_present() {
   psql_demo -c "SELECT count(*) FROM tanaghom.agent_runtime_profiles WHERE id='7d000000-0000-4000-8000-000000000003'"
 }
@@ -126,4 +171,13 @@ start_workspace_worker() {
   fi
   compose --profile workspace up -d workspace-worker >/dev/null
   echo "WORKSPACE_WORKER_STARTED enabled"
+}
+
+# Rollback is a verified restore, never a volume reset. demo-restore.sh refuses
+# without its authorization marker, so the caller passes it explicitly.
+restore_verified_backup() {
+  local dir="$1"
+  verify_backup "$dir" >/dev/null
+  TANAGHOM_DEMO_RESTORE_AUTHORIZATION=GO-RESTORE-TANAGHOM-259-DEMO \
+    bash "$_lib_dir/demo-restore.sh" "$dir"
 }

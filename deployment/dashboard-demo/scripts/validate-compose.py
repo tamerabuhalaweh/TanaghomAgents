@@ -12,10 +12,13 @@ migrations = sorted((root / "packages/database/migrations").glob("*.up.sql"))
 assert len(migrations) == 47, "demo source must contain the exact 47-migration chain"
 assert migrations[-1].name == "0050_tenant_onboarding.up.sql"
 assert len({path.name.split("_", 1)[0] for path in migrations}) == 47
-expected = {"postgres", "migrate", "auth", "storage", "storage-init", "dashboard", "workspace-worker", "caddy"}
-assert set(services) == expected, "unexpected demo services"
+# The workspace profile is always validated. Caddy is optional because it lives
+# behind the https profile and deploy/validate enable only the workspace profile;
+# when the https profile is enabled, its full contract is validated too.
+core = {"postgres", "migrate", "auth", "storage", "storage-init", "dashboard", "workspace-worker"}
+assert set(services) in (core, core | {"caddy"}), "unexpected demo services"
 
-for name in expected - {"dashboard", "caddy"}:
+for name in core - {"dashboard"}:
     assert not services[name].get("ports"), f"{name}: host port is forbidden"
 
 node_image = "node:24.18.0-alpine3.24@sha256:a0b9bf06e4e6193cf7a0f58816cc935ff8c2a908f81e6f1a95432d679c54fbfd"
@@ -41,18 +44,19 @@ assert int(port.get("published")) == 3210, "dashboard must use private port 3210
 assert int(port.get("target")) == 3000, "dashboard container port must be 3000"
 assert all("3200" not in str(value) for value in [ports, services["dashboard"].get("environment")])
 
-caddy = services["caddy"]
-assert caddy["profiles"] == ["https"], "caddy must be profile-gated"
-assert caddy["image"].startswith("caddy:2.10.2-alpine@sha256:"), "caddy must be pinned by digest"
-assert caddy["read_only"] is True
-assert set(caddy["networks"]) == {"edge", "backend"}
-caddy_ports = {(int(item["published"]), int(item["target"])) for item in caddy.get("ports") or []}
-assert caddy_ports == {(80, 80), (443, 443)}, "caddy must publish only 80/443"
-# Compose resolves ${TANAGHOM_PUBLIC_DOMAIN:-} to an empty string until the host
-# .env supplies it; the entrypoint refuses to start in that state.
-assert "TANAGHOM_PUBLIC_DOMAIN" in caddy["environment"], "public domain must come from the host env"
-assert "TANAGHOM_POSTIZ_DOMAIN" in caddy["environment"]
-assert caddy["entrypoint"] == ["/bin/sh", "/entrypoint.sh"]
+if "caddy" in services:
+    caddy = services["caddy"]
+    assert caddy["profiles"] == ["https"], "caddy must be profile-gated"
+    assert caddy["image"].startswith("caddy:2.10.2-alpine@sha256:"), "caddy must be pinned by digest"
+    assert caddy["read_only"] is True
+    assert set(caddy["networks"]) == {"edge", "backend"}
+    caddy_ports = {(int(item["published"]), int(item["target"])) for item in caddy.get("ports") or []}
+    assert caddy_ports == {(80, 80), (443, 443)}, "caddy must publish only 80/443"
+    # Compose resolves ${TANAGHOM_PUBLIC_DOMAIN:-} to an empty string until the host
+    # .env supplies it; the entrypoint refuses to start in that state.
+    assert "TANAGHOM_PUBLIC_DOMAIN" in caddy["environment"], "public domain must come from the host env"
+    assert "TANAGHOM_POSTIZ_DOMAIN" in caddy["environment"]
+    assert caddy["entrypoint"] == ["/bin/sh", "/entrypoint.sh"]
 
 assert services["auth"]["environment"]["AUTH_STORE_FILE"] == "/data/auth-users.json"
 assert services["auth"]["environment"]["AUTH_SEED_FILE"] == "/run/secrets/auth_users"

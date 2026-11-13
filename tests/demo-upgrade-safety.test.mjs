@@ -2,17 +2,46 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
-test('demo bootstrap refuses existing data before modifying secrets or services', async () => {
+test('demo deploy upgrades existing data only after a verified backup', async () => {
   const script = await readFile('deployment/dashboard-demo/scripts/deploy.sh', 'utf8');
-  const guard = script.indexOf('EXISTING_DEMO_UPGRADE_BLOCKED');
-  assert.ok(guard > 0);
-  assert.ok(guard < script.indexOf('augment_workspace_secrets()'));
-  assert.ok(guard < script.indexOf('"${compose[@]}" up -d'));
-  assert.ok(script.indexOf('DOCKER_UNAVAILABLE') < guard);
-  assert.match(script, /docker volume ls --format/);
-  assert.match(script, /DEMO_VOLUME_DISCOVERY_FAILED/);
+  assert.doesNotMatch(script, /EXISTING_DEMO_UPGRADE_BLOCKED/);
+  assert.match(script, /existing_demo=true/);
+
+  const backupRequired = script.indexOf('UPGRADE_BACKUP_REQUIRED');
+  assert.ok(backupRequired > 0);
+  // The snapshot is required before secret changes, image builds or downtime.
+  assert.ok(backupRequired < script.indexOf('augment_workspace_secrets()'));
+  assert.ok(backupRequired < script.indexOf('build dashboard'));
+  assert.ok(backupRequired < script.indexOf('stop dashboard'));
+  assert.match(script, /verify_backup "\$existing_backup"/);
+  assert.match(script, /UPGRADE_BACKUP_VERIFIED/);
+  assert.match(script, /verify_ledger_advanced/);
+  assert.match(script, /verify_no_row_drift/);
+  assert.match(script, /restore_verified_backup/);
+  assert.match(script, /ROLLBACK_COMPLETE/);
   assert.match(script, /grep -Fxq 'tanaghom-dashboard-demo-pgdata'/);
   assert.match(script, /grep -Fxq 'tanaghom-dashboard-demo-rustfsdata'/);
+});
+
+test('the upgrade is not pinned to one migration pair and proves the chain', async () => {
+  const script = await readFile('deployment/dashboard-demo/scripts/demo-upgrade.sh', 'utf8');
+  assert.doesNotMatch(script, /0047_smartlabs_audio|0048_gemini_workspace_model|profile_present/);
+  assert.match(script, /verify_ledger_advanced/);
+  assert.match(script, /verify_no_row_drift/);
+  assert.match(script, /migration_total/);
+  assert.match(script, /restore_verified_backup/);
+  assert.match(script, /ROLLBACK_RESTORED/);
+});
+
+test('compose validation accepts workspace-only and validates Caddy when enabled', async () => {
+  const validator = await readFile('deployment/dashboard-demo/scripts/validate-compose.py', 'utf8');
+  const validate = await readFile('deployment/dashboard-demo/scripts/validate.sh', 'utf8');
+  assert.match(validator, /core = \{"postgres", "migrate", "auth", "storage", "storage-init", "dashboard", "workspace-worker"\}/);
+  assert.match(validator, /core \| \{"caddy"\}/);
+  assert.match(validator, /if "caddy" in services:/);
+  // validate.sh only enables the workspace profile; the https profile is
+  // optional until a public domain exists, so the core set must pass alone.
+  assert.match(validate, /--profile workspace config --format json/);
 });
 
 test('unreviewed demo rollback cannot remove containers or volumes', async () => {

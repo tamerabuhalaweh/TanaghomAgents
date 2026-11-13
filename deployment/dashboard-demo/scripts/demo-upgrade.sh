@@ -1,7 +1,7 @@
 #!/bin/bash
-# Data-preserving upgrade of the isolated demo from the 0047 baseline to 0048.
-# Requires a verified snapshot first. It never deletes a volume, never resets
-# the database, and refuses on any unexpected row-count change.
+# Data-preserving upgrade of the isolated demo to the current reviewed migration
+# chain. Requires a verified snapshot first. It never deletes a volume, never
+# resets the database, and refuses on any unexpected row-count change.
 set -euo pipefail
 # shellcheck source=demo-lifecycle-lib.sh
 . "$(dirname "$0")/demo-lifecycle-lib.sh"
@@ -16,43 +16,53 @@ dir="${1:-$(latest_backup)}"
 verify_backup "$dir" >/dev/null
 
 before_ledger="$(ledger_tail)"
-[ "$before_ledger" = "0047_smartlabs_audio" ] ||
-  refuse "expected the 0047 baseline, found ledger '$before_ledger'"
+before_count="$(ledger_count)"
+total="$(migration_total)"
+[ "$before_count" -lt "$total" ] ||
+  refuse "already at the current ledger ($before_ledger); nothing to upgrade"
+
 table_counts > "$dir/counts-upgrade-before.txt"
-before_profiles="$(psql_demo -c "SELECT count(*) FROM tanaghom.agent_runtime_profiles")"
-before_rows="$(ledger_count)"
 
 # Quiesce the application; the database stays up and keeps all rows.
 compose stop dashboard >/dev/null 2>&1 || true
 compose --profile workspace stop workspace-worker >/dev/null 2>&1 || true
 
-echo "Upgrade starting: baseline=$before_ledger backup=$dir"
-compose run --rm -T migrate 2>&1 | tail -n 5
+rollback() {
+  echo "Upgrade failed: $1" >&2
+  echo "Restoring the verified snapshot $dir" >&2
+  if restore_verified_backup "$dir"; then
+    echo "ROLLBACK_RESTORED ledger=$(ledger_tail) dir=$dir" >&2
+  else
+    echo "ROLLBACK_FAILED: restore from $dir before serving traffic" >&2
+  fi
+  refuse "$1"
+}
 
-after_ledger="$(ledger_tail)"
-[ "$after_ledger" = "0048_gemini_workspace_model" ] ||
-  refuse "upgrade did not reach 0048 (ledger=$after_ledger); restore from $dir"
-[ "$(profile_present)" = "1" ] || refuse "the Gemini workspace profile was not installed"
-
-table_counts > "$dir/counts-upgrade-after.txt"
-report="$(count_delta_report "$dir/counts-upgrade-before.txt" "$dir/counts-upgrade-after.txt")"
-# count_delta_report prints "table before->after" with a space, and the ledger grows
-# by exactly the migration that was just applied, whatever its number.
-unexpected="$(printf '%s\n' "$report" |
-  grep -vE "^(public\.schema_migrations ${before_rows}->$((before_rows + 1))|tanaghom\.agent_runtime_profiles ${before_profiles}->[0-9]+)$" |
-  grep -v '^$' || true)"
-if [ -n "$unexpected" ]; then
-  echo "ROW_COUNT_DRIFT:" >&2
-  printf '%s\n' "$unexpected" >&2
-  refuse "the upgrade changed rows it must not touch; restore from $dir"
+echo "Upgrade starting: baseline=$before_ledger pending=$((total - before_count)) backup=$dir"
+if ! compose run --rm -T migrate </dev/null 2>&1 | tail -n 20; then
+  rollback "the migration service failed"
 fi
 
-compose up -d dashboard >/dev/null
-wait_healthy dashboard
+if ! ( verify_ledger_advanced "$before_count" ); then
+  rollback "the ledger did not advance to the reviewed chain"
+fi
+after_ledger="$(ledger_tail)"
+
+table_counts > "$dir/counts-upgrade-after.txt"
+if ! ( verify_no_row_drift "$dir/counts-upgrade-before.txt" "$dir/counts-upgrade-after.txt" ); then
+  rollback "row counts drifted during the upgrade"
+fi
+
+if ! compose up -d dashboard >/dev/null; then
+  rollback "the dashboard did not start"
+fi
+if ! ( wait_healthy dashboard ); then
+  rollback "the dashboard did not become healthy"
+fi
 # The worker was stopped above to quiesce the run; restore it when the host
 # contract keeps the workspace enabled, otherwise the upgrade silently disables it.
-start_workspace_worker
+if ! start_workspace_worker; then
+  rollback "the workspace worker did not start"
+fi
 
 echo "UPGRADE_COMPLETE baseline=$before_ledger ledger=$after_ledger backup=$dir"
-echo "ROW_COUNT_DELTAS:"
-printf '%s\n' "$report"

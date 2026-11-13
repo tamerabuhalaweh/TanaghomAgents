@@ -14,8 +14,9 @@ test -z "$(git status --porcelain)"
 release="$(git rev-parse HEAD)"
 test "$release" = "$expected_release"
 
-# This script is only safe for a fresh demo. An existing database requires a
-# separately reviewed, backup-verified upgrade and rollback procedure.
+# Fresh hosts are installed from scratch. Existing hosts take the
+# backup-verified, data-preserving upgrade path below; this script never removes
+# a volume and never resets the database.
 if ! docker info >/dev/null 2>&1; then
   echo "DOCKER_UNAVAILABLE: cannot establish whether demo volumes exist" >&2
   exit 1
@@ -24,10 +25,38 @@ if ! volumes="$(docker volume ls --format '{{.Name}}')"; then
   echo "DEMO_VOLUME_DISCOVERY_FAILED: cannot verify retained data" >&2
   exit 1
 fi
+# An existing demo is upgraded in place: verified snapshot first, then migrate,
+# then prove the ledger and row counts before serving the new release. Volumes
+# and secrets are never removed or reset.
+existing_demo=false
 if grep -Fxq 'tanaghom-dashboard-demo-pgdata' <<<"$volumes" ||
    grep -Fxq 'tanaghom-dashboard-demo-rustfsdata' <<<"$volumes"; then
-  echo "EXISTING_DEMO_UPGRADE_BLOCKED: retain volumes and secrets; use a reviewed data-preserving upgrade" >&2
-  exit 1
+  existing_demo=true
+fi
+
+# Require the snapshot before anything else touches the existing host. Secret
+# file modes are adjusted later, but no service or row changes before this.
+existing_backup=""
+if [ "$existing_demo" = true ]; then
+  [ -d "$secrets_dir" ] || {
+    echo "existing demo database volume has no runtime secrets; restore them before upgrading" >&2
+    exit 1
+  }
+  export TANAGHOM_DEMO_ROOT="$root"
+  export TANAGHOM_DEMO_RELEASE="$release"
+  export TANAGHOM_DEMO_SECRETS_DIR="$secrets_dir"
+  # shellcheck source=demo-lifecycle-lib.sh
+  . deployment/dashboard-demo/scripts/demo-lifecycle-lib.sh
+  existing_backup="$(latest_backup)"
+  [ -n "$existing_backup" ] || {
+    echo "UPGRADE_BACKUP_REQUIRED: run demo-backup.sh and verify it before deploying" >&2
+    exit 1
+  }
+  verify_backup "$existing_backup" >/dev/null || {
+    echo "UPGRADE_BACKUP_INVALID: $existing_backup failed verification" >&2
+    exit 1
+  }
+  echo "UPGRADE_BACKUP_VERIFIED dir=$existing_backup"
 fi
 
 test "$(df --output=avail -BG / | tail -1 | tr -dc '0-9')" -ge 10
@@ -89,6 +118,70 @@ trap 'if ! $committed; then echo "DEMO_DEPLOYMENT_NOT_COMMITTED: services left f
 
 "${compose[@]}" --profile workspace config --quiet
 "${compose[@]}" --profile workspace config --format json | python3 deployment/dashboard-demo/scripts/validate-compose.py
+
+upgrade_failed() {
+  echo "UPGRADE_FAILED: $1" >&2
+  echo "Restoring the verified snapshot $existing_backup" >&2
+  if restore_verified_backup "$existing_backup"; then
+    echo "ROLLBACK_COMPLETE ledger=$(ledger_tail)" >&2
+  else
+    echo "ROLLBACK_FAILED: restore from $existing_backup before serving traffic" >&2
+  fi
+  exit 1
+}
+
+upgrade_existing_release() {
+  local dir="$existing_backup" before_count before_ledger total pending
+  before_count="$(ledger_count)"
+  before_ledger="$(ledger_tail)"
+  total="$(migration_total)"
+  pending=$((total - before_count))
+  [ "$pending" -ge 0 ] || upgrade_failed "the ledger is ahead of the reviewed source"
+  echo "UPGRADE_START baseline=$before_ledger pending=$pending backup=$dir"
+  table_counts > "$dir/counts-deploy-before.txt"
+
+  # Build first: a failed image build changes no data and costs no downtime.
+  "${compose[@]}" build dashboard
+
+  "${compose[@]}" stop dashboard >/dev/null 2>&1 || true
+  "${compose[@]}" --profile workspace stop workspace-worker >/dev/null 2>&1 || true
+
+  if [ "$pending" -gt 0 ]; then
+    if ! "${compose[@]}" run --rm -T migrate </dev/null 2>&1 | tail -n 20; then
+      upgrade_failed "the migration service failed"
+    fi
+    if ! ( verify_ledger_advanced "$before_count" ); then
+      upgrade_failed "the ledger did not advance to the reviewed chain"
+    fi
+  elif [ "$(ledger_count)" != "$total" ] || [ "$(ledger_tail)" != "$(latest_migration_version)" ]; then
+    upgrade_failed "the ledger is not at the reviewed chain"
+  fi
+
+  table_counts > "$dir/counts-deploy-after.txt"
+  if ! ( verify_no_row_drift "$dir/counts-deploy-before.txt" "$dir/counts-deploy-after.txt" ); then
+    upgrade_failed "row counts drifted during the upgrade"
+  fi
+
+  # Leave the migrate container in its exited-0 state so validate.sh can inspect
+  # it, then serve the new release without touching postgres or the volumes.
+  "${compose[@]}" up -d migrate >/dev/null ||
+    upgrade_failed "the migrate service did not record its exited-0 state"
+  "${compose[@]}" up -d dashboard >/dev/null ||
+    upgrade_failed "the dashboard did not start"
+  ( wait_healthy dashboard ) || upgrade_failed "the dashboard did not become healthy"
+  start_workspace_worker || upgrade_failed "the workspace worker did not start"
+  if ! TANAGHOM_DEMO_SECRETS_DIR="$secrets_dir" TANAGHOM_DEMO_RELEASE="$release" \
+    bash deployment/dashboard-demo/scripts/validate.sh; then
+    upgrade_failed "post-upgrade validation failed"
+  fi
+  echo "DEMO_DEPLOYMENT_COMMITTED=$release upgraded=true ledger=$(ledger_tail) backup=$dir"
+}
+
+if [ "$existing_demo" = true ]; then
+  upgrade_existing_release
+  committed=true
+  exit 0
+fi
 
 if [ -z "$("${compose[@]}" ps -q)" ]; then
   if ss -ltn "sport = :3210" | tail -n +2 | grep -q .; then
