@@ -41,6 +41,7 @@ test('compose validation accepts workspace-only and validates Caddy when enabled
   assert.match(validator, /if "caddy" in services:/);
   assert.match(validator, /env\["APP_BASE_URL"\] == f"https:\/\/\{public_domain\}"/);
   assert.match(validator, /env\["APP_BASE_URL"\] == "http:\/\/127\.0\.0\.1:3210"/);
+  assert.match(validator, /startswith\("https:\/\/"\)/);
   // validate.sh only enables the workspace profile; the https profile is
   // optional until a public domain exists, so the core set must pass alone.
   assert.match(validate, /--profile workspace config --format json/);
