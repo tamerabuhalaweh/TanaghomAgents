@@ -123,7 +123,7 @@ test("approvals and audit responses are scoped to the caller's tenant", async ()
   // parameter rather than interpolated.
   for (const [name, source, scope] of [
     ["approvals", approvals, /campaign\.organization_id = \$1::uuid/],
-    ["audit", audit, /actor\.organization_id = \$1::uuid/],
+    ["audit", audit, /log\.organization_id = \$1::uuid/],
   ]) {
     assert.match(source, /const user = await authorize\(request, \["owner", "reviewer", "operator", "viewer"\]\)/);
     assert.match(source, scope, `${name} must filter by tenant`);
@@ -131,6 +131,12 @@ test("approvals and audit responses are scoped to the caller's tenant", async ()
     assert.doesNotMatch(source, /searchParams\.get\("organization|body\.organization|organizationId\s*\+/, `${name} must not accept a tenant from the request`);
   }
   assert.match(audit, /LIMIT \$2/);
+  // Agent-only audit rows have no human actor to join, so the tenant must be
+  // stored on the row and written by the 0051 trigger.
+  assert.match(audit, /LEFT JOIN tanaghom\.app_users AS actor/);
+  const migration = await readFile(new URL("../../packages/database/migrations/0051_agent_audit_organization.up.sql", dashboard), "utf8");
+  assert.match(migration, /ADD COLUMN organization_id uuid/);
+  assert.match(migration, /CREATE TRIGGER assign_agent_action_organization/);
 });
 
 test("approval decisions are transactional, idempotent, audited, and queued", async () => {

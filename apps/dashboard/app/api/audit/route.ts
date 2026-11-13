@@ -26,7 +26,7 @@ export async function GET(request: NextRequest) {
          FROM tanaghom.agent_actions_log AS log
          LEFT JOIN tanaghom.agents AS agent ON agent.id = log.agent_id
          LEFT JOIN tanaghom.app_users AS actor ON actor.id = log.actor_user_id
-        WHERE actor.organization_id = $1::uuid
+        WHERE log.organization_id = $1::uuid
         ORDER BY log.created_at DESC
         LIMIT $2`,
       [user.organizationId, limit],

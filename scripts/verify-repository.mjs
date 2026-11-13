@@ -20,6 +20,18 @@ const suspicious = [
   /(?:api[_-]?key|access[_-]?token|client[_-]?secret)\s*[:=]\s*["']?[A-Za-z0-9_\-]{20,}/i,
   /postgres(?:ql)?:\/\/[^:\s]+:[^@\s]{8,}@(?!(?:localhost|127\.0\.0\.1))/i,
 ];
+// WS5 §7.3: customer-facing runtime must not ship placeholder or demo copy.
+// The creative mock adapter lives under packages/ because it is an explicit
+// test-only implementation, not dashboard runtime.
+const placeholderPatterns = [
+  /\blorem\b/i,
+  /Demo Summer Camp/,
+  /\bTODO\b/,
+  /\bFIXME\b/,
+  /\bmock\b/i,
+  /\bdummy\b/i,
+];
+const runtimeExtensions = new Set(['.js', '.mjs', '.ts', '.tsx']);
 
 async function collect(directory) {
   const entries = await readdir(directory, { withFileTypes: true });
@@ -47,6 +59,12 @@ for (const path of files) {
   const content = await readFile(path, 'utf8');
   for (const pattern of suspicious) {
     if (pattern.test(content)) failures.push(`possible committed secret: ${relative(root, path)}`);
+  }
+  const runtimePath = relative(root, path).replaceAll('\\', '/');
+  if (runtimePath.startsWith('apps/dashboard/') && runtimeExtensions.has(extension)) {
+    for (const pattern of placeholderPatterns) {
+      if (pattern.test(content)) failures.push(`placeholder content in runtime source: ${runtimePath} (${pattern})`);
+    }
   }
 }
 

@@ -17,6 +17,7 @@ const dashboardOrigin = `http://127.0.0.1:${dashboardPort}`;
 const providerOrigin = `http://127.0.0.1:${providerPort}`;
 const subject = "90000000-0000-4000-8000-000000000001";
 const invitedSubject = "90000000-0000-4000-8000-000000000002";
+const tenantBSubject = "90000000-0000-4000-8000-000000000014";
 const ownerId = "00000000-0000-4000-8000-000000000001";
 const campaignId = "20000000-0000-4000-8000-000000000001";
 const { privateKey, publicKey } = await generateKeyPair("RS256");
@@ -74,6 +75,15 @@ const authServer = createServer(async (request, response) => {
   }
   const body = await jsonBody(request);
   if (url.searchParams.get("grant_type") === "password") {
+    if (body.email === "tenant-b@example.test" && body.password === "integration-tenant-b") {
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({
+        access_token: await accessToken(3600, tenantBSubject, body.email),
+        refresh_token: "tenant-b-refresh-0",
+        expires_in: 3600,
+      }));
+      return;
+    }
     if (body.email !== "owner@example.test" || body.password !== "integration-only") {
       response.writeHead(400, { "Content-Type": "application/json" });
       response.end(JSON.stringify({ error: "invalid_grant" }));
@@ -838,8 +848,8 @@ try {
   await pool.query(
     `INSERT INTO tanaghom.app_users
        (id, email, display_name, kind, role, organization_id, auth_subject, accepted_at)
-     VALUES ($1, 'isolation-tenant-b@example.test', 'Isolation Tenant B Owner', 'human', 'owner', $2, $3, now())`,
-    [tenantBActor, tenantBOrganization, "90000000-0000-4000-8000-000000000014"],
+     VALUES ($1, 'tenant-b@example.test', 'Isolation Tenant B Owner', 'human', 'owner', $2, $3, now())`,
+    [tenantBActor, tenantBOrganization, tenantBSubject],
   );
   await pool.query(
     `INSERT INTO tanaghom.campaigns
@@ -867,6 +877,24 @@ try {
      RETURNING id`,
     [tenantBActor, tenantBCampaignId],
   );
+  // The #281 regression: a service agent writes without a human actor. The
+  // trigger must derive the organisation from the job so the owning tenant can
+  // still see its own audit row.
+  const tenantBAgent = await pool.query(`SELECT id FROM tanaghom.agents ORDER BY code LIMIT 1`);
+  const tenantBJob = await pool.query(
+    `INSERT INTO tanaghom.agent_jobs (correlation_id, agent_id, campaign_id, job_type)
+     VALUES (gen_random_uuid(), $1, $2, 'isolation.tenant_b_probe')
+     RETURNING id`,
+    [tenantBAgent.rows[0].id, tenantBCampaignId],
+  );
+  const tenantBAgentAudit = await pool.query(
+    `INSERT INTO tanaghom.agent_actions_log
+       (correlation_id, job_id, agent_id, action_type, entity_type, entity_id, result)
+     VALUES (gen_random_uuid(), $1, $2, 'isolation_tenant_b_agent_probe', 'campaign', $3, 'success')
+     RETURNING id, organization_id`,
+    [tenantBJob.rows[0].id, tenantBAgent.rows[0].id, tenantBCampaignId],
+  );
+  assert.equal(tenantBAgentAudit.rows[0].organization_id, tenantBOrganization);
   const ownPendingId = await createContent(4);
   const approvalQueue = await fetch(`${dashboardOrigin}/api/approvals`, { headers: { Cookie: jar.join("; ") } });
   assert.equal(approvalQueue.status, 200);
@@ -878,6 +906,57 @@ try {
   const auditIds = (await auditFeed.json()).actions.map((action) => action.id);
   assert.ok(auditIds.length > 0);
   assert.ok(!auditIds.includes(tenantBAudit.rows[0].id), "tenant B audit row leaked into tenant A activity");
+  assert.ok(!auditIds.includes(tenantBAgentAudit.rows[0].id), "tenant B agent-only audit row leaked into tenant A activity");
+
+  // A signed-in tenant B owner must see both its human and agent-only rows, and
+  // only its own.
+  const tenantBLogin = await fetch(`${dashboardOrigin}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ email: "tenant-b@example.test", password: "integration-tenant-b" }),
+  });
+  assert.equal(tenantBLogin.status, 200);
+  const tenantBJar = cookies(tenantBLogin);
+  const tenantBAuditFeed = await fetch(`${dashboardOrigin}/api/audit?limit=200`, {
+    headers: { Cookie: tenantBJar.join("; ") },
+  });
+  assert.equal(tenantBAuditFeed.status, 200);
+  const tenantBAuditIds = (await tenantBAuditFeed.json()).actions.map((action) => action.id);
+  assert.ok(tenantBAuditIds.includes(tenantBAudit.rows[0].id), "tenant B human audit row is not visible to its owner");
+  assert.ok(tenantBAuditIds.includes(tenantBAgentAudit.rows[0].id), "tenant B agent-only audit row is not visible to its owner");
+  if (tenantBAuditIds.length > 0) {
+    const foreign = await pool.query(
+      `SELECT count(*)::int AS count FROM tanaghom.agent_actions_log
+        WHERE id = ANY($1::uuid[]) AND organization_id IS DISTINCT FROM $2`,
+      [tenantBAuditIds, tenantBOrganization],
+    );
+    assert.equal(foreign.rows[0].count, 0, "tenant B audit feed returned another tenant's row");
+  }
+
+  // Onboarding is session-scoped; a second tenant cannot read or mutate tenant
+  // A's profile by changing the request.
+  const ownerOnboarding = await fetch(`${dashboardOrigin}/api/settings/onboarding`, {
+    headers: { Cookie: jar.join("; ") },
+  });
+  assert.equal(ownerOnboarding.status, 200);
+  const ownerProfile = await ownerOnboarding.json();
+  const tenantBOnboarding = await fetch(`${dashboardOrigin}/api/settings/onboarding`, {
+    headers: { Cookie: tenantBJar.join("; ") },
+  });
+  assert.equal(tenantBOnboarding.status, 200);
+  assert.equal((await tenantBOnboarding.json()).name, "Isolation Tenant B");
+  const tenantBProfileUpdate = await fetch(`${dashboardOrigin}/api/settings/onboarding`, {
+    method: "PATCH",
+    headers: { Cookie: tenantBJar.join("; "), Origin: dashboardOrigin, "Content-Type": "application/json" },
+    body: JSON.stringify({ businessNameEn: "Tenant B Onboarding" }),
+  });
+  assert.equal(tenantBProfileUpdate.status, 200);
+  assert.equal((await tenantBProfileUpdate.json()).businessNameEn, "Tenant B Onboarding");
+  const ownerOnboardingAgain = await fetch(`${dashboardOrigin}/api/settings/onboarding`, {
+    headers: { Cookie: jar.join("; ") },
+  });
+  assert.equal(ownerOnboardingAgain.status, 200);
+  assert.equal((await ownerOnboardingAgain.json()).businessNameEn, ownerProfile.businessNameEn);
 
   const invalidRefresh = await fetch(`${dashboardOrigin}/api/auth/refresh`, {
     method: "POST",
