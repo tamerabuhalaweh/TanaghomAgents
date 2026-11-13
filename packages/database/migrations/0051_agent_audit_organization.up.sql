@@ -15,6 +15,11 @@ END $$;
 ALTER TABLE tanaghom.agent_actions_log
   ADD COLUMN organization_id uuid REFERENCES tanaghom.organizations(id);
 
+-- The audit table rejects every UPDATE by design. This backfill is the one
+-- controlled migration exception; the trigger is restored before commit and
+-- the down migration never uses this path.
+ALTER TABLE tanaghom.agent_actions_log DISABLE TRIGGER audit_no_update;
+
 UPDATE tanaghom.agent_actions_log AS log
    SET organization_id = actor.organization_id
   FROM tanaghom.app_users AS actor
@@ -66,6 +71,8 @@ UPDATE tanaghom.agent_actions_log AS log
  WHERE log.organization_id IS NULL
    AND log.entity_type = 'organization'
    AND log.entity_id = organization.id;
+
+ALTER TABLE tanaghom.agent_actions_log ENABLE TRIGGER audit_no_update;
 
 CREATE INDEX agent_actions_log_organization_time_idx
   ON tanaghom.agent_actions_log(organization_id, created_at DESC)

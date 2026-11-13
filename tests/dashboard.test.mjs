@@ -136,6 +136,11 @@ test("approvals and audit responses are scoped to the caller's tenant", async ()
   assert.match(audit, /LEFT JOIN tanaghom\.app_users AS actor/);
   const migration = await readFile(new URL("../../packages/database/migrations/0051_agent_audit_organization.up.sql", dashboard), "utf8");
   assert.match(migration, /ADD COLUMN organization_id uuid/);
+  assert.match(migration, /ALTER TABLE tanaghom\.agent_actions_log DISABLE TRIGGER audit_no_update/);
+  assert.ok(
+    migration.indexOf("DISABLE TRIGGER audit_no_update") < migration.indexOf("ENABLE TRIGGER audit_no_update"),
+    "the audit immutability trigger must be restored after the backfill",
+  );
   assert.match(migration, /CREATE TRIGGER assign_agent_action_organization/);
 });
 
