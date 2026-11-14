@@ -27,6 +27,8 @@ rustfs_image = "rustfs/rustfs:latest@sha256:9ca9559533b537d10482fe923288b676ad08
 assert services["postgres"]["image"] == postgres_image
 assert services["migrate"]["image"] == postgres_image
 assert services["auth"]["image"].startswith("tanaghom-dashboard-demo:")
+assert set(services["auth"]["networks"]) == {"backend", "edge"}, \
+    "auth needs the non-internal edge network for outbound HTTPS"
 assert services["storage-init"]["image"] == node_image
 assert services["storage"]["image"] == rustfs_image
 assert services["dashboard"]["image"].startswith("tanaghom-dashboard-demo:")
@@ -85,6 +87,9 @@ assert services["postgres"].get("read_only") is not True
 
 env = services["dashboard"]["environment"]
 assert env["APP_ENV"] == "demo" and env["NODE_ENV"] == "production"
+auth_env = services["auth"]["environment"]
+assert auth_env.get("APP_BASE_URL") == env["APP_BASE_URL"], \
+    "auth and dashboard APP_BASE_URL must match"
 if "caddy" in services:
     # A public deployment must issue links and secure cookies for the public
     # origin, not the loopback listener behind the proxy.
@@ -162,6 +167,10 @@ assert worker_url.username == "tanaghom_agency_pilot_worker"
 assert worker_url.password == workspace_password
 worker_token = (secrets_dir / "workspace_worker_token").read_text().strip()
 assert len(worker_token) == 64 and set(worker_token) <= set("0123456789abcdef")
+auth_email_key = secrets_dir / "auth_email_api_key"
+assert auth_email_key.is_file() and not auth_email_key.is_symlink(), \
+    "optional auth email secret file must exist (empty until configured)"
+
 gemini_key = secrets_dir / "gemini_api_key"
 assert gemini_key.is_file() and not gemini_key.is_symlink()
 assert gemini_key.stat().st_size <= 4096
