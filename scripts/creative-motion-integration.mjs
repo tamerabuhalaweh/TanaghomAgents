@@ -245,8 +245,15 @@ try {
   // A motion owned by tenant B but pointing at tenant A's private ad design
   // must not preview or render, and the API must refuse to create it in the
   // first place. The direct insert models a malicious/legacy row; the HTTP
-  // probes prove the read and render boundaries independently.
-  const maliciousSpec = { kind: "motion", ...arSpec, design_template_id: PRODUCT_PROMO, design_version: 1 };
+  // probes prove the read and render boundaries independently. Use a copy of
+  // the global seed design so the reference is private to tenant A rather
+  // than a legitimately global template.
+  const seedDesign = await pool.query("SELECT spec FROM tanaghom.creative_templates WHERE id = $1", [PRODUCT_PROMO]);
+  const privateDesign = await pool.query(
+    `SELECT tanaghom.create_creative_template('00000000-0000-4000-8000-000000000231','ad',$1,$2) AS id`,
+    [`Org A private design ${Date.now()}`, JSON.stringify(seedDesign.rows[0].spec)],
+  );
+  const maliciousSpec = { kind: "motion", ...arSpec, design_template_id: privateDesign.rows[0].id, design_version: 1 };
   const malicious = await pool.query(
     `SELECT tanaghom.create_creative_template($1,'motion',$2,$3) AS id`,
     ["00000000-0000-4000-8000-000000000241", "Org B foreign-design motion", JSON.stringify(maliciousSpec)],
