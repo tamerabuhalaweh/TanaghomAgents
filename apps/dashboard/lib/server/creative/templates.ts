@@ -68,6 +68,11 @@ export async function createCreativeTemplate(request: NextRequest) {
     if (!body.spec || typeof body.spec !== "object" || Array.isArray(body.spec)) {
       throw new CreativeJobRequestError("invalid_spec", 400);
     }
+    if (body.global === true) {
+      // Platform-global rows are read-only to organization users; globals
+      // are seeded only by a future explicit platform-admin authority.
+      throw new CreativeJobRequestError("global_templates_read_only", 400);
+    }
     const kind = body.kind as string;
     const spec = body.spec as Record<string, unknown>;
     assertSafeValue(spec, "spec", 48);
@@ -81,11 +86,6 @@ export async function createCreativeTemplate(request: NextRequest) {
       const design = await loadDesign(spec.design_template_id, user.organizationId);
       if (!design) throw new CreativeJobRequestError("design_not_found", 404);
       validateMotionSpec(spec, design);
-    }
-    if (body.global === true) {
-      // Platform-global rows are read-only to organization users; globals
-      // are seeded only by a future explicit platform-admin authority.
-      throw new CreativeJobRequestError("global_templates_read_only", 400);
     }
     const headerKey = idempotencyKey(request);
     const requestHash = `sha256:${createHash("sha256").update(JSON.stringify({ ...body, headerKey })).digest("hex")}`;

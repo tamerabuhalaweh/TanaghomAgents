@@ -388,15 +388,19 @@ try {
   console.log("PASS brand-kit lifecycle, roles, tenant isolation");
 
   // ---- P1b: templates ----
+  const adSpec = {
+    locale: "en", direction: "ltr", canvas: { width: 1080, height: 1080 },
+    nodes: [{ id: "headline", type: "text", x: 40, y: 40, width: 800, height: 120, text: "Go" }],
+  };
   const tplCreate = await postJson("/api/creative/templates", owner,
-    { kind: "ad", name: "e2e-promo", spec: { headline: "Go" } }, "e2e-tpl-1");
+    { kind: "ad", name: "e2e-promo", spec: adSpec }, "e2e-tpl-1");
   assert.equal(tplCreate.status, 200);
   const templateId = (await tplCreate.json()).template_id;
   const tplSameNameOtherOrg = await postJson("/api/creative/templates", orgBOwner,
-    { kind: "ad", name: "e2e-promo", spec: { headline: "Go B" } }, "e2e-tpl-2");
+    { kind: "ad", name: "e2e-promo", spec: { ...adSpec, nodes: [{ ...adSpec.nodes[0], text: "Go B" }] } }, "e2e-tpl-2");
   assert.equal(tplSameNameOtherOrg.status, 200);
   const tplGlobalAttempt = await postJson("/api/creative/templates", owner,
-    { kind: "ad", name: "e2e-global-sneak", spec: { headline: "Mine" }, global: true }, "e2e-tpl-global");
+    { kind: "ad", name: "e2e-global-sneak", spec: adSpec, global: true }, "e2e-tpl-global");
   assert.equal(tplGlobalAttempt.status, 400);
   assert.equal((await tplGlobalAttempt.json()).error, "global_templates_read_only");
   const globalRow = await pool.query(
