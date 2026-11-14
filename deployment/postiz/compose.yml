@@ -9,10 +9,12 @@ name: postiz
 # human-gated: Tanaghom only queues approved drafts, and automatic draft mode
 # stays off because POSTIZ_AUTOMATION_RUNTIME_READY=false.
 #
-# postiz-postgres and postiz-redis are reachable only on the private
-# postiz-internal bridge, so the database trusts its network peers and keeps no
-# shared password. The JWT signing secret lives in ./postiz.env (mode 600, not
-# tracked); DATABASE_URL deliberately carries no credential.
+# postiz-redis stays on the private postiz-internal bridge. postiz-postgres is
+# additionally attached to the internal Tanaghom backend network so the
+# dashboard can provision one Organization per tenant; it has no host port and
+# trusts only those private network peers. The JWT signing secret lives in
+# ./postiz.env (mode 600, not tracked); DATABASE_URL deliberately carries no
+# credential.
 
 x-logging: &bounded-logging
   driver: json-file
@@ -27,7 +29,10 @@ services:
       POSTGRES_USER: postiz
       POSTGRES_HOST_AUTH_METHOD: trust
     volumes: [postiz-pgdata:/var/lib/postgresql/data]
-    networks: [postiz-internal]
+    # The Tanaghom dashboard provisions one tenant Organization per customer.
+    # Only the database is attached to the private demo backend; Redis,
+    # Temporal and the Postiz app retain their existing internal-only paths.
+    networks: [postiz-internal, tanaghom-backend]
     healthcheck:
       test: [CMD-SHELL, "pg_isready -U postiz -d postiz"]
       interval: 10s

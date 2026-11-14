@@ -119,6 +119,8 @@ chmod 0600 deployment/dashboard-demo/.env
 | `INTEGRATION_CREDENTIAL_KEY` | generated, kept | Base64 of 32 random bytes (`openssl rand -base64 32`); losing it makes stored provider credentials undecryptable |
 | `INTEGRATION_CREDENTIAL_KEY_VERSION` | `1` | Version bound to each encrypted credential row |
 | `POSTIZ_ALLOWED_BASE_URLS` | `http://postiz:5000/api/public/v1` | Exact plain-http exception for the private Postiz API |
+| `POSTIZ_INTERNAL_BASE_URL` | `http://postiz:5000/api/public/v1` | Exact internal origin used for tenant channel OAuth and discovery |
+| `POSTIZ_DATABASE_URL` | `postgresql://postiz@postiz-postgres:5432/postiz` | Private Postiz DB used only for one-Organization-per-tenant provisioning; bounded pool of 5 |
 | `POSTIZ_HANDOFF_ENABLED` | `true` | Queue approved content as Postiz drafts only |
 | `POSTIZ_AUTOMATION_RUNTIME_READY` | `false` | Keeps automatic draft mode unavailable |
 | `POSTIZ_PERFORMANCE_SYNC_ENABLED` | `false` | Analytics sync stays off for Phase 1 |
@@ -449,6 +451,14 @@ POSTIZ_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
 `postiz.env` must exist next to that compose file (mode 600, untracked) and hold
 `JWT_SECRET`. The Postiz database and Redis listen only on the private
 `postiz-internal` bridge.
+
+WS4 attaches only `postiz-postgres` to `tanaghom-dashboard-demo-backend`; Redis,
+Temporal and the Postiz app keep their existing private-only paths. The dashboard
+uses that private database connection solely to provision one Postiz
+`Organization` per Tanaghom tenant, keyed by the tenant UUID and guarded by a
+conflict-safe authoritative key reread. Every channel call uses the tenant's own
+encrypted Postiz Public API key, and `/settings/channels` is the customer entry
+point. No Postiz key, database URL or social credential is returned to a browser.
 
 The workspace control deliberately allows Postiz to be running, but not to be
 executing: `workspace-control.sql` requires the Postiz control row to exist, no

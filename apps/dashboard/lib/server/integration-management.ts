@@ -310,14 +310,20 @@ export async function disconnectIntegration(request: NextRequest, rawProvider: s
     await client.query("BEGIN");
     const row = await findConnection(client, owner.organizationId, provider, true);
     if (!row) throw new IntegrationRequestError("integration_not_configured", 404);
+    const retainedPostizOrganizationId = provider === "postiz"
+      && typeof row.configuration?.postiz_organization_id === "string"
+      ? row.configuration.postiz_organization_id
+      : null;
     await client.query(
       `UPDATE tanaghom.integration_connections SET
          status = 'disconnected', credential_ciphertext = NULL, credential_nonce = NULL,
          credential_auth_tag = NULL, credential_key_version = NULL, secret_last_four = NULL,
-         configuration = '{}'::jsonb, last_tested_at = NULL, last_test_status = NULL,
+         configuration = $2::jsonb, last_tested_at = NULL, last_test_status = NULL,
          last_error_code = NULL, disconnected_at = statement_timestamp()
        WHERE id = $1`,
-      [row.id],
+      [row.id, JSON.stringify(retainedPostizOrganizationId
+        ? { postiz_organization_id: retainedPostizOrganizationId }
+        : {})],
     );
     if (provider === "postiz") {
       await client.query(`DELETE FROM tanaghom.publishing_channels WHERE organization_id = $1 AND provider = 'postiz'`, [owner.organizationId]);
