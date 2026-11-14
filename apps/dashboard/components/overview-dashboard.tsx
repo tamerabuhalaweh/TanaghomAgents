@@ -1,11 +1,14 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, CheckCircle2 } from "lucide-react";
+import { ArrowRight, CheckCircle2, CircleAlert } from "lucide-react";
+import { useEffect, useState } from "react";
 import { DomainEmpty, OperationsError, OperationsLoading } from "./operations-state";
 import { useOperations, type OperationsCampaign } from "./operations-context";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
+import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import type { OnboardingProfile } from "@/lib/onboarding-types";
 import { useLocale } from "@/lib/client/use-locale";
 
 function campaignTone(status: string) {
@@ -49,10 +52,46 @@ const quickStart = [
   },
 ] as const;
 
+type SetupProgress = {
+  profileDone: boolean;
+  brandDone: boolean;
+  knowledgeDone: boolean;
+};
+
 export function OverviewDashboard() {
   const { locale } = useLocale();
   const ar = locale === "ar";
   const operations = useOperations();
+  const [setup, setSetup] = useState<SetupProgress | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    void Promise.all([
+      authenticatedFetch("/api/settings/onboarding", { cache: "no-store" }),
+      authenticatedFetch("/api/creative/brand-kits", { cache: "no-store" }),
+      authenticatedFetch("/api/admin/knowledge", { cache: "no-store" }),
+    ])
+      .then(async ([profileResponse, kitsResponse, knowledgeResponse]) => {
+        if (!active) return;
+        if (!profileResponse.ok || !kitsResponse.ok || !knowledgeResponse.ok) return;
+        const [profile, kits, knowledge] = await Promise.all([
+          profileResponse.json() as Promise<OnboardingProfile>,
+          kitsResponse.json() as Promise<{ kits?: Array<{ kit_id: string }> }>,
+          knowledgeResponse.json() as Promise<{ counts?: { sources?: number } }>,
+        ]);
+        if (!active) return;
+        setSetup({
+          profileDone: Boolean(profile.completedAt || profile.businessNameEn || profile.businessNameAr || profile.industry || profile.location),
+          brandDone: Boolean(kits.kits?.length),
+          knowledgeDone: (knowledge.counts?.sources ?? 0) > 0,
+        });
+      })
+      .catch(() => undefined);
+    return () => {
+      active = false;
+    };
+  }, []);
+
   if (operations.status === "loading") return <div className="page-stack"><PageHeading title={ar ? "نظرة عامة" : "Overview"} description={ar ? "جارٍ تحميل الحالة المعتمدة الحالية." : "Loading the current source-of-truth state."} /><OperationsLoading /></div>;
   if (operations.status === "error") return <div className="page-stack"><PageHeading title={ar ? "نظرة عامة" : "Overview"} description={ar ? "حالة المصدر المعتمد مطلوبة قبل تشغيل الوكلاء." : "Source-of-truth status is required before operating agents."} /><OperationsError retry={operations.retry} /></div>;
 
@@ -61,11 +100,26 @@ export function OverviewDashboard() {
     ? (ar
       ? `${data.summary.campaigns_active} حملة نشطة، ${data.summary.jobs_open} مهمة مفتوحة، و${data.summary.approvals_pending} قرار بانتظارك.`
       : `${data.summary.campaigns_active} active campaigns, ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
-    : (ar ? "الأساس جاهز. لم تبدأ أي حملة أو مهمة وكيل بعد." : "The foundation is ready. No campaign or agent work has started yet.");
+    : (ar ? "لم تبدأ أي حملة أو مهمة وكيل بعد." : "No campaign or agent work has started yet.");
+  const remaining = setup ? [
+    !setup.profileDone ? (ar ? "أكمل ملف النشاط التجاري" : "Finish your business profile") : null,
+    !setup.brandDone ? (ar ? "أضف هويتك البصرية" : "Add your brand kit") : null,
+    !setup.knowledgeDone ? (ar ? "أضف أول مسودة معرفة" : "Add your first knowledge draft") : null,
+  ].filter((item): item is string => Boolean(item)) : [];
 
   return (
     <div className="page-stack">
-      <PageHeading title={ar ? "نظرة عامة" : "Overview"} description={description} actions={<button className="secondary-button" type="button" disabled title={ar ? "إنشاء الحملات هو قدرة المرحلة الثانية التالية" : "Campaign creation is the next Phase 2 capability"}>{ar ? "إنشاء حملة" : "Create campaign"}</button>} />
+      <PageHeading title={ar ? "نظرة عامة" : "Overview"} description={description} actions={<Link className="primary-button" href="/workspace">{ar ? "موجز حملة جديد" : "New campaign brief"}<ArrowRight size={16} /></Link>} />
+
+      {setup && remaining.length ? <section className="setup-banner" aria-labelledby="setup-banner-title">
+        <CircleAlert size={22} aria-hidden="true" />
+        <div>
+          <h2 id="setup-banner-title">{ar ? "أكمل إعداد مساحة عملك" : "Continue workspace setup"}</h2>
+          <p>{ar ? `${remaining.length} خطوات متبقية قبل أن يعمل فريقك بأكمل طاقته.` : `${remaining.length} ${remaining.length === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</p>
+          <ul>{remaining.map((item) => <li key={item}>{item}</li>)}</ul>
+        </div>
+        <Link className="primary-button" href="/onboarding">{ar ? "أكمل الإعداد" : "Continue setup"}<ArrowRight size={16} /></Link>
+      </section> : null}
 
       <section className="quick-start-strip" aria-label={ar ? "بداية سريعة" : "Quick start"}>
         {quickStart.map((entry) => (

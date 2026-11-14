@@ -125,22 +125,25 @@ export function OnboardingKnowledgeStep({ copy, locale }: { copy: OnboardingCopy
           <input type="text" value={title} required minLength={3} maxLength={200} placeholder={copy.knowledgeTitlePlaceholder} onChange={(event) => changeTitle(event.target.value)} />
         </label>
 
-        <label className="onboarding-field">
-          <span>{copy.knowledgeSourceKeyLabel}</span>
-          <input
-            type="text"
-            value={sourceKey}
-            required
-            pattern="[a-z][a-z0-9_-]{2,79}"
-            maxLength={80}
-            dir="ltr"
-            onChange={(event) => {
-              setKeyTouched(true);
-              setSourceKey(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""));
-            }}
-          />
-          <small>{copy.knowledgeSourceKeyHint}</small>
-        </label>
+        <details className="onboarding-wide onboarding-disclosure">
+          <summary>{copy.knowledgeAdvancedLabel}</summary>
+          <label className="onboarding-field">
+            <span>{copy.knowledgeSourceKeyLabel}</span>
+            <input
+              type="text"
+              value={sourceKey}
+              required
+              pattern="[a-z][a-z0-9_-]{2,79}"
+              maxLength={80}
+              dir="ltr"
+              onChange={(event) => {
+                setKeyTouched(true);
+                setSourceKey(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""));
+              }}
+            />
+            <small>{copy.knowledgeSourceKeyHint}</small>
+          </label>
+        </details>
 
         <label className="onboarding-field">
           <span>{copy.knowledgeCategoryLabel}</span>
@@ -180,6 +183,7 @@ export function OnboardingKnowledgeStep({ copy, locale }: { copy: OnboardingCopy
         {status === "error" ? copy.knowledgeError : ""}
       </p>
 
+      {title.trim().length < 3 || content.trim().length < 3 || !SOURCE_KEY.test(sourceKey) ? <p className="onboarding-helper" aria-live="polite">{copy.knowledgeRequiredHint}</p> : null}
       <button
         className="onboarding-submit"
         type="submit"

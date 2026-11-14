@@ -18,6 +18,7 @@ export interface OnboardingCopy {
   back: string;
   finish: string;
   step4Label: string;
+  readyTabTitle: string;
   readyTitle: string;
   readyLede: string;
   readyChecklist: string[];
@@ -75,6 +76,13 @@ export interface OnboardingCopy {
   knowledgeContentLabel: string;
   knowledgeContentPlaceholder: string;
   knowledgeContentHint: string;
+  knowledgeAdvancedLabel: string;
+  knowledgeRequiredHint: string;
+  checklistSaved: string;
+  checklistPending: string;
+  checklistChecking: string;
+  checklistError: string;
+  checklistActions: string[];
   knowledgeSave: string;
   knowledgeSaving: string;
   knowledgeSaved: string;
@@ -93,14 +101,15 @@ const en: OnboardingCopy = {
   title: "Set up your workspace",
   lede: "Four short steps: name your business, capture your brand, add the first approved answer your agents can use, and finish.",
   profileTitle: "Business profile",
-  stepLabel: "Step 1 of 5 · Business profile",
-  step2Label: "Step 2 of 5 · Brand kit",
-  step3Label: "Step 3 of 5 · First knowledge",
+  stepLabel: "Step 1 of 4 · Business profile",
+  step2Label: "Step 2 of 4 · Brand kit",
+  step3Label: "Step 3 of 4 · First knowledge",
   stepperLabel: "Onboarding steps",
   next: "Continue",
   back: "Back",
   finish: "Go to dashboard",
-  step4Label: "Step 4 of 5 · Ready",
+  step4Label: "Step 4 of 4 · Ready to launch",
+  readyTabTitle: "Ready to launch",
   readyTitle: "Your workspace is ready",
   readyLede: "Review what you have set up. Finishing marks onboarding complete and opens your dashboard.",
   readyChecklist: [
@@ -143,9 +152,9 @@ const en: OnboardingCopy = {
   fontPlaceholder: "Leave empty to use the studio default",
   brandSave: "Save brand kit",
   brandSaving: "Saving brand kit…",
-  brandSaved: "Brand kit saved. Your first version is now the current one.",
+  brandSaved: "Brand kit updated. New work will use the latest version.",
   brandExisting: "You already have a brand kit",
-  brandExistingHint: "New posts will use its current version. Open Creative Studio to add a new version without changing past work.",
+  brandExistingHint: "Edit your current colours, tone and fonts below. Saving adds a new version and leaves past work unchanged.",
   brandDisabled: "Creative Studio is not enabled for this workspace, so the brand kit cannot be saved yet. Ask your operator to enable it, then return to this step.",
   brandError: "The brand kit could not be saved. Check the name and colours, then try again.",
   brandLoading: "Checking your brand kit…",
@@ -162,6 +171,13 @@ const en: OnboardingCopy = {
   knowledgeContentLabel: "Approved answer material",
   knowledgeContentPlaceholder: "Write only customer-supplied facts and wording that a reviewer can verify.",
   knowledgeContentHint: "Do not include passwords, access tokens, payment card data, or unnecessary personal information.",
+  knowledgeAdvancedLabel: "Advanced identifier",
+  knowledgeRequiredHint: "Enter a title and at least 3 characters of approved answer material to save this draft.",
+  checklistSaved: "Saved",
+  checklistPending: "Not added yet",
+  checklistChecking: "Checking your saved setup…",
+  checklistError: "We could not verify the saved setup. Retry by reopening this step.",
+  checklistActions: ["Edit Step 1", "Complete Step 2", "Complete Step 3"],
   knowledgeSave: "Save draft",
   knowledgeSaving: "Saving draft…",
   knowledgeSaved: "Draft saved. Review and activate it in Knowledge before agents can use it.",
@@ -201,14 +217,15 @@ const ar: OnboardingCopy = {
   title: "جهّز مساحة عملك",
   lede: "أربع خطوات قصيرة: سمِّ نشاطك، والتقط هويتك البصرية، وأضف أول إجابة معتمدة يستخدمها وكلاؤك، ثم أنهِ التهيئة.",
   profileTitle: "ملف النشاط التجاري",
-  stepLabel: "الخطوة ١ من ٥ · ملف النشاط التجاري",
-  step2Label: "الخطوة ٢ من ٥ · الهوية البصرية",
-  step3Label: "الخطوة ٣ من ٥ · أول معرفة",
+  stepLabel: "الخطوة ١ من ٤ · ملف النشاط التجاري",
+  step2Label: "الخطوة ٢ من ٤ · الهوية البصرية",
+  step3Label: "الخطوة ٣ من ٤ · أول معرفة",
   stepperLabel: "خطوات التهيئة",
   next: "متابعة",
   back: "رجوع",
   finish: "الذهاب إلى لوحة التحكم",
-  step4Label: "الخطوة ٤ من ٥ · جاهز",
+  step4Label: "الخطوة ٤ من ٤ · جاهز للانطلاق",
+  readyTabTitle: "جاهز للانطلاق",
   readyTitle: "مساحة عملك جاهزة",
   readyLede: "راجع ما أعددته. الإنهاء يسجّل اكتمال التهيئة ويفتح لوحة التحكم.",
   readyChecklist: [
@@ -251,9 +268,9 @@ const ar: OnboardingCopy = {
   fontPlaceholder: "اتركه فارغًا لاستخدام الخط الافتراضي للاستوديو",
   brandSave: "حفظ الهوية البصرية",
   brandSaving: "جارٍ حفظ الهوية…",
-  brandSaved: "تم حفظ الهوية البصرية. أصبحت نسختك الأولى هي الحالية.",
+  brandSaved: "تم تحديث الهوية البصرية. ستستخدم الأعمال الجديدة أحدث نسخة.",
   brandExisting: "لديك هوية بصرية بالفعل",
-  brandExistingHint: "ستستخدم المنشورات الجديدة نسختها الحالية. افتح استوديو الإبداع لإضافة نسخة جديدة دون تغيير الأعمال السابقة.",
+  brandExistingHint: "عدّل الألوان والنبرة والخطوط الحالية أدناه. الحفظ يضيف نسخة جديدة ويترك الأعمال السابقة دون تغيير.",
   brandDisabled: "استوديو الإبداع غير مفعّل لمساحة العمل هذه، لذا لا يمكن حفظ الهوية البصرية الآن. اطلب من مشغّلك تفعيله ثم عد إلى هذه الخطوة.",
   brandError: "تعذّر حفظ الهوية البصرية. تحقّق من الاسم والألوان وحاول مرة أخرى.",
   brandLoading: "جارٍ التحقق من هويتك البصرية…",
@@ -270,6 +287,13 @@ const ar: OnboardingCopy = {
   knowledgeContentLabel: "مادة الإجابة المعتمدة",
   knowledgeContentPlaceholder: "اكتب فقط الحقائق والصياغة التي قدّمها العميل ويمكن للمراجع التحقق منها.",
   knowledgeContentHint: "لا تُدرج كلمات مرور أو رموز وصول أو بيانات بطاقات دفع أو معلومات شخصية غير ضرورية.",
+  knowledgeAdvancedLabel: "معرّف متقدم",
+  knowledgeRequiredHint: "أدخل عنوانًا و٣ أحرف على الأقل من مادة الإجابة المعتمدة لحفظ هذه المسودة.",
+  checklistSaved: "تم الحفظ",
+  checklistPending: "لم يُضف بعد",
+  checklistChecking: "جارٍ التحقق من إعدادك المحفوظ…",
+  checklistError: "تعذّر التحقق من الإعداد المحفوظ. أعد فتح هذه الخطوة للمحاولة.",
+  checklistActions: ["عدّل الخطوة ١", "أكمل الخطوة ٢", "أكمل الخطوة ٣"],
   knowledgeSave: "حفظ المسودة",
   knowledgeSaving: "جارٍ حفظ المسودة…",
   knowledgeSaved: "تم حفظ المسودة. راجعها وفعّلها في المعرفة قبل أن يستخدمها الوكلاء.",

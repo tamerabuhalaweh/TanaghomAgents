@@ -5,6 +5,7 @@ import { creativeLocale } from "@/lib/creative-locale";
 import "./globals.css";
 import "./workspace.css";
 import "./creative.css";
+import "./public.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
 

@@ -170,13 +170,13 @@ export function AgencyWorkspace() {
     <div className="aw-boundary">
       <UsersRound size={18} />
       <span>{ar ? "مختصو الوكالة · مساحة مسودات فقط · مراجعة بشرية قبل الاستخدام" : "Agency specialists · Draft-only workspace · Human review before use"}</span>
-      <span className={`aw-state ${data?.runtime.ready ? "aw-state-ready" : ""}`}>{data?.runtime.ready ? (ar ? "عامل النموذج مهيّأ" : "Model worker configured") : (ar ? "اتصال النموذج معلّق" : "Model connection pending")}</span>
+      <span className={`aw-state ${data?.runtime.ready ? "aw-state-ready" : ""}`}>{data?.runtime.ready ? (ar ? "المختصون جاهزون" : "AI specialists ready") : (ar ? "وضع حفظ المسودات" : "Draft-save mode")}</span>
     </div>
     {error ? <div className="aw-message aw-error" role="alert"><span>{error}</span><button className="button button-secondary" onClick={() => void load(selectedId)}><RefreshCw size={16} />{ar ? "تحديث" : "Refresh"}</button></div> : null}
     {notice ? <p className="aw-message" role="status">{notice}</p> : null}
     {loading && !data ? <div className="aw-loading" aria-busy="true" aria-label={ar ? "جارٍ تحميل مساحة العمل" : "Loading AI workspace"}><div /><div /><div /></div> : null}
     {data ? <>
-      {!data.runtime.ready ? <p className="aw-runtime-note">{data.runtime.reason} {ar ? "يمكنك حفظ مهمة الآن، ولن تُعرض أي نتيجة كعمل نموذج حتى ينجح التنفيذ." : "You can save an assignment now. No result is presented as model-generated until execution succeeds."}</p> : null}
+      {!data.runtime.ready ? <p className="aw-runtime-note">{data.runtime.reason}</p> : null}
       <div className="aw-layout">
         <aside className="aw-assignments" aria-label={ar ? "المهام" : "Assignments"}>
           <h2>{ar ? "المهام" : "Assignments"} <span>{data.assignments.length}</span></h2>
@@ -202,10 +202,13 @@ export function AgencyWorkspace() {
             <label>{ar ? "حقائق المصدر المشتركة وإرشادات العلامة" : "Shared source facts & brand guidance"}<textarea required minLength={20} maxLength={6000} rows={6} value={facts} onChange={(e) => { setFacts(e.target.value); key.current = null; }} placeholder={ar ? "أضف الحقائق التي يجوز للفريق الاعتماد عليها: ما يشمله العرض، التواريخ أو الأسعار المؤكدة، الادعاءات المعتمدة، نبرة العلامة، وما هو غير معروف. لا تُدرج كلمات مرور أو بيانات عملاء حساسة." : "Add the facts the team may rely on: what the offer includes, confirmed dates or prices, approved claims, brand tone, and what is unknown. Do not include passwords or customer-sensitive data."} /></label>
             <p className="aw-muted">{ar ? "يُحفظ الموجز والحقائق كنسخة غير قابلة للتغيير. تُشارك مخرجات المختصين السابقة كمقترحات غير معتمدة، لا كحقائق جديدة. لا نشر ولا رسائل ولا مشتريات ولا تحديثات CRM." : "Source facts and the brief are saved as an immutable version. Earlier specialist outputs are shared as unapproved proposals—not new facts. No publishing, messaging, purchases or CRM updates."}</p>
             <div className="aw-actions">
-              <button type="submit" className="button button-primary" disabled={busy || !data.runtime.ready} onClick={() => { startAfterSave.current = true; }} title={data.runtime.ready ? undefined : data.runtime.reason}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "حفظ وبدء التنفيذ فوراً" : "Save & start now")}<ChevronRight size={17} /></button>
-              <button type="submit" className="button button-secondary" disabled={busy} onClick={() => { startAfterSave.current = false; }}>{ar ? "حفظ المهمة" : "Save assignment"}</button>
+              <button type="submit" className="button button-primary" disabled={busy} onClick={() => { startAfterSave.current = data.runtime.ready; }} title={data.runtime.ready ? undefined : data.runtime.reason}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : data.runtime.ready ? (ar ? "احفظ وابدأ الآن" : "Save & start now") : (ar ? "حفظ موجز المهمة" : "Save assignment brief")}<ChevronRight size={17} /></button>
+              {data.runtime.ready ? <button type="submit" className="button button-secondary" disabled={busy} onClick={() => { startAfterSave.current = false; }}>{ar ? "حفظ المهمة" : "Save assignment"}</button> : null}
               <button type="button" className="button button-secondary" onClick={() => setCreating(false)} disabled={busy}>{ar ? "إلغاء" : "Cancel"}</button>
             </div>
+            <p className="aw-muted aw-submit-note">{data.runtime.ready
+              ? (ar ? "يُحفظ الموجز فوراً. يبدأ المختصون العمل بعد الحفظ، وتبقى كل النتائج مقترحات بانتظار اعتمادك." : "Your brief is saved immediately. Specialists start after saving, and every result stays a proposal until you approve it.")
+              : (ar ? "يُحفظ موجزك فوراً ويمكنك العودة إليه في أي وقت. يتاح زر «احفظ وابدأ الآن» عندما يصبح عامل النموذج المباشر متصلاً." : "Your brief is saved immediately and stays available in your workspace. “Save & start now” activates when the live model worker is connected.")}</p>
           </form> : selected ? <>
             <header className="aw-assignment-header">
               <div><span className={`aw-state aw-state-${selected.status}`}>{stateLabel(selected.status)}</span><h2>{selected.title}</h2><p>{selected.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")} · {selected.profile_codes.length} {ar ? "مختص" : `specialist${selected.profile_codes.length === 1 ? "" : "s"}`} · {ar ? "أُنشئت" : "Created"} {date(selected.created_at)}</p></div>

@@ -65,11 +65,20 @@ export async function workspaceRead(request:NextRequest){
     WHERE workspace_id=$1 AND organization_id=$2 ORDER BY id LIMIT 100`,[selected.id,actor.organizationId]),
  ]):[{rows:[]},{rows:[]}];
  const c=control.rows[0];const isConfigured=configured();
+ // Never leak internal latch/reason strings to the customer. A failed model
+ // task latches the control row; the UI receives calm, actionable copy instead.
+ const runtimeReason=!isConfigured
+  ?"AI drafting is in draft-save mode on this environment. You can create and save assignment briefs now; automated specialist generation will run once the model worker is active."
+  :(!c?.enabled||c.emergency_stop)
+   ?"AI specialist generation is temporarily paused. You can still create and save assignment briefs while generation resumes."
+   :c.platform_stop
+    ?"AI specialist generation is paused by the platform while operations are reviewed. Your briefs can still be saved."
+    :"AI specialists are ready. Generated work stays as a reviewable proposal until a person approves it.";
  return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
   assignments:list.rows,selected:selected?{...selected,steps:steps.rows,events:events.rows}:null,
   can_manage:actor.role==="owner",can_review:["owner","reviewer"].includes(actor.role),
   runtime:{ready:isConfigured&&c?.enabled&&!c.emergency_stop&&!c.platform_stop,
-   reason:!isConfigured?"The model worker is not connected yet.":!c?.enabled||c.emergency_stop?c?.reason:c.platform_stop?"Platform emergency stop is active.":"Draft-only model worker configured. Real task results are shown below; no provider actions.",
+   reason:runtimeReason,
    provider:selectedProvider()==="gemini"?workspaceManifest.provider.name:"Gemma",model:selectedProvider()==="gemini"?workspaceManifest.provider.model:"gemma4-26b-a4b-canary",external_actions:false,quality_certified:false}};
 }
 
