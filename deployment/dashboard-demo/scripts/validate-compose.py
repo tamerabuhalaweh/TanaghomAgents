@@ -94,6 +94,9 @@ assert env["PG_POOL_MAX"] == "25", "dashboard pool ceiling must be explicit"
 assert auth_env["AUTH_DB_POOL_MAX"] == "15", "auth pool ceiling must be explicit"
 assert auth_env["AUTH_SCRYPT_CONCURRENCY"] == "4", "scrypt concurrency must be explicit"
 assert auth_env["AUTH_SCRYPT_MAX_QUEUE"] == "32", "scrypt queue must be explicit"
+assert env.get("POSTIZ_INTERNAL_BASE_URL"), "Postiz internal API base must be explicit"
+assert env.get("POSTIZ_DATABASE_URL", "").startswith(("postgresql://", "postgres://")), \
+    "Postiz tenant provisioning needs a PostgreSQL URL"
 assert float(services["auth"]["cpus"]) >= 1.0, "auth needs at least one CPU"
 assert int(services["auth"]["mem_limit"]) >= 512 * 1024 * 1024, "auth needs 512m for scrypt"
 if "caddy" in services:

@@ -1,12 +1,13 @@
 "use client";
 
-import { BellRing, Bot, Building2, KeyRound, LibraryBig, PlugZap } from "lucide-react";
+import { BellRing, Bot, Building2, KeyRound, LibraryBig, PlugZap, Share2 } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const links = [
   { href: "/onboarding", label: "Business profile", icon: Building2 },
   { href: "/settings/integrations", label: "Integrations", icon: PlugZap },
+  { href: "/settings/channels", label: "Channels", icon: Share2 },
   { href: "/settings/skills", label: "Skill Library", icon: LibraryBig },
   { href: "/settings/agents", label: "Agent Studio", icon: Bot },
   { href: "/settings/notifications", label: "Notifications", icon: BellRing },

@@ -34,6 +34,7 @@
     "test": "node --test tests/*.test.mjs",
     "test:auth-email": "node scripts/auth-email-integration.mjs",
     "test:session-touch": "node scripts/session-touch-integration.mjs",
+    "test:postiz-tenant": "node scripts/postiz-tenant-integration.mjs",
     "test:database": "node scripts/database-test.mjs",
     "test:dashboard-api": "node scripts/dashboard-api-integration.mjs",
     "generate:phase3-workflows": "node scripts/generate-phase3-workflows.mjs",
