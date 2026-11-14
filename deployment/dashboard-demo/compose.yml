@@ -19,9 +19,11 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    # Host-calibrated for 2 vCPU / 7.6 GiB: the Tanaghom limits total 1.6 vCPU
-    # and 2.4 GiB, leaving headroom for the co-located Postiz stack.
-    cpus: 0.25
+    # Host-calibrated for 2 vCPU / 7.6 GiB: mem_limit ceilings total 2.4 GiB.
+    # cpus values are independent CFS burst ceilings, not a summed reservation;
+    # an active service can use an idle core instead of being limited to a
+    # fixed slice of every 100ms period.
+    cpus: 1.0
     mem_limit: 576m
     pids_limit: 150
     security_opt: [no-new-privileges:true]
@@ -141,7 +143,7 @@ services:
     tmpfs: ["/tmp:size=64m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 0.05
+    cpus: 0.5
     mem_limit: 320m
     pids_limit: 120
     healthcheck:
@@ -244,7 +246,7 @@ services:
     tmpfs: ["/tmp:size=64m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 0.2
+    cpus: 1.25
     mem_limit: 768m
     mem_reservation: 192m
     pids_limit: 200
@@ -283,7 +285,7 @@ services:
     read_only: true
     tmpfs: ["/tmp:size=32m,mode=1777"]
     security_opt: [no-new-privileges:true]
-    cpus: 0.05
+    cpus: 0.5
     mem_limit: 192m
     pids_limit: 100
     healthcheck:
@@ -314,7 +316,7 @@ services:
     tmpfs: ["/tmp:size=16m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 0.05
+    cpus: 0.5
     mem_limit: 96m
     pids_limit: 80
     logging: *bounded-logging
