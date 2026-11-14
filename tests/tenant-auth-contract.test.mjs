@@ -53,7 +53,7 @@ test("authorization is derived from the live session row and tenant membership",
   assert.match(authorization, /last_seen_at > now\(\) - interval '30 minutes'/);
   assert.match(authorization, /JOIN tanaghom\.memberships m/);
   assert.match(authorization, /m\.is_active/);
-  assert.match(authorization, /au\.organization_id = \$2::uuid/);
+  assert.match(authorization, /au\.organization_id = \$3::uuid/);
   assert.match(authorization, /identity\.organization_id/);
   assert.doesNotMatch(authorization, /searchParams|body\.organization/);
 });

@@ -493,7 +493,11 @@ means that key is missing from the running container.
 `demo-backup.sh` is the verified snapshot; `scheduled-backup.sh` wraps it, adds a
 `postiz-postgres` dump (checksummed and re-listed with `pg_restore -l`) and prunes
 old snapshots while keeping the newest `TANAGHOM_BACKUP_RETENTION` (default 7) and
-every `latest` target. Run it by hand:
+every `latest` target. Each retained snapshot carries a full `rustfs.tar`, so the
+retention multiplier is roughly 7x the newest snapshot; `demo-backup.sh` refuses
+before writing unless the volume has `TANAGHOM_BACKUP_MIN_FREE_MB` (default 2048)
+plus twice the newest snapshot's size free. The wrapper prints
+`BACKUP_DISK_STATUS avail_mb=... backup_root_mb=...` after pruning. Run it by hand:
 
 ```sh
 TANAGHOM_DEMO_ROOT=/home/ubuntu/tanaghom-demo \

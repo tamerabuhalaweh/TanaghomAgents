@@ -71,10 +71,16 @@ function databaseUrl() {
   throw new StoreError("auth database is not configured");
 }
 
+export function authPoolMax(env = process.env) {
+  const parsed = Number.parseInt(env.AUTH_DB_POOL_MAX ?? "", 10);
+  if (!Number.isFinite(parsed)) return 15;
+  return Math.min(40, Math.max(4, parsed));
+}
+
 export function createUserStore({ legacyFile, seedFile } = {}) {
   const pool = new Pool({
     connectionString: databaseUrl(),
-    max: 4,
+    max: authPoolMax(),
     idleTimeoutMillis: 30_000,
     connectionTimeoutMillis: 5_000,
     application_name: "tanaghom-auth",

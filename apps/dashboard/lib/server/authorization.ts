@@ -86,46 +86,61 @@ export async function requireTenant(request: NextRequest): Promise<TenantContext
     throw new AuthenticationError("Session is missing its tenant binding");
   }
 
-  // Sliding idle window: a session that has not been refreshed for 30 minutes
-  // stops authorizing requests, and an expired row revokes the cookie flow.
-  const session = await database().query<{ id: string }>(
-    `UPDATE tanaghom.sessions
-        SET last_seen_at = now()
-      WHERE id = $1::uuid
-        AND user_id = $2::uuid
-        AND organization_id = $3::uuid
-        AND expires_at > now()
-        AND last_seen_at > now() - interval '30 minutes'
-      RETURNING id`,
+  // One round trip proves the live session, checks the complete membership and
+  // user state, and touches last_seen_at only when it is at least 60 seconds old.
+  // A deactivated membership or disabled user still returns the valid_session
+  // row, with a null profile, so it maps to 403 rather than a false 401.
+  const session = await database().query<{
+    session_id: string;
+    id: string | null;
+    organization_id: string | null;
+    display_name: string | null;
+    role: ApplicationRole | null;
+  }>(
+    `WITH valid_session AS (
+       SELECT s.id, s.last_seen_at
+         FROM tanaghom.sessions s
+        WHERE s.id = $1::uuid
+          AND s.user_id = $2::uuid
+          AND s.organization_id = $3::uuid
+          AND s.expires_at > now()
+          AND s.last_seen_at > now() - interval '30 minutes'
+     ),
+     touched_session AS (
+       UPDATE tanaghom.sessions
+          SET last_seen_at = now()
+        WHERE id = (SELECT id FROM valid_session WHERE last_seen_at <= now() - interval '60 seconds')
+        RETURNING id
+     ),
+     authorized_member AS (
+       SELECT au.id, au.organization_id, au.display_name, au.role
+         FROM tanaghom.app_users au
+         JOIN tanaghom.memberships m
+           ON m.user_id = au.auth_subject
+          AND m.organization_id = au.organization_id
+          AND m.is_active
+         JOIN tanaghom.users u
+           ON u.id = au.auth_subject
+          AND u.disabled = false
+        WHERE au.auth_subject = $2::uuid
+          AND au.organization_id = $3::uuid
+          AND au.kind = 'human'
+          AND au.is_active = true
+          AND au.accepted_at IS NOT NULL
+     )
+     SELECT vs.id AS session_id, am.id, am.organization_id, am.display_name, am.role
+       FROM valid_session vs
+       LEFT JOIN authorized_member am ON true`,
     [sessionId, identity.sub, organizationId],
   );
-  if (!session.rows[0]) {
+
+  if (session.rows.length === 0) {
     throw new AuthenticationError("Session expired");
   }
-
-  const membership = await database().query<{
-    id: string;
-    organization_id: string;
-    display_name: string;
-    role: ApplicationRole;
-  }>(
-    `SELECT au.id, au.organization_id, au.display_name, au.role
-       FROM tanaghom.app_users au
-       JOIN tanaghom.memberships m
-         ON m.user_id = au.auth_subject
-        AND m.organization_id = au.organization_id
-        AND m.is_active
-       JOIN tanaghom.users u ON u.id = au.auth_subject AND u.disabled = false
-      WHERE au.auth_subject = $1::uuid
-        AND au.organization_id = $2::uuid
-        AND au.kind = 'human'
-        AND au.is_active = true
-        AND au.accepted_at IS NOT NULL`,
-    [identity.sub, organizationId],
-  );
-
-  const user = membership.rows[0];
-  if (!user) throw new AuthorizationError("User is not authorized");
+  const user = session.rows[0];
+  if (!user.id || !user.organization_id || !user.display_name || !user.role) {
+    throw new AuthorizationError("User is not authorized");
+  }
 
   return {
     id: user.id,
@@ -133,6 +148,6 @@ export async function requireTenant(request: NextRequest): Promise<TenantContext
     organizationId: user.organization_id,
     displayName: user.display_name,
     role: user.role,
-    sessionId,
+    sessionId: user.session_id,
   };
 }

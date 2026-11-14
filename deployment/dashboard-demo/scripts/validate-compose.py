@@ -90,6 +90,12 @@ assert env["APP_ENV"] == "demo" and env["NODE_ENV"] == "production"
 auth_env = services["auth"]["environment"]
 assert auth_env.get("APP_BASE_URL") == env["APP_BASE_URL"], \
     "auth and dashboard APP_BASE_URL must match"
+assert env["PG_POOL_MAX"] == "25", "dashboard pool ceiling must be explicit"
+assert auth_env["AUTH_DB_POOL_MAX"] == "15", "auth pool ceiling must be explicit"
+assert auth_env["AUTH_SCRYPT_CONCURRENCY"] == "4", "scrypt concurrency must be explicit"
+assert auth_env["AUTH_SCRYPT_MAX_QUEUE"] == "32", "scrypt queue must be explicit"
+assert float(services["auth"]["cpus"]) >= 1.0, "auth needs at least one CPU"
+assert int(services["auth"]["mem_limit"]) >= 512 * 1024 * 1024, "auth needs 512m for scrypt"
 if "caddy" in services:
     # A public deployment must issue links and secure cookies for the public
     # origin, not the loopback listener behind the proxy.
