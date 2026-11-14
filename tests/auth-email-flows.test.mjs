@@ -129,3 +129,31 @@ test("public auth pages, proxies, and public-route allowances are wired", async 
   assert.match(mailer, /AbortSignal\.timeout\(SEND_TIMEOUT_MS\)/);
   assert.doesNotMatch(mailer, /console\.log\([^)]*token/i);
 });
+
+test("invitations are non-destructive and auth can reach the email provider", async () => {
+  const compose = await read("deployment/dashboard-demo/compose.yml");
+  const authSection = compose.slice(compose.indexOf("\n  auth:"), compose.indexOf("\n  storage:"));
+  assert.ok(authSection.includes("networks: [backend, edge]"), "auth needs outbound HTTPS egress");
+  assert.ok(!/\n    ports:/.test(authSection), "auth must stay off host ports");
+  assert.ok(authSection.includes("APP_BASE_URL: ${TANAGHOM_DEMO_BASE_URL:-http://127.0.0.1:3210}"));
+  assert.ok(authSection.includes("auth_email_api_key"), "the optional key file must be mounted");
+
+  const store = await read("deployment/dashboard-demo/auth/store.mjs");
+  assert.match(store, /async createInvitedUser/);
+  assert.match(store, /ON CONFLICT \(email\) DO NOTHING/);
+  const server = await read("deployment/dashboard-demo/auth/server.mjs");
+  const invite = server.slice(server.indexOf("async function handleInvite"), server.indexOf("async function handleAdminDelete"));
+  assert.match(invite, /createInvitedUser/);
+  assert.doesNotMatch(invite, /store\.upsert/);
+  assert.match(invite, /email_already_added/);
+
+  const team = await read("apps/dashboard/lib/server/team-management.ts");
+  assert.match(team, /SELECT 1 FROM tanaghom\.app_users WHERE lower\(email\) = \$1/);
+  assert.doesNotMatch(team, /organization_id = \$1 AND lower\(email\) = \$2/);
+  const admin = await read("apps/dashboard/lib/server/supabase-admin.ts");
+  assert.match(admin, /email_already_added/);
+
+  const validator = await read("deployment/dashboard-demo/scripts/validate-compose.py");
+  assert.match(validator, /auth and dashboard APP_BASE_URL must match/);
+  assert.match(validator, /auth needs the non-internal edge network/);
+});

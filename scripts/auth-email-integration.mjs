@@ -202,21 +202,61 @@ try {
   const resetLimited = await api("/reset-password", { token: "invalid-token-that-is-long-enough", password: "Another-horse-battery-staple-9" }, { address: resetAddress });
   assert.equal(resetLimited.status, 429);
 
-  const inviteEmail = `invite-${Date.now()}@example.test`;
-  const invited = await store.upsert({
-    email: inviteEmail,
-    displayName: "Invited Person",
-    password: "Temporary-invite-secret-9",
-    mustChangePassword: true,
+  const beforeInvite = await pool.query(
+    "SELECT password_hash, session_epoch FROM tanaghom.users WHERE id = $1",
+    [resetId],
+  );
+  const beforeSessions = await pool.query(
+    "SELECT count(*)::int AS count FROM tanaghom.sessions WHERE user_id = $1 AND expires_at > now()",
+    [resetId],
+  );
+  const beforeTokens = await pool.query(
+    "SELECT count(*)::int AS count FROM tanaghom.auth_tokens WHERE user_id = $1 AND purpose = 'invite'",
+    [resetId],
+  );
+  const duplicateInvite = await api("/invite", {
+    email: resetEmail,
+    display_name: "Cross Tenant Attacker",
+  }, {
+    address: "198.51.100.75",
+    headers: { "x-auth-internal-token": internalToken },
   });
-  const inviteToken = await store.issueAuthToken({ userId: invited.sub, purpose: "invite" });
+  assert.equal(duplicateInvite.status, 409, JSON.stringify(duplicateInvite.body));
+  assert.equal(duplicateInvite.body.error, "email_already_added");
+  const afterInvite = await pool.query(
+    "SELECT password_hash, session_epoch FROM tanaghom.users WHERE id = $1",
+    [resetId],
+  );
+  const afterSessions = await pool.query(
+    "SELECT count(*)::int AS count FROM tanaghom.sessions WHERE user_id = $1 AND expires_at > now()",
+    [resetId],
+  );
+  const afterTokens = await pool.query(
+    "SELECT count(*)::int AS count FROM tanaghom.auth_tokens WHERE user_id = $1 AND purpose = 'invite'",
+    [resetId],
+  );
+  assert.deepEqual(afterInvite.rows[0], beforeInvite.rows[0], "an invitation must not rotate an existing password");
+  assert.equal(afterSessions.rows[0].count, beforeSessions.rows[0].count, "an invitation must not revoke existing sessions");
+  assert.equal(afterTokens.rows[0].count, beforeTokens.rows[0].count, "an invitation must not issue a token for an existing user");
+
+  const inviteEmail = `invite-${Date.now()}@example.test`;
+  const invited = await api("/invite", {
+    email: inviteEmail,
+    display_name: "Invited Person",
+  }, {
+    address: "198.51.100.80",
+    headers: { "x-auth-internal-token": internalToken },
+  });
+  assert.equal(invited.status, 201, JSON.stringify(invited.body));
+  assert.equal(invited.body.emailDelivery, "skipped_unconfigured");
+  const inviteToken = await store.issueAuthToken({ userId: invited.body.id, purpose: "invite" });
   const accepted = await api("/accept-invite", {
     token: inviteToken.token,
     password: "Accepted-horse-battery-9",
     display_name: "Accepted Person",
   }, { address: "198.51.100.70" });
   assert.equal(accepted.status, 200, JSON.stringify(accepted.body));
-  const acceptedRow = await pool.query("SELECT email_verified_at, full_name FROM tanaghom.users WHERE id = $1", [invited.sub]);
+  const acceptedRow = await pool.query("SELECT email_verified_at, full_name FROM tanaghom.users WHERE id = $1", [invited.body.id]);
   assert.ok(acceptedRow.rows[0].email_verified_at);
   assert.equal(acceptedRow.rows[0].full_name, "Accepted Person");
 

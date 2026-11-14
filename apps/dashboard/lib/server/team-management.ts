@@ -49,9 +49,11 @@ export async function inviteTeamMember(request: NextRequest) {
     throw new TeamRequestError("invalid_invitation", 400);
   }
 
+  // app_users.email is globally unique. Reject an identity that already belongs
+  // to any tenant before the auth service can see it.
   const duplicate = await database().query(
-    `SELECT 1 FROM tanaghom.app_users WHERE organization_id = $1 AND lower(email) = $2`,
-    [owner.organizationId, email],
+    `SELECT 1 FROM tanaghom.app_users WHERE lower(email) = $1`,
+    [email],
   );
   if (duplicate.rows[0]) throw new TeamRequestError("email_already_added", 409);
 

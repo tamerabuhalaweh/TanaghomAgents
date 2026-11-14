@@ -16,7 +16,12 @@ export const AUTH_TOKEN_TTL_MS = Object.freeze({
 });
 const AUTH_TOKEN_PURPOSES = new Set(Object.keys(AUTH_TOKEN_TTL_MS));
 
-export class StoreError extends Error {}
+export class StoreError extends Error {
+  constructor(code) {
+    super(code);
+    this.code = code;
+  }
+}
 
 export class AuthTokenError extends StoreError {
   constructor(code = "invalid_or_expired_token") {
@@ -285,6 +290,29 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
          RETURNING id`,
         [subject, normalized, passwordHash, displayName, disabled, mustChangePassword],
       );
+      return this.findBySub(result.rows[0].id);
+    },
+    async createInvitedUser({ email, displayName = null, password }) {
+      const normalized = normalizeEmail(email);
+      if (!normalized.includes("@")) throw new StoreError("invalid email");
+      const name = typeof displayName === "string" ? displayName.trim().slice(0, 120) : "";
+      if (name.length < 2) throw new StoreError("invalid_display_name");
+      const policy = passwordPolicyError(password, normalized);
+      if (policy) throw new StoreError(policy);
+      const passwordHash = await hashPassword(password);
+      // An invitation must never update an existing account. A conflicting email
+      // is a global identity collision, not a reason to rotate its password or
+      // invalidate its sessions.
+      const result = await pool.query(
+        `INSERT INTO tanaghom.users
+           (email, password_hash, full_name, disabled, must_change_password,
+            session_epoch, password_changed_at)
+         VALUES ($1, $2, $3, false, true, 1, now())
+         ON CONFLICT (email) DO NOTHING
+         RETURNING id`,
+        [normalized, passwordHash, name],
+      );
+      if (!result.rows[0]) throw new StoreError("email_taken");
       return this.findBySub(result.rows[0].id);
     },
     async setInitialPassword(email, password) {

@@ -306,9 +306,11 @@ AUTH_EMAIL_FROM='Tanaghom <noreply@customer.example>'
 AUTH_EMAIL_API_KEY=...
 ```
 
-Then recreate the auth container. For a mounted secret instead, set
-`AUTH_EMAIL_API_KEY_FILE` to the file path and add that file as a Compose secret;
-the default path is `/run/secrets/auth_email_api_key`. `webhook` mode posts
+Then recreate the auth container. The deploy script provisions an empty
+`runtime/secrets/auth_email_api_key` and mounts it as
+`/run/secrets/auth_email_api_key`; place the Resend key there if you prefer a
+file over `AUTH_EMAIL_API_KEY`. The mailer falls back to the environment value
+when the mounted file is empty. `webhook` mode posts
 `{event,purpose,to,subject,html,text}` to `AUTH_EMAIL_WEBHOOK_URL` with an
 optional bearer token. No provider credentials belong in tracked files.
 

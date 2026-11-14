@@ -85,7 +85,10 @@ services:
       AUTH_EMAIL_WEBHOOK_URL: ${AUTH_EMAIL_WEBHOOK_URL:-}
       AUTH_EMAIL_WEBHOOK_TOKEN: ${AUTH_EMAIL_WEBHOOK_TOKEN:-}
       AUTH_EMAIL_API_KEY_FILE: ${AUTH_EMAIL_API_KEY_FILE:-/run/secrets/auth_email_api_key}
-    secrets: [auth_users, auth_private_key, auth_internal_token, database_url]
+      # Recovery and invitation links must use the public HTTPS origin, not the
+      # loopback address of the dashboard behind Caddy.
+      APP_BASE_URL: ${TANAGHOM_DEMO_BASE_URL:-http://127.0.0.1:3210}
+    secrets: [auth_users, auth_private_key, auth_internal_token, database_url, auth_email_api_key]
     volumes:
       - ./auth/server.mjs:/app/auth/server.mjs:ro
       - ./auth/passwords.mjs:/app/auth/passwords.mjs:ro
@@ -96,7 +99,9 @@ services:
       # Legacy JSON accounts are imported into Postgres once, then this mount is
       # read-only and no longer authoritative.
       - ${TANAGHOM_DEMO_ROOT:-/home/ubuntu/tanaghom-demo}/runtime/auth:/data:ro
-    networks: [backend]
+    # Keep the HTTP listener off the host, but attach the non-internal edge
+    # network so Resend/webhook delivery has outbound HTTPS egress.
+    networks: [backend, edge]
     read_only: true
     tmpfs: ["/tmp:size=16m,mode=1777"]
     cap_drop: [ALL]
@@ -358,3 +363,5 @@ secrets:
     file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/workspace_worker_token
   gemini_api_key:
     file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/gemini_api_key
+  auth_email_api_key:
+    file: ${TANAGHOM_DEMO_SECRETS_DIR:?set TANAGHOM_DEMO_SECRETS_DIR}/auth_email_api_key

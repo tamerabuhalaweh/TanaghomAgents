@@ -46,6 +46,9 @@ printf '%s\n' "$workspace_password" > "$directory/workspace_password"
 printf '%s\n' 'http://auth:43191' > "$directory/supabase_url"
 printf '%s\n' 'demo-publishable-key' > "$directory/supabase_publishable_key"
 printf '%s\n' 'http://auth:43191/auth/v1/.well-known/jwks.json' > "$directory/supabase_jwks_url"
+# Optional Resend key. The deployment creates this empty placeholder too, so an
+# existing host can add the key later without changing the Compose secret name.
+: > "$directory/auth_email_api_key"
 printf '%s\n' "$s3_access_key" > "$directory/s3_access_key"
 printf '%s\n' "$s3_secret_key" > "$directory/s3_secret_key"
 
@@ -94,6 +97,7 @@ chmod 0444 \
   "$directory/workspace_password" \
   "$directory/workspace_database_url" \
   "$directory/workspace_worker_token" \
-  "$directory/gemini_api_key"
+  "$directory/gemini_api_key" \
+  "$directory/auth_email_api_key"
 chmod 0600 "$directory/demo-credentials.txt"
 echo "Demo runtime secrets created. Credentials are in $directory/demo-credentials.txt"

@@ -46,7 +46,7 @@ export async function inviteAuthUser(input: {
   }
   if (!response.ok) {
     const duplicate = response.status === 422 || response.status === 409;
-    throw new SupabaseAdminError(duplicate ? "auth_user_already_exists" : "invitation_failed", duplicate ? 409 : 502);
+    throw new SupabaseAdminError(duplicate ? "email_already_added" : "invitation_failed", duplicate ? 409 : 502);
   }
   const payload = await response.json() as InvitedAuthUser | { user?: InvitedAuthUser };
   const user: InvitedAuthUser | undefined = "user" in payload

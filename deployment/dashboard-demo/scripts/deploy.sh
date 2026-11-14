@@ -99,6 +99,14 @@ if [ ! -w "$secrets_dir" ]; then
   exit 1
 fi
 augment_workspace_secrets
+# Optional Resend key mounted as a Compose secret. Keep an empty placeholder so
+# Compose can validate before the owner supplies credentials; the mailer falls
+# back to AUTH_EMAIL_API_KEY when this file is empty.
+if [ -L "$secrets_dir/auth_email_api_key" ] || [ -d "$secrets_dir/auth_email_api_key" ]; then
+  echo "unsafe optional auth email secret" >&2
+  exit 1
+fi
+if [ ! -e "$secrets_dir/auth_email_api_key" ]; then : > "$secrets_dir/auth_email_api_key"; fi
 chmod 0700 "$secrets_dir"
 missing=""
 for name in $required_secrets; do
@@ -113,7 +121,7 @@ if [ -n "$missing" ]; then
   exit 1
 fi
 for name in $required_secrets; do chmod 0444 "$secrets_dir/$name"; done
-chmod 0444 "$secrets_dir/gemini_api_key"
+chmod 0444 "$secrets_dir/gemini_api_key" "$secrets_dir/auth_email_api_key"
 if [ -e "$secrets_dir/demo-credentials.txt" ]; then chmod 0600 "$secrets_dir/demo-credentials.txt"; fi
 export TANAGHOM_DEMO_SECRETS_DIR="$secrets_dir"
 export TANAGHOM_DEMO_RELEASE="$release"

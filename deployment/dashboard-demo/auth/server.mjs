@@ -768,12 +768,20 @@ async function handleInvite(request, response) {
     return;
   }
   const password = randomBytes(24).toString("base64url");
-  const user = await store.upsert({
-    email,
-    displayName: typeof body.display_name === "string" ? body.display_name : null,
-    password,
-    mustChangePassword: true,
-  });
+  let user;
+  try {
+    user = await store.createInvitedUser({
+      email,
+      displayName: typeof body.display_name === "string" ? body.display_name : null,
+      password,
+    });
+  } catch (error) {
+    if (error instanceof StoreError && error.code === "email_taken") {
+      send(response, 409, { error: "email_already_added" });
+      return;
+    }
+    throw error;
+  }
   let emailDelivery = "failed";
   try {
     const issued = await store.issueAuthToken({ userId: user.sub, purpose: "invite" });
