@@ -55,6 +55,27 @@ The runtime also contains `workspace_password`, `workspace_database_url`,
 workspace files to an existing #243 runtime without overwriting existing secrets. It never creates
 a fake provider key.
 
+### Stripe billing secrets
+
+The demo creates two empty optional placeholders beside the other runtime files:
+
+```text
+/home/ubuntu/tanaghom-demo/runtime/secrets/stripe_secret_key
+/home/ubuntu/tanaghom-demo/runtime/secrets/stripe_webhook_secret
+```
+
+Both are mounted read-only at `/run/secrets/stripe_secret_key` and
+`/run/secrets/stripe_webhook_secret`. Write the keys with `install -m 0444` (or copy then
+`chmod 0444`) so the non-root dashboard can read them. Never put either value in `.env`, a
+Compose file, logs, issue comments, or chat. The public price IDs and the optional tax/currency
+settings belong in the untracked host `.env` (see `.env.example`); they are not secrets.
+
+Until `stripe_secret_key` and at least one `STRIPE_PRICE_ID_*` are set, `GET /api/billing` returns
+`200` with `billing_configured: false` and checkout/portal routes return
+`409 billing_not_configured`. Stripe sends `POST /api/webhooks/stripe`; configure the endpoint in
+the Stripe Dashboard and copy its signing secret into `stripe_webhook_secret`. Signatures older or
+newer than five minutes are rejected, and the endpoint accepts at most 256 KiB.
+
 ## Gemini key and workspace activation
 
 The workspace is disabled by default and makes no provider call until an operator explicitly

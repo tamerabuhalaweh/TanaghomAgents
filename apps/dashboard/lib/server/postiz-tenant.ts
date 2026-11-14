@@ -418,6 +418,12 @@ export async function syncPublishingChannels(
   const client = await database().connect();
   try {
     await client.query("BEGIN");
+    // Serialise concurrent channel refreshes for one tenant. Without the lock
+    // two requests can interleave DELETE + INSERT and duplicate/lose rows.
+    await client.query(
+      "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))",
+      [`postiz-sync:${organizationId}`],
+    );
     await client.query(
       "DELETE FROM tanaghom.publishing_channels WHERE organization_id = $1 AND provider = 'postiz'",
       [organizationId],

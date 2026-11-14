@@ -85,6 +85,12 @@ augment_workspace_secrets() {
   if [ ! -e "$secrets_dir/gemini_api_key" ]; then
     : > "$secrets_dir/gemini_api_key"
   fi
+  if [ ! -e "$secrets_dir/stripe_secret_key" ]; then
+    : > "$secrets_dir/stripe_secret_key"
+  fi
+  if [ ! -e "$secrets_dir/stripe_webhook_secret" ]; then
+    : > "$secrets_dir/stripe_webhook_secret"
+  fi
 }
 if [ ! -d "$secrets_dir" ]; then
   if docker volume inspect tanaghom-dashboard-demo-pgdata >/dev/null 2>&1; then
@@ -107,6 +113,13 @@ if [ -L "$secrets_dir/auth_email_api_key" ] || [ -d "$secrets_dir/auth_email_api
   exit 1
 fi
 if [ ! -e "$secrets_dir/auth_email_api_key" ]; then : > "$secrets_dir/auth_email_api_key"; fi
+for name in stripe_secret_key stripe_webhook_secret; do
+  if [ -L "$secrets_dir/$name" ] || [ -d "$secrets_dir/$name" ]; then
+    echo "unsafe optional Stripe secret: $name" >&2
+    exit 1
+  fi
+  if [ ! -e "$secrets_dir/$name" ]; then : > "$secrets_dir/$name"; fi
+done
 chmod 0700 "$secrets_dir"
 missing=""
 for name in $required_secrets; do
@@ -121,7 +134,8 @@ if [ -n "$missing" ]; then
   exit 1
 fi
 for name in $required_secrets; do chmod 0444 "$secrets_dir/$name"; done
-chmod 0444 "$secrets_dir/gemini_api_key" "$secrets_dir/auth_email_api_key"
+chmod 0444 "$secrets_dir/gemini_api_key" "$secrets_dir/auth_email_api_key" \
+  "$secrets_dir/stripe_secret_key" "$secrets_dir/stripe_webhook_secret"
 if [ -e "$secrets_dir/demo-credentials.txt" ]; then chmod 0600 "$secrets_dir/demo-credentials.txt"; fi
 export TANAGHOM_DEMO_SECRETS_DIR="$secrets_dir"
 export TANAGHOM_DEMO_RELEASE="$release"

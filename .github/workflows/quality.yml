@@ -658,6 +658,7 @@ jobs:
       - run: psql "$DATABASE_URL" -X -v ON_ERROR_STOP=1 -f packages/database/seeds/staging.sql
       - run: npm run build:dashboard
       - run: npm run test:dashboard-api
+      - run: npm run test:stripe-billing
 
   creative-foundation-integration:
     runs-on: ubuntu-latest

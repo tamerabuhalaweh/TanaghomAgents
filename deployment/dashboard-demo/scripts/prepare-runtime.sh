@@ -49,6 +49,10 @@ printf '%s\n' 'http://auth:43191/auth/v1/.well-known/jwks.json' > "$directory/su
 # Optional Resend key. The deployment creates this empty placeholder too, so an
 # existing host can add the key later without changing the Compose secret name.
 : > "$directory/auth_email_api_key"
+# Optional Stripe billing secrets. Empty placeholders keep Compose valid and
+# make checkout report as unconfigured until the owner supplies real values.
+: > "$directory/stripe_secret_key"
+: > "$directory/stripe_webhook_secret"
 printf '%s\n' "$s3_access_key" > "$directory/s3_access_key"
 printf '%s\n' "$s3_secret_key" > "$directory/s3_secret_key"
 
@@ -98,6 +102,8 @@ chmod 0444 \
   "$directory/workspace_database_url" \
   "$directory/workspace_worker_token" \
   "$directory/gemini_api_key" \
-  "$directory/auth_email_api_key"
+  "$directory/auth_email_api_key" \
+  "$directory/stripe_secret_key" \
+  "$directory/stripe_webhook_secret"
 chmod 0600 "$directory/demo-credentials.txt"
 echo "Demo runtime secrets created. Credentials are in $directory/demo-credentials.txt"
