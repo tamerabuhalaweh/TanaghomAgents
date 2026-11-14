@@ -100,7 +100,7 @@ let workerDb;
 try {
   migrate();
   const latestMigration = (await pool.query(`SELECT max(version) AS v FROM public.schema_migrations`)).rows[0].v;
-  assert.equal(latestMigration, "0040_creative_motion_render");
+  assert.equal(latestMigration, "0052_security_hardening");
   await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.down.sql`, "utf8"));
   console.log(`PASS unused ${latestMigration} down`);
   await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.up.sql`, "utf8"));

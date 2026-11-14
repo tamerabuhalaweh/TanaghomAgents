@@ -42,7 +42,7 @@ export async function runCreativeStudioBrowser({ dashboardOrigin, mintToken, sub
     await page.goto(`${dashboardOrigin}/creative/templates`, { waitUntil: "networkidle" });
     const templateName = `browser-tpl-${Date.now()}`;
     await page.getByLabel(/Name/).fill(templateName);
-    await page.getByLabel(/Spec/).fill('{"headline":"Browser"}');
+    await page.getByLabel(/Spec/).fill('{"locale":"en","direction":"ltr","canvas":{"width":1080,"height":1080},"nodes":[{"id":"headline","type":"text","x":40,"y":40,"width":800,"height":120,"text":"Browser"}]}');
     await page.getByRole("button", { name: "Save" }).click();
     await page.getByText("Template created.").waitFor();
 
