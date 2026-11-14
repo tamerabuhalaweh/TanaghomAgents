@@ -202,53 +202,68 @@ try {
   const resetLimited = await api("/reset-password", { token: "invalid-token-that-is-long-enough", password: "Another-horse-battery-staple-9" }, { address: resetAddress });
   assert.equal(resetLimited.status, 429);
 
+  const tenantAEmail = `tenanta-${Date.now()}@example.test`;
+  const tenantA = await signup(tenantAEmail, "198.51.100.71");
+  const tenantAId = await userId(tenantAEmail);
   const beforeInvite = await pool.query(
-    "SELECT password_hash, session_epoch FROM tanaghom.users WHERE id = $1",
-    [resetId],
+    "SELECT password_hash, session_epoch, full_name FROM tanaghom.users WHERE id = $1",
+    [tenantAId],
   );
   const beforeSessions = await pool.query(
     "SELECT count(*)::int AS count FROM tanaghom.sessions WHERE user_id = $1 AND expires_at > now()",
-    [resetId],
+    [tenantAId],
   );
   const beforeTokens = await pool.query(
     "SELECT count(*)::int AS count FROM tanaghom.auth_tokens WHERE user_id = $1 AND purpose = 'invite'",
-    [resetId],
+    [tenantAId],
   );
   const duplicateInvite = await api("/invite", {
-    email: resetEmail,
-    display_name: "Cross Tenant Attacker",
+    email: tenantAEmail,
+    data: { display_name: "Hijacked Name", application: "tanaghom" },
   }, {
     address: "198.51.100.75",
     headers: { "x-auth-internal-token": internalToken },
   });
   assert.equal(duplicateInvite.status, 409, JSON.stringify(duplicateInvite.body));
-  assert.equal(duplicateInvite.body.error, "email_already_added");
+  assert.deepEqual(duplicateInvite.body, { error: "email_already_added" });
   const afterInvite = await pool.query(
-    "SELECT password_hash, session_epoch FROM tanaghom.users WHERE id = $1",
-    [resetId],
+    "SELECT password_hash, session_epoch, full_name FROM tanaghom.users WHERE id = $1",
+    [tenantAId],
   );
   const afterSessions = await pool.query(
     "SELECT count(*)::int AS count FROM tanaghom.sessions WHERE user_id = $1 AND expires_at > now()",
-    [resetId],
+    [tenantAId],
   );
   const afterTokens = await pool.query(
     "SELECT count(*)::int AS count FROM tanaghom.auth_tokens WHERE user_id = $1 AND purpose = 'invite'",
-    [resetId],
+    [tenantAId],
   );
-  assert.deepEqual(afterInvite.rows[0], beforeInvite.rows[0], "an invitation must not rotate an existing password");
+  assert.deepEqual(afterInvite.rows[0], beforeInvite.rows[0], "an invitation must not rotate an existing password, epoch, or name");
   assert.equal(afterSessions.rows[0].count, beforeSessions.rows[0].count, "an invitation must not revoke existing sessions");
   assert.equal(afterTokens.rows[0].count, beforeTokens.rows[0].count, "an invitation must not issue a token for an existing user");
+
+  const stillAuthenticated = await fetch(`${base}/auth/v1/user`, {
+    headers: { Authorization: `Bearer ${tenantA.access_token}` },
+  });
+  assert.equal(stillAuthenticated.status, 200, "an invitation must not invalidate the existing access token");
+  const refreshed = await api("/token?grant_type=refresh_token", {
+    refresh_token: tenantA.refresh_token,
+  }, { address: "198.51.100.76" });
+  assert.equal(refreshed.status, 200, "an invitation must not disrupt the existing refresh token");
+  assert.notEqual(refreshed.body.refresh_token, tenantA.refresh_token, "refresh must still rotate cleanly");
 
   const inviteEmail = `invite-${Date.now()}@example.test`;
   const invited = await api("/invite", {
     email: inviteEmail,
-    data: { display_name: "Invited Person" },
+    data: { display_name: "Invited Person", application: "tanaghom" },
   }, {
     address: "198.51.100.80",
     headers: { "x-auth-internal-token": internalToken },
   });
   assert.equal(invited.status, 201, JSON.stringify(invited.body));
   assert.equal(invited.body.emailDelivery, "skipped_unconfigured");
+  const invitedRow = await pool.query("SELECT full_name FROM tanaghom.users WHERE id = $1", [invited.body.id]);
+  assert.equal(invitedRow.rows[0].full_name, "Invited Person");
   const inviteToken = await store.issueAuthToken({ userId: invited.body.id, purpose: "invite" });
   const accepted = await api("/accept-invite", {
     token: inviteToken.token,

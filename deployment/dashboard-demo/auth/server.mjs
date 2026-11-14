@@ -759,6 +759,17 @@ async function handleSessions(request, response) {
   send(response, 405, { error: "method_not_allowed" }, { Allow: "GET, DELETE" });
 }
 
+function createInvitationPassword(email) {
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    const candidate = randomBytes(24).toString("base64url");
+    if (!passwordPolicyError(candidate, email)) return candidate;
+  }
+  const local = email.split("@")[0].toLowerCase();
+  const fallback = randomBytes(32).toString("base64url").replaceAll(local, "");
+  if (!passwordPolicyError(fallback, email)) return fallback;
+  throw new Error("invitation_password_generation_failed");
+}
+
 async function handleInvite(request, response) {
   requireInternal(request);
   const body = await readJson(request);
@@ -767,21 +778,26 @@ async function handleInvite(request, response) {
     send(response, 400, { error: "invalid_email" });
     return;
   }
-  const password = randomBytes(24).toString("base64url");
-  const profile = body.data && typeof body.data === "object" ? body.data : {};
-  const displayName = typeof body.display_name === "string"
+  const password = createInvitationPassword(email);
+  const rawDisplayName = typeof body.display_name === "string"
     ? body.display_name
-    : typeof profile.display_name === "string" ? profile.display_name : null;
+    : typeof body.data?.display_name === "string"
+      ? body.data.display_name
+      : null;
   let user;
   try {
     user = await store.createInvitedUser({
       email,
-      displayName,
+      displayName: rawDisplayName,
       password,
     });
   } catch (error) {
     if (error instanceof StoreError && error.code === "email_taken") {
       send(response, 409, { error: "email_already_added" });
+      return;
+    }
+    if (error instanceof StoreError) {
+      send(response, 400, { error: error.code });
       return;
     }
     throw error;

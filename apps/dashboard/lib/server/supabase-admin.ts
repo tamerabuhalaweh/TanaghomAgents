@@ -36,6 +36,7 @@ export async function inviteAuthUser(input: {
       },
       body: JSON.stringify({
         email: input.email,
+        display_name: input.displayName,
         data: { display_name: input.displayName, application: "tanaghom" },
       }),
       cache: "no-store",
