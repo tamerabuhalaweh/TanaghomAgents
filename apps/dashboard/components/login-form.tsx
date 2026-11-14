@@ -45,7 +45,7 @@ export function LoginForm() {
       <div className="form-field">
         <div className="field-label-row">
           <label htmlFor="password">Password</label>
-          <span>Encrypted in transit</span>
+          <a className="field-link" href="/forgot-password">Forgot password?</a>
         </div>
         <input id="password" name="password" type="password" autoComplete="current-password" required />
       </div>

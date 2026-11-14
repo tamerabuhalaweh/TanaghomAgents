@@ -176,6 +176,11 @@ upgrade_existing_release() {
   # it, then serve the new release without touching postgres or the volumes.
   "${compose[@]}" up -d migrate >/dev/null ||
     upgrade_failed "the migrate service did not record its exited-0 state"
+  # Auth code is bind-mounted; a release that changes server.mjs/store.mjs/
+  # mailer.mjs must restart the process, not only rebuild the dashboard image.
+  "${compose[@]}" up -d --force-recreate auth >/dev/null ||
+    upgrade_failed "the auth service did not restart"
+  ( wait_healthy auth ) || upgrade_failed "the auth service did not become healthy"
   "${compose[@]}" up -d dashboard >/dev/null ||
     upgrade_failed "the dashboard did not start"
   ( wait_healthy dashboard ) || upgrade_failed "the dashboard did not become healthy"

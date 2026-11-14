@@ -11,8 +11,9 @@ import {
 import { readFileSync } from "node:fs";
 import { createServer } from "node:http";
 
+import { createMailer } from "./mailer.mjs";
 import { burnPasswordCheck, passwordPolicyError, verifyPassword } from "./passwords.mjs";
-import { createUserStore, StoreError } from "./store.mjs";
+import { AuthTokenError, createUserStore, StoreError } from "./store.mjs";
 
 const KEY_FILE = process.env.AUTH_PRIVATE_KEY_FILE ?? "/run/secrets/auth_private_key";
 const PORT = Number(process.env.DEMO_AUTH_PORT ?? "43191");
@@ -38,6 +39,16 @@ const LIMITS = {
 };
 const SIGNUP_LIMIT = positiveInt("AUTH_SIGNUP_IP_LIMIT", 5);
 const MAX_FAILURE_KEYS = positiveInt("AUTH_RATE_LIMIT_MAX_KEYS", 10_000);
+const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
+const ONE_HOUR_MS = 60 * 60 * 1000;
+const EMAIL_LIMITS = Object.freeze({
+  forgotIp: positiveInt("AUTH_FORGOT_IP_LIMIT", 5),
+  forgotPair: positiveInt("AUTH_FORGOT_PAIR_LIMIT", 3),
+  verifyIp: positiveInt("AUTH_VERIFY_IP_LIMIT", 10),
+  resetIp: positiveInt("AUTH_RESET_IP_LIMIT", 10),
+  resendUser: positiveInt("AUTH_RESEND_USER_LIMIT", 3),
+  resendIp: positiveInt("AUTH_RESEND_IP_LIMIT", 3),
+});
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) throw new Error("invalid demo auth port");
@@ -57,6 +68,7 @@ function readSecret(path) {
 }
 
 const internalToken = readSecret(INTERNAL_TOKEN_FILE);
+const authMailer = createMailer();
 const store = createUserStore({ legacyFile: STORE_FILE, seedFile: SEED_FILE });
 await store.load();
 if ((await store.count()) < 1) throw new Error("auth store must contain at least one account");
@@ -227,6 +239,42 @@ function noteLoginFailure(address, email) {
 
 function clearLoginFailures(address, email) {
   failures.delete(`pair|${address}|${email}`);
+}
+
+function rateLimitRetry(entries) {
+  let retryAfter = 0;
+  for (const [key, limit] of entries) {
+    const entry = currentFailure(key);
+    if (entry && entry.count >= limit) {
+      retryAfter = Math.max(retryAfter, Math.ceil((entry.resetAt - Date.now()) / 1000));
+    }
+  }
+  return retryAfter;
+}
+
+function noteRateLimit(key, windowMs) {
+  const entry = currentFailure(key);
+  if (!entry) storeFailure(key, { count: 1, resetAt: Date.now() + windowMs });
+  else entry.count += 1;
+}
+
+function takeRateLimit(entries, windowMs) {
+  const retryAfter = rateLimitRetry(entries);
+  if (retryAfter > 0) return retryAfter;
+  for (const [key] of entries) noteRateLimit(key, windowMs);
+  return 0;
+}
+
+function rateLimited(response, retryAfter) {
+  send(response, 429, { error: "too_many_attempts", retry_after: retryAfter }, { "Retry-After": String(retryAfter) });
+}
+
+function queuedDelivery() {
+  return authMailer.configured ? "queued" : "skipped_unconfigured";
+}
+
+function logEmailIssue(purpose, userId) {
+  console.error(JSON.stringify({ event: "auth_email_token_issue_failed", purpose, user_id: userId }));
 }
 
 function send(response, status, body, extraHeaders = {}) {
@@ -480,6 +528,153 @@ async function handleUserUpdate(request, response) {
   send(response, 200, { ok: true, reauthenticate: true });
 }
 
+async function handleVerifyEmail(request, response) {
+  const retryAfter = takeRateLimit(
+    [[`verify|ip|${addressOf(request)}`, EMAIL_LIMITS.verifyIp]],
+    FIFTEEN_MINUTES_MS,
+  );
+  if (retryAfter > 0) return rateLimited(response, retryAfter);
+  const body = await readJson(request);
+  const token = typeof body.token === "string" ? body.token : "";
+  try {
+    await store.consumeAuthToken({ token, purposes: ["verify_email"] });
+    send(response, 200, { ok: true, email_verified: true });
+  } catch (error) {
+    if (error instanceof AuthTokenError || error instanceof StoreError) {
+      send(response, 400, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+}
+
+async function handleVerifyEmailResend(request, response) {
+  let identity;
+  try {
+    identity = await requireIdentity(request);
+  } catch (error) {
+    send(response, 401, { error: error.code ?? "unauthenticated" });
+    return;
+  }
+  if (identity.user.emailVerifiedAt) {
+    send(response, 200, { ok: true, already_verified: true, emailDelivery: "not_required" });
+    return;
+  }
+  const address = addressOf(request);
+  const retryAfter = takeRateLimit(
+    [
+      [`resend|user|${identity.user.sub}`, EMAIL_LIMITS.resendUser],
+      [`resend|ip|${address}`, EMAIL_LIMITS.resendIp],
+    ],
+    ONE_HOUR_MS,
+  );
+  if (retryAfter > 0) return rateLimited(response, retryAfter);
+  let issued;
+  try {
+    issued = await store.issueAuthToken({
+      userId: identity.user.sub,
+      purpose: "verify_email",
+    });
+  } catch (error) {
+    logEmailIssue("verify_email", identity.user.sub);
+    send(response, 503, { error: "email_token_unavailable" });
+    return;
+  }
+  const emailDelivery = await authMailer.sendVerifyEmail({ to: identity.user.email, token: issued.token });
+  send(response, 200, { ok: true, emailDelivery });
+}
+
+async function handleForgotPassword(request, response) {
+  const body = await readJson(request).catch(() => ({}));
+  const email = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 320) : "";
+  const address = addressOf(request);
+  const retryAfter = takeRateLimit(
+    [
+      [`forgot|ip|${address}`, EMAIL_LIMITS.forgotIp],
+      [`forgot|pair|${address}|${email || "invalid"}`, EMAIL_LIMITS.forgotPair],
+    ],
+    FIFTEEN_MINUTES_MS,
+  );
+  if (retryAfter > 0) return rateLimited(response, retryAfter);
+
+  // Anti-enumeration: lookup, token issuance, and delivery happen only for an
+  // active account, but every path returns the same body. Delivery is queued so
+  // a configured provider cannot make a known address measurably slower.
+  const user = email ? await store.findByEmail(email) : null;
+  if (user && !user.disabled) {
+    try {
+      const issued = await store.issueAuthToken({ userId: user.sub, purpose: "reset_password" });
+      void authMailer.sendResetEmail({ to: user.email, token: issued.token }).catch(() => {});
+    } catch {
+      logEmailIssue("reset_password", user.sub);
+    }
+  }
+  send(response, 200, { ok: true, emailDelivery: queuedDelivery() });
+}
+
+async function handleResetPassword(request, response) {
+  const retryAfter = takeRateLimit(
+    [[`reset|ip|${addressOf(request)}`, EMAIL_LIMITS.resetIp]],
+    FIFTEEN_MINUTES_MS,
+  );
+  if (retryAfter > 0) return rateLimited(response, retryAfter);
+  const body = await readJson(request);
+  const token = typeof body.token === "string" ? body.token : "";
+  const password = typeof body.password === "string" ? body.password : "";
+  if (!token || !password) {
+    send(response, 400, { error: "password_and_token_required" });
+    return;
+  }
+  try {
+    // Invite links are accepted here too, so the customer can use one clean
+    // password screen whether the link was a reset or an invitation.
+    await store.consumeAuthToken({ token, purposes: ["reset_password", "invite"], password });
+    send(response, 200, { ok: true, reauthenticate: true });
+  } catch (error) {
+    if (error instanceof AuthTokenError || error instanceof StoreError) {
+      send(response, 400, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+}
+
+async function handleAcceptInvite(request, response) {
+  const retryAfter = takeRateLimit(
+    [[`invite|ip|${addressOf(request)}`, EMAIL_LIMITS.resetIp]],
+    FIFTEEN_MINUTES_MS,
+  );
+  if (retryAfter > 0) return rateLimited(response, retryAfter);
+  const body = await readJson(request);
+  const token = typeof body.token === "string" ? body.token : "";
+  const password = typeof body.password === "string" ? body.password : "";
+  const displayName = body.display_name;
+  if (!token || !password) {
+    send(response, 400, { error: "password_and_token_required" });
+    return;
+  }
+  try {
+    const accepted = await store.consumeAuthToken({
+      token,
+      purposes: ["invite"],
+      password,
+      displayName,
+    });
+    send(response, 200, {
+      ok: true,
+      sub: accepted.sub,
+      email: accepted.email,
+      email_verified: true,
+    });
+  } catch (error) {
+    if (error instanceof AuthTokenError || error instanceof StoreError) {
+      send(response, 400, { error: error.message });
+      return;
+    }
+    throw error;
+  }
+}
+
 async function handleSignup(request, response) {
   const address = addressOf(request);
   const retryAfter = signupBlock(address);
@@ -498,6 +693,17 @@ async function handleSignup(request, response) {
       locale: body.locale,
       userAgent: request.headers["user-agent"],
     });
+    let emailDelivery = queuedDelivery();
+    try {
+      const issued = await store.issueAuthToken({
+        userId: result.user.sub,
+        purpose: "verify_email",
+      });
+      void authMailer.sendVerifyEmail({ to: result.user.email, token: issued.token }).catch(() => {});
+    } catch {
+      emailDelivery = "failed";
+      logEmailIssue("verify_email", result.user.sub);
+    }
     send(response, 201, {
       access_token: mintAccessToken(result.user, result.session.id),
       token_type: "bearer",
@@ -505,6 +711,7 @@ async function handleSignup(request, response) {
       expires_at: Math.floor(Date.now() / 1000) + ACCESS_TTL_SECONDS,
       refresh_token: result.session.token,
       must_change_password: false,
+      emailDelivery,
       organization: {
         id: result.organizationId,
         name: result.organizationName,
@@ -567,7 +774,19 @@ async function handleInvite(request, response) {
     password,
     mustChangePassword: true,
   });
-  send(response, 201, { id: user.sub, email: user.email });
+  let emailDelivery = "failed";
+  try {
+    const issued = await store.issueAuthToken({ userId: user.sub, purpose: "invite" });
+    emailDelivery = await authMailer.sendInviteEmail({ to: user.email, token: issued.token });
+  } catch {
+    logEmailIssue("invite", user.sub);
+  }
+  send(response, 201, {
+    id: user.sub,
+    email: user.email,
+    email_delivery: emailDelivery,
+    emailDelivery,
+  });
 }
 
 async function handleAdminDelete(request, response, userId) {
@@ -605,6 +824,46 @@ async function handle(request, response) {
       return;
     }
     await handleSignup(request, response);
+    return;
+  }
+  if (url.pathname === "/auth/v1/verify-email") {
+    if (request.method !== "POST") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "POST" });
+      return;
+    }
+    await handleVerifyEmail(request, response);
+    return;
+  }
+  if (url.pathname === "/auth/v1/verify-email/resend") {
+    if (request.method !== "POST") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "POST" });
+      return;
+    }
+    await handleVerifyEmailResend(request, response);
+    return;
+  }
+  if (url.pathname === "/auth/v1/forgot-password") {
+    if (request.method !== "POST") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "POST" });
+      return;
+    }
+    await handleForgotPassword(request, response);
+    return;
+  }
+  if (url.pathname === "/auth/v1/reset-password") {
+    if (request.method !== "POST") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "POST" });
+      return;
+    }
+    await handleResetPassword(request, response);
+    return;
+  }
+  if (url.pathname === "/auth/v1/accept-invite") {
+    if (request.method !== "POST") {
+      send(response, 405, { error: "method_not_allowed" }, { Allow: "POST" });
+      return;
+    }
+    await handleAcceptInvite(request, response);
     return;
   }
   if (url.pathname === "/auth/v1/sessions") {
@@ -659,6 +918,7 @@ async function handle(request, response) {
         organization_id: identity.user.organizationId,
         role: identity.user.role,
         must_change_password: identity.user.mustChangePassword,
+        email_verified: Boolean(identity.user.emailVerifiedAt),
       });
       return;
     }

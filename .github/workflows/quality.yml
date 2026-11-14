@@ -146,6 +146,7 @@ jobs:
       - run: npm ci
       - run: node scripts/database.mjs migrate
       - run: node scripts/tenant-isolation-test.mjs
+      - run: npm run test:auth-email
 
   agency-pilot-integration:
     runs-on: ubuntu-latest

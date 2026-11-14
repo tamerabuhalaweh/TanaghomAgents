@@ -21,8 +21,13 @@ export async function GET(request: NextRequest) {
       [user.organizationId],
     );
     const row = organization.rows[0];
+    const verification = await database().query<{ email_verified_at: Date | null }>(
+      "SELECT email_verified_at FROM tanaghom.users WHERE id = $1::uuid",
+      [user.authUserId],
+    );
+    const emailVerified = Boolean(verification.rows[0]?.email_verified_at);
     return noStore({
-      user,
+      user: { ...user, email_verified: emailVerified },
       organization: row
         ? {
             name: row.name,

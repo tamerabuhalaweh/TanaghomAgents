@@ -3,6 +3,7 @@ import "server-only";
 interface InvitedAuthUser {
   id: string;
   email?: string;
+  email_delivery?: string;
 }
 
 export class SupabaseAdminError extends Error {

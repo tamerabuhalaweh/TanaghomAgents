@@ -24,7 +24,7 @@ export async function GET(request: NextRequest) {
     return noStore({
       users: result.rows,
       current_user_id: owner.id,
-      invitations_configured: Boolean(process.env.SUPABASE_SECRET_KEY),
+      invitations_configured: Boolean(process.env.AUTH_INTERNAL_TOKEN || process.env.SUPABASE_SECRET_KEY),
     });
   } catch (error) { return apiFailure(error); }
 }

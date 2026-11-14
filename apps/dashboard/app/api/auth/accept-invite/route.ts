@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 import { randomUUID } from "node:crypto";
 
 import { AuthenticationError, authenticate, hasValidSameOrigin } from "@/lib/server/auth";
+import { authUpstreamPayload, postAuthEmail, retryAfterSeconds } from "@/lib/server/auth-email";
 import { database } from "@/lib/server/database";
 import { apiFailure, noStore } from "@/lib/server/responses";
 import { setSessionCookies } from "@/lib/server/session-cookies";
@@ -11,11 +12,48 @@ export const runtime = "nodejs";
 export async function POST(request: NextRequest) {
   try {
     if (!hasValidSameOrigin(request)) throw new AuthenticationError("Same-origin request required");
-    const identity = await authenticate(request);
     let body: Record<string, unknown>;
     try { body = await request.json() as Record<string, unknown>; }
     catch { return noStore({ error: "invalid_request" }, { status: 400 }); }
     const password = typeof body.password === "string" ? body.password : "";
+    const inviteToken = typeof body.token === "string" ? body.token : "";
+
+    // WS6 invitation links carry a single-use token. Accept it publicly; the
+    // auth service validates, consumes, marks the email verified, and updates
+    // the profile acceptance in one transaction.
+    if (inviteToken) {
+      if (!password || password.length > 512) {
+        return noStore({ error: "password_requirements_not_met" }, { status: 400 });
+      }
+      let upstream: Response | null;
+      try {
+        upstream = await postAuthEmail(request, "/auth/v1/accept-invite", {
+          token: inviteToken,
+          password,
+          display_name: typeof body.display_name === "string" ? body.display_name : undefined,
+        });
+      } catch {
+        return noStore({ error: "authentication_unavailable" }, { status: 503 });
+      }
+      if (!upstream) return noStore({ error: "authentication_not_configured" }, { status: 503 });
+      const payload = await authUpstreamPayload(upstream);
+      if (upstream.ok) return noStore(payload);
+      if (upstream.status === 429) {
+        const retryAfter = retryAfterSeconds(upstream);
+        return noStore(
+          { error: "too_many_attempts", retry_after: retryAfter },
+          { status: 429, headers: retryAfter > 0 ? { "Retry-After": String(retryAfter) } : undefined },
+        );
+      }
+      if (upstream.status === 400) {
+        return noStore({ error: payload.error ?? "invalid_or_expired_token" }, { status: 400 });
+      }
+      return noStore({ error: "invite_session_invalid" }, { status: 401 });
+    }
+
+    // Legacy Supabase-style invitation sessions have no token; keep the
+    // authenticated setup path until those emails have expired.
+    const identity = await authenticate(request);
     const refreshToken = typeof body.refresh_token === "string" ? body.refresh_token : "";
     if (password.length < 12 || password.length > 128 || !refreshToken) {
       return noStore({ error: "password_requirements_not_met" }, { status: 400 });

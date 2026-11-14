@@ -283,6 +283,34 @@ owner membership, and `app_users` profile in one transaction.
 | `AUTH_LOGIN_PAIR_LIMIT` | 8 | failed sign-ins per email+IP pair; there is no email-only lockout |
 | `AUTH_SIGNUP_IP_LIMIT` | 5 | public self-signups per source IP per 15 minutes |
 | `AUTH_RATE_LIMIT_MAX_KEYS` | 10000 | hard cap on the in-memory rate-limit map |
+| `AUTH_EMAIL_PROVIDER` | `disabled` | `resend`, `webhook`, or fail-open `disabled` |
+| `AUTH_EMAIL_FROM` | empty | verified Resend sender, e.g. `Tanaghom <noreply@example.com>` |
+| `AUTH_EMAIL_API_KEY` | empty | Resend key; prefer `AUTH_EMAIL_API_KEY_FILE` for a mounted secret |
+| `AUTH_EMAIL_WEBHOOK_URL` | empty | JSON webhook endpoint when using `webhook` mode |
+
+WS6 adds public `/forgot-password`, `/reset-password`, and `/verify-email`
+pages. Signup issues a 24-hour verification token, forgot-password a one-hour
+reset token, and invitations a seven-day invite token. Only the SHA-256 hex of
+each 32-byte token is stored; consumption is transactional and replay/expiry is
+rejected. A successful reset revokes every active session and signs the user out
+everywhere. Logs contain structured `auth_email_skipped`/`auth_email_failed`
+events with purpose and recipient only, never the raw token or reset URL.
+
+With `AUTH_EMAIL_PROVIDER=disabled` (the default), requests still succeed and the
+admin invite panel says delivery is not configured. To enable Resend, put the
+provider key and verified From address in the untracked host `.env`:
+
+```sh
+AUTH_EMAIL_PROVIDER=resend
+AUTH_EMAIL_FROM='Tanaghom <noreply@customer.example>'
+AUTH_EMAIL_API_KEY=...
+```
+
+Then recreate the auth container. For a mounted secret instead, set
+`AUTH_EMAIL_API_KEY_FILE` to the file path and add that file as a Compose secret;
+the default path is `/run/secrets/auth_email_api_key`. `webhook` mode posts
+`{event,purpose,to,subject,html,text}` to `AUTH_EMAIL_WEBHOOK_URL` with an
+optional bearer token. No provider credentials belong in tracked files.
 
 Refresh tokens rotate on every use and are stored hashed as session rows. A
 session ends after 30 minutes without refresh and never outlives 14 days; it is

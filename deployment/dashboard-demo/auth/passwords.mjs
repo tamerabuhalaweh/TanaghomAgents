@@ -6,6 +6,7 @@ const scrypt = promisify(scryptCallback);
 // OWASP-recommended scrypt parameters for interactive logins (N=2^15, r=8, p=1).
 export const SCRYPT = Object.freeze({ N: 32768, r: 8, p: 1, keylen: 64, maxmem: 96 * 1024 * 1024 });
 export const MIN_PASSWORD_LENGTH = 12;
+export const MIN_RESET_PASSWORD_LENGTH = 10;
 export const MAX_PASSWORD_LENGTH = 128;
 const COMMON_FRAGMENTS = ["password", "tanaghom", "qwerty", "123456", "letmein", "admin123", "changeme"];
 
@@ -14,6 +15,23 @@ export function passwordPolicyError(password, email = "") {
   if (password.length < MIN_PASSWORD_LENGTH) return "password_too_short";
   if (password.length > MAX_PASSWORD_LENGTH) return "password_too_long";
   if (new Set(password).size < 8) return "password_too_simple";
+  const lower = password.toLowerCase();
+  if (COMMON_FRAGMENTS.some((fragment) => lower.includes(fragment))) return "password_too_common";
+  const local = typeof email === "string" ? email.split("@")[0].trim().toLowerCase() : "";
+  if (local.length >= 4 && lower.includes(local)) return "password_contains_email";
+  return null;
+}
+
+// Reset and invitation tokens use the playbook's explicit recovery policy:
+// at least ten characters with upper case, lower case, and a digit.
+export function resetPasswordPolicyError(password, email = "") {
+  if (typeof password !== "string" || password.length === 0) return "password_required";
+  if (password.length < MIN_RESET_PASSWORD_LENGTH) return "password_too_short";
+  if (password.length > MAX_PASSWORD_LENGTH) return "password_too_long";
+  if (!/[a-z]/.test(password) || !/[A-Z]/.test(password) || !/[0-9]/.test(password)) {
+    return "password_too_simple";
+  }
+  if (new Set(password).size < 6) return "password_too_simple";
   const lower = password.toLowerCase();
   if (COMMON_FRAGMENTS.some((fragment) => lower.includes(fragment))) return "password_too_common";
   const local = typeof email === "string" ? email.split("@")[0].trim().toLowerCase() : "";
