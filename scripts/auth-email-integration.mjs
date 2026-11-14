@@ -242,7 +242,7 @@ try {
   const inviteEmail = `invite-${Date.now()}@example.test`;
   const invited = await api("/invite", {
     email: inviteEmail,
-    display_name: "Invited Person",
+    data: { display_name: "Invited Person" },
   }, {
     address: "198.51.100.80",
     headers: { "x-auth-internal-token": internalToken },

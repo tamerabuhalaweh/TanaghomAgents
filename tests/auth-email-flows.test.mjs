@@ -145,6 +145,7 @@ test("invitations are non-destructive and auth can reach the email provider", as
   const invite = server.slice(server.indexOf("async function handleInvite"), server.indexOf("async function handleAdminDelete"));
   assert.match(invite, /createInvitedUser/);
   assert.doesNotMatch(invite, /store\.upsert/);
+  assert.match(invite, /body\.data/);
   assert.match(invite, /email_already_added/);
 
   const team = await read("apps/dashboard/lib/server/team-management.ts");
