@@ -48,6 +48,7 @@ test("motion preview and render resolve referenced designs within the caller ten
   }
   assert.match(preview, /\[designId, user\.organizationId\]/);
   assert.match(render, /\[designId, user\.organizationId\]/);
+  assert.match(render, /motion_design_not_found/);
   assert.match(preview, /frame-ancestors 'self'/);
   assert.match(
     await read("apps/dashboard/app/api/creative/designs/[id]/preview/route.ts"),

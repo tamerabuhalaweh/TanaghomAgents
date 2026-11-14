@@ -77,7 +77,8 @@ export async function requestMotionRender(request: NextRequest, templateId: stri
           AND (organization_id = $2 OR organization_id IS NULL)`,
       [designId, user.organizationId],
     );
-    const designSpec = (design.rows[0]?.spec ?? {}) as Record<string, unknown>;
+    if (!design.rows[0]) return noStore({ error: "motion_design_not_found" }, { status: 404 });
+    const designSpec = (design.rows[0].spec ?? {}) as Record<string, unknown>;
     const canvas = designSpec.canvas as { width: number; height: number };
     const expected = DESIGN_FORMATS[format];
     if (!canvas || canvas.width !== expected.width || canvas.height !== expected.height) {
