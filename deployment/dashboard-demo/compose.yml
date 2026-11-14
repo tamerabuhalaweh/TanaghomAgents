@@ -72,9 +72,10 @@ services:
       AUTH_DATABASE_URL_FILE: /run/secrets/database_url
       AUTH_INTERNAL_TOKEN_FILE: /run/secrets/auth_internal_token
       AUTH_ACCESS_TTL_SECONDS: ${AUTH_ACCESS_TTL_SECONDS:-900}
-      AUTH_LOGIN_EMAIL_LIMIT: ${AUTH_LOGIN_EMAIL_LIMIT:-5}
       AUTH_LOGIN_IP_LIMIT: ${AUTH_LOGIN_IP_LIMIT:-20}
       AUTH_LOGIN_PAIR_LIMIT: ${AUTH_LOGIN_PAIR_LIMIT:-8}
+      AUTH_SIGNUP_IP_LIMIT: ${AUTH_SIGNUP_IP_LIMIT:-5}
+      AUTH_RATE_LIMIT_MAX_KEYS: ${AUTH_RATE_LIMIT_MAX_KEYS:-10000}
     secrets: [auth_users, auth_private_key, auth_internal_token, database_url]
     volumes:
       - ./auth/server.mjs:/app/auth/server.mjs:ro

@@ -115,7 +115,7 @@ export function MotionEditorView({ locale, dir, templateId }: { locale: Creative
             <p>{t(locale, "motions.renderOffline")}</p>
             <p>{t(locale, "motions.noPublish")}</p>
             <h2>{t(locale, "motions.preview")}</h2>
-            <iframe title="motion-preview" src={`/api/creative/motions/${templateId}/preview`} width={360} height={360} />
+            <iframe title="motion-preview" src={`/api/creative/motions/${templateId}/preview`} width={360} height={360} sandbox="" />
             <h2>{t(locale, "motions.scenes")} ({spec.scenes.length})</h2>
             {spec.scenes.map((scene, sceneIndex) => (
               <section key={scene.id} aria-label={`${t(locale, "motions.scenes")} ${sceneIndex + 1}`}>

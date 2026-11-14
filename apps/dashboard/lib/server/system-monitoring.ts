@@ -49,10 +49,8 @@ export async function getSystemMonitoring(request: NextRequest) {
       `SELECT notification.id,notification.severity,notification.title,notification.body,
               notification.entity_type,notification.entity_id,notification.created_at
          FROM tanaghom.notifications notification
-        WHERE notification.read_at IS NULL AND (
-          notification.user_id IS NULL OR notification.user_id IN (
-            SELECT id FROM tanaghom.app_users WHERE organization_id=$1
-          )
+        WHERE notification.read_at IS NULL AND notification.user_id IN (
+          SELECT id FROM tanaghom.app_users WHERE organization_id=$1
         ) ORDER BY notification.created_at DESC LIMIT 20`,
       [user.organizationId],
     );

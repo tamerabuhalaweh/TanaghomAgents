@@ -67,7 +67,7 @@ export function CreativeOverview({ locale, dir }: { locale: CreativeLocale; dir:
               {[...designs.data.designs].sort((a, b) => Number(Boolean(b.organization_id)) - Number(Boolean(a.organization_id))).slice(0, 4).map((design) => (
                 <li key={design.template_id} className="creative-card">
                   <div className="creative-thumb">
-                    <iframe title={design.name} src={`/api/creative/designs/${design.template_id}/preview`} loading="lazy" tabIndex={-1} />
+                    <iframe title={design.name} src={`/api/creative/designs/${design.template_id}/preview`} loading="lazy" tabIndex={-1} sandbox="" />
                   </div>
                   <h3><Link href={`/creative/designs/${design.template_id}`}>{design.name}</Link></h3>
                   <p>{design.kind} · {t(locale, "common.version")}{design.version}</p>

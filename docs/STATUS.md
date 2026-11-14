@@ -1,5 +1,34 @@
 # Tanaghom status and next work
 
+## 2026-11-14 — Security hardening and public HTTPS launch
+
+The 2026-11-14 security hardening release closes the white-hat audit findings
+on `ed15144` and the Postiz discovery follow-ups. Migration
+`0052_security_hardening` (ledger 49) attributes worker/webhook audit rows to
+their tenant, removes the tenant API role's global creative kill-switch grant,
+and removes the implicit `PUBLIC` execute grant left by `0051`. Creative motion
+preview/render/template creation are tenant-scoped, approval decisions lock only
+the caller's content, unread notifications no longer include global
+`user_id IS NULL` rows, and preview iframes use `frame-ancestors 'self'` with
+`sandbox=""`.
+
+Public self-signup is rate-limited per source IP and the auth rate map is
+bounded; email-only login lockout is removed; Caddy replaces client forwarding
+headers and rejects direct Postiz `/api/auth/register*` calls. Postiz runs with
+`DISABLE_REGISTRATION=true` and `POSTIZ_PUBLIC_URL=https://postiz.13.60.253.82.sslip.io`.
+Onboarding now writes `onboarding_completed_at` when Step 4 is finished and the
+wizard shows the Ready state; Postiz channel mapping accepts `x`/`twitter`;
+`deploy.sh` supports the `ubuntu` docker-group operator and requires
+`auth_internal_token`; the dashboard and Postiz are served over HTTPS on
+`13.60.253.82` through Caddy.
+
+Current workstreams: WS1 custom domain remains open; WS2 tenant auth is live;
+WS3 is blocked on the owner's Stripe keys, price and VAT decision; WS4 feature
+work is paused pending provider app credentials (Option A architecture
+approved); WS5 onboarding infrastructure is live through Step 4 Ready; WS6
+transactional email and the verify/reset flows remain pending. The demo remains
+synthetic/UAT data, not a production customer launch.
+
 ## 2026-11-12 — WS2 tenant auth deployed; next: WS5 (WS3 blocked on owner Stripe inputs)
 
 PR #276 (WS2: Postgres tenant auth, self-signup, sessions) squash-merged to

@@ -39,21 +39,21 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 // are all refused before persistence.
 const UNSAFE_STRING = /https?:|javascript:|data:text\/html|<script|<\/script|<iframe|<style|on\w+\s*=/i;
 
-function assertSafeValue(value: unknown, path: string) {
+export function assertSafeValue(value: unknown, path: string, maxArray = 24) {
   if (typeof value === "string") {
     if (value.length > 2000) throw new CreativeJobRequestError(`invalid_design:${path}_too_long`, 400);
     if (UNSAFE_STRING.test(value)) throw new CreativeJobRequestError(`invalid_design:unsafe_${path}`, 400);
     return;
   }
   if (Array.isArray(value)) {
-    if (value.length > 24) throw new CreativeJobRequestError(`invalid_design:${path}_too_many`, 400);
-    value.forEach((entry, index) => assertSafeValue(entry, `${path}[${index}]`));
+    if (value.length > maxArray) throw new CreativeJobRequestError(`invalid_design:${path}_too_many`, 400);
+    value.forEach((entry, index) => assertSafeValue(entry, `${path}[${index}]`, maxArray));
     return;
   }
   if (isRecord(value)) {
     for (const [key, entry] of Object.entries(value)) {
       if (!/^[A-Za-z0-9_]{1,80}$/.test(key)) throw new CreativeJobRequestError(`invalid_design:bad_key_${path}`, 400);
-      assertSafeValue(entry, `${path}.${key}`);
+      assertSafeValue(entry, `${path}.${key}`, maxArray);
     }
   }
 }

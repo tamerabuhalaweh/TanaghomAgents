@@ -128,11 +128,12 @@ export async function decideContent(request: NextRequest, contentItemId: string)
       }
 
       const content = await client.query<{ campaign_id: string; status: string }>(
-        `SELECT campaign_id, status
-           FROM tanaghom.content_items
-          WHERE id = $1
-          FOR UPDATE`,
-        [contentItemId],
+        `SELECT content.campaign_id, content.status
+           FROM tanaghom.content_items content
+           JOIN tanaghom.campaigns campaign ON campaign.id = content.campaign_id
+          WHERE content.id = $1 AND campaign.organization_id = $2
+          FOR UPDATE OF content`,
+        [contentItemId, user.organizationId],
       );
       if (!content.rows[0]) throw new DecisionRequestError("content_not_found", 404);
       if (content.rows[0].status !== "pending_approval") {

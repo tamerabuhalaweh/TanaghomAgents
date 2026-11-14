@@ -59,6 +59,7 @@
     "test:build-containment": "node scripts/verify-build-containment.mjs",
     "test:creative-foundation": "node scripts/creative-foundation-integration.mjs",
     "test:creative-image": "node scripts/creative-image-integration.mjs",
+    "test:creative-motion": "node scripts/creative-motion-integration.mjs",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --headed",
     "test:e2e:ui": "playwright test --ui",

@@ -20,11 +20,18 @@
 	reverse_proxy dashboard:3000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}
+		# Replace, rather than append to, client-supplied forwarding headers.
+		header_up X-Forwarded-For {remote_host}
 	}
 }
 
 {$TANAGHOM_POSTIZ_DOMAIN} {
 	encode zstd gzip
+
+	# Postiz provisions tenants through the database; its public self-signup
+	# endpoint is not part of the Tanaghom contract.
+	@postizRegister path /api/auth/register*
+	respond @postizRegister 403
 
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"
@@ -35,5 +42,7 @@
 	reverse_proxy postiz:5000 {
 		header_up X-Forwarded-Proto {scheme}
 		header_up X-Forwarded-Host {host}
+		# The auth service uses the rightmost address as the client IP.
+		header_up X-Forwarded-For {remote_host}
 	}
 }

@@ -63,7 +63,7 @@ interface DesignRef {
   spec: Record<string, unknown>;
 }
 
-async function loadDesign(templateId: string, organizationId: string): Promise<DesignRef | null> {
+export async function loadDesign(templateId: string, organizationId: string): Promise<DesignRef | null> {
   const result = await database().query(
     `SELECT kind, name, version, spec, organization_id FROM tanaghom.creative_templates WHERE id = $1`,
     [templateId],

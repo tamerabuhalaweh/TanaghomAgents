@@ -242,6 +242,26 @@ try {
   assert.equal(foreign.status, 404);
   console.log("PASS motion cross-tenant isolation");
 
+  // A motion owned by tenant B but pointing at tenant A's private ad design
+  // must not preview or render, and the API must refuse to create it in the
+  // first place. The direct insert models a malicious/legacy row; the HTTP
+  // probes prove the read and render boundaries independently.
+  const maliciousSpec = { kind: "motion", ...arSpec, design_template_id: PRODUCT_PROMO, design_version: 1 };
+  const malicious = await pool.query(
+    `SELECT tanaghom.create_creative_template($1,'motion',$2,$3) AS id`,
+    ["00000000-0000-4000-8000-000000000241", "Org B foreign-design motion", JSON.stringify(maliciousSpec)],
+  );
+  const maliciousId = malicious.rows[0].id;
+  const crossTenantPreview = await fetch(`${dashboardOrigin}/api/creative/motions/${maliciousId}/preview`, { headers: orgBOwner });
+  assert.equal(crossTenantPreview.status, 404);
+  const crossTenantRender = await postJson(`/api/creative/motions/${maliciousId}/render`, orgBOwner,
+    { format: "1:1" }, "e2e-motion-cross-tenant-render");
+  assert.equal(crossTenantRender.status, 404);
+  const crossTenantCreate = await postJson("/api/creative/templates", orgBOwner,
+    { kind: "motion", name: "Org B foreign-design motion via API", spec: maliciousSpec }, "e2e-motion-cross-tenant-create");
+  assert.equal(crossTenantCreate.status, 404);
+  console.log("PASS motion preview/render/template creation reject a foreign design reference");
+
   // Runtime export worker under the least-privilege role: real Chromium
   // frames, fixed-argv FFmpeg encode, validated MP4, private storage.
   const { executeMotionRenderJob } = await import("../packages/creative-runtime/render/motion-worker.mjs");

@@ -152,5 +152,5 @@ test("design server boundary stays strict and provider-free", async () => {
   assert.match(preview, /default-src 'none'/);
   assert.match(preview, /img-src data:/);
   assert.match(preview, /font-src data:/);
-  assert.match(preview, /frame-ancestors 'none'/);
+  assert.match(preview, /frame-ancestors 'self'/);
 });

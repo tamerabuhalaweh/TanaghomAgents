@@ -117,7 +117,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         // Defense in depth: the preview document is fully self-contained
         // (data-URI fonts/images, inline styles). No network source is ever
         // legitimate inside this response.
-        "Content-Security-Policy": "default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        "Content-Security-Policy": "default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
       },
     });
   } catch (error) {

@@ -2,7 +2,13 @@
 set -euo pipefail
 
 test "${TANAGHOM_DEMO_DEPLOY_AUTHORIZATION:-}" = "GO-DEPLOY-TANAGHOM-243-DEMO"
-test "$(id -u)" = 0
+# The production operator is the ubuntu user in the docker group; root is not
+# required when it owns the checkout and runtime directories. Fail early with a
+# precise message rather than relying on a later docker/chmod error.
+if [ "$(id -u)" != 0 ] && ! docker info >/dev/null 2>&1; then
+  echo "DEMO_DEPLOY_DOCKER_ACCESS_REQUIRED: run as root or a member of the docker group" >&2
+  exit 1
+fi
 root="${TANAGHOM_DEMO_ROOT:-/opt/tanaghom-demo}"
 source_dir="$root/source"
 secrets_dir="$root/runtime/secrets"
@@ -60,7 +66,7 @@ if [ "$existing_demo" = true ]; then
 fi
 
 test "$(df --output=avail -BG / | tail -1 | tr -dc '0-9')" -ge 10
-required_secrets="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem s3_access_key s3_secret_key workspace_password workspace_database_url workspace_worker_token"
+required_secrets="postgres_password api_password database_url supabase_url supabase_publishable_key supabase_jwks_url auth_users.json auth_private_key.pem auth_internal_token s3_access_key s3_secret_key workspace_password workspace_database_url workspace_worker_token"
 augment_workspace_secrets() {
   umask 077
   if [ -e "$secrets_dir/workspace_database_url" ] && [ ! -e "$secrets_dir/workspace_password" ]; then
@@ -88,6 +94,10 @@ if [ ! -d "$secrets_dir" ]; then
   bash deployment/dashboard-demo/scripts/prepare-runtime.sh "$secrets_dir"
 fi
 test -d "$secrets_dir"
+if [ ! -w "$secrets_dir" ]; then
+  echo "DEMO_DEPLOY_SECRETS_NOT_WRITABLE: $secrets_dir must be owned by the operator or run as root" >&2
+  exit 1
+fi
 augment_workspace_secrets
 chmod 0700 "$secrets_dir"
 missing=""

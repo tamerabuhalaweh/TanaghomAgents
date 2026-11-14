@@ -308,9 +308,9 @@ export async function GET(request: NextRequest) {
         `SELECT id, severity, title, body, entity_type, entity_id, created_at
            FROM tanaghom.notifications
           WHERE read_at IS NULL
-            AND (user_id IS NULL OR user_id IN (
+            AND user_id IN (
               SELECT id FROM tanaghom.app_users WHERE organization_id = $1
-            ))
+            )
           ORDER BY created_at DESC
           LIMIT 50`,
         [user.organizationId],

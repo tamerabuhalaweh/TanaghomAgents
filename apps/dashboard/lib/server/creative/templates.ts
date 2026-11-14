@@ -18,8 +18,11 @@ import {
   reserveIdempotency,
 } from "@/lib/server/creative/idempotency";
 import { CreativeJobRequestError } from "@/lib/server/creative/jobs";
+import { assertSafeValue, validateDesignSpec } from "@/lib/server/creative/designs";
+import { loadDesign, validateMotionSpec } from "@/lib/server/creative/motions";
 
 const KINDS = new Set(["ad", "carousel", "motion", "landing", "caption"]);
+const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 async function bodyJson(request: NextRequest) {
   try {
@@ -64,6 +67,20 @@ export async function createCreativeTemplate(request: NextRequest) {
     }
     if (!body.spec || typeof body.spec !== "object" || Array.isArray(body.spec)) {
       throw new CreativeJobRequestError("invalid_spec", 400);
+    }
+    const kind = body.kind as string;
+    const spec = body.spec as Record<string, unknown>;
+    assertSafeValue(spec, "spec", 48);
+    if (kind === "ad" || kind === "carousel") {
+      validateDesignSpec(kind, spec);
+    }
+    if (kind === "motion") {
+      if (typeof spec.design_template_id !== "string" || !UUID_RE.test(spec.design_template_id)) {
+        throw new CreativeJobRequestError("invalid_motion:design_template_id", 400);
+      }
+      const design = await loadDesign(spec.design_template_id, user.organizationId);
+      if (!design) throw new CreativeJobRequestError("design_not_found", 404);
+      validateMotionSpec(spec, design);
     }
     if (body.global === true) {
       // Platform-global rows are read-only to organization users; globals
