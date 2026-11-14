@@ -120,6 +120,13 @@ assert "CREATIVE_STORAGE_S3_ACCESS_KEY_ID" not in env
 assert "CREATIVE_STORAGE_S3_SECRET_ACCESS_KEY" not in env
 assert env["AGENCY_WORKSPACE_ENABLED"] in {"true", "false"}, "workspace activation must be explicit"
 assert env["GEMINI_API_KEY_FILE"] == "/run/secrets/gemini_api_key"
+assert env["STRIPE_SECRET_KEY_FILE"] == "/run/secrets/stripe_secret_key"
+assert env["STRIPE_WEBHOOK_SECRET_FILE"] == "/run/secrets/stripe_webhook_secret"
+assert env["STRIPE_CURRENCY"] == "gbp"
+assert env["STRIPE_AUTOMATIC_TAX"] in {"true", "false"}
+assert "STRIPE_SECRET_KEY" not in env
+assert "STRIPE_WEBHOOK_SECRET" not in env
+assert {"stripe_secret_key", "stripe_webhook_secret"} <= secret_names(services["dashboard"])
 assert "GEMINI_API_KEY" not in env
 assert "AGENCY_WORKSPACE_DATABASE_URL" not in env
 assert "AGENCY_WORKSPACE_WORKER_TOKEN" not in env
@@ -179,6 +186,12 @@ assert len(worker_token) == 64 and set(worker_token) <= set("0123456789abcdef")
 auth_email_key = secrets_dir / "auth_email_api_key"
 assert auth_email_key.is_file() and not auth_email_key.is_symlink(), \
     "optional auth email secret file must exist (empty until configured)"
+
+for name in ["stripe_secret_key", "stripe_webhook_secret"]:
+    stripe_secret = secrets_dir / name
+    assert stripe_secret.is_file() and not stripe_secret.is_symlink(), \
+        f"optional Stripe secret {name} must exist (empty until configured)"
+    assert stripe_secret.stat().st_size <= 4096
 
 gemini_key = secrets_dir / "gemini_api_key"
 assert gemini_key.is_file() and not gemini_key.is_symlink()
