@@ -4,6 +4,10 @@ import { NextResponse, type NextRequest } from "next/server";
 // presence); the API and server components still verify the session row and the
 // tenant membership through `authorize`/`requireTenant`.
 const PUBLIC_PAGES = new Set([
+  "/",
+  "/pricing",
+  "/privacy",
+  "/terms",
   "/login",
   "/signup",
   "/verify-email",

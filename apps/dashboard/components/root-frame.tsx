@@ -8,6 +8,10 @@ import { OperationsProvider } from "@/components/operations-context";
 // operations and refreshes the session, which would bounce a signed-out visitor
 // from signup back to login before they can create a workspace.
 const PUBLIC_ROUTES = new Set([
+  "/",
+  "/pricing",
+  "/privacy",
+  "/terms",
   "/login",
   "/signup",
   "/verify-email",

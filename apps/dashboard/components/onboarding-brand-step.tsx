@@ -15,6 +15,14 @@ interface BrandKitRow {
   versions: number;
 }
 
+interface BrandKitVersion {
+  version: number;
+  colors: Record<string, string> | null;
+  tone: string | null;
+  arabic_font: string | null;
+  latin_font: string | null;
+}
+
 type Status = "loading" | "empty" | "existing" | "disabled" | "load_error" | "saving" | "saved" | "error";
 
 const COLOR = /^#[0-9a-f]{6}$/i;
@@ -24,6 +32,23 @@ function idempotencyKey() {
     ? crypto.randomUUID()
     : `${Date.now()}-${Math.floor(Math.random() * 1e9)}`;
   return `onboarding-brand-${suffix}`.slice(0, 128);
+}
+
+function applyVersion(version: BrandKitVersion | undefined, set: {
+  setPrimary: (value: string) => void;
+  setAccent: (value: string) => void;
+  setTone: (value: string) => void;
+  setArabicFont: (value: string) => void;
+  setLatinFont: (value: string) => void;
+}) {
+  if (!version) return;
+  const primary = version.colors?.primary;
+  const accent = version.colors?.accent;
+  if (primary && COLOR.test(primary)) set.setPrimary(primary.toUpperCase());
+  if (accent && COLOR.test(accent)) set.setAccent(accent.toUpperCase());
+  set.setTone(version.tone ?? "");
+  set.setArabicFont(version.arabic_font ?? "");
+  set.setLatinFont(version.latin_font ?? "");
 }
 
 export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; locale: "en" | "ar" }) {
@@ -56,8 +81,18 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
         const kits = await kitsResponse.json() as { kits?: BrandKitRow[] };
         if (!active) return;
         if (kits.kits?.length) {
-          setExisting(kits.kits[0]);
-          setStatus("existing");
+          const kit = kits.kits[0];
+          setExisting(kit);
+          setName(kit.name);
+          const detailResponse = await authenticatedFetch(`/api/creative/brand-kits/${kit.kit_id}`, { cache: "no-store" });
+          if (!active) return;
+          if (detailResponse.ok) {
+            const detail = await detailResponse.json() as { versions?: BrandKitVersion[] };
+            const versions = detail.versions ?? [];
+            const current = versions.find((version) => version.version === kit.current_version) ?? versions[versions.length - 1];
+            applyVersion(current, { setPrimary, setAccent, setTone, setArabicFont, setLatinFont });
+          }
+          if (active) setStatus("existing");
           return;
         }
         if (profileResponse.ok) {
@@ -84,17 +119,22 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
     setStatus("saving");
     const colors: Record<string, string> = { primary };
     if (accent) colors.accent = accent;
-    const response = await authenticatedFetch("/api/creative/brand-kits", {
-      method: "POST",
-      headers: { "content-type": "application/json", "idempotency-key": idempotencyKey() },
-      body: JSON.stringify({
-        name: name.trim(),
-        colors,
-        tone: tone.trim() || null,
-        arabic_font: arabicFont.trim() || null,
-        latin_font: latinFont.trim() || null,
-      }),
-    }).catch(() => null);
+    const response = await authenticatedFetch(
+      existing
+        ? `/api/creative/brand-kits/${existing.kit_id}/versions`
+        : "/api/creative/brand-kits",
+      {
+        method: "POST",
+        headers: { "content-type": "application/json", "idempotency-key": idempotencyKey() },
+        body: JSON.stringify({
+          name: name.trim(),
+          colors,
+          tone: tone.trim() || null,
+          arabic_font: arabicFont.trim() || null,
+          latin_font: latinFont.trim() || null,
+        }),
+      },
+    ).catch(() => null);
     if (!response) {
       setStatus("error");
       return;
@@ -127,22 +167,6 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
   if (status === "load_error") {
     return <section className="onboarding-form">{stepHeader}<p className="onboarding-message" role="alert">{copy.brandError}</p></section>;
   }
-  if (status === "existing" && existing) {
-    return (
-      <section className="onboarding-form">
-        {stepHeader}
-        <div className="onboarding-preview">
-          <strong>{copy.brandExisting}</strong>
-          <dl>
-            <div><dt>{copy.brandNameLabel}</dt><dd>{existing.name}</dd></div>
-            <div><dt>{copy.previewTitle}</dt><dd>v{existing.current_version} · {existing.versions}</dd></div>
-          </dl>
-          <p>{copy.brandExistingHint}</p>
-        </div>
-        <Link className="onboarding-link" href="/creative/brand-kits">{copy.brandOpen}</Link>
-      </section>
-    );
-  }
   if (status === "saved") {
     return (
       <section className="onboarding-form">
@@ -156,6 +180,7 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
   return (
     <form className="onboarding-form" onSubmit={submit} dir={locale === "ar" ? "rtl" : "ltr"}>
       {stepHeader}
+      {status === "existing" ? <p className="onboarding-note"><strong>{copy.brandExisting}.</strong> {copy.brandExistingHint}</p> : null}
       <div className="onboarding-grid">
         <label className="onboarding-field">
           <span>{copy.brandNameLabel}</span>

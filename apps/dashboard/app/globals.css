@@ -2174,7 +2174,34 @@ td a, td > strong { font-weight: 670; }
 .onboarding-preview p { color: var(--muted); font-size: 0.67rem; }
 .onboarding-message { min-height: 1.1rem; color: var(--muted); font-size: 0.7rem; }
 .onboarding-submit { display: inline-flex; min-height: 2.6rem; align-self: flex-start; align-items: center; justify-content: center; gap: 0.45rem; padding-inline: 1.1rem; border: 0; border-radius: var(--radius-sm); background: var(--primary); color: #fff; font-weight: 700; cursor: pointer; }
-.onboarding-submit:disabled { cursor: progress; opacity: 0.6; }
+.onboarding-submit:disabled { cursor: not-allowed; opacity: 0.6; }
+.onboarding-helper { padding: 0.65rem 0.75rem; border: 1px solid color-mix(in oklch, var(--warning) 38%, var(--border)); border-radius: var(--radius-sm); background: var(--warning-soft); color: oklch(0.42 0.08 75); font-size: 0.69rem; line-height: 1.5; }
+.onboarding-disclosure { padding: 0.7rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }
+.onboarding-disclosure summary { cursor: pointer; color: var(--muted); font-size: 0.7rem; font-weight: 650; }
+.onboarding-disclosure[open] summary { margin-block-end: 0.7rem; }
+.onboarding-checklist { display: flex; flex-direction: column; gap: 0.55rem; margin: 0; padding: 0; list-style: none; }
+.onboarding-checklist li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 0.6rem; padding: 0.7rem 0.8rem; border: 1px solid var(--border); border-radius: var(--radius-sm); color: var(--muted); }
+.onboarding-checklist li > svg { color: var(--border-strong); }
+.onboarding-checklist li > span { display: flex; min-width: 0; flex-direction: column; }
+.onboarding-checklist strong { color: var(--ink); font-size: 0.73rem; }
+.onboarding-checklist small { margin-block-start: 0.1rem; font-size: 0.63rem; }
+.onboarding-checklist .onboarding-check-ready { border-color: color-mix(in oklch, var(--success) 32%, var(--border)); background: var(--success-soft); }
+.onboarding-checklist .onboarding-check-ready > svg { color: var(--success); }
+.onboarding-checklist .onboarding-link { min-height: 2rem; font-size: 0.67rem; }
+
+.setup-banner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; gap: 1rem; padding: 1.1rem 1.2rem; border: 1px solid color-mix(in oklch, var(--primary) 35%, var(--border)); border-radius: var(--radius-lg); background: linear-gradient(135deg, var(--primary-soft), var(--bg)); }
+.setup-banner > svg { color: var(--primary); }
+.setup-banner h2 { font-size: 0.94rem; }
+.setup-banner p { margin-block-start: 0.15rem; color: var(--muted); font-size: 0.72rem; }
+.setup-banner ul { display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; margin: 0.45rem 0 0; padding: 0; color: var(--muted); font-size: 0.68rem; list-style: none; }
+.setup-banner li::before { content: "•"; margin-inline-end: 0.35rem; color: var(--primary); }
+.setup-banner > .primary-button { white-space: nowrap; }
+@media (max-width: 760px) {
+  .setup-banner { grid-template-columns: auto minmax(0, 1fr); }
+  .setup-banner > .primary-button { grid-column: 1 / -1; width: 100%; }
+  .onboarding-checklist li { grid-template-columns: auto minmax(0, 1fr); }
+  .onboarding-checklist li .onboarding-link { grid-column: 1 / -1; justify-self: start; }
+}
 
 @media (max-width: 900px) {
   .onboarding-grid,
