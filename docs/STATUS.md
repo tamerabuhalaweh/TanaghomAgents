@@ -2,8 +2,11 @@
 
 ## 2026-11-14 — WS6 transactional email, verification, reset, and invitations
 
-WS6 is implemented and verified locally in the full CI-compatible PostgreSQL
-path. Signup now issues a 24-hour `verify_email` token, forgot-password issues a
+WS6 shipped in PR #290, squash-merged as `caf3533`, with all 45 CI checks green.
+The live host `13.60.253.82` runs that release at ledger `49 /
+0052_security_hardening`; auth and dashboard are healthy, the pre-deploy backup
+`20261114T075755Z` was verified, and the post-deploy backup
+`20261114T084329Z` passed. Signup now issues a 24-hour `verify_email` token, forgot-password issues a
 one-hour `reset_password` token, and team invitations issue a seven-day `invite`
 token. Tokens are 32 random bytes held only as SHA-256 hex in
 `tanaghom.auth_tokens`; issue/consume run in transactions with `FOR UPDATE`,
@@ -24,7 +27,11 @@ now ships `/forgot-password`, `/reset-password`, `/verify-email`, the four
 public proxies, a forgot-password link, token-based invitation acceptance, and
 EN/AR recovery copy. The integration suite covers replay, expiry,
 anti-enumeration, session revocation, audit rows, and all forgot/reset/resend
-rate limits. Delivery awaits the owner's Resend key; no email was sent live.
+rate limits. Live checks returned 200 for `/forgot-password`, `/reset-password`,
+`/verify-email`, `/login`, and `/api/health`; the public forgot route returned
+`200 {ok:true}` for a non-account, and invalid reset/verify tokens returned
+`400 invalid_or_expired_token`. Delivery awaits the owner's Resend key; no email
+was sent live.
 
 ## 2026-11-14 — Security hardening and public HTTPS launch
 
@@ -52,8 +59,8 @@ Current workstreams: WS1 custom domain remains open; WS2 tenant auth is live;
 WS3 is blocked on the owner's Stripe keys, price and VAT decision; WS4 feature
 work is paused pending provider app credentials (Option A architecture
 approved); WS5 onboarding infrastructure is live through Step 4 Ready; WS6
-transactional email and verification/reset/invitation flows are implemented and
-verified locally, with live delivery awaiting the owner's provider key. The demo
+transactional email and verification/reset/invitation flows are live, with
+email delivery awaiting the owner's provider key. The demo
 remains synthetic/UAT data, not a production customer launch.
 
 ## 2026-11-12 — WS2 tenant auth deployed; next: WS5 (WS3 blocked on owner Stripe inputs)
