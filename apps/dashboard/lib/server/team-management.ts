@@ -83,7 +83,11 @@ export async function inviteTeamMember(request: NextRequest) {
       [randomUUID(), owner.id, created.rows[0].id, JSON.stringify({ email, role })],
     );
     await client.query("COMMIT");
-    return { ok: true, user_id: created.rows[0].id };
+    return {
+      ok: true,
+      user_id: created.rows[0].id,
+      email_delivery: authUser.email_delivery ?? "unknown",
+    };
   } catch (error) {
     await client.query("ROLLBACK");
     await removeAuthUser(authUser.id);

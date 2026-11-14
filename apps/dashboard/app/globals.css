@@ -1121,6 +1121,18 @@ td a, td > strong { font-weight: 670; }
 .login-submit:active { transform: translateY(1px); }
 .login-submit:disabled { cursor: wait; opacity: 0.72; }
 .login-support { margin-block-start: 1.5rem; color: var(--muted); font-size: 0.72rem; }
+.field-link { color: var(--primary); font-size: 0.68rem; font-weight: 650; text-decoration: none; }
+.field-link:hover { text-decoration: underline; }
+.login-notice { margin-block-start: 1.25rem; padding: 0.7rem 0.85rem; border-radius: var(--radius-sm); background: var(--success-soft); color: oklch(0.39 0.11 150); font-size: 0.75rem; }
+.auth-state { display: grid; justify-items: start; gap: 0.8rem; margin-block-start: 2.25rem; }
+.auth-state h2 { max-width: 30ch; font-size: 1.35rem; line-height: 1.25; letter-spacing: -0.02em; }
+.auth-state p { max-width: 40ch; color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+.auth-icon { display: grid; width: 3rem; height: 3rem; place-items: center; border-radius: 50%; background: var(--primary-soft); color: var(--primary); }
+.auth-state-error .auth-icon { background: var(--danger-soft); color: var(--danger); }
+.auth-action { width: 100%; margin-block-start: 0.5rem; }
+.auth-message { padding: 0.65rem 0.8rem; border-radius: var(--radius-sm); background: var(--surface); }
+.spin { animation: auth-spin 1s linear infinite; }
+@keyframes auth-spin { to { transform: rotate(360deg); } }
 
 @media (max-width: 800px) {
   .login-page { display: block; }
@@ -1137,7 +1149,7 @@ td a, td > strong { font-weight: 670; }
 
 @media (prefers-reduced-motion: reduce) {
   .form-field input, .login-submit { transition: none; }
-  .state-skeleton { animation: none; }
+  .state-skeleton, .spin { animation: none; }
 }
 
 /* Phase 5D supervisor workspace */

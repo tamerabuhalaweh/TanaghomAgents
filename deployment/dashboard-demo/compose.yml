@@ -76,11 +76,21 @@ services:
       AUTH_LOGIN_PAIR_LIMIT: ${AUTH_LOGIN_PAIR_LIMIT:-8}
       AUTH_SIGNUP_IP_LIMIT: ${AUTH_SIGNUP_IP_LIMIT:-5}
       AUTH_RATE_LIMIT_MAX_KEYS: ${AUTH_RATE_LIMIT_MAX_KEYS:-10000}
+      # Email stays fail-open in disabled mode until the owner supplies a key.
+      # Compose passes these from the untracked host .env; the mailer also
+      # supports AUTH_EMAIL_API_KEY_FILE for a mounted secret.
+      AUTH_EMAIL_PROVIDER: ${AUTH_EMAIL_PROVIDER:-disabled}
+      AUTH_EMAIL_FROM: ${AUTH_EMAIL_FROM:-}
+      AUTH_EMAIL_API_KEY: ${AUTH_EMAIL_API_KEY:-}
+      AUTH_EMAIL_WEBHOOK_URL: ${AUTH_EMAIL_WEBHOOK_URL:-}
+      AUTH_EMAIL_WEBHOOK_TOKEN: ${AUTH_EMAIL_WEBHOOK_TOKEN:-}
+      AUTH_EMAIL_API_KEY_FILE: ${AUTH_EMAIL_API_KEY_FILE:-/run/secrets/auth_email_api_key}
     secrets: [auth_users, auth_private_key, auth_internal_token, database_url]
     volumes:
       - ./auth/server.mjs:/app/auth/server.mjs:ro
       - ./auth/passwords.mjs:/app/auth/passwords.mjs:ro
       - ./auth/store.mjs:/app/auth/store.mjs:ro
+      - ./auth/mailer.mjs:/app/auth/mailer.mjs:ro
       - ./auth/admin.mjs:/app/auth/admin.mjs:ro
       - ./scripts/smoke.mjs:/app/demo-smoke.mjs:ro
       # Legacy JSON accounts are imported into Postgres once, then this mount is

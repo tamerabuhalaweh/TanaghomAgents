@@ -1,5 +1,31 @@
 # Tanaghom status and next work
 
+## 2026-11-14 — WS6 transactional email, verification, reset, and invitations
+
+WS6 is implemented and verified locally in the full CI-compatible PostgreSQL
+path. Signup now issues a 24-hour `verify_email` token, forgot-password issues a
+one-hour `reset_password` token, and team invitations issue a seven-day `invite`
+token. Tokens are 32 random bytes held only as SHA-256 hex in
+`tanaghom.auth_tokens`; issue/consume run in transactions with `FOR UPDATE`,
+replay and expiry are rejected, reset revokes every active session, and verify,
+reset, and invitation acceptance write `auth.email_verified`,
+`auth.password_reset`, and `auth.invitation_accepted` audit events.
+
+The playbook's assumed `consumed_at` and `auth_sessions.revoked_at` columns do
+not exist in the reviewed 0049 schema; WS6 uses the real `used_at` column and
+revokes `tanaghom.sessions` by moving `expires_at` into the past. No new
+migration was needed, so the ledger remains at 0052.
+
+Email delivery is pluggable (`resend`, `webhook`, or `disabled`). With no
+provider key it is fail-open: signup, reset, and invitation requests still
+succeed, a structured `auth_email_skipped` event is logged without the token or
+reset URL, and internal responses report `skipped_unconfigured`. The dashboard
+now ships `/forgot-password`, `/reset-password`, `/verify-email`, the four
+public proxies, a forgot-password link, token-based invitation acceptance, and
+EN/AR recovery copy. The integration suite covers replay, expiry,
+anti-enumeration, session revocation, audit rows, and all forgot/reset/resend
+rate limits. Delivery awaits the owner's Resend key; no email was sent live.
+
 ## 2026-11-14 — Security hardening and public HTTPS launch
 
 The 2026-11-14 security hardening release closes the white-hat audit findings
@@ -26,8 +52,9 @@ Current workstreams: WS1 custom domain remains open; WS2 tenant auth is live;
 WS3 is blocked on the owner's Stripe keys, price and VAT decision; WS4 feature
 work is paused pending provider app credentials (Option A architecture
 approved); WS5 onboarding infrastructure is live through Step 4 Ready; WS6
-transactional email and the verify/reset flows remain pending. The demo remains
-synthetic/UAT data, not a production customer launch.
+transactional email and verification/reset/invitation flows are implemented and
+verified locally, with live delivery awaiting the owner's provider key. The demo
+remains synthetic/UAT data, not a production customer launch.
 
 ## 2026-11-12 — WS2 tenant auth deployed; next: WS5 (WS3 blocked on owner Stripe inputs)
 
@@ -44,8 +71,8 @@ and its tenant sees only its own organization, and a wrong password returns
 401. Pre- and post-deploy backups verified (`20261112T105811Z` at 0048,
 `20261112T113614Z` at 0049, Postiz included, retention 7). Existing browser
 sessions require a fresh sign-in. Email-dependent flows (`/verify-email`,
-`/forgot-password`, `/reset-password`) are intentionally absent until WS6
-provides a transactional email provider. Next workstream: WS5 (tenant
+`/forgot-password`, `/reset-password`) were intentionally absent until WS6;
+that release added them on 2026-11-14. Next workstream: WS5 (tenant
 onboarding wizard + demo-data removal) — WS3 (Stripe UK) is blocked on the
 owner's Stripe keys, price and VAT decision; WS1 on the domain; WS4 on the
 Meta/social developer apps.

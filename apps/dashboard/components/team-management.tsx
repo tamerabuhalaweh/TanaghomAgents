@@ -73,7 +73,7 @@ export function TeamManagement() {
       {state === "loading" ? <TeamLoading /> : null}
       {state === "error" ? <TeamState icon={<TriangleAlert />} title="Team access is unavailable" copy="No membership changes can be made until the database connection is restored." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
       {state === "forbidden" ? <TeamState icon={<ShieldCheck />} title="Admin access required" copy="Only a Tanaghom Admin can invite teammates or change roles." /> : null}
-      {state === "ready" && inviteOpen ? <InvitePanel onCreated={async () => { setInviteOpen(false); setFeedback("Invitation sent. Access remains pending until the teammate accepts it."); await load(); }} onCancel={() => setInviteOpen(false)} /> : null}
+      {state === "ready" && inviteOpen ? <InvitePanel onCreated={async (emailDelivery) => { setInviteOpen(false); setFeedback(emailDelivery === "skipped_unconfigured" ? "Invitation created, but email delivery is not configured yet. Add the email provider key before relying on invitations." : emailDelivery === "sent" || emailDelivery === "queued" ? "Invitation sent. Access remains pending until the teammate accepts it." : "Invitation created, but the email could not be sent. Check the provider configuration."); await load(); }} onCancel={() => setInviteOpen(false)} /> : null}
       {state === "ready" && !invitationsConfigured ? <section className="system-alert"><TriangleAlert size={20} /><div><strong>Invitations need a server credential</strong><p>Existing team access can be managed now. Add the project’s Supabase secret key to enable invitation emails.</p></div><span className="system-alert-label">Setup required</span></section> : null}
       {state === "ready" ? (
         <section className="team-section" aria-labelledby="team-members-title">
@@ -101,23 +101,23 @@ export function TeamManagement() {
   );
 }
 
-function InvitePanel({ onCreated, onCancel }: { onCreated: () => Promise<void>; onCancel: () => void }) {
+function InvitePanel({ onCreated, onCancel }: { onCreated: (emailDelivery: string) => Promise<void>; onCancel: () => void }) {
   const [email, setEmail] = useState(""); const [name, setName] = useState(""); const [role, setRole] = useState<Role>("viewer");
   const [error, setError] = useState(""); const [submitting, setSubmitting] = useState(false);
   async function submit(event: React.FormEvent) {
     event.preventDefault(); setSubmitting(true); setError("");
     try {
       const response = await authenticatedFetch("/api/admin/users", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ email, display_name: name, role }) });
-      const payload = await response.json() as { error?: string };
+      const payload = await response.json() as { error?: string; email_delivery?: string };
       if (!response.ok) throw new Error(payload.error);
-      await onCreated();
+      await onCreated(payload.email_delivery ?? "unknown");
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : "";
       setError(code === "email_already_added" || code === "auth_user_already_exists" ? "That email already has an account or invitation." : "The invitation could not be sent. Check the address and try again.");
       setSubmitting(false);
     }
   }
-  return <section className="invite-admin-panel" aria-labelledby="invite-admin-title"><div><h2 id="invite-admin-title">Invite a teammate</h2><p>Supabase sends a one-time setup email. Tanaghom applies the selected role after sign-in.</p></div><form onSubmit={submit}><div className="form-field"><label htmlFor="invite-name">Display name</label><input id="invite-name" value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={100} required /></div><div className="form-field"><label htmlFor="invite-email">Work email</label><input id="invite-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} required /></div><div className="form-field"><label htmlFor="invite-role">Role</label><select id="invite-role" value={role} onChange={(event) => setRole(event.target.value as Role)}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select><span className="field-help">{roleHelp[role]}</span></div><p className="login-error" role="alert">{error}</p><div className="decision-actions"><button className="ghost-button" type="button" onClick={onCancel} disabled={submitting}>Cancel</button><button className="primary-button" type="submit" disabled={submitting}><UserRoundCheck size={17} /> {submitting ? "Sending…" : "Send invitation"}</button></div></form></section>;
+  return <section className="invite-admin-panel" aria-labelledby="invite-admin-title"><div><h2 id="invite-admin-title">Invite a teammate</h2><p>Tanaghom sends a one-time acceptance link. The selected role applies when they set their password.</p></div><form onSubmit={submit}><div className="form-field"><label htmlFor="invite-name">Display name</label><input id="invite-name" value={name} onChange={(event) => setName(event.target.value)} minLength={2} maxLength={100} required /></div><div className="form-field"><label htmlFor="invite-email">Work email</label><input id="invite-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} required /></div><div className="form-field"><label htmlFor="invite-role">Role</label><select id="invite-role" value={role} onChange={(event) => setRole(event.target.value as Role)}>{Object.entries(roleLabels).map(([value, label]) => <option key={value} value={value}>{label}</option>)}</select><span className="field-help">{roleHelp[role]}</span></div><p className="login-error" role="alert">{error}</p><div className="decision-actions"><button className="ghost-button" type="button" onClick={onCancel} disabled={submitting}>Cancel</button><button className="primary-button" type="submit" disabled={submitting}><UserRoundCheck size={17} /> {submitting ? "Sending…" : "Send invitation"}</button></div></form></section>;
 }
 
 function TeamLoading() { return <section className="team-section team-loading" aria-busy="true"><span className="state-skeleton state-skeleton-title" /><span className="state-skeleton" /><span className="state-skeleton" /><span className="state-skeleton" /></section>; }

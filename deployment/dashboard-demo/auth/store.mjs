@@ -2,13 +2,28 @@ import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { Pool } from "pg";
 
-import { hashPassword, MIN_PASSWORD_LENGTH, passwordPolicyError } from "./passwords.mjs";
+import { hashPassword, MIN_PASSWORD_LENGTH, passwordPolicyError, resetPasswordPolicyError } from "./passwords.mjs";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const SESSION_ABSOLUTE_MS = 14 * 24 * 60 * 60 * 1000;
 const SESSION_IDLE_MS = 30 * 60 * 1000;
+const AUTH_TOKEN_RE = /^[A-Za-z0-9_-]{20,200}$/;
+
+export const AUTH_TOKEN_TTL_MS = Object.freeze({
+  verify_email: 24 * 60 * 60 * 1000,
+  reset_password: 60 * 60 * 1000,
+  invite: 7 * 24 * 60 * 60 * 1000,
+});
+const AUTH_TOKEN_PURPOSES = new Set(Object.keys(AUTH_TOKEN_TTL_MS));
 
 export class StoreError extends Error {}
+
+export class AuthTokenError extends StoreError {
+  constructor(code = "invalid_or_expired_token") {
+    super(code);
+    this.code = code;
+  }
+}
 
 function normalizeEmail(value) {
   return typeof value === "string" ? value.trim().toLowerCase() : "";
@@ -35,6 +50,7 @@ function mapRow(row) {
     mustChangePassword: row.must_change_password,
     sessionEpoch: row.session_epoch,
     passwordChangedAt: row.password_changed_at ? row.password_changed_at.toISOString() : null,
+    emailVerifiedAt: row.email_verified_at ? row.email_verified_at.toISOString() : null,
     createdAt: row.created_at.toISOString(),
     organizationId: row.organization_id ?? null,
     organizationName: row.organization_name ?? null,
@@ -147,6 +163,49 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
         throw error;
       }
     });
+  }
+
+  // auth_tokens in 0049 records consumption in used_at and sessions are
+  // revoked by moving expires_at into the past. Both names are part of the
+  // reviewed schema; WS6 deliberately does not rename live columns.
+  async function auditAuthEvent(client, { userId, actionType, payload }) {
+    const profile = await client.query(
+      `SELECT id FROM tanaghom.app_users
+        WHERE auth_subject = $1::uuid AND kind = 'human'
+        ORDER BY created_at LIMIT 1`,
+      [userId],
+    );
+    if (!profile.rows[0]) return;
+    await client.query(
+      `INSERT INTO tanaghom.agent_actions_log
+         (correlation_id, actor_user_id, action_type, entity_type, entity_id, payload, result)
+       VALUES ($1, $2, $3, 'app_user', $2, $4::jsonb, 'success')`,
+      [randomUUID(), profile.rows[0].id, actionType, JSON.stringify(payload)],
+    );
+  }
+
+  async function issueAuthToken(client, { userId, purpose, ttlMs }) {
+    if (!AUTH_TOKEN_PURPOSES.has(purpose)) throw new StoreError("invalid_token_purpose");
+    if (!UUID_RE.test(String(userId))) throw new StoreError("invalid_user");
+    // Serialize issuance per user so two concurrent requests cannot each leave
+    // an unconsumed token after invalidating the prior one.
+    const user = await client.query("SELECT id FROM tanaghom.users WHERE id = $1::uuid FOR UPDATE", [userId]);
+    if (!user.rows[0]) throw new StoreError("unknown_auth_user");
+    if (purpose === "verify_email" || purpose === "reset_password") {
+      await client.query(
+        `UPDATE tanaghom.auth_tokens SET used_at = now()
+          WHERE user_id = $1::uuid AND purpose = $2 AND used_at IS NULL`,
+        [userId, purpose],
+      );
+    }
+    const raw = randomBytes(32).toString("base64url");
+    const expiresAt = new Date(Date.now() + (ttlMs ?? AUTH_TOKEN_TTL_MS[purpose]));
+    await client.query(
+      `INSERT INTO tanaghom.auth_tokens (user_id, purpose, token_hash, expires_at)
+       VALUES ($1::uuid, $2, $3, $4)`,
+      [userId, purpose, hashAuthToken(raw), expiresAt],
+    );
+    return { token: raw, expiresAt };
   }
 
   async function createSession(client, { userId, organizationId, userAgent }) {
@@ -274,6 +333,115 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
     },
     async createSession({ userId, organizationId, userAgent }) {
       return withClient((client) => createSession(client, { userId, organizationId, userAgent }));
+    },
+    async issueAuthToken({ userId, purpose, ttlMs } = {}) {
+      return withClient(async (client) => {
+        await client.query("BEGIN");
+        try {
+          const issued = await issueAuthToken(client, { userId, purpose, ttlMs });
+          await client.query("COMMIT");
+          return issued;
+        } catch (error) {
+          await client.query("ROLLBACK");
+          throw error;
+        }
+      });
+    },
+    async consumeAuthToken({ token, purposes = [], password = null, displayName = null } = {}) {
+      if (typeof token !== "string" || !AUTH_TOKEN_RE.test(token)) throw new AuthTokenError();
+      const accepted = Array.isArray(purposes) ? purposes : [purposes];
+      if (accepted.length === 0 || accepted.some((purpose) => !AUTH_TOKEN_PURPOSES.has(purpose))) {
+        throw new StoreError("invalid_token_purpose");
+      }
+      if (typeof password === "string" && password.length > 512) throw new StoreError("password_too_long");
+
+      return withClient(async (client) => {
+        await client.query("BEGIN");
+        try {
+          const found = await client.query(
+            `SELECT id, user_id, purpose, expires_at, used_at
+               FROM tanaghom.auth_tokens
+              WHERE token_hash = $1 AND purpose = ANY($2::text[])
+              FOR UPDATE`,
+            [hashAuthToken(token), accepted],
+          );
+          const record = found.rows[0];
+          if (!record || record.used_at || new Date(record.expires_at).getTime() <= Date.now()) {
+            throw new AuthTokenError();
+          }
+
+          const foundUser = await client.query(
+            `SELECT id, email, full_name, disabled FROM tanaghom.users
+              WHERE id = $1::uuid FOR UPDATE`,
+            [record.user_id],
+          );
+          const user = foundUser.rows[0];
+          if (!user || user.disabled) throw new AuthTokenError();
+
+          let sessionsRevoked = 0;
+          if (record.purpose === "verify_email") {
+            await client.query(
+              `UPDATE tanaghom.users
+                  SET email_verified_at = COALESCE(email_verified_at, now()), updated_at = now()
+                WHERE id = $1::uuid`,
+              [user.id],
+            );
+          } else {
+            const policy = resetPasswordPolicyError(password, user.email);
+            if (policy) throw new StoreError(policy);
+            let fullName = null;
+            if (record.purpose === "invite" && displayName != null) {
+              fullName = typeof displayName === "string" ? displayName.trim().slice(0, 120) : "";
+              if (fullName.length < 2) throw new StoreError("invalid_name");
+            }
+            const passwordHash = await hashPassword(password);
+            await client.query(
+              `UPDATE tanaghom.users
+                  SET password_hash = $2,
+                      full_name = COALESCE($3::text, full_name),
+                      email_verified_at = COALESCE(email_verified_at, now()),
+                      must_change_password = false,
+                      password_changed_at = now(),
+                      session_epoch = session_epoch + 1,
+                      updated_at = now()
+                WHERE id = $1::uuid`,
+              [user.id, passwordHash, fullName],
+            );
+            if (record.purpose === "reset_password") {
+              const revoked = await client.query(
+                `UPDATE tanaghom.sessions SET expires_at = now()
+                  WHERE user_id = $1::uuid AND expires_at > now()`,
+                [user.id],
+              );
+              sessionsRevoked = revoked.rowCount ?? 0;
+            } else {
+              await client.query(
+                `UPDATE tanaghom.app_users SET accepted_at = COALESCE(accepted_at, now())
+                  WHERE auth_subject = $1::uuid AND kind = 'human'`,
+                [user.id],
+              );
+            }
+          }
+
+          await client.query("UPDATE tanaghom.auth_tokens SET used_at = now() WHERE id = $1", [record.id]);
+          await auditAuthEvent(client, {
+            userId: user.id,
+            actionType: record.purpose === "verify_email"
+              ? "auth.email_verified"
+              : record.purpose === "reset_password"
+                ? "auth.password_reset"
+                : "auth.invitation_accepted",
+            payload: record.purpose === "reset_password"
+              ? { purpose: record.purpose, sessions_revoked: sessionsRevoked }
+              : { purpose: record.purpose },
+          });
+          await client.query("COMMIT");
+          return { purpose: record.purpose, sub: user.id, email: user.email };
+        } catch (error) {
+          await client.query("ROLLBACK");
+          throw error;
+        }
+      });
     },
     async findSession(token) {
       const hash = hashToken(token);
@@ -421,4 +589,8 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
 
 export function hashToken(token) {
   return createHash("sha256").update(token, "utf8").digest("base64url");
+}
+
+export function hashAuthToken(token) {
+  return createHash("sha256").update(token, "utf8").digest("hex");
 }

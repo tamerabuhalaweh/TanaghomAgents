@@ -5,7 +5,12 @@ import { LoginForm } from "@/components/login-form";
 
 export const metadata: Metadata = { title: "Sign in" };
 
-export default function LoginPage() {
+export default async function LoginPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ reset?: string; invite?: string }>;
+}) {
+  const params = await searchParams;
   return (
     <main className="login-page">
       <section className="login-context" aria-labelledby="login-context-title">
@@ -35,6 +40,8 @@ export default function LoginPage() {
           <p className="login-access-label">Private workspace</p>
           <h2 id="login-title">Welcome back</h2>
           <p className="login-intro">Sign in with the owner or reviewer account connected to Tanaghom.</p>
+          {params.reset ? <p className="login-notice" role="status">Your password was updated. Sign in with the new password.</p> : null}
+          {params.invite ? <p className="login-notice" role="status">Invitation accepted. Sign in to enter your workspace.</p> : null}
           <LoginForm />
           <p className="login-support">
             New to Tanaghom? <a href="/signup">Create a workspace</a>
