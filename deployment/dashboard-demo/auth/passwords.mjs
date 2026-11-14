@@ -39,13 +39,64 @@ export function resetPasswordPolicyError(password, email = "") {
   return null;
 }
 
+const configuredConcurrency = Number(process.env.AUTH_SCRYPT_CONCURRENCY) || 4;
+const configuredQueue = Number(process.env.AUTH_SCRYPT_MAX_QUEUE) || 32;
+export const MAX_CONCURRENT_SCRYPT = Math.min(16, Math.max(1, Math.trunc(configuredConcurrency)));
+export const MAX_SCRYPT_QUEUE = Math.min(200, Math.max(1, Math.trunc(configuredQueue)));
+
+function authBusyError() {
+  return Object.assign(new Error("auth_busy"), { status: 503, code: "auth_busy" });
+}
+
+// scrypt is intentionally expensive. Bound both the number of simultaneous
+// derivations and the number of waiters so a burst returns a retryable 503
+// instead of exhausting the container's memory.
+export function createScryptLimiter({ concurrency = MAX_CONCURRENT_SCRYPT, maxQueue = MAX_SCRYPT_QUEUE } = {}) {
+  const limit = Math.max(1, Math.trunc(concurrency));
+  const queueLimit = Math.max(1, Math.trunc(maxQueue));
+  const queue = [];
+  let inFlight = 0;
+
+  function acquire() {
+    if (inFlight < limit) {
+      inFlight += 1;
+      return Promise.resolve();
+    }
+    if (queue.length >= queueLimit) return Promise.reject(authBusyError());
+    return new Promise((resolve) => queue.push(resolve));
+  }
+
+  function release() {
+    const next = queue.shift();
+    if (next) next();
+    else inFlight -= 1;
+  }
+
+  return {
+    async run(task) {
+      await acquire();
+      try {
+        return await task();
+      } finally {
+        release();
+      }
+    },
+    stats() {
+      return { inFlight, queued: queue.length, concurrency: limit, maxQueue: queueLimit };
+    },
+  };
+}
+
+const limiter = createScryptLimiter();
+export const scryptLimiterStats = () => limiter.stats();
+
 async function derive(password, salt, keylen = SCRYPT.keylen, params = SCRYPT) {
-  return scrypt(password.normalize("NFKC"), salt, keylen, {
+  return limiter.run(() => scrypt(password.normalize("NFKC"), salt, keylen, {
     N: params.N,
     r: params.r,
     p: params.p,
     maxmem: params.maxmem ?? SCRYPT.maxmem,
-  });
+  }));
 }
 
 export async function hashPassword(password) {

@@ -72,4 +72,5 @@ prune_kind() {
 prune_kind 20 latest
 prune_kind postiz-20 postiz-latest
 
+echo "BACKUP_DISK_STATUS avail_mb=$(backup_available_mb "$BACKUP_ROOT") backup_root_mb=$(backup_size_mb "$BACKUP_ROOT")"
 echo "SCHEDULED_BACKUP_COMPLETE stamp=$stamp root=$BACKUP_ROOT"

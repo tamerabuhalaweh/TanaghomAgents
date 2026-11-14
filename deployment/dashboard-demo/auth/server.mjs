@@ -966,6 +966,10 @@ const server = createServer((request, response) => {
       response.destroy();
       return;
     }
+    if (error?.code === "auth_busy") {
+      send(response, 503, { error: "auth_busy", retry_after: 2 }, { "Retry-After": "2" });
+      return;
+    }
     const status = Number.isInteger(error?.status) ? error.status : 400;
     if (status >= 500) console.error("tanaghom-auth request failed", error);
     send(response, status, { error: status === 413 ? "body_too_large" : status === 403 ? "forbidden" : "invalid_request" });

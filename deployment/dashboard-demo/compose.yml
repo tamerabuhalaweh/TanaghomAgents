@@ -19,8 +19,10 @@ services:
       interval: 10s
       timeout: 5s
       retries: 12
-    cpus: 0.75
-    mem_limit: 768m
+    # Host-calibrated for 2 vCPU / 7.6 GiB: the Tanaghom limits total 1.6 vCPU
+    # and 2.4 GiB, leaving headroom for the co-located Postiz stack.
+    cpus: 0.25
+    mem_limit: 576m
     pids_limit: 150
     security_opt: [no-new-privileges:true]
     logging: *bounded-logging
@@ -76,6 +78,9 @@ services:
       AUTH_LOGIN_PAIR_LIMIT: ${AUTH_LOGIN_PAIR_LIMIT:-8}
       AUTH_SIGNUP_IP_LIMIT: ${AUTH_SIGNUP_IP_LIMIT:-5}
       AUTH_RATE_LIMIT_MAX_KEYS: ${AUTH_RATE_LIMIT_MAX_KEYS:-10000}
+      AUTH_DB_POOL_MAX: ${AUTH_DB_POOL_MAX:-15}
+      AUTH_SCRYPT_CONCURRENCY: ${AUTH_SCRYPT_CONCURRENCY:-4}
+      AUTH_SCRYPT_MAX_QUEUE: ${AUTH_SCRYPT_MAX_QUEUE:-32}
       # Email stays fail-open in disabled mode until the owner supplies a key.
       # Compose passes these from the untracked host .env; the mailer also
       # supports AUTH_EMAIL_API_KEY_FILE for a mounted secret.
@@ -106,8 +111,8 @@ services:
     tmpfs: ["/tmp:size=16m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 0.25
-    mem_limit: 128m
+    cpus: 1.0
+    mem_limit: 512m
     pids_limit: 80
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:43191/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -136,8 +141,8 @@ services:
     tmpfs: ["/tmp:size=64m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 0.5
-    mem_limit: 384m
+    cpus: 0.05
+    mem_limit: 320m
     pids_limit: 120
     healthcheck:
       test: ["CMD", "nc", "-z", "127.0.0.1", "9000"]
@@ -165,8 +170,8 @@ services:
     tmpfs: ["/tmp:size=16m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 0.25
-    mem_limit: 128m
+    cpus: 0.05
+    mem_limit: 96m
     pids_limit: 80
     logging: *bounded-logging
 
@@ -184,6 +189,7 @@ services:
     environment:
       APP_ENV: demo
       APP_BASE_URL: ${TANAGHOM_DEMO_BASE_URL:-http://127.0.0.1:3210}
+      PG_POOL_MAX: ${PG_POOL_MAX:-25}
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
       AGENT_RUNTIME_PROVIDER_EXECUTION_ENABLED: "false"
@@ -238,9 +244,9 @@ services:
     tmpfs: ["/tmp:size=64m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 1.0
-    mem_limit: 1024m
-    mem_reservation: 256m
+    cpus: 0.2
+    mem_limit: 768m
+    mem_reservation: 192m
     pids_limit: 200
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://127.0.0.1:3000/api/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"]
@@ -277,8 +283,8 @@ services:
     read_only: true
     tmpfs: ["/tmp:size=32m,mode=1777"]
     security_opt: [no-new-privileges:true]
-    cpus: 0.5
-    mem_limit: 256m
+    cpus: 0.05
+    mem_limit: 192m
     pids_limit: 100
     healthcheck:
       test: ["CMD", "caddy", "version"]
@@ -308,8 +314,8 @@ services:
     tmpfs: ["/tmp:size=16m,mode=1777"]
     cap_drop: [ALL]
     security_opt: [no-new-privileges:true]
-    cpus: 0.25
-    mem_limit: 128m
+    cpus: 0.05
+    mem_limit: 96m
     pids_limit: 80
     logging: *bounded-logging
 

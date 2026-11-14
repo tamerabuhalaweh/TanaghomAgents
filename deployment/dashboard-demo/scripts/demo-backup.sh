@@ -8,10 +8,27 @@ set -euo pipefail
 
 require_postgres
 
+mkdir -p "$BACKUP_ROOT"
+chmod 0700 "$BACKUP_ROOT"
+min_free_mb="${TANAGHOM_BACKUP_MIN_FREE_MB:-2048}"
+case "$min_free_mb" in
+  ''|*[!0-9]*) refuse "TANAGHOM_BACKUP_MIN_FREE_MB must be a positive integer" ;;
+esac
+[ "$min_free_mb" -ge 1 ] || refuse "TANAGHOM_BACKUP_MIN_FREE_MB must be a positive integer"
+available_mb="$(backup_available_mb "$BACKUP_ROOT")"
+previous="$(latest_backup || true)"
+previous_mb=0
+if [ -n "$previous" ] && [ -d "$previous" ]; then
+  previous_mb="$(backup_size_mb "$previous")"
+fi
+required_mb=$((min_free_mb + previous_mb * 2))
+[ "${available_mb:-0}" -ge "$required_mb" ] ||
+  refuse "insufficient free disk space for backup (${available_mb:-0}MB available, need ${required_mb}MB)"
+
 stamp="$(date -u +%Y%m%dT%H%M%SZ)"
 dir="$BACKUP_ROOT/$stamp"
 mkdir -p "$dir"
-chmod 0700 "$BACKUP_ROOT" "$dir"
+chmod 0700 "$dir"
 
 ledger="$(ledger_tail)"
 rows="$(ledger_count)"

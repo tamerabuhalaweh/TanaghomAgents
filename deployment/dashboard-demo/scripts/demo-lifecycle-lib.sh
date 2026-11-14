@@ -97,6 +97,12 @@ blob_names_hash() {
 }
 file_sha() { sha256sum "$1" | cut -d' ' -f1; }
 latest_backup() { [ -L "$BACKUP_ROOT/latest" ] && readlink -f "$BACKUP_ROOT/latest" || true; }
+backup_available_mb() {
+  df -Pk "$1" | awk 'NR == 2 { print int($4 / 1024) }'
+}
+backup_size_mb() {
+  du -sm "$1" 2>/dev/null | awk '{ print $1 + 0 }'
+}
 
 verify_backup() {
   local dir="$1"
