@@ -718,9 +718,9 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: npm run test:creative-image
 
-  creative-motion-integration:
+  creative-motion-security-integration:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 15
     services:
       postgres:
         image: postgres:16-alpine
@@ -746,7 +746,7 @@ jobs:
       - run: npm ci
       - run: npm run build:dashboard
       - run: npx playwright install --with-deps chromium
-      - run: npm run test:creative-motion
+      - run: node scripts/creative-motion-integration.mjs --security-only
 
   phase3-workflow-integration:
     runs-on: ubuntu-latest

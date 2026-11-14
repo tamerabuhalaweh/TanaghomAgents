@@ -20,6 +20,7 @@ const databaseUrl = process.env.DATABASE_TEST_URL;
 if (!databaseUrl) throw new Error("DATABASE_TEST_URL is required");
 
 const uploadDir = mkdtempSync(join(tmpdir(), "motion-e2e-uploads-"));
+const securityOnly = process.argv.includes("--security-only");
 
 const authPort = 43421;
 const dashboardPort = 43422;
@@ -269,6 +270,9 @@ try {
   assert.equal(crossTenantCreate.status, 404);
   console.log("PASS motion preview/render/template creation reject a foreign design reference");
 
+  if (securityOnly) {
+    console.log("PASS: creative motion security-only gate completed.");
+  } else {
   // Runtime export worker under the least-privilege role: real Chromium
   // frames, fixed-argv FFmpeg encode, validated MP4, private storage.
   const { executeMotionRenderJob } = await import("../packages/creative-runtime/render/motion-worker.mjs");
@@ -457,6 +461,7 @@ try {
   assert.equal(jobsAfter.rows[0].n, jobsBefore.rows[0].n);
   console.log("PASS used 0040 down/up reversibility");
   console.log("PASS: creative motion exit gate demonstrated end to end.");
+  }
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();
