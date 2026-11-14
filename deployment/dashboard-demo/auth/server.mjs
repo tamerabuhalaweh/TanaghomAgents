@@ -33,10 +33,11 @@ function positiveInt(name, fallback) {
 const ACCESS_TTL_SECONDS = positiveInt("AUTH_ACCESS_TTL_SECONDS", 900);
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LIMITS = {
-  email: positiveInt("AUTH_LOGIN_EMAIL_LIMIT", 5),
   ip: positiveInt("AUTH_LOGIN_IP_LIMIT", 20),
   pair: positiveInt("AUTH_LOGIN_PAIR_LIMIT", 8),
 };
+const SIGNUP_LIMIT = positiveInt("AUTH_SIGNUP_IP_LIMIT", 5);
+const MAX_FAILURE_KEYS = positiveInt("AUTH_RATE_LIMIT_MAX_KEYS", 10_000);
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) throw new Error("invalid demo auth port");
@@ -166,9 +167,27 @@ function currentFailure(key) {
   return entry;
 }
 
+// The map is bounded so spoofed keys cannot grow it without limit between
+// sweeps. A full map first drops expired entries, then the oldest key.
+function storeFailure(key, entry) {
+  if (!failures.has(key) && failures.size >= MAX_FAILURE_KEYS) {
+    const now = Date.now();
+    for (const [candidate, value] of failures) {
+      if (value.resetAt <= now) failures.delete(candidate);
+    }
+    while (failures.size >= MAX_FAILURE_KEYS) {
+      const oldest = failures.keys().next().value;
+      if (oldest === undefined) break;
+      failures.delete(oldest);
+    }
+  }
+  failures.set(key, entry);
+}
+
 function loginBlock(address, email) {
+  // Email-only blocks are intentionally absent: an attacker on another IP
+  // must not be able to lock the legitimate account owner out of sign-in.
   const pairs = [
-    [`email|${email}`, LIMITS.email],
     [`ip|${address}`, LIMITS.ip],
     [`pair|${address}|${email}`, LIMITS.pair],
   ];
@@ -182,18 +201,31 @@ function loginBlock(address, email) {
   return retryAfter;
 }
 
+function signupBlock(address) {
+  const entry = currentFailure(`signup|${address}`);
+  return entry && entry.count >= SIGNUP_LIMIT
+    ? Math.ceil((entry.resetAt - Date.now()) / 1000)
+    : 0;
+}
+
+function noteSignup(address) {
+  const key = `signup|${address}`;
+  const entry = currentFailure(key);
+  if (!entry) storeFailure(key, { count: 1, resetAt: Date.now() + LOGIN_WINDOW_MS });
+  else entry.count += 1;
+}
+
 function noteLoginFailure(address, email) {
   const now = Date.now();
-  const keys = [`email|${email}`, `ip|${address}`, `pair|${address}|${email}`];
+  const keys = [`ip|${address}`, `pair|${address}|${email}`];
   for (const key of keys) {
     const entry = currentFailure(key);
-    if (!entry) failures.set(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
+    if (!entry) storeFailure(key, { count: 1, resetAt: now + LOGIN_WINDOW_MS });
     else entry.count += 1;
   }
 }
 
 function clearLoginFailures(address, email) {
-  failures.delete(`email|${email}`);
   failures.delete(`pair|${address}|${email}`);
 }
 
@@ -250,8 +282,11 @@ async function readJson(request) {
 function addressOf(request) {
   const forwarded = request.headers["x-forwarded-for"];
   if (typeof forwarded === "string" && forwarded.length <= 200) {
-    const first = forwarded.split(",", 1)[0].trim();
-    if (first) return first;
+    // Caddy replaces this header with the direct peer, and the auth service is
+    // not publicly exposed. Taking the rightmost value also prevents a
+    // client-supplied leftmost address from choosing its rate-limit bucket.
+    const last = forwarded.split(",").at(-1)?.trim();
+    if (last) return last;
   }
   return request.socket.remoteAddress ?? "unknown";
 }
@@ -446,6 +481,13 @@ async function handleUserUpdate(request, response) {
 }
 
 async function handleSignup(request, response) {
+  const address = addressOf(request);
+  const retryAfter = signupBlock(address);
+  if (retryAfter > 0) {
+    send(response, 429, { error: "too_many_attempts", retry_after: retryAfter }, { "Retry-After": String(retryAfter) });
+    return;
+  }
+  noteSignup(address);
   const body = await readJson(request);
   try {
     const result = await store.signup({

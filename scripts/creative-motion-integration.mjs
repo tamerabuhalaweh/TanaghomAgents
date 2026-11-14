@@ -20,6 +20,7 @@ const databaseUrl = process.env.DATABASE_TEST_URL;
 if (!databaseUrl) throw new Error("DATABASE_TEST_URL is required");
 
 const uploadDir = mkdtempSync(join(tmpdir(), "motion-e2e-uploads-"));
+const securityOnly = process.argv.includes("--security-only");
 
 const authPort = 43421;
 const dashboardPort = 43422;
@@ -100,7 +101,7 @@ let workerDb;
 try {
   migrate();
   const latestMigration = (await pool.query(`SELECT max(version) AS v FROM public.schema_migrations`)).rows[0].v;
-  assert.equal(latestMigration, "0040_creative_motion_render");
+  assert.equal(latestMigration, "0052_security_hardening");
   await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.down.sql`, "utf8"));
   console.log(`PASS unused ${latestMigration} down`);
   await pool.query(readFileSync(`packages/database/migrations/${latestMigration}.up.sql`, "utf8"));
@@ -242,6 +243,36 @@ try {
   assert.equal(foreign.status, 404);
   console.log("PASS motion cross-tenant isolation");
 
+  // A motion owned by tenant B but pointing at tenant A's private ad design
+  // must not preview or render, and the API must refuse to create it in the
+  // first place. The direct insert models a malicious/legacy row; the HTTP
+  // probes prove the read and render boundaries independently. Use a copy of
+  // the global seed design so the reference is private to tenant A rather
+  // than a legitimately global template.
+  const seedDesign = await pool.query("SELECT spec FROM tanaghom.creative_templates WHERE id = $1", [PRODUCT_PROMO]);
+  const privateDesign = await pool.query(
+    `SELECT tanaghom.create_creative_template('00000000-0000-4000-8000-000000000231','ad',$1,$2) AS id`,
+    [`Org A private design ${Date.now()}`, JSON.stringify(seedDesign.rows[0].spec)],
+  );
+  const maliciousSpec = { kind: "motion", ...arSpec, design_template_id: privateDesign.rows[0].id, design_version: 1 };
+  const malicious = await pool.query(
+    `SELECT tanaghom.create_creative_template($1,'motion',$2,$3) AS id`,
+    ["00000000-0000-4000-8000-000000000241", "Org B foreign-design motion", JSON.stringify(maliciousSpec)],
+  );
+  const maliciousId = malicious.rows[0].id;
+  const crossTenantPreview = await fetch(`${dashboardOrigin}/api/creative/motions/${maliciousId}/preview`, { headers: orgBOwner });
+  assert.equal(crossTenantPreview.status, 404);
+  const crossTenantRender = await postJson(`/api/creative/motions/${maliciousId}/render`, orgBOwner,
+    { format: "1:1" }, "e2e-motion-cross-tenant-render");
+  assert.equal(crossTenantRender.status, 404);
+  const crossTenantCreate = await postJson("/api/creative/templates", orgBOwner,
+    { kind: "motion", name: "Org B foreign-design motion via API", spec: maliciousSpec }, "e2e-motion-cross-tenant-create");
+  assert.equal(crossTenantCreate.status, 404);
+  console.log("PASS motion preview/render/template creation reject a foreign design reference");
+
+  if (securityOnly) {
+    console.log("PASS: creative motion security-only gate completed.");
+  } else {
   // Runtime export worker under the least-privilege role: real Chromium
   // frames, fixed-argv FFmpeg encode, validated MP4, private storage.
   const { executeMotionRenderJob } = await import("../packages/creative-runtime/render/motion-worker.mjs");
@@ -430,6 +461,7 @@ try {
   assert.equal(jobsAfter.rows[0].n, jobsBefore.rows[0].n);
   console.log("PASS used 0040 down/up reversibility");
   console.log("PASS: creative motion exit gate demonstrated end to end.");
+  }
 } finally {
   if (dashboard && dashboard.exitCode === null) dashboard.kill("SIGTERM");
   authServer.close();

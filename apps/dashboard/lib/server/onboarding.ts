@@ -10,7 +10,7 @@ import { database } from "@/lib/server/database";
 
 export type { OnboardingProfile };
 
-export type OnboardingPatch = Partial<Pick<OnboardingProfile, "businessNameEn" | "businessNameAr" | "industry" | "location">>;
+export type OnboardingPatch = Partial<Pick<OnboardingProfile, "businessNameEn" | "businessNameAr" | "industry" | "location">> & { complete?: true };
 
 export class OnboardingRequestError extends Error {
   readonly code: string;
@@ -33,7 +33,7 @@ interface OrganizationRow {
   status: string;
 }
 
-const ALLOWED_FIELDS = new Set(["businessNameEn", "businessNameAr", "industry", "location"]);
+const ALLOWED_FIELDS = new Set(["businessNameEn", "businessNameAr", "industry", "location", "complete"]);
 const CONTROL_CHARACTERS = /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/u;
 
 function mapRow(row: OrganizationRow): OnboardingProfile {
@@ -90,6 +90,10 @@ export function parseOnboardingPatch(body: unknown): OnboardingPatch {
   if ("businessNameAr" in record) patch.businessNameAr = displayName(record.businessNameAr, "business_name_ar");
   if ("industry" in record) patch.industry = industry(record.industry);
   if ("location" in record) patch.location = location(record.location);
+  if ("complete" in record) {
+    if (record.complete !== true) throw new OnboardingRequestError("invalid_complete");
+    patch.complete = true;
+  }
   return patch;
 }
 
@@ -121,7 +125,11 @@ export async function updateOnboardingProfile(request: NextRequest): Promise<Onb
         SET business_name_en = $2,
             business_name_ar = $3,
             industry = $4,
-            location = $5
+            location = $5,
+            onboarding_completed_at = CASE
+              WHEN $6::boolean THEN COALESCE(onboarding_completed_at, now())
+              ELSE onboarding_completed_at
+            END
       WHERE id = $1::uuid AND is_active
       RETURNING name, business_name_en, business_name_ar, industry, location,
                 onboarding_completed_at, status`,
@@ -131,6 +139,7 @@ export async function updateOnboardingProfile(request: NextRequest): Promise<Onb
       "businessNameAr" in patch ? patch.businessNameAr : current.businessNameAr,
       "industry" in patch ? patch.industry : current.industry,
       "location" in patch ? patch.location : current.location,
+      patch.complete === true,
     ],
   );
   if (!result.rows[0]) throw new AuthorizationError("Organization is not available");

@@ -1,4 +1,4 @@
-import { createHash, randomUUID } from "node:crypto";
+import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { existsSync, readFileSync } from "node:fs";
 import { Pool } from "pg";
 
@@ -355,10 +355,13 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
 
           const base = slugify(organizationName);
           let slug = base;
-          for (let attempt = 2; ; attempt += 1) {
-            const taken = await client.query("SELECT 1 FROM tanaghom.organizations WHERE slug = $1", [slug]);
-            if (!taken.rows[0]) break;
-            slug = `${base}-${attempt}`;
+          const firstTaken = await client.query("SELECT 1 FROM tanaghom.organizations WHERE slug = $1", [slug]);
+          if (firstTaken.rows[0]) {
+            const second = `${base}-2`;
+            const secondTaken = await client.query("SELECT 1 FROM tanaghom.organizations WHERE slug = $1", [second]);
+            slug = secondTaken.rows[0]
+              ? `${base.slice(0, 68)}-${randomBytes(4).toString("hex")}`
+              : second;
           }
 
           const org = await client.query(

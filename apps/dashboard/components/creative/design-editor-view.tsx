@@ -223,6 +223,7 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
                   className="creative-editor-frame"
                   title={t(locale, "designs.preview")}
                   src={`/api/creative/designs/${templateId}/preview?format=${previewFormat}&v=${loaded.version}`}
+                  sandbox=""
                 />
                 {renderJobs.length > 0 && (
                   <ul className="creative-grid">

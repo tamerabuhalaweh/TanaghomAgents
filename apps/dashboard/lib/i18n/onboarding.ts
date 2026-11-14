@@ -17,6 +17,14 @@ export interface OnboardingCopy {
   next: string;
   back: string;
   finish: string;
+  step4Label: string;
+  readyTitle: string;
+  readyLede: string;
+  readyChecklist: string[];
+  finishSetup: string;
+  finishing: string;
+  completed: string;
+  completeError: string;
   englishNameLabel: string;
   englishNameHint: string;
   arabicNameLabel: string;
@@ -83,7 +91,7 @@ export interface OnboardingCopy {
 const en: OnboardingCopy = {
   eyebrow: "Onboarding",
   title: "Set up your workspace",
-  lede: "Three short steps: name your business, capture your brand, and add the first approved answer your agents can use.",
+  lede: "Four short steps: name your business, capture your brand, add the first approved answer your agents can use, and finish.",
   profileTitle: "Business profile",
   stepLabel: "Step 1 of 5 · Business profile",
   step2Label: "Step 2 of 5 · Brand kit",
@@ -92,6 +100,18 @@ const en: OnboardingCopy = {
   next: "Continue",
   back: "Back",
   finish: "Go to dashboard",
+  step4Label: "Step 4 of 5 · Ready",
+  readyTitle: "Your workspace is ready",
+  readyLede: "Review what you have set up. Finishing marks onboarding complete and opens your dashboard.",
+  readyChecklist: [
+    "Business profile and display names captured",
+    "Brand kit saved for generated content",
+    "First knowledge draft added for review",
+  ],
+  finishSetup: "Finish setup",
+  finishing: "Finishing…",
+  completed: "Onboarding complete. Opening your dashboard…",
+  completeError: "Onboarding could not be completed. Check your connection and try again.",
   englishNameLabel: "Business name (English)",
   englishNameHint: "Shown in the English interface. Leave empty to use your workspace name.",
   arabicNameLabel: "Business name (Arabic)",
@@ -179,7 +199,7 @@ const en: OnboardingCopy = {
 const ar: OnboardingCopy = {
   eyebrow: "التهيئة",
   title: "جهّز مساحة عملك",
-  lede: "ثلاث خطوات قصيرة: سمِّ نشاطك، والتقط هويتك البصرية، وأضف أول إجابة معتمدة يستخدمها وكلاؤك.",
+  lede: "أربع خطوات قصيرة: سمِّ نشاطك، والتقط هويتك البصرية، وأضف أول إجابة معتمدة يستخدمها وكلاؤك، ثم أنهِ التهيئة.",
   profileTitle: "ملف النشاط التجاري",
   stepLabel: "الخطوة ١ من ٥ · ملف النشاط التجاري",
   step2Label: "الخطوة ٢ من ٥ · الهوية البصرية",
@@ -188,6 +208,18 @@ const ar: OnboardingCopy = {
   next: "متابعة",
   back: "رجوع",
   finish: "الذهاب إلى لوحة التحكم",
+  step4Label: "الخطوة ٤ من ٥ · جاهز",
+  readyTitle: "مساحة عملك جاهزة",
+  readyLede: "راجع ما أعددته. الإنهاء يسجّل اكتمال التهيئة ويفتح لوحة التحكم.",
+  readyChecklist: [
+    "تم حفظ ملف النشاط وأسماء العرض",
+    "تم حفظ الهوية البصرية للمحتوى المولّد",
+    "أُضيفت أول مسودة معرفة للمراجعة",
+  ],
+  finishSetup: "إنهاء التهيئة",
+  finishing: "جارٍ الإنهاء…",
+  completed: "اكتملت التهيئة. يجري فتح لوحة التحكم…",
+  completeError: "تعذّر إكمال التهيئة. تحقّق من اتصالك وحاول مرة أخرى.",
   englishNameLabel: "اسم النشاط (بالإنجليزية)",
   englishNameHint: "يظهر في الواجهة الإنجليزية. اتركه فارغًا لاستخدام اسم مساحة العمل.",
   arabicNameLabel: "اسم النشاط (بالعربية)",

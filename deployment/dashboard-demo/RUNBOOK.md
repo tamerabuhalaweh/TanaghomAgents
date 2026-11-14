@@ -142,8 +142,10 @@ A healthy worker logs `workspace_task_finished status=succeeded` and then
 
 ## Deploy
 
-Run this as root from a clean checkout. Use the exact reviewed SHA for both values. The
-authorization string is an explicit operator guard, not a production secret.
+Run this as the `ubuntu` operator in the `docker` group (or as root) from a clean
+checkout. The operator must own the checkout and runtime directories. Use the
+exact reviewed SHA for both values. The authorization string is an explicit
+operator guard, not a production secret.
 
 ```sh
 cd /home/ubuntu/tanaghom-demo/source
@@ -160,10 +162,10 @@ remove or modify the canary.
 Expected database marker:
 
 ```text
-DEMO_DATABASE_READY migrations=48
+DEMO_DATABASE_READY migrations=49
 ```
 
-There are 48 up migrations, ending at `0051_agent_audit_organization`; numbering gaps `0041`-`0043` are
+There are 49 up migrations, ending at `0052_security_hardening`; numbering gaps `0041`-`0043` are
 intentional. The role/ledger guard requires exactly that chain.
 
 ## Validate
@@ -277,9 +279,10 @@ owner membership, and `app_users` profile in one transaction.
 | Setting | Default | Meaning |
 | --- | --- | --- |
 | `AUTH_ACCESS_TTL_SECONDS` | 900 | access-token lifetime; the browser refreshes it |
-| `AUTH_LOGIN_EMAIL_LIMIT` | 5 | failed sign-ins per email per 15 minutes |
 | `AUTH_LOGIN_IP_LIMIT` | 20 | failed sign-ins per source IP per 15 minutes |
-| `AUTH_LOGIN_PAIR_LIMIT` | 8 | failed sign-ins per email+IP pair |
+| `AUTH_LOGIN_PAIR_LIMIT` | 8 | failed sign-ins per email+IP pair; there is no email-only lockout |
+| `AUTH_SIGNUP_IP_LIMIT` | 5 | public self-signups per source IP per 15 minutes |
+| `AUTH_RATE_LIMIT_MAX_KEYS` | 10000 | hard cap on the in-memory rate-limit map |
 
 Refresh tokens rotate on every use and are stored hashed as session rows. A
 session ends after 30 minutes without refresh and never outlives 14 days; it is
@@ -394,7 +397,7 @@ commands as a recovery step.
   and wait for an operator decision; the database emergency stop blocks further inference.
 - `schema_migrations does not exist`: the fresh-database runner must check
   `to_regclass('public.schema_migrations')` before querying the ledger; rebuild from reviewed source.
-- `demo database must be at exact migration 0051 ledger`: confirm the runtime has all 48 up
+- `demo database must be at exact migration 0052 ledger`: confirm the runtime has all 49 up
   migrations and no extra/missing ledger rows.
 - Login `401`: read the synthetic credentials file again; do not rotate production credentials.
 - Login `503` or health not ready: check `auth` health and the dashboard secret mounts.

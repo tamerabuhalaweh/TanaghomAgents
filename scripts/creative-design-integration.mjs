@@ -265,7 +265,7 @@ try {
   assert.doesNotMatch(html, /<script/);
   assert.doesNotMatch(html, /https?:\/\//);
   assert.match(preview.headers.get("content-security-policy") ?? "", /default-src 'none'/);
-  assert.match(preview.headers.get("content-security-policy") ?? "", /frame-ancestors 'none'/);
+  assert.match(preview.headers.get("content-security-policy") ?? "", /frame-ancestors 'self'/);
   console.log("PASS design preview renders local-only HTML with restrictive CSP");
 
   // Runtime export worker: the claimed ad render job executes through the

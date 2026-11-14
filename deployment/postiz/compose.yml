@@ -99,6 +99,9 @@ services:
       UPLOAD_DIRECTORY: /uploads
       NEXT_PUBLIC_UPLOAD_DIRECTORY: /uploads
       IS_GENERAL: "true"
+      # Tenants are provisioned by Tanaghom's controlled DB/CLI step; Postiz's
+      # public self-signup endpoint must stay closed.
+      DISABLE_REGISTRATION: "true"
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
     volumes: [postiz-uploads:/uploads]

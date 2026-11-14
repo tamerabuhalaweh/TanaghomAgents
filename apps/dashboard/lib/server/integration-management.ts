@@ -255,6 +255,7 @@ export async function testIntegration(request: NextRequest, rawProvider: string)
 const postizChannelMap: Record<string, string> = {
   instagram: "instagram", "instagram-standalone": "instagram", facebook: "facebook",
   linkedin: "linkedin", "linkedin-page": "linkedin", tiktok: "tiktok", youtube: "youtube",
+  x: "x", twitter: "x",
 };
 
 export async function savePostizMappings(request: NextRequest) {

@@ -38,8 +38,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return noStore({ error: "motion_design_ref_invalid" }, { status: 400 });
     }
     const design = await database().query<{ spec: unknown; kind: string }>(
-      `SELECT spec, kind FROM tanaghom.creative_templates WHERE id = $1`,
-      [designId],
+      `SELECT spec, kind FROM tanaghom.creative_templates
+        WHERE id = $1 AND (organization_id = $2 OR organization_id IS NULL)`,
+      [designId, user.organizationId],
     );
     const designRow = design.rows[0];
     if (!designRow || (designRow.kind !== "ad" && designRow.kind !== "carousel")) {
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         "Content-Type": "text/html; charset=utf-8",
         "Cache-Control": "no-store",
         "X-Content-Type-Options": "nosniff",
-        "Content-Security-Policy": "default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'",
+        "Content-Security-Policy": "default-src 'none'; img-src data:; font-src data:; style-src 'unsafe-inline'; base-uri 'none'; form-action 'none'; frame-ancestors 'self'",
       },
     });
   } catch (error) {
