@@ -1,6 +1,6 @@
 "use client";
 
-import { Link2, LoaderCircle, RefreshCw, ShieldCheck, Unplug } from "lucide-react";
+import { Link2, LoaderCircle, RefreshCw, ShieldCheck, Trash2, Unplug } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
@@ -28,6 +28,7 @@ interface Channel {
 
 interface ChannelsPayload {
   provisioning_ready: boolean;
+  can_manage: boolean;
   human_approval_required: boolean;
   supported_platforms: SupportedPlatform[];
   channels: Channel[];
@@ -60,6 +61,10 @@ const copy = {
     forbidden: "Only an owner or operator can connect or disconnect social channels.",
     load: "Loading social channels…",
     confirmDisconnect: "Disconnect this workspace? The social accounts stay in Postiz and can be reconnected later.",
+    revoke: "Disconnect & revoke token",
+    revoking: "Revoking…",
+    confirmRevoke: "Disconnect this channel and permanently revoke its stored OAuth token? Other connected channels are not affected.",
+    channelMissing: "That channel is no longer connected. Refreshing the list.",
   },
   ar: {
     title: "قنوات التواصل",
@@ -87,6 +92,10 @@ const copy = {
     forbidden: "يمكن للمالك أو المشغل فقط ربط أو فصل قنوات التواصل.",
     load: "جارٍ تحميل قنوات التواصل…",
     confirmDisconnect: "فصل مساحة العمل؟ تبقى حسابات التواصل في Postiz ويمكن إعادة ربطها لاحقًا.",
+    revoke: "فصل القناة وإبطال الرمز",
+    revoking: "جارٍ الإبطال…",
+    confirmRevoke: "فصل هذه القناة وإبطال رمز OAuth المخزن نهائيًا؟ لن تتأثر القنوات الأخرى.",
+    channelMissing: "هذه القناة لم تعد متصلة. سيتم تحديث القائمة.",
   },
 } as const;
 
@@ -153,6 +162,30 @@ export function ChannelsSettings() {
     }
   }
 
+  async function revoke(channel: Channel) {
+    if (busy || !window.confirm(text.confirmRevoke)) return;
+    const key = `channel:${channel.id}`;
+    setBusy(key);
+    setNotice("");
+    try {
+      const response = await authenticatedFetch(`/api/settings/channels/${encodeURIComponent(channel.id)}`, { method: "DELETE" });
+      if (response.status === 404) {
+        setNotice(text.channelMissing);
+        await load();
+        return;
+      }
+      if (!response.ok) {
+        setNotice(response.status === 403 ? text.forbidden : text.connectError);
+        return;
+      }
+      await load();
+    } catch {
+      setNotice(text.connectError);
+    } finally {
+      setBusy(null);
+    }
+  }
+
   async function disconnect() {
     if (busy || !window.confirm(text.confirmDisconnect)) return;
     setBusy("disconnect");
@@ -190,15 +223,15 @@ export function ChannelsSettings() {
             {payload.supported_platforms.map((item) => <article className="channel-card" key={item.platform}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(item.platform, ar).slice(0, 2)}</div>
               <div><h3>{platformLabel(item.platform, ar)}</h3><small>{item.postiz_integration}</small></div>
-              <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready} onClick={() => void connect(item.platform)}>
+              <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage} onClick={() => void connect(item.platform)}>
                 {busy === item.platform ? <LoaderCircle className="spin" size={16} /> : <Link2 size={16} />} {busy === item.platform ? text.connecting : text.connect}
               </button>
-              {item.platform === "instagram" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready} onClick={() => void connect("instagram", "instagram-standalone")}>{ar ? "إنستغرام مستقل" : "Instagram standalone"}</button> : null}
-              {item.platform === "linkedin" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready} onClick={() => void connect("linkedin", "linkedin")}>{ar ? "لينكدإن شخصي" : "LinkedIn personal"}</button> : null}
+              {item.platform === "instagram" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage} onClick={() => void connect("instagram", "instagram-standalone")}>{ar ? "إنستغرام مستقل" : "Instagram standalone"}</button> : null}
+              {item.platform === "linkedin" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage} onClick={() => void connect("linkedin", "linkedin")}>{ar ? "لينكدإن شخصي" : "LinkedIn personal"}</button> : null}
             </article>)}
           </div>
           {!payload.provisioning_ready ? <div className="channel-empty"><ShieldCheck size={18} /><span><strong>{text.unavailableTitle}</strong><small>{text.unavailableCopy}</small></span></div> : null}
-          {payload.provisioning_ready ? <div className="channels-heading"><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void disconnect()}><Unplug size={16} /> {busy === "disconnect" ? text.disconnecting : text.disconnect}</button></div> : null}
+          {payload.provisioning_ready && payload.can_manage ? <div className="channels-heading"><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void disconnect()}><Unplug size={16} /> {busy === "disconnect" ? text.disconnecting : text.disconnect}</button></div> : null}
         </section>
         <section className="channels-section" aria-labelledby="channel-connected-title">
           <div className="channels-heading"><div><h2 id="channel-connected-title">{text.connected}</h2><p>{text.human}</p></div><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void load()}><RefreshCw size={16} /> {text.refresh}</button></div>
@@ -206,7 +239,10 @@ export function ChannelsSettings() {
             {payload.channels.map((channel) => <article className={`channel-row ${channel.disabled ? "channel-row-disabled" : ""}`} key={channel.id}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(channel.platform, ar).slice(0, 2)}</div>
               <div><h3>{channel.name}</h3><small>{platformLabel(channel.platform, ar)}{channel.profile ? ` · ${channel.profile}` : ""}</small></div>
-              <StatusPill tone={channel.disabled ? "neutral" : channel.mapped_for_drafts ? "success" : "attention"}>{channel.disabled ? text.disabled : channel.mapped_for_drafts ? text.mapped : text.unmapped}</StatusPill>
+              <div className="channel-row-actions">
+                <StatusPill tone={channel.disabled ? "neutral" : channel.mapped_for_drafts ? "success" : "attention"}>{channel.disabled ? text.disabled : channel.mapped_for_drafts ? text.mapped : text.unmapped}</StatusPill>
+                {payload.can_manage ? <button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void revoke(channel)}>{busy === `channel:${channel.id}` ? <LoaderCircle className="spin" size={14} /> : <Trash2 size={14} />} {busy === `channel:${channel.id}` ? text.revoking : text.revoke}</button> : null}
+              </div>
             </article>)}
           </div>}
         </section>

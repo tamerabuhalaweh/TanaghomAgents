@@ -27,13 +27,17 @@ test("Postiz tenant provisioning is one-to-one, race-safe, encrypted and audited
 test("channel routes derive the tenant only from authorize and protect every mutation", async () => {
   const route = await read("apps/dashboard/app/api/settings/channels/route.ts");
   const connect = await read("apps/dashboard/app/api/settings/channels/connect/route.ts");
+  const revoke = await read("apps/dashboard/app/api/settings/channels/[id]/route.ts");
   assert.match(route, /authorize\(request, ALL_ROLES\)/);
   assert.match(route, /enforceSameOriginForCookieMutation\(request\)/);
   assert.match(route, /authorize\(request, \["owner", "operator"\]\)/);
   assert.match(connect, /enforceSameOriginForCookieMutation\(request\)/);
   assert.match(connect, /authorize\(request, \["owner", "operator"\]\)/);
+  assert.match(revoke, /enforceSameOriginForCookieMutation\(request\)/);
+  assert.match(revoke, /authorize\(request, \["owner", "operator"\]\)/);
   assert.match(route, /user\.organizationId/);
   assert.match(connect, /user\.organizationId/);
+  assert.match(revoke, /user\.organizationId/);
   assert.doesNotMatch(`${route}\n${connect}`, /searchParams\.get\(["']organization|body\.organization_id/, "the request cannot choose a tenant");
 });
 
@@ -54,6 +58,22 @@ test("customer channel API exposes the exact supported platform contract", async
   assert.match(route, /human_approval_required: true/);
   assert.match(route, /supported_platforms: SUPPORTED_PLATFORMS/);
   assert.match(route, /channels: \[\]/);
+});
+
+test("per-channel revoke purges the Postiz token and cannot cross tenant boundaries", async () => {
+  const revoke = await read("apps/dashboard/app/api/settings/channels/[id]/route.ts");
+  assert.match(revoke, /id\.length > 128/);
+  assert.match(revoke, /DELETE FROM "Integration"[\s\S]*WHERE id = \$1 AND "organizationId" = \$2/);
+  assert.match(revoke, /RETURNING id, "providerIdentifier"/);
+  assert.match(revoke, /DELETE FROM tanaghom\.publishing_channels[\s\S]*organization_id = \$1::uuid AND provider = 'postiz' AND provider_integration_id = \$2/);
+  assert.match(revoke, /deletedIntegration\.rowCount === 0 && deletedMapping\.rowCount === 0/);
+  assert.match(revoke, /channel_not_found/);
+  assert.match(revoke, /configuration\.discovered_channels/);
+  assert.match(revoke, /integration\.channel_disconnected/);
+  assert.match(revoke, /channel_id: id/);
+  assert.match(revoke, /provider_identifier: providerIdentifier/);
+  assert.match(revoke, /ok: true, disconnected_id: id/);
+  assert.doesNotMatch(revoke, /body\.organization|searchParams\.get\(["']organization/);
 });
 
 test("automatic mapping synchronizes only active supported channels for the tenant", async () => {
@@ -117,6 +137,9 @@ test("the customer channels page is present, bilingual and RTL-safe", async () =
   assert.match(component, /social_provider_not_configured/);
   assert.match(component, /human approval/i);
   assert.match(component, /api\/settings\/channels\/connect/);
+  assert.match(component, /api\/settings\/channels\/\$\{encodeURIComponent\(channel\.id\)\}/);
+  assert.match(component, /confirmRevoke/);
+  assert.match(component, /can_manage/);
   assert.match(component, /method: "DELETE"/);
   assert.doesNotMatch(component, /apiKey|credential_ciphertext|postgresql:\/\//);
 });

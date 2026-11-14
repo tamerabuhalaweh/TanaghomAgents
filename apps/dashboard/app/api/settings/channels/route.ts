@@ -45,7 +45,8 @@ export async function GET(request: NextRequest) {
     const user = await authorize(request, ALL_ROLES);
     let connection = await findPostizConnection(user.organizationId);
     const ready = postizWorkspaceConfigured();
-    const canProvision = ready && (user.role === "owner" || user.role === "operator");
+    const canManage = user.role === "owner" || user.role === "operator";
+    const canProvision = ready && canManage;
 
     if (!isActivePostizConnection(connection) && canProvision) {
       const ensured = await ensurePostizTenantConnection(user, {
@@ -57,6 +58,7 @@ export async function GET(request: NextRequest) {
     if (!isActivePostizConnection(connection)) {
       return noStore({
         provisioning_ready: false,
+        can_manage: canManage,
         human_approval_required: true,
         supported_platforms: SUPPORTED_PLATFORMS,
         channels: [],
@@ -70,6 +72,7 @@ export async function GET(request: NextRequest) {
 
     return noStore({
       provisioning_ready: true,
+      can_manage: canManage,
       human_approval_required: true,
       supported_platforms: SUPPORTED_PLATFORMS,
       channels: channels.map((channel) => ({

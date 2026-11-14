@@ -31,6 +31,12 @@ try {
       "allowTrial" boolean NOT NULL DEFAULT false,
       "isTrailing" boolean NOT NULL DEFAULT false
     ) ON COMMIT DROP`);
+  await client.query(`
+    CREATE TEMP TABLE "Integration" (
+      id text PRIMARY KEY,
+      "organizationId" text NOT NULL,
+      "providerIdentifier" text
+    ) ON COMMIT DROP`);
 
   const existingId = `tenant-${randomUUID()}`;
   const existingKey = key();
@@ -70,17 +76,24 @@ try {
 
   const orgA = randomUUID();
   const orgB = randomUUID();
+  const channelA = `channel-a-${randomUUID()}`;
+  const channelB = `channel-b-${randomUUID()}`;
   await client.query(
     `INSERT INTO tanaghom.organizations (id, slug, name, status)
      VALUES ($1, $2, 'WS4 A', 'trialing'), ($3, $4, 'WS4 B', 'trialing')`,
     [orgA, `ws4-a-${orgA.slice(0, 8)}`, orgB, `ws4-b-${orgB.slice(0, 8)}`],
   );
   await client.query(
+    `INSERT INTO "Integration" (id, "organizationId", "providerIdentifier")
+     VALUES ($1, $2, 'instagram'), ($3, $4, 'instagram')`,
+    [channelA, existingId, channelB, newId],
+  );
+  await client.query(
     `INSERT INTO tanaghom.publishing_channels
        (organization_id, provider, channel, provider_integration_id, provider_settings)
      VALUES ($1, 'postiz', 'instagram', $2, '{"__type":"instagram"}'::jsonb),
             ($3, 'postiz', 'instagram', $4, '{"__type":"instagram"}'::jsonb)`,
-    [orgA, `postiz-${orgA}`, orgB, `postiz-${orgB}`],
+    [orgA, channelA, orgB, channelB],
   );
   await client.query(
     `DELETE FROM tanaghom.publishing_channels WHERE organization_id = $1 AND provider = 'postiz'`,
@@ -92,6 +105,65 @@ try {
   );
   assert.deepEqual(remaining.rows.map((row) => row.organization_id), [orgB],
     "channel synchronization must delete only the caller's tenant mappings");
+  await client.query(
+    `INSERT INTO tanaghom.publishing_channels
+       (organization_id, provider, channel, provider_integration_id, provider_settings)
+     VALUES ($1, 'postiz', 'instagram', $2, '{"__type":"instagram"}'::jsonb)`,
+    [orgA, channelA],
+  );
+
+  // Tenant B knows Tenant A's channel id but its organizationId predicate
+  // matches nothing. The foreign token and local mapping must both survive.
+  const stolenToken = await client.query(
+    `DELETE FROM "Integration" WHERE id = $1 AND "organizationId" = $2 RETURNING id`,
+    [channelA, newId],
+  );
+  const stolenMapping = await client.query(
+    `DELETE FROM tanaghom.publishing_channels
+      WHERE organization_id = $1::uuid AND provider = 'postiz' AND provider_integration_id = $2
+      RETURNING id`,
+    [orgB, channelA],
+  );
+  assert.equal(stolenToken.rowCount, 0, "a foreign Postiz integration id must not be deleted");
+  assert.equal(stolenMapping.rowCount, 0, "a foreign local mapping id must not be deleted");
+  const intact = await client.query(
+    `SELECT id FROM "Integration" WHERE id = ANY($1::text[]) ORDER BY id`,
+    [[channelA, channelB]],
+  );
+  assert.deepEqual(intact.rows.map((row) => row.id), [channelA, channelB].sort(),
+    "cross-tenant revocation must leave both tenants' tokens intact");
+  const intactMapping = await client.query(
+    `SELECT provider_integration_id FROM tanaghom.publishing_channels
+      WHERE organization_id = $1::uuid AND provider = 'postiz'`,
+    [orgA],
+  );
+  assert.deepEqual(intactMapping.rows.map((row) => row.provider_integration_id), [channelA]);
+
+  // The owner purges only its own channel; the organization row remains for
+  // its other connected accounts.
+  const purgedToken = await client.query(
+    `DELETE FROM "Integration" WHERE id = $1 AND "organizationId" = $2 RETURNING id, "providerIdentifier"`,
+    [channelA, existingId],
+  );
+  assert.equal(purgedToken.rowCount, 1);
+  assert.equal(purgedToken.rows[0].providerIdentifier, "instagram");
+  const purgedMapping = await client.query(
+    `DELETE FROM tanaghom.publishing_channels
+      WHERE organization_id = $1::uuid AND provider = 'postiz' AND provider_integration_id = $2
+      RETURNING id`,
+    [orgA, channelA],
+  );
+  assert.equal(purgedMapping.rowCount, 1);
+  const organizationStillThere = await client.query(
+    `SELECT id FROM "Organization" WHERE id = $1`,
+    [existingId],
+  );
+  assert.equal(organizationStillThere.rowCount, 1, "revoking one channel must not remove the Postiz organization");
+  const tenantBStillThere = await client.query(
+    `SELECT id FROM "Integration" WHERE id = $1 AND "organizationId" = $2`,
+    [channelB, newId],
+  );
+  assert.equal(tenantBStillThere.rowCount, 1, "revocation must not affect another tenant's channel");
 
   await client.query("ROLLBACK");
   console.log("POSTIZ_TENANT_INTEGRATION_OK");
