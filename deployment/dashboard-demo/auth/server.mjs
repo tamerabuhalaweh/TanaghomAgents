@@ -768,11 +768,15 @@ async function handleInvite(request, response) {
     return;
   }
   const password = randomBytes(24).toString("base64url");
+  const profile = body.data && typeof body.data === "object" ? body.data : {};
+  const displayName = typeof body.display_name === "string"
+    ? body.display_name
+    : typeof profile.display_name === "string" ? profile.display_name : null;
   let user;
   try {
     user = await store.createInvitedUser({
       email,
-      displayName: typeof body.display_name === "string" ? body.display_name : null,
+      displayName,
       password,
     });
   } catch (error) {
