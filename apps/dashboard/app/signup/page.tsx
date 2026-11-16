@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
 import { BrandMark } from "@/components/brand-mark";
+import { LocaleToggle } from "@/components/creative/locale-toggle";
 import { SignupForm } from "@/components/signup-form";
 import { creativeLocale } from "@/lib/creative-locale";
 import { authCopy } from "@/lib/i18n/auth";
@@ -12,31 +13,40 @@ export const metadata: Metadata = { title: "Create workspace" };
 export default async function SignupPage() {
   const { locale, dir } = await creativeLocale();
   const copy = authCopy(locale);
+  const ar = locale === "ar";
+  const benefits = ar
+    ? ["هويات بصرية وقوالب", "المسودات والموافقات والنشر", "الحملات والعملاء المحتملون", "معرفة يثق بها فريقك"]
+    : ["Visual identities and templates", "Drafts, approvals, and publishing", "Campaigns and leads", "Knowledge your team can trust"];
 
   return (
-    <main className="login-page" dir={dir} lang={locale}>
+    <main className="login-page auth-page signup-page" dir={dir} lang={locale}>
       <section className="login-context" aria-labelledby="signup-context-title">
-        <Link className="brand login-brand" href="/" aria-label="Tanaghom home">
+        <Link className="brand login-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لتناغم" : "Tanaghom home"}>
           <BrandMark />
           <span>Tanaghom</span>
         </Link>
         <div className="login-promise">
-          <p className="login-context-label">Agent operations, under human control</p>
-          <h1 id="signup-context-title">One workspace per business.</h1>
-          <p>
-            Plan, review, and approve AI-assisted content in Arabic and English. Every
-            organization sees only its own data.
-          </p>
+          <p className="login-context-label">{ar ? "تناغم لمساحات العمل" : "Tanaghom for teams"}</p>
+          <h1 id="signup-context-title">{ar ? "أنشئ مساحة عملك الأولى" : "Create your first workspace."}</h1>
+          <p>{ar ? "بيت واحد واضح لمحتوى فريقك وحملاته وعملائه." : "One clear home for your team's content, campaigns, and customers."}</p>
+          <ul className="signup-benefits">
+            {benefits.map((benefit) => <li key={benefit}><ShieldCheck size={17} aria-hidden="true" />{benefit}</li>)}
+          </ul>
         </div>
         <div className="login-trust-line">
           <ShieldCheck size={19} aria-hidden="true" />
-          <span>Tenant isolation and human approval are enforced in the database.</span>
+          <span>
+            {ar
+              ? "عزل بيانات المؤسسات والاعتماد البشري مفروضان في قاعدة البيانات. تتم عملية الدفع بالكامل عبر Stripe بأمان."
+              : "Tenant isolation and human approval are enforced in the database. Checkout is handled securely by Stripe."}
+          </span>
         </div>
       </section>
 
       <section className="login-access" aria-labelledby="signup-title">
         <div className="login-panel">
-          <Link className="login-mobile-brand" href="/" aria-label="Tanaghom home">
+          <div className="auth-locale-row"><LocaleToggle locale={locale} /></div>
+          <Link className="login-mobile-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لتناغم" : "Tanaghom home"}>
             <BrandMark />
             <span>Tanaghom</span>
           </Link>
@@ -47,10 +57,10 @@ export default async function SignupPage() {
           <p className="login-support">
             {copy.haveAccount} <Link href="/login">{copy.signIn}</Link>
           </p>
-          <nav className="auth-legal-links" aria-label={locale === "ar" ? "روابط الأسعار والقانون" : "Legal and pricing links"}>
-            <Link href="/pricing">{locale === "ar" ? "الأسعار" : "Pricing"}</Link>
-            <Link href="/privacy">{locale === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
-            <Link href="/terms">{locale === "ar" ? "شروط الخدمة" : "Terms of Service"}</Link>
+          <nav className="auth-legal-links" aria-label={ar ? "روابط الأسعار والقانون" : "Legal and pricing links"}>
+            <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
+            <Link href="/privacy">{ar ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
+            <Link href="/terms">{ar ? "شروط الخدمة" : "Terms of Service"}</Link>
           </nav>
         </div>
       </section>

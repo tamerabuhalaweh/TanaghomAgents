@@ -10,6 +10,7 @@ import { StatusPill } from "./status-pill";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import type { OnboardingProfile } from "@/lib/onboarding-types";
 import { useLocale } from "@/lib/client/use-locale";
+import { agentDisplayName, agentStatusLabel } from "@/lib/i18n/agent-names";
 import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 
 function campaignTone(status: string) {
@@ -101,7 +102,7 @@ export function OverviewDashboard() {
     };
   }, []);
 
-  if (operations.status === "loading") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "جارٍ تحميل الحالة المعتمدة الحالية." : "Loading the current source-of-truth state."} /><OperationsLoading /></div>;
+  if (operations.status === "loading") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "جارٍ تحميل الحالة المعتمدة الحالية." : "Loading the current source-of-truth state."} /><OperationsLoading label={ar ? "جارٍ تحميل العمليات المباشرة" : "Loading live operations"} /></div>;
   if (operations.status === "error") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "حالة المصدر المعتمد مطلوبة قبل تشغيل الوكلاء." : "Source-of-truth status is required before operating agents."} /><OperationsError retry={operations.retry} /></div>;
 
   const { data } = operations;
@@ -130,7 +131,7 @@ export function OverviewDashboard() {
           <h2 id="setup-banner-title">{ar ? "أكمل إعداد مساحة عملك" : "Continue workspace setup"}</h2>
           <p className="setup-banner-next">
             <strong>{ar ? `الخطوة ${nextStepIndex + 1} من 4: ${nextStep.ar}` : `Step ${nextStepIndex + 1} of 4: ${nextStep.en}`}</strong>
-            <span>{ar ? `${remainingCount} خطوات متبقية قبل أن يعمل فريقك بأكمل طاقته.` : `${remainingCount} ${remainingCount === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</span>
+            <span>{ar ? (remainingCount === 1 ? "بقيت خطوة واحدة قبل أن يعمل فريقك بأكمل طاقته." : `بقيت ${remainingCount} خطوات قبل أن يعمل فريقك بأكمل طاقته.`) : `${remainingCount} ${remainingCount === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</span>
           </p>
         </div>
         <Link className="primary-button" href="/onboarding">{ar ? "أكمل الإعداد" : "Continue setup"}<ArrowRight size={16} /></Link>
@@ -158,7 +159,7 @@ export function OverviewDashboard() {
 
       <section className="handoff-section" aria-labelledby="handoff-title">
         <div className="section-heading compact-heading"><div><h2 id="handoff-title">{ar ? "تسليم الوكلاء" : "Agent handoff"}</h2><p>{ar ? "المهام الحالية من قائمة الوكلاء المعتمدة." : "Current jobs from the authoritative agent queue."}</p></div><Link href="/agents" className="text-link">{ar ? "عرض الوكلاء" : "View agents"} <ArrowRight size={16} /></Link></div>
-        {data.agents.length ? <ol className="handoff-rail">{data.agents.map((agent, index) => <li key={agent.id}><div className="agent-identity"><span className="agent-avatar">{agent.code.slice(0, 2).toUpperCase()}</span><div><strong>{agent.name}</strong><StatusPill tone={agent.current_job_status === "running" ? "working" : "neutral"}>{agent.current_job_status || agent.status}</StatusPill></div></div><p>{agent.current_job_type ? agent.current_job_type.replaceAll("_", " ") : (ar ? "لا مهمة نشطة" : "No live job")}</p>{index < data.agents.length - 1 ? <ArrowRight className="handoff-arrow" size={18} aria-hidden="true" /> : null}</li>)}</ol> : <DomainEmpty title={ar ? "لا وكلاء مفعّلون" : "No agents are activated"} description={ar ? "أدوار الوكلاء محددة، لكن سير العمل يبدأ في المرحلة الثالثة." : "Agent roles are defined, but the live workflows begin in Phase 3."} detail={ar ? "لا تُعرض مهام مخفية أو محاكاة." : "No hidden or simulated jobs are shown."} />}
+        {data.agents.length ? <ol className="handoff-rail">{data.agents.map((agent, index) => <li key={agent.id}><div className="agent-identity"><span className="agent-avatar">{agent.code.slice(0, 2).toUpperCase()}</span><div><strong>{agentDisplayName(agent.name, ar)}</strong><StatusPill tone={agent.current_job_status === "running" ? "working" : "neutral"}>{agentStatusLabel(agent.current_job_status || agent.status, ar)}</StatusPill></div></div><p>{agent.current_job_type ? agentStatusLabel(agent.current_job_type.replaceAll("_", " "), ar) : (ar ? "لا مهمة نشطة" : "No live job")}</p>{index < data.agents.length - 1 ? <ArrowRight className="handoff-arrow" size={18} aria-hidden="true" /> : null}</li>)}</ol> : <DomainEmpty title={ar ? "لا وكلاء مفعّلون" : "No agents are activated"} description={ar ? "أدوار الوكلاء محددة، لكن سير العمل يبدأ في المرحلة الثالثة." : "Agent roles are defined, but the live workflows begin in Phase 3."} detail={ar ? "لا تُعرض مهام مخفية أو محاكاة." : "No hidden or simulated jobs are shown."} />}
       </section>
 
       <section className="campaign-section" aria-labelledby="campaign-title">
@@ -169,7 +170,7 @@ export function OverviewDashboard() {
       <div className="overview-footer-grid">
         <section className="performance-section" aria-labelledby="performance-title">
           <div className="section-heading compact-heading"><div><h2 id="performance-title">{ar ? "الأداء المسجّل" : "Recorded performance"}</h2><p>{ar ? "إجماليات من سجلات النشر والعملاء المحتملين الفعلية." : "Totals from live published-post and lead records."}</p></div><Link href="/reports" className="text-link">{ar ? "التقرير الكامل" : "Full report"} <ArrowRight size={16} /></Link></div>
-          <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{formatNumber(Number(data.performance.impressions), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{formatNumber(Number(data.performance.clicks), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>${formatNumber(Number(data.performance.spend), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{formatNumber(data.summary.leads_total, locale)}</dd><span>{formatNumber(data.summary.leads_won, locale)} {ar ? "فوز" : "won"}</span></div></dl>
+          <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{formatNumber(Number(data.performance.impressions), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{formatNumber(Number(data.performance.clicks), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>${formatNumber(Number(data.performance.spend), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{formatNumber(data.summary.leads_total, locale)}</dd><span>{ar ? `${formatNumber(data.summary.leads_won, locale)} صفقات رابحة` : <>{formatNumber(data.summary.leads_won, locale)} won</>}</span></div></dl>
         </section>
         <section className="alerts-section" aria-labelledby="alerts-title">
           <div className="section-heading compact-heading"><div><h2 id="alerts-title">{ar ? "التنبيهات" : "Alerts"}</h2><p>{ar ? `${data.summary.notifications_unread} إشعار تشغيلي غير مقروء.` : `${data.summary.notifications_unread} unread operational notifications.`}</p></div></div>

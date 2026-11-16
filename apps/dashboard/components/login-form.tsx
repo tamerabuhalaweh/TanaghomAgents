@@ -3,7 +3,10 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 
-export function LoginForm() {
+import type { CreativeLocale } from "@/lib/i18n/creative";
+
+export function LoginForm({ locale }: { locale: CreativeLocale }) {
+  const ar = locale === "ar";
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -30,35 +33,35 @@ export function LoginForm() {
       : 0;
     const minutes = Math.max(1, Math.ceil(retryAfter / 60));
     setError(response.status === 401
-      ? "That email and password do not match an active Tanaghom account."
+      ? (ar ? "البريد الإلكتروني أو كلمة المرور غير مطابقين لحساب تناغم نشط." : "That email and password do not match an active Tanaghom account.")
       : response.status === 429
-        ? `Too many sign-in attempts. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`
-        : "Tanaghom could not sign you in. Please try again in a moment.");
+        ? (ar ? `محاولات دخول كثيرة. أعد المحاولة خلال ${minutes} ${minutes === 1 ? "دقيقة" : "دقائق"}.` : `Too many sign-in attempts. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`)
+        : (ar ? "تعذّر على تناغم تسجيل دخولك. أعد المحاولة بعد قليل." : "Tanaghom could not sign you in. Please try again in a moment."));
     setSubmitting(false);
   }
 
   return (
     <form className="login-form" method="post" onSubmit={submit}>
       <div className="form-field">
-        <label htmlFor="email">Email address</label>
+        <label htmlFor="email">{ar ? "البريد الإلكتروني" : "Email address"}</label>
         <input id="email" name="email" type="email" autoComplete="email" required />
       </div>
       <div className="form-field">
         <div className="field-label-row">
-          <label htmlFor="password">Password</label>
-          <a className="field-link" href="/forgot-password">Forgot password?</a>
+          <label htmlFor="password">{ar ? "كلمة المرور" : "Password"}</label>
+          <a className="field-link" href="/forgot-password">{ar ? "نسيت كلمة المرور؟" : "Forgot password?"}</a>
         </div>
         <div className="password-input">
           <input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required />
-          <button type="button" className="password-toggle" aria-controls="password" aria-pressed={showPassword} aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((value) => !value)}>
+          <button type="button" className="password-toggle" aria-controls="password" aria-pressed={showPassword} aria-label={showPassword ? (ar ? "إخفاء كلمة المرور" : "Hide password") : (ar ? "إظهار كلمة المرور" : "Show password")} onClick={() => setShowPassword((value) => !value)}>
             {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
-            {showPassword ? "Hide" : "Show"}
+            {showPassword ? (ar ? "إخفاء" : "Hide") : (ar ? "إظهار" : "Show")}
           </button>
         </div>
       </div>
       <p className="login-error" role="alert" aria-live="polite">{error}</p>
       <button className="login-submit" type="submit" disabled={submitting}>
-        <span>{submitting ? "Signing in…" : "Enter workspace"}</span>
+        <span>{submitting ? (ar ? "جارٍ تسجيل الدخول…" : "Signing in…") : (ar ? "تسجيل الدخول" : "Enter workspace")}</span>
         {submitting ? <LockKeyhole size={17} aria-hidden="true" /> : <ArrowRight size={17} aria-hidden="true" />}
       </button>
     </form>

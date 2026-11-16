@@ -54,7 +54,7 @@ const tiers = [
     id: "starter",
     list: 49, promo: 15,
     en: { name: "Starter", lede: "For one brand finding its rhythm.", features: ["15 AI campaigns / month", "Unlimited team members in 1 workspace", "Full 5-step agent loop", "Mandatory human approval", "EN + AR RTL workspace", "Visual Brand Kit & Knowledge Base"] },
-    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["15 حملة ذكاء اصطناعي شهرياً", "أعضاء فريق غير محدودين في مساحة عمل واحدة", "دورة الوكلاء الكاملة من 5 خطوات", "اعتماد بشري إلزامي", "مساحة عمل إنجليزية وعربية RTL", "هوية بصرية مرئية وقاعدة معرفة"] },
+    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["15 حملة ذكاء اصطناعي شهرياً", "أعضاء فريق غير محدودين في مساحة عمل واحدة", "دورة الوكلاء الكاملة من 5 خطوات", "اعتماد بشري إلزامي", "مساحة عمل بالعربية والإنجليزية، باتجاه الكتابة الصحيح لكل لغة", "هوية بصرية مرئية وقاعدة معرفة"] },
   },
   {
     id: "growth",
@@ -245,10 +245,10 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
         <PricingCards locale={locale} detailed launch100Active={launch100Active} />
         <aside className="public-sandbox-callout">
           <ShieldCheck size={20} aria-hidden="true" />
-          <div><strong>{ar ? "صندوق مجاني: حملة كاملة واحدة" : "Free 1-Campaign Sandbox"}</strong><p>{ar ? "جرّب حزمة حملة كاملة مع فريق الذكاء الاصطناعي وثلاث عمليات تشغيل، دون ربط قنوات اجتماعية حقيقية. لا حاجة لبطاقة للبدء." : "Try one complete AI Campaign Work Pack with three AI runs, without connecting live social channels. No card required to start."}</p></div>
+          <div><strong>{ar ? "صندوق مجاني: حملة كاملة واحدة" : "Free 1-Campaign Sandbox"}</strong><p>{ar ? "ابدأ بحملة مجانية واحدة بدون التزام، ثم اختر الباقة المناسبة لك. تتم عملية الدفع بالكامل عبر Stripe بأمان." : "Start with one free campaign, no commitment, then choose the plan that fits you. Checkout is handled securely by Stripe."}</p></div>
         </aside>
         {cohortFull ? <div className="public-waitlist"><WaitlistForm locale={locale} /></div> : null}
-        <p className="public-pricing-note">{ar ? "الأسعار بالدولار الأمريكي وتُدفع شهرياً. B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A. يمكنك تغيير خطتك أو إلغاؤها من إعدادات الفوترة." : "Prices are in US dollars, billed monthly. B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A. Change or cancel your plan from billing settings."}</p>
+        <p className="public-pricing-note">{ar ? "فوترة B2B بالدولار الأمريكي من شركتنا البريطانية المحدودة. خارج نطاق ضريبة القيمة المضافة البريطانية. هذه ليست عملية بيع بالتجزئة للمستهلكين في المملكة المتحدة، ولا تسري عليها حماية البيع عن بُعد للمستهلكين. نستلم المدفوعات عبر Stripe بالبطاقة أو بالتحويل البنكي. (مرجع HMRC Notice 741A)" : "B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A. This is not a UK consumer retail sale, and UK consumer distance-selling protections do not apply. Payments are collected through Stripe by card or bank transfer."}</p>
       </section>
       <section className="public-faq">
         <h2>{ar ? "أسئلة قبل أن تبدأ" : "Before you start"}</h2>

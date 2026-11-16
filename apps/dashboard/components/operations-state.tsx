@@ -3,7 +3,7 @@
 import { DatabaseZap, RefreshCw } from "lucide-react";
 import type { ReactNode } from "react";
 
-export function OperationsLoading({ label = "Loading live operations" }: { label?: string }) {
+export function OperationsLoading({ label = "جارٍ تحميل العمليات المباشرة" }: { label?: string }) {
   return <div className="operations-state operations-state-loading" aria-label={label} aria-busy="true"><span className="state-skeleton state-skeleton-title" /><span className="state-skeleton" /><span className="state-skeleton state-skeleton-block" /></div>;
 }
 

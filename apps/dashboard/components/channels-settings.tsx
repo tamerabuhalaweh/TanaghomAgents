@@ -81,11 +81,11 @@ const copy = {
     supported: "اربط قناة",
     connected: "القنوات المتصلة",
     empty: "لا توجد حسابات تواصل متصلة بعد.",
-    emptyHint: "اختر شبكة أعلاه. تفتح المنصة صفحة تسجيل دخول آمنة خاصة بها؛ ولا تستلم تناغم كلمة مرورك الاجتماعية.",
+    emptyHint: "اختر شبكة أعلاه. تفتح المنصة صفحة تسجيل دخول آمنة خاصة بها؛ ولا يطّلع تناغم على كلمة مرور حسابك أبدًا.",
     connect: "ربط",
     connecting: "جارٍ الفتح…",
-    disconnect: "فصل مساحة العمل",
-    disconnecting: "جارٍ الفصل…",
+    disconnect: "إلغاء ربط القناة",
+    disconnecting: "جارٍ إلغاء الربط…",
     refresh: "تحديث",
     mapped: "جاهزة للمسودات",
     unmapped: "غير مرتبطة بالمسودات",
@@ -99,7 +99,7 @@ const copy = {
     loadError: "تعذر على تناغم تحميل قنوات التواصل.",
     forbidden: "يمكن للمالك أو المشغل فقط ربط أو فصل قنوات التواصل.",
     load: "جارٍ تحميل قنوات التواصل…",
-    confirmDisconnect: "فصل مساحة العمل؟ تبقى حسابات التواصل في خدمة النشر الاجتماعي ويمكن إعادة ربطها لاحقًا.",
+    confirmDisconnect: "إلغاء ربط القناة؟ تبقى حسابات التواصل في خدمة النشر الاجتماعي ويمكن إعادة ربطها لاحقًا.",
     revoke: "فصل القناة وإبطال الرمز",
     revoking: "جارٍ الإبطال…",
     confirmRevoke: "فصل هذه القناة وإبطال رمز OAuth المخزن نهائيًا؟ لن تتأثر القنوات الأخرى.",
@@ -237,7 +237,7 @@ export function ChannelsSettings() {
           <div className="channel-grid">
             {payload.supported_platforms.map((item) => <article className="channel-card" key={item.platform}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(item.platform, ar).slice(0, 2)}</div>
-              <div><h3>{platformLabel(item.platform, ar)}</h3><small>{text.socialPublishing}</small></div>
+              <div><h3>{platformLabel(item.platform, ar)}</h3></div>
               <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect(item.platform)}>
                 {busy === item.platform ? <LoaderCircle className="spin" size={16} /> : <Link2 size={16} />} {busy === item.platform ? text.connecting : text.connect}
               </button>

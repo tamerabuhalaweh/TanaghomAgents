@@ -154,7 +154,7 @@ const COPY = {
   ar: {
     title: "لوحة المنصة",
     eyebrow: "تناغم · وحدة تحكم المالك",
-    lede: "تحكم تجاري وتشغيلي مباشر في المنصة والدفعات — دون الحاجة إلى SSH.",
+    lede: "تحكم تجاري وتشغيلي مباشر في المنصة والدفعات — دون الحاجة إلى الوصول التقني المباشر.",
     refresh: "تحديث",
     loading: "جارٍ تحميل البيانات المباشرة…",
     unauthorized: "هذه المنطقة مخصصة لمالك المنصة فقط.",
@@ -167,17 +167,17 @@ const COPY = {
     ledger: "مساحات العمل وقائمة الانتظار",
     workspaces: "مساحات العمل",
     verifiedUsers: "المستخدمون الموثّقون",
-    totalUsers: "من أصل {total} مستخدماً",
+    totalUsers: "من أصل {total} مستخدمين",
     paidSubscribers: "المشتركون المدفوعون النشطون",
     tierSplit: "البداية {starter} · النمو {growth} · التوسع {scale}",
     mrr: "الإيراد الشهري المباشر",
     estimated: "تقديري من الاشتراكات النشطة",
-    launchRemaining: "مقاعد LAUNCH100 المتبقية",
+    launchRemaining: "أماكن LAUNCH100 المتبقية",
     launch100Used: "{used} من {max} مستخدمة",
     campaigns: "الحملات المولّدة",
     campaignSplit: "إنجليزي {en} · عربي {ar}",
-    aiSpend: "إنفاق رموز الذكاء الاصطناعي الشهري",
-    tokens: "{tokens} رمزاً",
+    aiSpend: "إنفاق وحدات الذكاء الاصطناعي الشهري",
+    tokens: "{tokens} وحدة ذكاء اصطناعي",
     tasks: "{ok} ناجحة · {failed} فاشلة",
     database: "PostgreSQL",
     aiWorker: "عامل نموذج الذكاء الاصطناعي",
@@ -189,7 +189,7 @@ const COPY = {
     operational: "يعمل بشكل طبيعي",
     paused: "متوقف",
     maintenance: "صيانة",
-    breakerTitle: "قاطع دائرة توليد الذكاء الاصطناعي",
+    breakerTitle: "إيقاف توليد الذكاء الاصطناعي الطارئ",
     breakerReason: "السبب",
     breakerReset: "إعادة ضبط قاطع الذكاء الاصطناعي",
     breakerBody: "استعد التوليد فوراً بعد أي حادث. تُسجّل إعادة الضبط في سجل تدقيق المنصة.",
@@ -220,7 +220,7 @@ const COPY = {
     noWaitlist: "لا توجد شركات في قائمة الانتظار.",
     noWorkspaces: "لا توجد مساحات عمل بعد.",
     tierNone: "—",
-    autoRefresh: "يتحدث كل 30 ثانية",
+    autoRefresh: "يُحدَّث كل 30 ثانية",
   },
 } as const;
 
@@ -232,7 +232,16 @@ function number(value: number, locale: CreativeLocale) {
   return formatNumber(value, locale);
 }
 
+function tierLabel(value: string | null, locale: CreativeLocale) {
+  if (!value) return "—";
+  if (locale !== "ar") return value[0].toUpperCase() + value.slice(1);
+  return ({ starter: "البداية", growth: "النمو", scale: "التوسع" } as Record<string, string>)[value] || value;
+}
+
 function money(value: number, locale: CreativeLocale, decimals = 0) {
+  if (locale === "ar") {
+    return `${formatNumber(value, "ar", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })} ${decimals ? "دولار" : "دولارًا"}`;
+  }
   return formatMoney(value, locale, "USD", {
     maximumFractionDigits: decimals,
     minimumFractionDigits: decimals,
@@ -265,8 +274,8 @@ function subscriptionStatus(status: string, locale: CreativeLocale) {
   const labels: Record<string, [string, string]> = {
     trialing: ["Trialing", "تجريبي"],
     active: ["Active", "نشط"],
-    past_due: ["Past due", "متأخر السداد"],
-    canceled: ["Canceled", "ملغى"],
+    past_due: ["Past due", "متأخرة السداد"],
+    canceled: ["Canceled", "ملغاة"],
   };
   return labels[status]?.[locale === "ar" ? 1 : 0] || status;
 }
@@ -439,7 +448,7 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
             <div className={`super-breaker ${aiPaused ? "super-breaker-paused" : ""}`}>
               <div className="super-breaker-head"><ShieldAlert size={17} /><strong>{text.breakerTitle}</strong></div>
               <p>{text.breakerBody}</p>
-              <small>{text.breakerReason}: {breakerReason(snapshot.ai_circuit_breaker.reason, locale)} · {date(snapshot.ai_circuit_breaker.updated_at, locale)}</small>
+              <small><span>{text.breakerReason}: </span><span>{breakerReason(snapshot.ai_circuit_breaker.reason, locale)}</span> · {date(snapshot.ai_circuit_breaker.updated_at, locale)}</small>
               <button className={aiPaused ? "primary-button" : "secondary-button"} type="button" disabled={Boolean(busy)} onClick={() => void post({ action: "reset_ai_circuit_breaker" }, "reset", text.saved)}>
                 {busy === "reset" ? <LoaderCircle className="spin" size={16} /> : <ShieldAlert size={16} />}{text.breakerReset}
               </button>
@@ -480,7 +489,7 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
                 {snapshot.recent_workspaces.map((workspace) => <tr key={workspace.id}>
                   <td><strong>{workspace.name}</strong><small>{workspace.slug}</small></td>
                   <td><span className={`super-status super-status-${workspace.status}`}>{subscriptionStatus(workspace.status, locale)}</span></td>
-                  <td>{workspace.plan_tier || text.tierNone}</td>
+                  <td>{tierLabel(workspace.plan_tier, locale)}</td>
                   <td>{number(workspace.campaigns_count, locale)}</td>
                   <td>{date(workspace.created_at, locale)}</td>
                 </tr>)}
