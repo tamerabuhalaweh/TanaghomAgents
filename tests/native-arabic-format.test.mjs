@@ -44,6 +44,12 @@ test("Arabic typography loads IBM Plex Sans Arabic with W3C RTL rules", () => {
   assert.match(css, /scaleX\(-1\)/);
 });
 
+test("Arabic super-admin maps operational circuit-breaker reasons", () => {
+  const consoleSource = read("apps/dashboard/components/super-admin-console.tsx");
+  assert.match(consoleSource, /operational: "يعمل بشكل طبيعي"/);
+  assert.match(consoleSource, /breakerReason\(snapshot\.ai_circuit_breaker\.reason, locale\)/);
+});
+
 test("public Arabic copy isolates Latin tokens and keeps launch copy", () => {
   const page = read("apps/dashboard/components/public-pages.tsx");
   assert.match(page, /<bdi dir="ltr">LAUNCH100<\/bdi>/);
