@@ -16,10 +16,10 @@ export default async function SignupPage() {
   return (
     <main className="login-page" dir={dir} lang={locale}>
       <section className="login-context" aria-labelledby="signup-context-title">
-        <a className="brand login-brand" href="/login" aria-label="Tanaghom">
+        <Link className="brand login-brand" href="/" aria-label="Tanaghom home">
           <BrandMark />
           <span>Tanaghom</span>
-        </a>
+        </Link>
         <div className="login-promise">
           <p className="login-context-label">Agent operations, under human control</p>
           <h1 id="signup-context-title">One workspace per business.</h1>
@@ -36,10 +36,10 @@ export default async function SignupPage() {
 
       <section className="login-access" aria-labelledby="signup-title">
         <div className="login-panel">
-          <div className="login-mobile-brand" aria-hidden="true">
+          <Link className="login-mobile-brand" href="/" aria-label="Tanaghom home">
             <BrandMark />
             <span>Tanaghom</span>
-          </div>
+          </Link>
           <p className="login-access-label">{copy.signupEyebrow}</p>
           <h2 id="signup-title">{copy.signupTitle}</h2>
           <p className="login-intro">{copy.signupLede}</p>
@@ -47,6 +47,11 @@ export default async function SignupPage() {
           <p className="login-support">
             {copy.haveAccount} <Link href="/login">{copy.signIn}</Link>
           </p>
+          <nav className="auth-legal-links" aria-label={locale === "ar" ? "روابط الأسعار والقانون" : "Legal and pricing links"}>
+            <Link href="/pricing">{locale === "ar" ? "الأسعار" : "Pricing"}</Link>
+            <Link href="/privacy">{locale === "ar" ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
+            <Link href="/terms">{locale === "ar" ? "شروط الخدمة" : "Terms of Service"}</Link>
+          </nav>
         </div>
       </section>
     </main>

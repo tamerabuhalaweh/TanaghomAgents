@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "@/components/page-heading";
 import { StatusPill } from "@/components/status-pill";
 import type { Tone } from "@/data/fixtures";
@@ -81,6 +82,8 @@ function formatted(value: string | null) {
 }
 
 export function KnowledgeManagement() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [payload, setPayload] = useState<KnowledgePayload | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "forbidden" | "error">("loading");
   const [composerOpen, setComposerOpen] = useState(false);
@@ -115,7 +118,7 @@ export function KnowledgeManagement() {
     {state === "ready" && payload ? <>
       <section className="knowledge-safety" aria-label="Knowledge safety boundary">
         <ShieldCheck size={20} />
-        <div><strong>Proposal-only grounding is enforced</strong><p>Only active versions can be retrieved. Every factual proposal must cite the exact version, while uncertain or sensitive cases go to a person.</p></div>
+        <div><strong>{ar ? "الاستدلال الصارم بالحقائق مفعّل" : "Strict factual grounding is enforced"}</strong><p>{ar ? "لا تُستخدم إلا النسخ النشطة، ويجب أن يستند كل رد إلى المعرفة الموثقة. الحالات غير المؤكدة أو الحساسة تُحال إلى مراجعة بشرية." : "Only active versions can be retrieved, and every factual response must rely on verified knowledge. Uncertain or sensitive cases go to a person for review."}</p></div>
         <StatusPill tone="success">No auto-reply</StatusPill>
       </section>
 
@@ -130,7 +133,7 @@ export function KnowledgeManagement() {
         </dl>
         <div className="knowledge-policy-summary">
           <Languages size={18} />
-          <span><strong>English and Arabic policy v{payload.policy?.version_number || "—"}</strong><small>Confidence below {payload.policy ? `${Math.round(Number(payload.policy.confidence_threshold) * 100)}%` : "the policy threshold"} requires human review.</small></span>
+          <span><strong>{ar ? "سياسة المعرفة العربية والإنجليزية" : "English and Arabic knowledge policy"} v{payload.policy?.version_number || "—"}</strong><small>{ar ? "الاستدلال الصارم بالحقائق: تتطلب ردود الذكاء الاصطناعي معرفة موثقة ومراجعة بشرية عند عدم اليقين." : "Strict factual grounding: AI responses require verified knowledge and human review when uncertain."}</small></span>
         </div>
       </section>
 
@@ -139,7 +142,7 @@ export function KnowledgeManagement() {
           <div><h2 id="knowledge-catalog-title">Version catalog</h2><p>Drafts are invisible to agents until reviewed, approved, and activated.</p></div>
           <label><span className="sr-only">Filter versions by status</span><select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}><option value="all">All statuses</option>{Object.keys(nextActions).map((status) => <option value={status} key={status}>{status[0].toUpperCase() + status.slice(1)}</option>)}</select></label>
         </header>
-        {visible.length ? <div className="knowledge-version-list">{visible.map((version) => <KnowledgeRow key={version.version_id} version={version} onChanged={async (message) => { setFeedback(message); await load(); }} />)}</div> : <div className="knowledge-empty"><BookCheck size={22} /><div><h3>{payload.versions.length ? "No versions match this filter" : "Build the approved answer set"}</h3><p>{payload.versions.length ? "Choose another lifecycle status to continue." : "Add a customer-supplied fact, policy, FAQ, offer, or language example as a draft."}</p></div></div>}
+        {visible.length ? <div className="knowledge-version-list">{visible.map((version) => <KnowledgeRow key={version.version_id} version={version} onChanged={async (message) => { setFeedback(message); await load(); }} />)}</div> : <div className="knowledge-empty"><BookCheck size={22} /><div><h3>{payload.versions.length ? (ar ? "لا توجد نسخ تطابق هذا التصفية" : "No versions match this filter") : (ar ? "ابنِ مجموعة الإجابات المعتمدة" : "Build the approved answer set")}</h3><p>{payload.versions.length ? (ar ? "اختر حالة دورة حياة أخرى للمتابعة." : "Choose another lifecycle status to continue.") : (ar ? "أضف حقيقة أو سياسة أو سؤالاً شائعاً أو عرضاً قدّمه العميل كمسودة." : "Add a customer-supplied fact, policy, FAQ, offer, or language example as a draft.")}</p></div>{!payload.versions.length ? <button className="primary-button" type="button" onClick={() => { setComposerOpen(true); window.setTimeout(() => document.getElementById("knowledge-composer")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}><FilePlus2 size={16} />{ar ? "أضف أول إجابة معتمدة" : "Add first approved answer"}</button> : null}</div>}
       </section>
       {feedback ? <p className="integration-feedback" role="status" aria-live="polite">{feedback}</p> : null}
     </> : null}
@@ -171,7 +174,7 @@ function KnowledgeComposer({ onCreated }: { onCreated: () => Promise<void> }) {
     finally { setBusy(false); }
   }
 
-  return <form className="knowledge-composer" onSubmit={(event) => void submit(event)}>
+  return <form id="knowledge-composer" className="knowledge-composer" onSubmit={(event) => void submit(event)}>
     <header><div><h2>New immutable version</h2><p>Reuse a source key to add a new version. Existing approved text is never edited in place.</p></div><StatusPill tone="neutral">Draft</StatusPill></header>
     <div className="knowledge-form-grid">
       <label><span>Source key</span><input value={sourceKey} onChange={(event) => setSourceKey(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))} pattern="[a-z][a-z0-9_-]{2,79}" placeholder="pricing_standard" required /><small>Stable identifier; lowercase letters, numbers, dashes, or underscores.</small></label>

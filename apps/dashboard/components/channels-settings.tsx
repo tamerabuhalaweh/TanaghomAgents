@@ -37,7 +37,7 @@ interface ChannelsPayload {
 const copy = {
   en: {
     title: "Social channels",
-    lede: "Connect the social accounts your team may draft for. Each Tanaghom workspace gets its own isolated Postiz organization and API key; publishing still requires a human in the social network.",
+    lede: "Connect the social accounts your team may draft for. Each Tanaghom workspace gets its own isolated social publishing connection; publishing still requires a human in the social network.",
     privacy: "Credentials stay encrypted in Tanaghom and are never returned to this browser.",
     human: "Human approval is required before anything can publish.",
     supported: "Connect a channel",
@@ -51,16 +51,17 @@ const copy = {
     refresh: "Refresh",
     mapped: "Ready for drafts",
     unmapped: "Not mapped for drafts",
-    disabled: "Disabled in Postiz",
+    disabled: "Disabled for publishing",
+    socialPublishing: "Social Publishing",
     unavailableTitle: "Channel connection is not configured on this server",
-    unavailableCopy: "An owner or operator can connect channels once the Postiz tenant database and credential encryption are configured.",
+    unavailableCopy: "An owner or operator can connect channels once the social publishing service and credential encryption are configured.",
     providerMissing: "This social network is not configured yet. Ask the platform owner to finish the provider app credentials, then try again.",
     providerMissingTitle: "Provider setup is incomplete",
     connectError: "Tanaghom could not start the sign-in flow. Try again shortly.",
     loadError: "Tanaghom could not load your social channels.",
     forbidden: "Only an owner or operator can connect or disconnect social channels.",
     load: "Loading social channels…",
-    confirmDisconnect: "Disconnect this workspace? The social accounts stay in Postiz and can be reconnected later.",
+    confirmDisconnect: "Disconnect this workspace? The social accounts stay in the social publishing service and can be reconnected later.",
     revoke: "Disconnect & revoke token",
     revoking: "Revoking…",
     confirmRevoke: "Disconnect this channel and permanently revoke its stored OAuth token? Other connected channels are not affected.",
@@ -68,7 +69,7 @@ const copy = {
   },
   ar: {
     title: "قنوات التواصل",
-    lede: "اربط حسابات التواصل التي يمكن لفريقك إعداد مسودات لها. لكل مساحة عمل تناغم منظمة Postiz ومفتاح API معزولان؛ ولا يزال النشر يتطلب موافقة بشرية داخل شبكة التواصل.",
+    lede: "اربط حسابات التواصل التي يمكن لفريقك إعداد مسودات لها. لكل مساحة عمل تناغم اتصال نشر اجتماعي معزول؛ ولا يزال النشر يتطلب موافقة بشرية داخل شبكة التواصل.",
     privacy: "تبقى بيانات الاعتماد مشفرة في تناغم ولا تُعاد أبدًا إلى هذا المتصفح.",
     human: "الموافقة البشرية مطلوبة قبل أي نشر.",
     supported: "اربط قناة",
@@ -82,16 +83,17 @@ const copy = {
     refresh: "تحديث",
     mapped: "جاهزة للمسودات",
     unmapped: "غير مرتبطة بالمسودات",
-    disabled: "معطلة في Postiz",
+    disabled: "معطلة للنشر",
+    socialPublishing: "النشر على المنصات الاجتماعية",
     unavailableTitle: "ربط القنوات غير مهيأ على هذا الخادم",
-    unavailableCopy: "يمكن للمالك أو المشغل ربط القنوات بعد تهيئة قاعدة بيانات Postiz وتشفير بيانات الاعتماد.",
+    unavailableCopy: "يمكن للمالك أو المشغل ربط القنوات بعد تهيئة خدمة النشر الاجتماعي وتشفير بيانات الاعتماد.",
     providerMissing: "شبكة التواصل هذه غير مهيأة بعد. اطلب من مالك المنصة إكمال بيانات تطبيق المزود ثم حاول مجددًا.",
     providerMissingTitle: "إعداد المزود غير مكتمل",
     connectError: "تعذر على تناغم بدء تسجيل الدخول. حاول بعد قليل.",
     loadError: "تعذر على تناغم تحميل قنوات التواصل.",
     forbidden: "يمكن للمالك أو المشغل فقط ربط أو فصل قنوات التواصل.",
     load: "جارٍ تحميل قنوات التواصل…",
-    confirmDisconnect: "فصل مساحة العمل؟ تبقى حسابات التواصل في Postiz ويمكن إعادة ربطها لاحقًا.",
+    confirmDisconnect: "فصل مساحة العمل؟ تبقى حسابات التواصل في خدمة النشر الاجتماعي ويمكن إعادة ربطها لاحقًا.",
     revoke: "فصل القناة وإبطال الرمز",
     revoking: "جارٍ الإبطال…",
     confirmRevoke: "فصل هذه القناة وإبطال رمز OAuth المخزن نهائيًا؟ لن تتأثر القنوات الأخرى.",
@@ -210,7 +212,6 @@ export function ChannelsSettings() {
       <section className="credential-safety">
         <ShieldCheck size={20} />
         <div><strong>{text.privacy}</strong><p>{text.human}</p></div>
-        <StatusPill tone="success">{text.human}</StatusPill>
       </section>
       {notice ? <p className="channel-notice" role="status"><Link2 size={16} /> {notice}</p> : null}
       {state === "loading" ? <p className="channel-loading"><LoaderCircle className="spin" size={18} /> {text.load}</p> : null}
@@ -222,7 +223,7 @@ export function ChannelsSettings() {
           <div className="channel-grid">
             {payload.supported_platforms.map((item) => <article className="channel-card" key={item.platform}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(item.platform, ar).slice(0, 2)}</div>
-              <div><h3>{platformLabel(item.platform, ar)}</h3><small>{item.postiz_integration}</small></div>
+              <div><h3>{platformLabel(item.platform, ar)}</h3><small>{text.socialPublishing}</small></div>
               <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage} onClick={() => void connect(item.platform)}>
                 {busy === item.platform ? <LoaderCircle className="spin" size={16} /> : <Link2 size={16} />} {busy === item.platform ? text.connecting : text.connect}
               </button>
@@ -234,7 +235,7 @@ export function ChannelsSettings() {
           {payload.provisioning_ready && payload.can_manage ? <div className="channels-heading"><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void disconnect()}><Unplug size={16} /> {busy === "disconnect" ? text.disconnecting : text.disconnect}</button></div> : null}
         </section>
         <section className="channels-section" aria-labelledby="channel-connected-title">
-          <div className="channels-heading"><div><h2 id="channel-connected-title">{text.connected}</h2><p>{text.human}</p></div><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void load()}><RefreshCw size={16} /> {text.refresh}</button></div>
+          <div className="channels-heading"><div><h2 id="channel-connected-title">{text.connected}</h2><p>{text.emptyHint}</p></div><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void load()}><RefreshCw size={16} /> {text.refresh}</button></div>
           {payload.channels.length === 0 ? <div className="channel-empty"><Link2 size={18} /><span><strong>{text.empty}</strong><small>{text.emptyHint}</small></span></div> : <div className="channel-list">
             {payload.channels.map((channel) => <article className={`channel-row ${channel.disabled ? "channel-row-disabled" : ""}`} key={channel.id}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(channel.platform, ar).slice(0, 2)}</div>
