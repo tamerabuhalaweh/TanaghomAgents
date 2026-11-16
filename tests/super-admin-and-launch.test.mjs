@@ -57,6 +57,7 @@ test("super admin is platform-owner only and absent from customer navigation", (
   const service = read("apps/dashboard/lib/server/super-admin.ts");
   const route = read("apps/dashboard/app/api/super-admin/route.ts");
   const page = read("apps/dashboard/app/super-admin/page.tsx");
+  const proxy = read("apps/dashboard/proxy.ts");
   const shell = read("apps/dashboard/components/app-shell.tsx");
   assert.match(service, /SUPER_ADMIN_EMAILS/);
   assert.match(service, /PLATFORM_ORGANIZATION_ID/);
@@ -66,6 +67,7 @@ test("super admin is platform-owner only and absent from customer navigation", (
   assert.match(route, /set_ai_circuit_breaker/);
   assert.match(route, /update_launch_config/);
   assert.match(page, /notFound\(\)/);
+  assert.match(proxy, /"\/super-admin"/);
   assert.doesNotMatch(shell, /\/super-admin/);
 });
 
