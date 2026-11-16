@@ -4,12 +4,25 @@ import { ArrowRight } from "lucide-react";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { dialectLabel, inferDialectFromLocation } from "@/lib/i18n/dialects";
 import type { OnboardingCopy } from "@/lib/i18n/onboarding";
 import { ONBOARDING_INDUSTRIES, type OnboardingIndustry } from "@/lib/onboarding-industries";
 import type { OnboardingProfile } from "@/lib/onboarding-types";
 import { tenantDisplayName } from "@/lib/tenant-name";
 
 type Status = "loading" | "ready" | "saving" | "saved" | "error" | "load_error";
+
+const MARKET_PRESETS = [
+  { en: "Saudi Arabia", ar: "السعودية" },
+  { en: "United Arab Emirates", ar: "الإمارات" },
+  { en: "Kuwait", ar: "الكويت" },
+  { en: "Qatar", ar: "قطر" },
+  { en: "Jordan", ar: "الأردن" },
+  { en: "Lebanon", ar: "لبنان" },
+  { en: "Egypt", ar: "مصر" },
+  { en: "Bahrain", ar: "البحرين" },
+  { en: "Oman", ar: "عُمان" },
+] as const;
 
 export function OnboardingProfileForm({ copy, locale }: { copy: OnboardingCopy; locale: "en" | "ar" }) {
   const [canonicalName, setCanonicalName] = useState("");
@@ -74,6 +87,7 @@ export function OnboardingProfileForm({ copy, locale }: { copy: OnboardingCopy; 
   }
 
   const preview = { name: canonicalName, businessNameEn, businessNameAr };
+  const detectedDialect = inferDialectFromLocation(location);
 
   return (
     <form className="onboarding-form" onSubmit={submit} dir={locale === "ar" ? "rtl" : "ltr"}>
@@ -123,13 +137,20 @@ export function OnboardingProfileForm({ copy, locale }: { copy: OnboardingCopy; 
           <span>{copy.locationLabel}</span>
           <input
             type="text"
+            list="onboarding-market-presets"
             value={location}
             minLength={location ? 2 : undefined}
             maxLength={160}
             dir="auto"
             onChange={(event) => setLocation(event.target.value)}
           />
+          <datalist id="onboarding-market-presets">
+            {MARKET_PRESETS.map((market) => <option key={market.en} value={locale === "ar" ? market.ar : market.en} />)}
+          </datalist>
           <small>{copy.locationPlaceholder}</small>
+          <span className="onboarding-dialect-badge" aria-live="polite">
+            {copy.dialectPreview}: <strong>{dialectLabel(detectedDialect, locale)}</strong>
+          </span>
         </label>
       </div>
 

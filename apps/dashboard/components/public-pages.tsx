@@ -14,7 +14,7 @@ function PublicHeader({ locale }: { locale: Locale }) {
     <header className="public-header">
       <Link className="public-brand" href="/" aria-label="Tanaghom">
         <BrandMark />
-        <span>Tanaghom</span>
+        <span>{ar ? "تناغم" : "Tanaghom"}</span>
       </Link>
       <nav className="public-nav" aria-label={ar ? "التنقل العام" : "Public navigation"}>
         <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
@@ -35,7 +35,7 @@ function PublicFooter({ locale }: { locale: Locale }) {
   return (
     <footer className="public-footer">
       <div>
-        <Link className="public-brand" href="/"><BrandMark /><span>Tanaghom</span></Link>
+        <Link className="public-brand" href="/"><BrandMark /><span>{ar ? "تناغم" : "Tanaghom"}</span></Link>
         <p>{ar ? "تناغم يمنح فرق التسويق مساحة عمل ثنائية اللغة تعمل بالذكاء الاصطناعي، مع اعتماد بشري واضح لكل ما يصل إلى العملاء." : "Tanaghom gives marketing teams a bilingual AI workspace with clear human approval for everything that reaches customers."}</p>
       </div>
       <nav aria-label={ar ? "روابط التذييل" : "Footer links"}>
@@ -54,20 +54,20 @@ const tiers = [
     id: "starter",
     list: 49, promo: 15,
     en: { name: "Starter", lede: "For one brand finding its rhythm.", features: ["15 AI campaigns / month", "Unlimited team members in 1 workspace", "Full 5-step agent loop", "Mandatory human approval", "EN + AR RTL workspace", "Visual Brand Kit & Knowledge Base"] },
-    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["15 حملة ذكاء اصطناعي شهرياً", "أعضاء فريق غير محدودين في مساحة عمل واحدة", "دورة الوكلاء الكاملة من 5 خطوات", "اعتماد بشري إلزامي", "مساحة عمل بالعربية والإنجليزية، باتجاه الكتابة الصحيح لكل لغة", "هوية بصرية مرئية وقاعدة معرفة"] },
+    ar: { name: "باقة البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["15 حملة ذكاء اصطناعي شهرياً", "أعضاء فريق غير محدودين في مساحة عمل واحدة", "دورة الوكلاء الكاملة من 5 خطوات", "اعتماد بشري إلزامي", "مساحة عمل بالعربية والإنجليزية، باتجاه الكتابة الصحيح لكل لغة", "هوية بصرية مرئية وقاعدة معرفة"] },
   },
   {
     id: "growth",
     list: 129, promo: 25,
     en: { name: "Growth", lede: "For teams running always-on campaigns.", features: ["Everything in Starter", "50 AI campaigns / month", "Multi-channel publishing sync", "Priority generation"] },
-    ar: { name: "النمو", lede: "للفرق التي تدير حملات مستمرة.", features: ["كل ما في باقة البداية", "50 حملة ذكاء اصطناعي شهرياً", "مزامنة النشر متعدد القنوات", "توليد ذو أولوية"] },
+    ar: { name: "باقة النمو", lede: "للفرق التي تدير حملات مستمرة.", features: ["كل ما في باقة البداية", "50 حملة ذكاء اصطناعي شهرياً", "مزامنة النشر متعدد القنوات", "توليد ذو أولوية"] },
     featured: true,
   },
   {
     id: "scale",
     list: 249, promo: 50,
     en: { name: "Scale", lede: "For agencies coordinating multiple brands.", features: ["Everything in Growth", "200 AI campaigns / month", "Full workspace capacity", "Dedicated onboarding support"] },
-    ar: { name: "التوسع", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["كل ما في باقة النمو", "200 حملة ذكاء اصطناعي شهرياً", "سعة مساحة عمل كاملة", "دعم تهيئة مخصص"] },
+    ar: { name: "باقة التوسع", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["كل ما في باقة النمو", "200 حملة ذكاء اصطناعي شهرياً", "سعة مساحة عمل كاملة", "دعم تهيئة مخصص"] },
   },
 ] as const;
 
@@ -158,7 +158,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
           </article>
           <article className="public-advantage">
             <h3>{ar ? "مبني بالعربية. وليس مترجمًا إليها." : "Built in Arabic. Not translated into it."}</h3>
-            <p>{ar ? "عربية أولاً ومن اليمين إلى اليسار، مع Cairo وTajawal وIBM Plex Sans Arabic وAlmarai ضمن نظام الخطوط — لا ترجمة لاحقة." : "Arabic-first RTL with Cairo, Tajawal, IBM Plex Sans Arabic and Almarai in the type stack — not a translated afterthought."}</p>
+            <p>{ar ? "عربية أولاً ومن اليمين إلى اليسار، بخطوط عربية أصيلة ضمن نظام الخطوط — لا ترجمة لاحقة." : "Arabic-first RTL with Cairo, Tajawal, IBM Plex Sans Arabic and Almarai in the type stack — not a translated afterthought."}</p>
           </article>
           <article className="public-advantage">
             <h3>{ar ? "خطّط. أنشئ. وافق. انشر. قِس. في مكان واحد." : "Plan. Create. Approve. Publish. Measure. One place."}</h3>
@@ -206,7 +206,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <PricingCards locale={locale} launch100Active={launch100Active} />
         <aside className="public-sandbox-callout public-sandbox-landing">
           <ShieldCheck size={20} aria-hidden="true" />
-          <div><strong>{ar ? "ابدأ بصندوق مجاني: حملة كاملة واحدة" : "Start with a Free 1-Campaign Sandbox"}</strong><p>{ar ? "حزمة حملة كاملة، وثلاث عمليات تشغيل ذكاء اصطناعي، دون ربط قنوات اجتماعية حقيقية. ارتقِ عندما تكون جاهزاً." : "One complete AI Campaign Work Pack and three AI runs, without live social channels. Upgrade when you are ready."}</p></div>
+          <div><strong>{ar ? "تجربة مجانية لحملة متكاملة" : "Start with a Free 1-Campaign Sandbox"}</strong><p>{ar ? "احصل على حزمة حملة كاملة، وثلاث عمليات توليد بالذكاء الاصطناعي، دون ربط قنوات اجتماعية حقيقية. وارتقِ عندما تكون جاهزًا." : "One complete AI Campaign Work Pack and three AI runs, without live social channels. Upgrade when you are ready."}</p></div>
         </aside>
         {cohortFull ? <div className="public-waitlist"><WaitlistForm locale={locale} /></div> : null}
         <p className="public-center-link"><Link href="/pricing">{ar ? "تفاصيل الخطط والمقارنة" : "Compare plans and details"}<ArrowRight size={16} /></Link></p>
@@ -218,8 +218,8 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولاراً للمقعد) وHootsuite (من نحو 399 دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
         <details><summary>{ar ? "من يملك الحملات والبيانات التي ننشئها؟" : "Who owns the campaigns and data we create?"}</summary><p>{ar ? "أنت. يبقى موجزك ومحتواك واعتماداتك ومعرفتك بالعلامة في مساحة عملك. فصل قناة تواصل يلغي رمز OAuth ويحذفه؛ ويبقى محتواك وسجل اعتمادك ملكاً لك." : "You do. Your briefs, content, approvals and brand knowledge stay in your workspace. Disconnecting a social channel revokes and purges its OAuth token; your content and approval history remain yours."}</p></details>
         <details><summary>{ar ? "ما الذي يفعله تناغم بالضبط؟" : "What exactly does Tanaghom do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
-        <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، مع خطوط Cairo وTajawal وIBM Plex Sans Arabic وAlmarai. يُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
-        <details><summary>{ar ? "هل أحتاج بطاقة للبدء؟" : "Do I need a card to start?"}</summary><p>{ar ? "ابدأ بصندوق الحملة المجاني: حزمة حملة كاملة وثلاث عمليات تشغيل ذكاء اصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة." : "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required."}</p></details>
+        <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، بخطوط عربية أصيلة. ويُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
+        <details><summary>{ar ? "هل أحتاج بطاقة للبدء؟" : "Do I need a card to start?"}</summary><p>{ar ? "ابدأ بتجربة مجانية لحملة متكاملة: حزمة حملة كاملة وثلاث عمليات توليد بالذكاء الاصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة." : "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required."}</p></details>
       </section>
 
       <section className="public-cta">
@@ -245,7 +245,7 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
         <PricingCards locale={locale} detailed launch100Active={launch100Active} />
         <aside className="public-sandbox-callout">
           <ShieldCheck size={20} aria-hidden="true" />
-          <div><strong>{ar ? "صندوق مجاني: حملة كاملة واحدة" : "Free 1-Campaign Sandbox"}</strong><p>{ar ? "ابدأ بحملة مجانية واحدة بدون التزام، ثم اختر الباقة المناسبة لك. تتم عملية الدفع بالكامل عبر Stripe بأمان." : "Start with one free campaign, no commitment, then choose the plan that fits you. Checkout is handled securely by Stripe."}</p></div>
+          <div><strong>{ar ? "تجربة مجانية لحملة متكاملة" : "Free 1-Campaign Sandbox"}</strong><p>{ar ? "ابدأ بتجربة مجانية بدون التزام، ثم اختر الباقة المناسبة لك. وتتم عملية الدفع بالكامل عبر Stripe بأمان." : "Start with one free campaign, no commitment, then choose the plan that fits you. Checkout is handled securely by Stripe."}</p></div>
         </aside>
         {cohortFull ? <div className="public-waitlist"><WaitlistForm locale={locale} /></div> : null}
         <p className="public-pricing-note">{ar ? "فوترة B2B بالدولار الأمريكي من شركتنا البريطانية المحدودة. خارج نطاق ضريبة القيمة المضافة البريطانية. هذه ليست عملية بيع بالتجزئة للمستهلكين في المملكة المتحدة، ولا تسري عليها حماية البيع عن بُعد للمستهلكين. نستلم المدفوعات عبر Stripe بالبطاقة أو بالتحويل البنكي. (مرجع HMRC Notice 741A)" : "B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A. This is not a UK consumer retail sale, and UK consumer distance-selling protections do not apply. Payments are collected through Stripe by card or bank transfer."}</p>

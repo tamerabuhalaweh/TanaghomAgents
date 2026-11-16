@@ -3,6 +3,24 @@ export const ARABIC_DATE_LOCALE = "ar-SA-u-nu-latn";
 
 export type UiLocale = "ar" | "en";
 
+export interface ArabicPluralForms {
+  zero?: string;
+  one: string;
+  two: string;
+  few: string;
+  many: string;
+  other: string;
+}
+
+const ARABIC_PLURAL_RULES = new Intl.PluralRules("ar-SA");
+
+/** Formats an Arabic count with the correct zero/one/two/few/many/other form. */
+export function formatArabicCount(count: number, forms: ArabicPluralForms): string {
+  const category = ARABIC_PLURAL_RULES.select(count) as keyof ArabicPluralForms;
+  const template = forms[category] ?? forms.other;
+  return template.replaceAll("{count}", formatNumber(count, "ar"));
+}
+
 const EASTERN_ARABIC_DIGITS = /[\u0660-\u0669\u06F0-\u06F9]/g;
 const DIGIT_MAP: Record<string, string> = {
   "\u0660": "0", "\u0661": "1", "\u0662": "2", "\u0663": "3", "\u0664": "4",

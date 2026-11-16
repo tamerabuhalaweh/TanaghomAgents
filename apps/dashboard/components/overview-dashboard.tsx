@@ -11,7 +11,7 @@ import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import type { OnboardingProfile } from "@/lib/onboarding-types";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDisplayName, agentStatusLabel } from "@/lib/i18n/agent-names";
-import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { formatArabicCount, formatDateTime, formatNumber } from "@/lib/i18n/format";
 
 function campaignTone(status: string) {
   if (status === "blocked_missing_info") return "danger" as const;
@@ -108,7 +108,7 @@ export function OverviewDashboard() {
   const { data } = operations;
   const description = data.summary.campaigns_total
     ? (ar
-      ? `${data.summary.campaigns_active} حملة نشطة، ${data.summary.jobs_open} مهمة مفتوحة، و${data.summary.approvals_pending} قرار بانتظارك.`
+      ? `${formatArabicCount(data.summary.campaigns_active, { zero: "لا حملات نشطة", one: "حملة واحدة نشطة", two: "حملتان نشطتان", few: "{count} حملات نشطة", many: "{count} حملة نشطة", other: "{count} حملة نشطة" })}، ${formatArabicCount(data.summary.jobs_open, { zero: "لا مهام مفتوحة", one: "مهمة واحدة مفتوحة", two: "مهمتان مفتوحتان", few: "{count} مهام مفتوحة", many: "{count} مهمة مفتوحة", other: "{count} مهمة مفتوحة" })}, و${formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" })}.`
       : `${data.summary.campaigns_active} active campaigns, ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
     : (ar ? "لم تبدأ أي حملة أو مهمة وكيل بعد." : "No campaign or agent work has started yet.");
   const setupSteps = setup ? [
@@ -131,7 +131,7 @@ export function OverviewDashboard() {
           <h2 id="setup-banner-title">{ar ? "أكمل إعداد مساحة عملك" : "Continue workspace setup"}</h2>
           <p className="setup-banner-next">
             <strong>{ar ? `الخطوة ${nextStepIndex + 1} من 4: ${nextStep.ar}` : `Step ${nextStepIndex + 1} of 4: ${nextStep.en}`}</strong>
-            <span>{ar ? (remainingCount === 1 ? "بقيت خطوة واحدة قبل أن يعمل فريقك بأكمل طاقته." : `بقيت ${remainingCount} خطوات قبل أن يعمل فريقك بأكمل طاقته.`) : `${remainingCount} ${remainingCount === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</span>
+            <span>{ar ? `${formatArabicCount(remainingCount, { zero: "اكتمل الإعداد بالكامل.", one: "بقيت خطوة واحدة قبل أن يعمل فريقك بأكمل طاقته.", two: "بقيت خطوتان قبل أن يعمل فريقك بأكمل طاقته.", few: "بقيت {count} خطوات قبل أن يعمل فريقك بأكمل طاقته.", many: "بقيت {count} خطوة قبل أن يعمل فريقك بأكمل طاقته.", other: "بقيت {count} خطوة قبل أن يعمل فريقك بأكمل طاقته." })}` : `${remainingCount} ${remainingCount === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</span>
           </p>
         </div>
         <Link className="primary-button" href="/onboarding">{ar ? "أكمل الإعداد" : "Continue setup"}<ArrowRight size={16} /></Link>
@@ -154,7 +154,7 @@ export function OverviewDashboard() {
           <div><div className="title-with-count"><h2 id="attention-title">{ar ? "بحاجة إلى انتباهك" : "Needs your attention"}</h2><span>{data.summary.approvals_pending}</span></div><p>{ar ? "قرارات بشرية تعيق أعمال النشر حالياً." : "Human decisions that currently block publishing work."}</p></div>
           <Link href="/approvals" className="text-link">{ar ? "فتح الاعتمادات" : "Open approvals"} <ArrowRight size={16} /></Link>
         </div>
-        {data.summary.approvals_pending === 0 ? <div className="attention-clear"><CheckCircle2 size={20} /><div><strong>{ar ? "لا قرارات معلّقة" : "No decisions are waiting"}</strong><span>{ar ? "ستظهر المسودات الجديدة بعد بدء عمل الوكلاء في المرحلة الثالثة." : "New drafts will appear after Phase 3 agent work begins."}</span></div></div> : <div className="attention-clear"><div><strong>{ar ? `${data.summary.approvals_pending} قرار بانتظارك` : `${data.summary.approvals_pending} decisions are waiting`}</strong><span>{ar ? "افتح مساحة الاعتمادات لمراجعة المصدر والسياق." : "Open the approval workspace to review source content and context."}</span></div></div>}
+        {data.summary.approvals_pending === 0 ? <div className="attention-clear"><CheckCircle2 size={20} /><div><strong>{ar ? "لا قرارات معلّقة" : "No decisions are waiting"}</strong><span>{ar ? "ستظهر المسودات الجديدة بعد بدء عمل الوكلاء في المرحلة الثالثة." : "New drafts will appear after Phase 3 agent work begins."}</span></div></div> : <div className="attention-clear"><div><strong>{ar ? formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" }) : `${data.summary.approvals_pending} decisions are waiting`}</strong><span>{ar ? "افتح مساحة الاعتمادات لمراجعة المصدر والسياق." : "Open the approval workspace to review source content and context."}</span></div></div>}
       </section>
 
       <section className="handoff-section" aria-labelledby="handoff-title">
@@ -173,7 +173,7 @@ export function OverviewDashboard() {
           <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{formatNumber(Number(data.performance.impressions), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{formatNumber(Number(data.performance.clicks), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>${formatNumber(Number(data.performance.spend), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{formatNumber(data.summary.leads_total, locale)}</dd><span>{ar ? `${formatNumber(data.summary.leads_won, locale)} صفقات رابحة` : <>{formatNumber(data.summary.leads_won, locale)} won</>}</span></div></dl>
         </section>
         <section className="alerts-section" aria-labelledby="alerts-title">
-          <div className="section-heading compact-heading"><div><h2 id="alerts-title">{ar ? "التنبيهات" : "Alerts"}</h2><p>{ar ? `${data.summary.notifications_unread} إشعار تشغيلي غير مقروء.` : `${data.summary.notifications_unread} unread operational notifications.`}</p></div></div>
+          <div className="section-heading compact-heading"><div><h2 id="alerts-title">{ar ? "التنبيهات" : "Alerts"}</h2><p>{ar ? `${formatArabicCount(data.summary.notifications_unread, { zero: "لا إشعارات تشغيلية غير مقروءة.", one: "إشعار تشغيلي واحد غير مقروء.", two: "إشعاران تشغيليان غير مقروءين.", few: "{count} إشعارات تشغيلية غير مقروءة.", many: "{count} إشعارًا تشغيليًا غير مقروءًا.", other: "{count} إشعار تشغيلي غير مقروء." })}` : `${data.summary.notifications_unread} unread operational notifications.`}</p></div></div>
           {data.notifications.length ? <ul className="alert-list">{data.notifications.slice(0, 5).map((notification) => <li key={notification.id}><div><strong>{notification.title}</strong><span>{notification.body}</span></div><time>{formatDateTime(notification.created_at, locale)}</time></li>)}</ul> : <DomainEmpty title={ar ? "لا تنبيهات نشطة" : "No active alerts"} description={ar ? "لا يوجد إشعار تشغيلي غير مقروء يحتاج انتباهك." : "No unread operational notification requires attention."} />}
         </section>
       </div>

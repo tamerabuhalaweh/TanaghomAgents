@@ -432,7 +432,7 @@ test("Packet B promotes Growth & CRM and keeps operator diagnostics in a disclos
   assert.match(shell, /عمليات متقدمة/);
   assert.match(shell, /href="\/settings\/channels"/);
   assert.match(shell, /Human-Reviewed Workspace/);
-  assert.match(shell, /مساحة عمل بمراجعة بشرية/);
+  assert.match(shell, /موافقة بشرية قبل النشر/);
   assert.doesNotMatch(shell, />Staging<|"Staging"/);
   assert.ok(shell.indexOf("growthNavigation.map") < shell.indexOf("sidebar-more"), "Growth links must render outside the disclosure");
   for (const href of ["/campaigns", "/leads", "/knowledge", "/reports"]) assert.match(shell, new RegExp(`href: "${href}"`));

@@ -35,7 +35,8 @@ test("system view is bilingual and uses customer-facing operational labels", asy
   assert.match(view, /Social Publishing/);
   assert.match(view, /Failed background tasks/);
   assert.match(view, /مراقبة النظام/);
-  assert.match(view, /عامل نموذج الذكاء الاصطناعي/);
+  assert.match(view, /محرك الذكاء الاصطناعي/);
+  assert.match(view, /لم تُسجّل أي استجابة من الخدمة بعد/);
   assert.doesNotMatch(view, /"Gemma"/);
   assert.doesNotMatch(view, /"GoHighLevel"/);
   assert.doesNotMatch(view, /Dead letters/);

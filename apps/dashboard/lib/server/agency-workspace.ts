@@ -13,6 +13,8 @@ const { workspaceManifest, workspaceRequest, workspaceArtifact }: typeof import(
  = requireRuntime("@tanaghom/agent-runtime/workspace");
 const { createGeminiWorkspaceClient, GeminiWorkspaceError }: typeof import("@tanaghom/agent-runtime/gemini-workspace")
  = requireRuntime("@tanaghom/agent-runtime/gemini-workspace");
+const { inferDialectFromLocation, normalizeDialect, resolveArabicDialect }: typeof import("@tanaghom/agent-runtime/dialects")
+ = requireRuntime("@tanaghom/agent-runtime/dialects");
 const legacy:typeof import("@tanaghom/agent-runtime/workspace-gemma") = requireRuntime("@tanaghom/agent-runtime/workspace-gemma");
 
 export class WorkspaceError extends Error { constructor(public code:string,public status=409) { super(code); } }
@@ -50,18 +52,40 @@ async function boundedBody(request:NextRequest) {
 function closed(body:Record<string,unknown>,keys:string[]){if(Object.keys(body).some(k=>!keys.includes(k)))throw new WorkspaceError("workspace_unknown_fields",400);}
 function identifier(value:unknown){if(typeof value!=="string"||!uuid.test(value))throw new WorkspaceError("workspace_id_invalid",400);return value;}
 
+async function defaultArabicDialect(organizationId:string){
+ const result=await database().query(`SELECT o.location,
+  (SELECT v.rules->>'arabic_dialect' FROM tanaghom.brand_kits kit
+    JOIN tanaghom.brand_kit_versions v ON v.kit_id=kit.id AND v.version=kit.current_version
+    WHERE kit.organization_id=o.id ORDER BY kit.created_at DESC,kit.id DESC LIMIT 1) AS brand_dialect
+  FROM tanaghom.organizations o WHERE o.id=$1`,[organizationId]);
+ const row=result.rows[0]||{};
+ const brandDialect=normalizeDialect(row.brand_dialect);
+ const inferred=inferDialectFromLocation(row.location);
+ return {dialect:brandDialect||inferred||"msa",source:brandDialect?"brand_kit":inferred!=="msa"?"location":"default"};
+}
+
 export async function workspaceRead(request:NextRequest){
  const actor=await authorize(request,["owner","reviewer","operator","viewer"]);
  const requested=request.nextUrl.searchParams.get("id");if(requested)identifier(requested);
- const list=await database().query(`SELECT id,title,language,profile_codes,status,error_code,created_at,started_at,finished_at
+ const list=await database().query(`SELECT id,title,language,profile_codes,status,error_code,created_at,started_at,finished_at,
+  (SELECT l.payload->>'dialect' FROM tanaghom.agent_actions_log l WHERE l.organization_id=$1
+    AND l.action_type='workspace.brief_configured' AND l.entity_id=tanaghom.agency_workspaces.id
+    ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_dialect
   FROM tanaghom.agency_workspaces WHERE organization_id=$1 ORDER BY created_at DESC,id LIMIT 40`,[actor.organizationId]);
  const id=requested||list.rows[0]?.id;
- const [control,record]=await Promise.all([
+ const [control,record,dialectDefault]=await Promise.all([
   database().query(`SELECT enabled,emergency_stop,reason,(SELECT emergency_stop FROM tanaghom.agent_runtime_controls) AS platform_stop FROM tanaghom.agency_workspace_control`),
-  id?database().query(`SELECT *,tanaghom.agency_workspace_result_hash(id) AS result_hash FROM tanaghom.agency_workspaces WHERE id=$1 AND organization_id=$2`,[id,actor.organizationId]):Promise.resolve({rows:[]}),
+  id?database().query(`SELECT *,tanaghom.agency_workspace_result_hash(id) AS result_hash,
+    (SELECT l.payload->>'dialect' FROM tanaghom.agent_actions_log l WHERE l.organization_id=$2
+      AND l.action_type='workspace.brief_configured' AND l.entity_id=tanaghom.agency_workspaces.id
+      ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_dialect
+    FROM tanaghom.agency_workspaces WHERE id=$1 AND organization_id=$2`,[id,actor.organizationId]):Promise.resolve({rows:[]}),
+  defaultArabicDialect(actor.organizationId),
  ]);
  if(requested&&!record.rows[0])throw new WorkspaceError("workspace_not_found",404);
- const selected=record.rows[0]||null;
+ const rawSelected=record.rows[0]||null;
+ const selected=rawSelected?(({configured_dialect,...row})=>({...row,dialect:normalizeDialect(configured_dialect)||dialectDefault.dialect}))(rawSelected):null;
+ const assignments=list.rows.map(({configured_dialect,...row})=>({...row,dialect:normalizeDialect(configured_dialect)||dialectDefault.dialect}));
  const [steps,events]=selected?await Promise.all([
   database().query(`SELECT s.sequence,s.profile_code,t.id AS task_id,t.status,t.attempt,t.claimed_at,t.finished_at,t.error_code,t.result,t.response_hash,
     t.prepared->'shared_context' AS shared_context FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_pilot_tasks t ON t.id=s.task_id
@@ -81,7 +105,8 @@ export async function workspaceRead(request:NextRequest){
     ?"AI specialist generation is paused by the platform while operations are reviewed. Your briefs can still be saved."
     :"AI specialists are ready. Generated work stays as a reviewable proposal until a person approves it.";
  return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
-  assignments:list.rows,selected:selected?{...selected,steps:steps.rows,events:events.rows}:null,
+  assignments,selected:selected?{...selected,steps:steps.rows,events:events.rows}:null,
+  default_dialect:dialectDefault.dialect,default_dialect_source:dialectDefault.source,
   can_manage:actor.role==="owner",can_review:["owner","reviewer"].includes(actor.role),
   quota,usage,
   runtime:{ready:isConfigured&&c?.enabled&&!c.emergency_stop&&!c.platform_stop,
@@ -101,14 +126,26 @@ export async function workspaceWrite(request:NextRequest){
  const body=await boundedBody(request);
  const actor=await authorize(request,body.action==="approve"||body.action==="reject"?["owner","reviewer"]:["owner"]);
  if(body.action==="create"){
-  closed(body,["action","title","brief","source_facts","language","profile","idempotency_key"]);
+  closed(body,["action","title","brief","source_facts","language","profile","dialect","idempotency_key"]);
   for(const [key,min,max] of [["title",3,120],["brief",30,6000],["source_facts",20,6000]] as const)
    if(typeof body[key]!=="string"||body[key].trim().length<min||body[key].length>max)throw new WorkspaceError(`workspace_${key}_invalid`,400);
   if(!["en","ar"].includes(String(body.language)))throw new WorkspaceError("workspace_language_invalid",400);
+  if(body.dialect!==undefined&&normalizeDialect(body.dialect)===null)throw new WorkspaceError("workspace_dialect_invalid",400);
   const profiles=body.profile==="team"?workspaceManifest.profiles.map(p=>p.code):[String(body.profile)];
   if(profiles.some(c=>!workspaceManifest.profiles.some(p=>p.code===c)))throw new WorkspaceError("workspace_profile_invalid",400);
   const r=await database().query("SELECT tanaghom.create_agency_workspace($1,$2,$3,$4,$5,$6,$7) AS id",
    [actor.id,String(body.title).trim(),String(body.brief).trim(),String(body.source_facts).trim(),body.language,profiles,identifier(body.idempotency_key)]);
+  const id=r.rows[0].id;
+  if(body.language==="ar"){
+   const fallback=await defaultArabicDialect(actor.organizationId);
+   const dialect=normalizeDialect(body.dialect)||fallback.dialect;
+   await database().query(`INSERT INTO tanaghom.agent_actions_log
+    (correlation_id,actor_user_id,action_type,entity_type,entity_id,organization_id,payload,result)
+    SELECT $1,$2,'workspace.brief_configured','agency_workspace',$3,$4,$5::jsonb,'success'
+    WHERE NOT EXISTS (SELECT 1 FROM tanaghom.agent_actions_log WHERE organization_id=$4
+      AND action_type='workspace.brief_configured' AND entity_id=$3)`,
+    [randomUUID(),actor.id,id,actor.organizationId,JSON.stringify({dialect})]);
+  }
   return r.rows[0];
  }
  const id=identifier(body.id);
@@ -195,8 +232,22 @@ export async function workspaceTick(request:NextRequest){
  const availableModels:string[]=[];
  if(process.env.GEMMA_API_KEY?.trim())availableModels.push("7d000000-0000-4000-8000-000000000002");
  if(apiKey)availableModels.push("7d000000-0000-4000-8000-000000000003");
- const task=(await pool.query("SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[]) AS task",[availableModels])).rows[0].task;
- if(!task)return {claimed:false};
+ const claimed=(await pool.query("SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[]) AS task",[availableModels])).rows[0].task;
+ if(!claimed)return {claimed:false};
+ let task=claimed;
+ if(task.language==="ar"){
+  try{
+   const context=(await database().query(`SELECT o.location,
+    (SELECT l.payload->>'dialect' FROM tanaghom.agent_actions_log l WHERE l.organization_id=w.organization_id
+      AND l.action_type='workspace.brief_configured' AND l.entity_id=w.id ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS brief_dialect,
+    (SELECT v.rules->>'arabic_dialect' FROM tanaghom.brand_kits kit
+      JOIN tanaghom.brand_kit_versions v ON v.kit_id=kit.id AND v.version=kit.current_version
+      WHERE kit.organization_id=w.organization_id ORDER BY kit.created_at DESC,kit.id DESC LIMIT 1) AS brand_dialect
+    FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_workspaces w ON w.id=s.workspace_id
+    JOIN tanaghom.organizations o ON o.id=w.organization_id WHERE s.task_id=$1`,[task.task_id])).rows[0];
+   task={...task,dialect:resolveArabicDialect({campaignDialect:context?.brief_dialect,brandKitDialect:context?.brand_dialect,location:context?.location})};
+  }catch{task={...task,dialect:"msa"};}
+ }
  let artifact=null,errorCode:string|null=null;const started=Date.now();
  try{
   let output=null;

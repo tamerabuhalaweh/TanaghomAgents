@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type FormEvent } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { DIALECTS, dialectLabel, inferDialectFromLocation, normalizeDialect, type DialectId } from "@/lib/i18n/dialects";
 import type { OnboardingCopy } from "@/lib/i18n/onboarding";
 import { normalizeDigits } from "@/lib/i18n/format";
 import type { OnboardingProfile } from "@/lib/onboarding-types";
@@ -22,6 +23,7 @@ interface BrandKitVersion {
   tone: string | null;
   arabic_font: string | null;
   latin_font: string | null;
+  rules: unknown;
 }
 
 type Status = "loading" | "empty" | "existing" | "disabled" | "load_error" | "saving" | "saved" | "error";
@@ -41,6 +43,7 @@ function applyVersion(version: BrandKitVersion | undefined, set: {
   setTone: (value: string) => void;
   setArabicFont: (value: string) => void;
   setLatinFont: (value: string) => void;
+  setDialect: (value: DialectId) => void;
 }) {
   if (!version) return;
   const primary = version.colors?.primary;
@@ -50,6 +53,11 @@ function applyVersion(version: BrandKitVersion | undefined, set: {
   set.setTone(version.tone ?? "");
   set.setArabicFont(version.arabic_font ?? "");
   set.setLatinFont(version.latin_font ?? "");
+  const rules = version.rules && typeof version.rules === "object" && !Array.isArray(version.rules)
+    ? version.rules as Record<string, unknown>
+    : {};
+  const dialect = normalizeDialect(rules.arabic_dialect);
+  if (dialect) set.setDialect(dialect);
 }
 
 export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; locale: "en" | "ar" }) {
@@ -61,6 +69,8 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
   const [tone, setTone] = useState("");
   const [arabicFont, setArabicFont] = useState("");
   const [latinFont, setLatinFont] = useState("");
+  const [dialect, setDialect] = useState<DialectId>("msa");
+  const [rules, setRules] = useState<Record<string, unknown>>({});
   const [problem, setProblem] = useState("");
 
   useEffect(() => {
@@ -81,6 +91,10 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
         }
         const kits = await kitsResponse.json() as { kits?: BrandKitRow[] };
         if (!active) return;
+        let profile: OnboardingProfile | null = null;
+        if (profileResponse.ok) profile = await profileResponse.json() as OnboardingProfile;
+        if (!active) return;
+        const inferredDialect = inferDialectFromLocation(profile?.location);
         if (kits.kits?.length) {
           const kit = kits.kits[0];
           setExisting(kit);
@@ -91,15 +105,18 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
             const detail = await detailResponse.json() as { versions?: BrandKitVersion[] };
             const versions = detail.versions ?? [];
             const current = versions.find((version) => version.version === kit.current_version) ?? versions[versions.length - 1];
-            applyVersion(current, { setPrimary, setAccent, setTone, setArabicFont, setLatinFont });
+            applyVersion(current, { setPrimary, setAccent, setTone, setArabicFont, setLatinFont, setDialect });
+            const existingRules = current?.rules && typeof current.rules === "object" && !Array.isArray(current.rules)
+              ? current.rules as Record<string, unknown>
+              : {};
+            setRules(existingRules);
           }
+          setDialect((current) => current === "msa" ? inferredDialect : current);
           if (active) setStatus("existing");
           return;
         }
-        if (profileResponse.ok) {
-          const profile = await profileResponse.json() as OnboardingProfile;
-          if (active) setName(tenantDisplayName(profile, locale));
-        }
+        if (profile) setName(tenantDisplayName(profile, locale));
+        if (active) setDialect(inferredDialect);
         if (active) setStatus("empty");
       })
       .catch(() => {
@@ -133,6 +150,7 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
           tone: tone.trim() || null,
           arabic_font: arabicFont.trim() || null,
           latin_font: latinFont.trim() || null,
+          rules: { ...rules, arabic_dialect: dialect },
         }),
       },
     ).catch(() => null);
@@ -219,6 +237,14 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
         </div>
 
         <label className="onboarding-field">
+          <span>{copy.dialectLabel}</span>
+          <select value={dialect} onChange={(event) => setDialect(event.target.value as DialectId)}>
+            {DIALECTS.map((item) => <option key={item.id} value={item.id}>{dialectLabel(item.id, locale)}</option>)}
+          </select>
+          <small>{copy.dialectHint}</small>
+        </label>
+
+        <label className="onboarding-field">
           <span>{copy.arabicFontLabel}</span>
           <input type="text" dir="auto" value={arabicFont} maxLength={120} placeholder={copy.fontPlaceholder} onChange={(event) => setArabicFont(event.target.value)} />
         </label>
@@ -236,6 +262,7 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
           {accent && COLOR.test(accent) ? <span style={{ background: accent }} title={accent} /> : null}
         </div>
         <p>{tone.trim() || copy.tonePlaceholder}</p>
+        <span className="onboarding-dialect-badge">{copy.dialectPreview}: <strong>{dialectLabel(dialect, locale)}</strong></span>
       </div>
 
       <p className="onboarding-message" role={problem || status === "error" ? "alert" : undefined} aria-live="polite">
