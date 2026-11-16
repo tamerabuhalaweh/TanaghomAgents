@@ -27,6 +27,18 @@ const PLAN_ENV: Record<PlanId, string> = {
   scale: "STRIPE_PRICE_ID_SCALE",
 };
 
+const LAUNCH100_PRICE_ENV: Record<PlanId, string> = {
+  starter: "STRIPE_LAUNCH100_PRICE_ID_STARTER",
+  growth: "STRIPE_LAUNCH100_PRICE_ID_GROWTH",
+  scale: "STRIPE_LAUNCH100_PRICE_ID_SCALE",
+};
+
+const LAUNCH100_COUPON_ENV: Record<PlanId, string> = {
+  starter: "STRIPE_LAUNCH100_COUPON_ID_STARTER",
+  growth: "STRIPE_LAUNCH100_COUPON_ID_GROWTH",
+  scale: "STRIPE_LAUNCH100_COUPON_ID_SCALE",
+};
+
 const REQUEST_TIMEOUT_MS = 12_000;
 
 export class StripeBillingError extends Error {
@@ -68,8 +80,20 @@ export function stripePriceIdFor(planId: PlanId) {
   return process.env[PLAN_ENV[planId]]?.trim() || "";
 }
 
+export function stripeLaunch100PriceIdFor(planId: PlanId) {
+  return process.env[LAUNCH100_PRICE_ENV[planId]]?.trim() || "";
+}
+
+export function stripeLaunch100DiscountFor(planId: PlanId) {
+  const coupon = process.env[LAUNCH100_COUPON_ENV[planId]]?.trim();
+  if (coupon) return { field: "discounts[0][coupon]", id: coupon } as const;
+  const promotionCode = process.env.STRIPE_LAUNCH100_PROMOTION_CODE_ID?.trim();
+  if (promotionCode) return { field: "discounts[0][promotion_code]", id: promotionCode } as const;
+  return null;
+}
+
 export function stripeCurrency() {
-  return (process.env.STRIPE_CURRENCY?.trim() || "gbp").toLowerCase();
+  return (process.env.STRIPE_CURRENCY?.trim() || "usd").toLowerCase();
 }
 
 export function stripeAutomaticTax() {
@@ -120,8 +144,10 @@ export function isStripePortalConfigured() {
 export interface BillingPlan {
   id: PlanId;
   amount_minor: number;
+  promo_amount_minor: number;
   currency: string;
   interval: "month";
+  monthly_campaigns: number;
   configured: boolean;
 }
 
@@ -129,8 +155,10 @@ export function billingPlans(): BillingPlan[] {
   return PLAN_DEFINITIONS.map((plan) => ({
     id: plan.id,
     amount_minor: plan.amountMinor,
+    promo_amount_minor: plan.promoAmountMinor,
     currency: stripeCurrency(),
     interval: plan.interval,
+    monthly_campaigns: plan.monthlyCampaigns,
     configured: Boolean(stripePriceIdFor(plan.id)),
   }));
 }
@@ -208,18 +236,30 @@ export async function createStripeCustomer(input: {
   name: string;
   organizationId: string;
   organizationSlug: string;
+  companyName?: string;
 }) {
   const form = stripeForm({
     email: input.email,
     name: input.name,
     "metadata[organization_id]": input.organizationId,
     "metadata[organization_slug]": input.organizationSlug,
+    "metadata[company_name]": input.companyName,
   });
   const customer = await stripeRequest<StripeCustomer>("/v1/customers", form);
   if (!customer || typeof customer.id !== "string" || !customer.id.startsWith("cus_")) {
     throw new StripeBillingError("stripe_invalid_customer", 502);
   }
   return customer;
+}
+
+export async function updateStripeCustomerMetadata(
+  customerId: string,
+  metadata: Record<string, string | undefined>,
+) {
+  const form = stripeForm(Object.fromEntries(
+    Object.entries(metadata).map(([key, value]) => [`metadata[${key}]`, value]),
+  ));
+  await stripeRequest<Record<string, unknown>>(`/v1/customers/${encodeURIComponent(customerId)}`, form);
 }
 
 export interface StripeCheckoutSession {
@@ -231,9 +271,17 @@ export async function createStripeCheckoutSession(input: {
   organizationId: string;
   planId: PlanId;
   customerId: string;
+  launch100: boolean;
+  companyName?: string;
+  taxIdNote?: string;
 }) {
-  const priceId = stripePriceIdFor(input.planId);
+  const launchPriceId = input.launch100 ? stripeLaunch100PriceIdFor(input.planId) : "";
+  const standardPriceId = stripePriceIdFor(input.planId);
+  const priceId = launchPriceId || standardPriceId;
   if (!priceId) throw new StripeBillingError("billing_not_configured", 409);
+  const discount = input.launch100 && !launchPriceId
+    ? stripeLaunch100DiscountFor(input.planId)
+    : null;
   const automaticTax = stripeAutomaticTax();
   const base = appBaseUrl();
   const form = stripeForm({
@@ -244,11 +292,26 @@ export async function createStripeCheckoutSession(input: {
     "line_items[0][quantity]": 1,
     "metadata[organization_id]": input.organizationId,
     "metadata[plan_tier]": input.planId,
+    "metadata[company_name]": input.companyName,
+    "metadata[tax_id_note]": input.taxIdNote,
+    ...(input.launch100 ? {
+      "metadata[promo_code]": "LAUNCH100",
+      "subscription_data[metadata][promo_code]": "LAUNCH100",
+    } : {}),
     "subscription_data[metadata][organization_id]": input.organizationId,
     "subscription_data[metadata][plan_tier]": input.planId,
-    allow_promotion_codes: "true",
+    ...(discount
+      ? { [discount.field]: discount.id }
+      : input.launch100 && !launchPriceId
+        ? { allow_promotion_codes: "true" }
+        : input.launch100
+          ? {}
+          : { allow_promotion_codes: "true" }),
+    billing_address_collection: "required",
+    "tax_id_collection[enabled]": "true",
+    "customer_update[name]": "auto",
+    "customer_update[address]": "auto",
     "automatic_tax[enabled]": automaticTax ? "true" : "false",
-    ...(automaticTax ? { "customer_update[address]": "auto" } : {}),
     success_url: `${base}/settings/billing?checkout=success`,
     cancel_url: `${base}/settings/billing?checkout=cancelled`,
   });

@@ -76,6 +76,41 @@ Until `stripe_secret_key` and at least one `STRIPE_PRICE_ID_*` are set, `GET /ap
 the Stripe Dashboard and copy its signing secret into `stripe_webhook_secret`. Signatures older or
 newer than five minutes are rejected, and the endpoint accepts at most 256 KiB.
 
+Catalogue and Launch 100 configuration:
+
+```text
+STRIPE_PRICE_ID_STARTER / _GROWTH / _SCALE        recurring list prices ($49 / $129 / $249)
+STRIPE_LAUNCH100_PRICE_ID_STARTER / ...             optional recurring launch prices ($15 / $25 / $50)
+STRIPE_LAUNCH100_COUPON_ID_STARTER / ...           fallback per-tier coupon when no launch price
+STRIPE_LAUNCH100_PROMOTION_CODE_ID                 fallback promotion code for every tier
+STRIPE_CURRENCY=usd
+```
+
+When the launch offer is active, checkout applies the launch price first, then the tier coupon or
+promotion code, then `allow_promotion_codes=true`, and stamps `promo_code=LAUNCH100` on both the
+session and subscription metadata. Checkout always requests a billing address, enables Stripe Tax ID
+collection, and lets Stripe update the customer name and address. The webhook handles
+`charge.refunded` (a full refund cancels access) and `invoice.payment_action_required`
+(`past_due` while preserving plan and period). Subscribe the endpoint to those events.
+
+### Platform owner cockpit, cohort, and waitlist
+
+`/super-admin` is intentionally absent from the customer sidebar. It returns 404 unless the caller
+is an owner whose email is listed in `SUPER_ADMIN_EMAILS` or an active owner of the seeded platform
+organization `10000000-0000-4000-8000-000000000001`. Set comma-separated lowercase addresses:
+
+```text
+SUPER_ADMIN_EMAILS=owner@example.com
+```
+
+The initial cohort is controlled by `LAUNCH_COHORT_CAP` (default 20), `LAUNCH_COHORT_UNLIMITED`
+(default false), `LAUNCH100_ENABLED` (default true), and `LAUNCH100_MAX_REDEMPTIONS` (default 100).
+No migration is involved: every change is an immutable `platform.launch_config.updated` audit row
+under the platform organization, and the latest row wins. Checkout and the public waitlist share a
+PostgreSQL advisory lock; a full cohort returns `409 launch_cohort_full` with the caller's waitlist
+position. The cockpit can switch to 20, 100, unlimited, or a custom cap, toggle LAUNCH100, and reset
+the AI circuit breaker without SSH. All cockpit mutations are recorded as platform audit rows.
+
 ## Gemini key and workspace activation
 
 The workspace is disabled by default and makes no provider call until an operator explicitly

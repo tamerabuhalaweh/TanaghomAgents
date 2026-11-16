@@ -20,6 +20,7 @@ const PUBLIC_ROUTES = new Set([
   "/forgot-password",
   "/reset-password",
   "/accept-invite",
+  "/super-admin",
 ]);
 
 export function RootFrame({ children, initialLocale = "en" }: Readonly<{ children: React.ReactNode; initialLocale?: CreativeLocale }>) {

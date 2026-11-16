@@ -2,6 +2,7 @@ import type { NextRequest } from "next/server";
 
 import { authorize, type ApplicationRole } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
+import { loadLaunchOffer } from "@/lib/server/launch-control";
 import { apiFailure, noStore } from "@/lib/server/responses";
 import {
   PLAN_IDS,
@@ -69,6 +70,7 @@ export async function GET(request: NextRequest) {
     const currency = text(payload.currency);
     const status = TENANT_STATUSES.includes(row.status) ? row.status : "trialing";
     const owner = user.role === "owner";
+    const launchOffer = await loadLaunchOffer(database(), user.organizationId, status === "active");
 
     return noStore({
       organization_id: row.id,
@@ -86,6 +88,7 @@ export async function GET(request: NextRequest) {
       currency: currency && /^[a-z]{3}$/.test(currency) ? currency : stripeCurrency(),
       automatic_tax: stripeAutomaticTax(),
       plans: billingPlans(),
+      launch_offer: launchOffer,
     });
   } catch (error) {
     return apiFailure(error);

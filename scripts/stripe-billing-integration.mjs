@@ -27,6 +27,10 @@ const tenantBActorId = "90000000-0000-4000-8000-000000000223";
 const stripeSecret = "sk_test_tanaghom_integration";
 const webhookSecret = "whsec_tanaghom_integration";
 const growthPrice = "price_growth_integration";
+const growthLaunchPrice = "price_growth_launch_integration";
+const tenantBEmail = "billing-tenant-b@example.test";
+const platformOrganization = "10000000-0000-4000-8000-000000000001";
+const cohortOrganizationPrefix = "91000000-0000-4000-8000-";
 const periodEnd = 1_900_000_000;
 const startedAt = 1_800_000_000;
 const { privateKey, publicKey } = await generateKeyPair("RS256");
@@ -38,6 +42,7 @@ let stripeRequests = 0;
 let lastCheckoutForm;
 let lastCustomerForm;
 let lastPortalForm;
+let lastSessionOrganization;
 
 async function token(subject, email) {
   return new SignJWT({ role: "authenticated", email })
@@ -82,10 +87,11 @@ const stripeServer = createServer(async (request, response) => {
   }
   if (request.url === "/v1/checkout/sessions") {
     lastCheckoutForm = body;
+    lastSessionOrganization = body.get("client_reference_id");
     response.writeHead(200, { "Content-Type": "application/json" });
     response.end(JSON.stringify({
-      id: "cs_test_tenant_a",
-      url: "https://checkout.stripe.test/session/cs_test_tenant_a",
+      id: lastSessionOrganization === tenantBOrganization ? "cs_test_tenant_b" : "cs_test_tenant_a",
+      url: `https://checkout.stripe.test/session/${lastSessionOrganization === tenantBOrganization ? "cs_test_tenant_b" : "cs_test_tenant_a"}`,
     }));
     return;
   }
@@ -170,6 +176,34 @@ try {
   const organizationId = ownerRow.rows[0].organization_id;
 
   await pool.query(
+    `DELETE FROM tanaghom.organizations
+      WHERE id::text LIKE $1 || '%' OR slug LIKE 'cohort-fixture-%'`,
+    [cohortOrganizationPrefix],
+  );
+  await pool.query(
+    `UPDATE tanaghom.organizations SET status = 'trialing' WHERE id <> $1::uuid`,
+    [platformOrganization],
+  );
+  // The migration-only integration database does not receive the production
+  // role configuration SQL. Install the same operator function signature so
+  // the cockpit's one-click recovery path is exercised end to end.
+  await pool.query(`
+    CREATE OR REPLACE FUNCTION tanaghom.set_agency_workspace_circuit_breaker(
+      p_enabled boolean, p_emergency_stop boolean, p_reason text
+    ) RETURNS jsonb LANGUAGE plpgsql SECURITY DEFINER SET search_path=tanaghom,pg_temp AS $$
+    DECLARE state tanaghom.agency_workspace_control%ROWTYPE;
+    BEGIN
+      IF p_enabled IS NULL OR p_emergency_stop IS NULL THEN RAISE EXCEPTION 'circuit breaker state required'; END IF;
+      IF length(coalesce(p_reason,''))>500 THEN RAISE EXCEPTION 'circuit breaker reason too long'; END IF;
+      UPDATE tanaghom.agency_workspace_control
+         SET enabled=p_enabled, emergency_stop=p_emergency_stop,
+             reason=CASE WHEN p_emergency_stop THEN 'OPERATOR_STOP:' || coalesce(nullif(trim(p_reason),''),'Manual operator stop') ELSE 'Operational' END,
+             updated_at=now()
+       RETURNING * INTO state;
+      RETURN jsonb_build_object('enabled',state.enabled,'emergency_stop',state.emergency_stop,'reason',state.reason);
+    END $$;
+  `);
+  await pool.query(
     `UPDATE tanaghom.organizations
         SET status = 'trialing', stripe_customer_id = NULL
       WHERE id = $1::uuid`,
@@ -182,8 +216,9 @@ try {
   try {
     await pool.query(
       `DELETE FROM tanaghom.agent_actions_log
-        WHERE organization_id = $1::uuid AND action_type LIKE 'billing.%'`,
-      [organizationId],
+        WHERE (organization_id = $1::uuid AND action_type LIKE 'billing.%')
+           OR (organization_id = $2::uuid AND action_type LIKE 'platform.%')`,
+      [organizationId, platformOrganization],
     );
   } finally {
     await pool.query("ALTER TABLE tanaghom.agent_actions_log ENABLE TRIGGER audit_no_delete");
@@ -224,9 +259,15 @@ try {
       STRIPE_PRICE_ID_STARTER: "price_starter_integration",
       STRIPE_PRICE_ID_GROWTH: growthPrice,
       STRIPE_PRICE_ID_SCALE: "price_scale_integration",
-      STRIPE_CURRENCY: "gbp",
+      STRIPE_LAUNCH100_PRICE_ID_GROWTH: growthLaunchPrice,
+      STRIPE_CURRENCY: "usd",
       STRIPE_AUTOMATIC_TAX: "false",
       STRIPE_API_BASE_URL: stripeOrigin,
+      SUPER_ADMIN_EMAILS: "owner@example.test",
+      LAUNCH_COHORT_CAP: "20",
+      LAUNCH_COHORT_UNLIMITED: "false",
+      LAUNCH100_ENABLED: "true",
+      LAUNCH100_MAX_REDEMPTIONS: "100",
     },
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -243,8 +284,15 @@ try {
   assert.equal(initial.has_stripe_customer, false);
   assert.equal(initial.plan_tier, null);
   assert.deepEqual(initial.plans.map((plan) => plan.id), ["starter", "growth", "scale"]);
-  assert.deepEqual(initial.plans.map((plan) => plan.amount_minor), [24_900, 49_900, 79_900]);
-  assert.equal(initial.currency, "gbp");
+  assert.deepEqual(initial.plans.map((plan) => plan.amount_minor), [4_900, 12_900, 24_900]);
+  assert.deepEqual(initial.plans.map((plan) => plan.promo_amount_minor), [1_500, 2_500, 5_000]);
+  assert.deepEqual(initial.plans.map((plan) => plan.monthly_campaigns), [15, 50, 200]);
+  assert.equal(initial.currency, "usd");
+  assert.equal(initial.launch_offer.launch100_active, true);
+  assert.equal(initial.launch_offer.redemptions_used, 0);
+  assert.equal(initial.launch_offer.redemptions_remaining, 100);
+  assert.equal(initial.launch_offer.cohort_cap, 20);
+  assert.equal(initial.launch_offer.cohort_full, false);
 
   const nonOwner = await billing(operatorToken);
   assert.equal(nonOwner.can_manage_billing, false);
@@ -274,7 +322,12 @@ try {
   const checkout = await fetch(`${dashboardOrigin}/api/billing/checkout`, {
     method: "POST",
     headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
-    body: JSON.stringify({ plan_tier: "growth" }),
+    body: JSON.stringify({
+      plan_tier: "growth",
+      company_name: "Tenant A Holdings Ltd",
+      tax_id_note: "GB123456789",
+      locale: "en",
+    }),
   });
   assert.equal(checkout.status, 200);
   const checkoutBody = await checkout.json();
@@ -282,9 +335,17 @@ try {
   assert.equal(checkoutBody.url, "https://checkout.stripe.test/session/cs_test_tenant_a");
   assert.equal(lastCustomerForm.get("metadata[organization_id]"), organizationId);
   assert.equal(lastCheckoutForm.get("mode"), "subscription");
-  assert.equal(lastCheckoutForm.get("line_items[0][price]"), growthPrice);
+  assert.equal(lastCheckoutForm.get("line_items[0][price]"), growthLaunchPrice);
   assert.equal(lastCheckoutForm.get("client_reference_id"), organizationId);
   assert.equal(lastCheckoutForm.get("metadata[plan_tier]"), "growth");
+  assert.equal(lastCheckoutForm.get("metadata[promo_code]"), "LAUNCH100");
+  assert.equal(lastCheckoutForm.get("subscription_data[metadata][promo_code]"), "LAUNCH100");
+  assert.equal(lastCheckoutForm.get("billing_address_collection"), "required");
+  assert.equal(lastCheckoutForm.get("tax_id_collection[enabled]"), "true");
+  assert.equal(lastCheckoutForm.get("customer_update[name]"), "auto");
+  assert.equal(lastCheckoutForm.get("customer_update[address]"), "auto");
+  assert.equal(lastCheckoutForm.get("metadata[company_name]"), "Tenant A Holdings Ltd");
+  assert.equal(lastCheckoutForm.get("discovery[0]"), null);
   assert.equal(lastCheckoutForm.get("success_url"), `${dashboardOrigin}/settings/billing?checkout=success`);
   assert.equal(lastCheckoutForm.get("cancel_url"), `${dashboardOrigin}/settings/billing?checkout=cancelled`);
 
@@ -329,7 +390,7 @@ try {
     id: "cs_test_tenant_a",
     customer: "cus_TenantAIntegration",
     subscription: "sub_tenant_a",
-    metadata: { organization_id: organizationId, plan_tier: "growth" },
+    metadata: { organization_id: organizationId, plan_tier: "growth", promo_code: "LAUNCH100", company_name: "Tenant A Holdings Ltd" },
     client_reference_id: organizationId,
   });
   const checkoutWebhook = await webhook(checkoutEvent);
@@ -340,7 +401,7 @@ try {
     id: "sub_tenant_a",
     customer: "cus_TenantAIntegration",
     status: "active",
-    currency: "gbp",
+    currency: "usd",
     current_period_end: periodEnd,
     cancel_at_period_end: false,
     metadata: { organization_id: organizationId, plan_tier: "growth" },
@@ -359,7 +420,7 @@ try {
     id: "in_tenant_a_failed",
     customer: "cus_TenantAIntegration",
     subscription: "sub_tenant_a",
-    currency: "gbp",
+    currency: "usd",
     lines: { data: [{ price: { id: growthPrice }, period: { end: periodEnd } }] },
   });
   assert.equal((await webhook(failedEvent)).response.status, 200);
@@ -372,10 +433,36 @@ try {
     id: "in_tenant_a_paid",
     customer: "cus_TenantAIntegration",
     subscription: "sub_tenant_a",
-    currency: "gbp",
+    currency: "usd",
     lines: { data: [{ price: { id: growthPrice }, period: { end: periodEnd } }] },
   });
   assert.equal((await webhook(paidEvent)).response.status, 200);
+  assert.equal((await billing(ownerToken)).subscription_status, "active");
+  const launchAfterCheckout = (await billing(ownerToken)).launch_offer;
+  assert.equal(launchAfterCheckout.redemptions_used, 1);
+  assert.equal(launchAfterCheckout.redemptions_remaining, 99);
+
+  const actionRequiredEvent = event("invoice.payment_action_required", startedAt + 42, {
+    id: "in_tenant_a_action_required",
+    customer: "cus_TenantAIntegration",
+    subscription: "sub_tenant_a",
+    currency: "usd",
+    lines: { data: [{ price: { id: growthLaunchPrice }, period: { end: periodEnd } }] },
+  });
+  assert.equal((await webhook(actionRequiredEvent)).response.status, 200);
+  const actionRequired = await billing(ownerToken);
+  assert.equal(actionRequired.subscription_status, "past_due");
+  assert.equal(actionRequired.plan_tier, "growth");
+  assert.equal(actionRequired.current_period_end, new Date(periodEnd * 1_000).toISOString());
+
+  const recoveredEvent = event("invoice.paid", startedAt + 44, {
+    id: "in_tenant_a_recovered",
+    customer: "cus_TenantAIntegration",
+    subscription: "sub_tenant_a",
+    currency: "usd",
+    lines: { data: [{ price: { id: growthLaunchPrice }, period: { end: periodEnd } }] },
+  });
+  assert.equal((await webhook(recoveredEvent)).response.status, 200);
   assert.equal((await billing(ownerToken)).subscription_status, "active");
 
   const beforeDuplicate = await pool.query(
@@ -393,11 +480,31 @@ try {
   );
   assert.equal(afterDuplicate.rows[0].count, beforeDuplicate.rows[0].count);
 
-  const deletedEvent = event("customer.subscription.deleted", startedAt + 50, {
+  const refundEvent = event("charge.refunded", startedAt + 55, {
+    id: "ch_tenant_a_refund",
+    customer: "cus_TenantAIntegration",
+    amount: 2_500,
+    amount_refunded: 2_500,
+    currency: "usd",
+    metadata: { organization_id: organizationId, plan_tier: "growth" },
+  });
+  assert.equal((await webhook(refundEvent)).response.status, 200);
+  const refunded = await billing(ownerToken);
+  assert.equal(refunded.subscription_status, "canceled");
+  assert.equal(refunded.plan_tier, "growth");
+  const refundRow = await pool.query(
+    `SELECT payload FROM tanaghom.agent_actions_log
+      WHERE organization_id = $1::uuid AND payload->>'stripe_event_id' = $2`,
+    [organizationId, refundEvent.id],
+  );
+  assert.equal(refundRow.rows[0].payload.refunded, true);
+  assert.equal(refundRow.rows[0].payload.full_refund, true);
+
+  const deletedEvent = event("customer.subscription.deleted", startedAt + 60, {
     id: "sub_tenant_a",
     customer: "cus_TenantAIntegration",
     status: "canceled",
-    currency: "gbp",
+    currency: "usd",
     metadata: { organization_id: organizationId },
     items: { data: [{ price: { id: growthPrice } }] },
   });
@@ -409,7 +516,7 @@ try {
     id: "sub_tenant_a",
     customer: "cus_TenantAIntegration",
     status: "active",
-    currency: "gbp",
+    currency: "usd",
     current_period_end: periodEnd,
     metadata: { organization_id: organizationId, plan_tier: "growth" },
     items: { data: [{ price: { id: growthPrice } }] },
@@ -427,7 +534,7 @@ try {
   assert.equal(staleRow.rows[0].payload.stale_ignored, true);
   assert.equal(staleRow.rows[0].payload.plan_tier, "growth");
 
-  const conflictEvent = event("customer.subscription.updated", startedAt + 60, {
+  const conflictEvent = event("customer.subscription.updated", startedAt + 70, {
     id: "sub_tenant_a",
     customer: "cus_TenantBIntegration",
     status: "active",
@@ -441,6 +548,133 @@ try {
     [tenantBOrganization],
   );
   assert.deepEqual(tenantB.rows[0], { status: "trialing", stripe_customer_id: "cus_TenantBIntegration" });
+
+  const tenantBSuperAdmin = await fetch(`${dashboardOrigin}/api/super-admin`, {
+    headers: cookieHeaderFromToken(await token(tenantBSubject, tenantBEmail)),
+  });
+  assert.equal(tenantBSuperAdmin.status, 404);
+  assert.deepEqual(await tenantBSuperAdmin.json(), { error: "not_found" });
+  const tenantBPage = await fetch(`${dashboardOrigin}/super-admin`, {
+    headers: { Cookie: `tanaghom_access_token=${await token(tenantBSubject, tenantBEmail)}` },
+  });
+  assert.equal(tenantBPage.status, 404);
+
+  const ownerPage = await fetch(`${dashboardOrigin}/super-admin`, {
+    headers: { Cookie: `tanaghom_access_token=${ownerToken}` },
+  });
+  assert.equal(ownerPage.status, 200);
+  assert.match(await ownerPage.text(), /Platform cockpit|لوحة المنصة/);
+
+  const beforeReset = await fetch(`${dashboardOrigin}/api/super-admin`, {
+    headers: cookieHeaderFromToken(ownerToken),
+  });
+  assert.equal(beforeReset.status, 200);
+  const snapshot = await beforeReset.json();
+  assert.equal(snapshot.launch100.max_redemptions, 100);
+  assert.equal(snapshot.launch100.used, 1);
+  assert.equal(snapshot.launch100.remaining, 99);
+  assert.equal(snapshot.cohort.cap, 20);
+  assert.ok(Array.isArray(snapshot.recent_workspaces));
+  assert.equal(snapshot.services.database, "connected");
+
+  await pool.query("UPDATE tanaghom.agency_workspace_control SET emergency_stop = true, reason = 'OPERATOR_STOP:integration test'");
+  const reset = await fetch(`${dashboardOrigin}/api/super-admin`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ action: "reset_ai_circuit_breaker" }),
+  });
+  assert.equal(reset.status, 200);
+  assert.equal((await reset.json()).circuit_breaker.emergency_stop, false);
+  const breakerRow = await pool.query("SELECT enabled, emergency_stop FROM tanaghom.agency_workspace_control");
+  assert.deepEqual(breakerRow.rows[0], { enabled: true, emergency_stop: false });
+  const resetAudit = await pool.query(
+    `SELECT count(*)::int AS count FROM tanaghom.agent_actions_log
+      WHERE organization_id = $1::uuid AND action_type = 'platform.ai_circuit_breaker.reset'`,
+    [platformOrganization],
+  );
+  assert.equal(resetAudit.rows[0].count, 1);
+
+  await pool.query(
+    "UPDATE tanaghom.organizations SET status = 'active' WHERE id = $1::uuid",
+    [platformOrganization],
+  );
+  for (let index = 0; index < 19; index += 1) {
+    const id = `${cohortOrganizationPrefix}${index.toString(16).padStart(12, "0")}`;
+    await pool.query(
+      `INSERT INTO tanaghom.organizations (id, slug, name, status)
+       VALUES ($1, $2, $3, 'active')`,
+      [id, `cohort-fixture-${index}`, `Cohort Fixture ${index}`],
+    );
+  }
+  const setTwenty = await fetch(`${dashboardOrigin}/api/super-admin`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "update_launch_config",
+      cohort_cap: 20,
+      cohort_unlimited: false,
+      launch100_enabled: true,
+    }),
+  });
+  assert.equal(setTwenty.status, 200);
+  assert.equal((await setTwenty.json()).config.cohort_cap, 20);
+
+  const tenantBToken = await token(tenantBSubject, tenantBEmail);
+  const blockedCheckout = await fetch(`${dashboardOrigin}/api/billing/checkout`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(tenantBToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ plan_tier: "growth", locale: "en" }),
+  });
+  assert.equal(blockedCheckout.status, 409);
+  const blockedBody = await blockedCheckout.json();
+  assert.equal(blockedBody.error, "launch_cohort_full");
+  assert.equal(blockedBody.cohort_cap, 20);
+  assert.equal(blockedBody.queue_position, 1);
+
+  const publicWaitlist = await fetch(`${dashboardOrigin}/api/waitlist`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      email: "priority@example.test",
+      company_name: "Priority Holdings",
+      locale: "ar",
+    }),
+  });
+  assert.equal(publicWaitlist.status, 200);
+  const publicWaitlistBody = await publicWaitlist.json();
+  assert.equal(publicWaitlistBody.queue_position, 2);
+
+  const setHundred = await fetch(`${dashboardOrigin}/api/super-admin`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
+    body: JSON.stringify({
+      action: "update_launch_config",
+      cohort_cap: 100,
+      cohort_unlimited: false,
+      launch100_enabled: true,
+    }),
+  });
+  assert.equal(setHundred.status, 200);
+  const unblockedCheckout = await fetch(`${dashboardOrigin}/api/billing/checkout`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(tenantBToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ plan_tier: "growth", locale: "en" }),
+  });
+  assert.equal(unblockedCheckout.status, 200);
+  assert.equal((await unblockedCheckout.json()).session_id, "cs_test_tenant_b");
+  assert.equal(lastCheckoutForm.get("metadata[promo_code]"), "LAUNCH100");
+  assert.equal(lastCheckoutForm.get("line_items[0][price]"), growthLaunchPrice);
+
+  const afterCohort = await fetch(`${dashboardOrigin}/api/super-admin`, {
+    headers: cookieHeaderFromToken(ownerToken),
+  });
+  assert.equal(afterCohort.status, 200);
+  const afterSnapshot = await afterCohort.json();
+  assert.equal(afterSnapshot.cohort.cap, 100);
+  assert.equal(afterSnapshot.cohort.active_count, 20);
+  assert.equal(afterSnapshot.cohort.waitlist_count, 2);
+  assert.equal(afterSnapshot.cohort.waitlist_entries[0].queue_position, 1);
+  assert.equal(afterSnapshot.cohort.waitlist_entries[1].queue_position, 2);
 
   console.log("STRIPE_BILLING_INTEGRATION_PASSED");
 } catch (error) {

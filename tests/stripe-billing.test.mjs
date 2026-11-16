@@ -104,13 +104,15 @@ test("maps every Stripe subscription status onto the tenant contract", () => {
   assert.equal(mapStripeSubscriptionStatus("unknown"), null);
 });
 
-test("publishes the exact GBP monthly plan catalogue", () => {
+test("publishes the exact USD list and LAUNCH100 plan catalogue", () => {
   assert.deepEqual(
-    PLAN_DEFINITIONS.map(({ id, amountMinor, currency, interval }) => ({ id, amountMinor, currency, interval })),
+    PLAN_DEFINITIONS.map(({ id, amountMinor, promoAmountMinor, currency, interval, monthlyCampaigns }) => ({
+      id, amountMinor, promoAmountMinor, currency, interval, monthlyCampaigns,
+    })),
     [
-      { id: "starter", amountMinor: 24_900, currency: "gbp", interval: "month" },
-      { id: "growth", amountMinor: 49_900, currency: "gbp", interval: "month" },
-      { id: "scale", amountMinor: 79_900, currency: "gbp", interval: "month" },
+      { id: "starter", amountMinor: 4_900, promoAmountMinor: 1_500, currency: "usd", interval: "month", monthlyCampaigns: 15 },
+      { id: "growth", amountMinor: 12_900, promoAmountMinor: 2_500, currency: "usd", interval: "month", monthlyCampaigns: 50 },
+      { id: "scale", amountMinor: 24_900, promoAmountMinor: 5_000, currency: "usd", interval: "month", monthlyCampaigns: 200 },
     ],
   );
 });
