@@ -2310,6 +2310,9 @@ td a, td > strong { font-weight: 670; }
 .domain-empty .primary-button { flex: 0 0 auto; white-space: nowrap; }
 .sidebar-locale { display: none; margin-block-end: 0.4rem; padding: 0.35rem 0.4rem; border-block-end: 1px solid var(--border); }
 .sidebar-locale .creative-row { flex-wrap: wrap; }
+.mobile-header-actions { display: flex; flex: 0 0 auto; align-items: center; gap: 0.1rem; }
+.sidebar-trust { display: none; }
+.sidebar-help-button { width: 100%; border: 0; background: transparent; text-align: start; cursor: pointer; }
 .channels-page { width: 100%; min-width: 0; }
 .channel-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
 .channel-row > * { min-width: 0; }
@@ -2318,6 +2321,8 @@ td a, td > strong { font-weight: 670; }
 .brand-version-swatches li.is-unset code { color: var(--muted); font-style: italic; }
 @media (max-width: 900px) {
   .sidebar-locale { display: block; }
+  .sidebar-trust { display: flex; flex-direction: column; gap: 0.3rem; margin-block-end: 0.4rem; padding: 0.35rem 0.4rem 0.55rem; border-block-end: 1px solid var(--border); }
+  .sidebar-trust .environment-badge { margin: 0; text-align: center; }
 }
 @media (max-width: 560px) {
   .help-dialog { width: calc(100vw - 1rem); max-height: calc(100vh - 1rem); }

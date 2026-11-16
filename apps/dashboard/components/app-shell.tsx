@@ -117,9 +117,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span>Tanaghom</span>
         </Link>
         <TenantName variant="mobile" />
-        <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? (ar ? "إغلاق التنقل" : "Close navigation") : (ar ? "فتح التنقل" : "Open navigation")}>
-          {menuOpen ? <X size={20} /> : <Menu size={20} />}
-        </button>
+        <div className="mobile-header-actions">
+          <button className="icon-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={openHelp}>
+            <CircleHelp size={19} />
+          </button>
+          <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? (ar ? "إغلاق التنقل" : "Close navigation") : (ar ? "فتح التنقل" : "Open navigation")}>
+            {menuOpen ? <X size={20} /> : <Menu size={20} />}
+          </button>
+        </div>
       </header>
 
       <aside className={`sidebar ${menuOpen ? "sidebar-open" : ""}`}>
@@ -146,6 +151,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="sidebar-footer">
+          <div className="sidebar-trust">
+            <span className="environment-badge">{ar ? "مساحة عمل بمراجعة بشرية" : "Human-Reviewed Workspace"}</span>
+            <button className="nav-link sidebar-help-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={() => { closeMenu(); openHelp(); }}>
+              <CircleHelp size={18} />
+              <span>{ar ? "المساعدة السريعة" : "Quick help"}</span>
+            </button>
+          </div>
           <div className="sidebar-locale"><LocaleToggle locale={locale} /></div>
           <Link href="/team" className={`nav-link ${pathname.startsWith("/team") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/team") ? "page" : undefined} onClick={() => closeMenu()}>
             <UsersRound size={18} />

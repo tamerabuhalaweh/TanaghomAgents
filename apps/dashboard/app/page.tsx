@@ -5,6 +5,7 @@ import { AppShell } from "@/components/app-shell";
 import { OperationsProvider } from "@/components/operations-context";
 import { OverviewDashboard } from "@/components/overview-dashboard";
 import { PublicLandingPage } from "@/components/public-pages";
+import { LocaleProvider } from "@/lib/client/use-locale";
 import { creativeLocale } from "@/lib/creative-locale";
 import { requireTenant } from "@/lib/server/authorization";
 
@@ -28,10 +29,12 @@ export default async function OverviewPage() {
   const { locale } = await creativeLocale();
   if (!(await hasLiveSession())) return <PublicLandingPage locale={locale} />;
   return (
-    <OperationsProvider>
-      <AppShell>
-        <OverviewDashboard />
-      </AppShell>
-    </OperationsProvider>
+    <LocaleProvider initialLocale={locale}>
+      <OperationsProvider>
+        <AppShell>
+          <OverviewDashboard />
+        </AppShell>
+      </OperationsProvider>
+    </LocaleProvider>
   );
 }
