@@ -1,4 +1,8 @@
 /* Public marketing and legal surface. These pages never use the app shell. */
+.public-page:lang(ar) { font-family: var(--font-arabic), "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif; line-height: 1.7; }
+.public-page:lang(ar) :is(h1, h2, h3, h4) { line-height: 1.35 !important; }
+.public-page:lang(ar) :is(h1, h2, h3, p, li, a) { letter-spacing: 0 !important; }
+.public-price-value :is(strong, s) { unicode-bidi: isolate; }
 .public-page {
   min-height: 100svh;
   overflow-x: clip;

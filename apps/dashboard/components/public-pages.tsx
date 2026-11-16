@@ -44,7 +44,7 @@ function PublicFooter({ locale }: { locale: Locale }) {
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
         <Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
       </nav>
-      <p className="public-copyright">{`© ${new Date().getFullYear()} Tanaghom`}</p>
+      <p className="public-copyright">{`© ${new Date().getFullYear()} `}<bdi dir="ltr">Tanaghom</bdi></p>
     </footer>
   );
 }
@@ -54,20 +54,20 @@ const tiers = [
     id: "starter",
     list: 49, promo: 15,
     en: { name: "Starter", lede: "For one brand finding its rhythm.", features: ["15 AI campaigns / month", "Unlimited team members in 1 workspace", "Full 5-step agent loop", "Mandatory human approval", "EN + AR RTL workspace", "Visual Brand Kit & Knowledge Base"] },
-    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["١٥ حملة ذكاء اصطناعي شهرياً", "أعضاء فريق غير محدودين في مساحة عمل واحدة", "دورة الوكلاء الكاملة من ٥ خطوات", "اعتماد بشري إلزامي", "مساحة عمل إنجليزية وعربية RTL", "هوية بصرية مرئية وقاعدة معرفة"] },
+    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["15 حملة ذكاء اصطناعي شهرياً", "أعضاء فريق غير محدودين في مساحة عمل واحدة", "دورة الوكلاء الكاملة من 5 خطوات", "اعتماد بشري إلزامي", "مساحة عمل إنجليزية وعربية RTL", "هوية بصرية مرئية وقاعدة معرفة"] },
   },
   {
     id: "growth",
     list: 129, promo: 25,
     en: { name: "Growth", lede: "For teams running always-on campaigns.", features: ["Everything in Starter", "50 AI campaigns / month", "Multi-channel publishing sync", "Priority generation"] },
-    ar: { name: "النمو", lede: "للفرق التي تدير حملات مستمرة.", features: ["كل ما في باقة البداية", "٥٠ حملة ذكاء اصطناعي شهرياً", "مزامنة النشر متعدد القنوات", "توليد ذو أولوية"] },
+    ar: { name: "النمو", lede: "للفرق التي تدير حملات مستمرة.", features: ["كل ما في باقة البداية", "50 حملة ذكاء اصطناعي شهرياً", "مزامنة النشر متعدد القنوات", "توليد ذو أولوية"] },
     featured: true,
   },
   {
     id: "scale",
     list: 249, promo: 50,
     en: { name: "Scale", lede: "For agencies coordinating multiple brands.", features: ["Everything in Growth", "200 AI campaigns / month", "Full workspace capacity", "Dedicated onboarding support"] },
-    ar: { name: "التوسع", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["كل ما في باقة النمو", "٢٠٠ حملة ذكاء اصطناعي شهرياً", "سعة مساحة عمل كاملة", "دعم تهيئة مخصص"] },
+    ar: { name: "التوسع", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["كل ما في باقة النمو", "200 حملة ذكاء اصطناعي شهرياً", "سعة مساحة عمل كاملة", "دعم تهيئة مخصص"] },
   },
 ] as const;
 
@@ -79,7 +79,7 @@ function PricingCards({ locale, detailed = false, launch100Active = true }: { lo
         const text = ar ? tier.ar : tier.en;
         return (
           <article key={tier.id} className={`public-price-card ${"featured" in tier && tier.featured ? "public-price-featured" : ""}`}>
-            {launch100Active ? <span className="public-price-tag">{ar ? "LAUNCH100 — عرض الإطلاق لأول ١٠٠ مساحة عمل" : "LAUNCH100 — First 100 Workspaces"}</span> : null}
+            {launch100Active ? <span className="public-price-tag">{ar ? <><bdi dir="ltr">LAUNCH100</bdi> — عرض الإطلاق لأول 100 مساحة عمل</> : <><bdi dir="ltr">LAUNCH100</bdi> — First 100 Workspaces</>}</span> : null}
             {"featured" in tier && tier.featured ? <span className="public-price-popular">{ar ? "الأكثر شيوعًا" : "Most popular"}</span> : null}
             <h3>{text.name}</h3>
             <p className="public-price-lede">{text.lede}</p>
@@ -112,7 +112,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
             <Link className="public-button" href="/signup">{ar ? "أنشئ مساحة عملك" : "Create your workspace"}<ArrowRight size={17} /></Link>
             <Link className="public-button public-button-outline" href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
           </div>
-          <p className="public-trust"><ShieldCheck size={18} aria-hidden="true" />{ar ? "ابدأ بحملة ذكاء اصطناعي مجانية (دون بطاقة) · موافقة بشرية في كل باقة · الترقية تبدأ من ١٥ دولارًا شهريًا برمز LAUNCH100" : "Start with 1 free AI campaign (no card required) · Human approval on every plan · Upgrade from $15/mo with LAUNCH100"}</p>
+          <p className="public-trust"><ShieldCheck size={18} aria-hidden="true" />{ar ? <>ابدأ بحملة ذكاء اصطناعي مجانية (دون بطاقة) · موافقة بشرية في كل باقة · الترقية تبدأ من <bdi dir="ltr">$15</bdi> شهريًا برمز <bdi dir="ltr">LAUNCH100</bdi></> : <>Start with 1 free AI campaign (no card required) · Human approval on every plan · Upgrade from <bdi dir="ltr">$15/mo</bdi> with <bdi dir="ltr">LAUNCH100</bdi></>}</p>
         </div>
 
         <div className="public-preview" aria-label={ar ? "معاينة حملة ثنائية اللغة مع اعتماد بشري" : "Bilingual campaign preview with human approval"}>
@@ -154,7 +154,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <div className="public-advantages-grid">
           <article className="public-advantage">
             <h3>{ar ? "لا يُنشر شيء حتى تقول نعم." : "Nothing publishes until you say yes."}</h3>
-            <p>{ar ? "لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — Sprout Social من ٢٩٩ دولاراً للمقعد، وHootsuite من ٣٩٩ دولاراً للمستخدم شهرياً، وHubSpot Enterprise بعرض سعر — الاعتماد مشمول في كل خطط تناغم." : "Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every Tanaghom plan."}</p>
+            <p>{ar ? <>لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — <bdi dir="ltr">Sprout Social</bdi> من <bdi dir="ltr">$299</bdi> للمقعد، و<bdi dir="ltr">Hootsuite</bdi> من <bdi dir="ltr">$399</bdi> للمستخدم شهرياً، و<bdi dir="ltr">HubSpot Enterprise</bdi> بعرض سعر — الاعتماد مشمول في كل خطط تناغم.</> : <>Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every Tanaghom plan.</>}</p>
           </article>
           <article className="public-advantage">
             <h3>{ar ? "مبني بالعربية. وليس مترجمًا إليها." : "Built in Arabic. Not translated into it."}</h3>
@@ -214,8 +214,8 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
 
       <section className="public-faq public-faq-landing">
         <h2>{ar ? "أسئلة الإطلاق" : "Launch questions"}</h2>
-        <details><summary>{ar ? "هل تناغم بالدعوة فقط؟" : "Is Tanaghom invite-only?"}</summary><p>{ar ? "نبدأ بدفعة بالدعوة فقط من ٢٠ مساحة عمل نشطة، ثم نتوسع إلى ١٠٠ مساحة إطلاق عبر قائمة الأولوية. سعر LAUNCH100 مخصص لأول ١٠٠ مساحة عمل." : "We start with an invite-only cohort of 20 active workspaces, then expand to 100 launch workspaces through the priority waitlist. LAUNCH100 pricing is reserved for those first 100 workspaces."}</p></details>
-        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو ٢٩٩ دولاراً للمقعد) وHootsuite (من نحو ٣٩٩ دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
+        <details><summary>{ar ? "هل تناغم بالدعوة فقط؟" : "Is Tanaghom invite-only?"}</summary><p>{ar ? <>نبدأ بدفعة بالدعوة فقط من 20 مساحة عمل نشطة، ثم نتوسع إلى 100 مساحة إطلاق عبر قائمة الأولوية. سعر <bdi dir="ltr">LAUNCH100</bdi> مخصص لأول 100 مساحة عمل.</> : <>We start with an invite-only cohort of 20 active workspaces, then expand to 100 launch workspaces through the priority waitlist. <bdi dir="ltr">LAUNCH100</bdi> pricing is reserved for those first 100 workspaces.</>}</p></details>
+        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولاراً للمقعد) وHootsuite (من نحو 399 دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
         <details><summary>{ar ? "من يملك الحملات والبيانات التي ننشئها؟" : "Who owns the campaigns and data we create?"}</summary><p>{ar ? "أنت. يبقى موجزك ومحتواك واعتماداتك ومعرفتك بالعلامة في مساحة عملك. فصل قناة تواصل يلغي رمز OAuth ويحذفه؛ ويبقى محتواك وسجل اعتمادك ملكاً لك." : "You do. Your briefs, content, approvals and brand knowledge stay in your workspace. Disconnecting a social channel revokes and purges its OAuth token; your content and approval history remain yours."}</p></details>
         <details><summary>{ar ? "ما الذي يفعله تناغم بالضبط؟" : "What exactly does Tanaghom do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
         <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، مع خطوط Cairo وTajawal وIBM Plex Sans Arabic وAlmarai. يُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
@@ -255,7 +255,7 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
         <details><summary>{ar ? "هل يمكنني تجربة المساحة قبل الدفع؟" : "Can I try the workspace before paying?"}</summary><p>{ar ? "أنشئ مساحة عملك وأكمل الإعداد. تظهر إعدادات الفوترة بوضوح، ولا تُنشر أي حملة دون اعتمادك." : "Create your workspace and complete setup. Billing readiness is shown clearly, and nothing publishes without your approval."}</p></details>
         <details><summary>{ar ? "ماذا يحدث لمحتواي إذا غيّرت الخطة؟" : "What happens to my work if I change plans?"}</summary><p>{ar ? "يبقى محتواك ومسوداتك وسجل اعتمادك في مساحة عملك. تتغير حدود الخطة والمقاعد فقط." : "Your content, drafts and approval history stay in your workspace. Only plan limits and seats change."}</p></details>
         <details><summary>{ar ? "هل تنشرون تلقائياً؟" : "Do you publish automatically?"}</summary><p>{ar ? "لا. كل مخرج يبقى مسودة حتى يعتمده إنسان. وحتى النشر يمر عبر قنواتك وإعداداتك." : "No. Every output stays a draft until a person approves it. Publishing still follows your channels and settings."}</p></details>
-        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو ٢٩٩ دولاراً للمقعد) وHootsuite (من نحو ٣٩٩ دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without paying for extra seats; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
+        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولاراً للمقعد) وHootsuite (من نحو 399 دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without paying for extra seats; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
       </section>
       <PublicFooter locale={locale} />
     </main>
@@ -280,7 +280,7 @@ export function PublicPrivacyPage({ locale }: { locale: Locale }) {
 
         <h2>{ar ? "فصل القنوات الاجتماعية وحذف رموز الوصول" : "Disconnecting social channels and purging tokens"}</h2>
         <p>{ar ? "يمكنك فصل أي قناة اجتماعية في أي وقت من صفحة القنوات في الإعدادات: افتح الإعدادات، ثم القنوات، واختر القناة، ثم افصل. يؤدي الفصل إلى إلغاء صلاحية رموز OAuth وحذفها من مساحة عملك، ولا يمس محتواك أو سجل اعتمادك." : "You can disconnect any social channel at any time from the Channels page in Settings: open Settings, choose Channels, select the channel, then disconnect. Disconnecting revokes and purges its OAuth tokens from your workspace; your content and approval history remain."}</p>
-        <p>{ar ? "رابط مباشر: /settings/channels. إذا كنت تريد حذف مساحة العمل بالكامل أو لديك سؤال عن بياناتك، تواصل مع مشغّل تناغم الذي أنشأ مساحتك." : "Direct link: /settings/channels. If you want the whole workspace removed, or have a question about your data, contact the Tanaghom operator who provisioned your workspace."}</p>
+        <p>{ar ? <>رابط مباشر: <bdi dir="ltr">/settings/channels</bdi>. إذا كنت تريد حذف مساحة العمل بالكامل أو لديك سؤال عن بياناتك، تواصل مع مشغّل تناغم الذي أنشأ مساحتك.</> : <>Direct link: <bdi dir="ltr">/settings/channels</bdi>. If you want the whole workspace removed, or have a question about your data, contact the Tanaghom operator who provisioned your workspace.</>}</p>
 
         <h2>{ar ? "المشاركة والاحتفاظ" : "Sharing and retention"}</h2>
         <p>{ar ? "نشارك البيانات فقط مع مزوّدي الخدمات اللازمين لتشغيل المنصة، وبما يفرضه القانون. نحتفظ بالبيانات طالما بقي حسابك نشطاً أو حسب ما يقتضيه الالتزام القانوني، ثم نحذفها أو نجعلها مجهولة." : "We share data only with service providers needed to operate the platform, and where law requires it. We keep data while your account is active or as required by legal obligations, then delete or anonymise it."}</p>
@@ -311,7 +311,7 @@ export function PublicTermsPage({ locale }: { locale: Locale }) {
         <p>{ar ? "مخرجات الذكاء الاصطناعي مقترحات، وليست حقائق أو وعوداً. يبقى كل مخرج مسودة حتى يعتمده إنسان مخوّل. أنت مسؤول عن مراجعة الادعاءات والأسعار والالتزام بالأنظمة قبل النشر." : "AI outputs are proposals, not facts or promises. Every output remains a draft until an authorised person approves it. You are responsible for reviewing claims, prices and legal compliance before publishing."}</p>
 
         <h2>{ar ? "القنوات الاجتماعية" : "Social channels"}</h2>
-        <p>{ar ? "عند ربط قناة، فإنك تأذن لتناغم بالنشر بالنيابة عنك وفق إعداداتك. يمكنك فصل القناة وحذف رموزها في أي وقت من /settings/channels أو من صفحة القنوات في الإعدادات." : "When you connect a channel, you authorise Tanaghom to publish on your behalf according to your settings. You can disconnect it and purge its tokens at any time from /settings/channels or the Channels page in Settings."}</p>
+        <p>{ar ? <>عند ربط قناة، فإنك تأذن لتناغم بالنشر بالنيابة عنك وفق إعداداتك. يمكنك فصل القناة وحذف رموزها في أي وقت من <bdi dir="ltr">/settings/channels</bdi> أو من صفحة القنوات في الإعدادات.</> : <>When you connect a channel, you authorise Tanaghom to publish on your behalf according to your settings. You can disconnect it and purge its tokens at any time from <bdi dir="ltr">/settings/channels</bdi> or the Channels page in Settings.</>}</p>
 
         <h2>{ar ? "الاستخدام المقبول" : "Acceptable use"}</h2>
         <p>{ar ? "لا تستخدم المنصة لإرسال رسائل غير مرغوبة، أو انتهاك حقوق الآخرين، أو نشر محتوى مضلل أو غير قانوني، أو محاولة تجاوز صلاحيات مساحة العمل." : "Do not use the platform for spam, infringement, misleading or unlawful content, or attempts to bypass workspace permissions."}</p>

@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import type { Tone } from "@/data/fixtures";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
+import { formatDateTime } from "@/lib/i18n/format";
 import { useOperations } from "./operations-context";
 import { DomainEmpty, OperationsError, OperationsLoading } from "./operations-state";
 import { PageHeading } from "./page-heading";
@@ -64,7 +65,7 @@ export function LeadsView() {
   return <div className="page-stack" dir={ar ? "rtl" : "ltr"} lang={locale}>
     <PageHeading title={text("Leads", "العملاء المحتملون")} description={text("Follow every lead from its source campaign through the sales journey.", "تابع كل عميل محتمل من حملته المصدر عبر رحلة المبيعات.")} />
     {operations.status === "ready" && operations.data.leads.length > 0
-      ? <div className="toolbar"><label className="search-field"><Search size={17} /><span className="sr-only">{text("Search leads", "البحث في العملاء المحتملين")}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={text("Search by name, contact, or campaign", "ابحث بالاسم أو جهة الاتصال أو الحملة")} /></label></div>
+      ? <div className="toolbar"><label className="search-field"><Search size={17} /><span className="sr-only">{text("Search leads", "البحث في العملاء المحتملين")}</span><input type="search" value={query} onChange={(event) => setQuery(event.target.value)} placeholder={text("ابحث عن…", "ابحث عن…")} /></label></div>
       : null}
     {operations.status === "loading" ? <OperationsLoading label={text("Loading leads", "جارٍ تحميل العملاء المحتملين")} /> : null}
     {operations.status === "error" ? <OperationsError retry={operations.retry} /> : null}
@@ -86,7 +87,7 @@ export function LeadsView() {
                 : lead.ghl_sync_status === "queued" || lead.ghl_sync_status === "running"
                   ? <StatusPill tone="working">{statusName(lead.ghl_sync_status)}</StatusPill>
                   : <button className="ghost-button compact-button" type="button" disabled={syncing === lead.id} onClick={() => void syncContact(lead.id)}><RefreshCw size={14} />{syncing === lead.id ? text("Queueing...", "جارٍ الجدولة...") : text("Sync to GHL", "مزامنة إلى GHL")}</button>}</td>
-              <td>{new Intl.DateTimeFormat(ar ? "ar-JO" : "en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(lead.last_touch_at ?? lead.created_at))}</td>
+              <td>{formatDateTime(lead.last_touch_at ?? lead.created_at, locale)}</td>
             </tr>)}</tbody>
           </table>
           {leads.length === 0 ? <div className="table-empty">{text(`No leads match "${query}".`, `لا يوجد عملاء محتملون يطابقون "${query}".`)}</div> : null}

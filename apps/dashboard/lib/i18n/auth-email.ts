@@ -87,10 +87,10 @@ const ar: AuthEmailCopy = {
   forgotError: "تعذّر على تناغم تنفيذ الطلب. حاول مرة أخرى بعد قليل.",
   resetEyebrow: "اختر كلمة مرور جديدة",
   resetTitle: "إعادة تعيين كلمة المرور",
-  resetLede: "استخدم ١٠ أحرف على الأقل تتضمن حروفًا كبيرة وصغيرة ورقمًا. ستُسجَّل الخروج من كل الجلسات الأخرى.",
+  resetLede: "استخدم 10 أحرف على الأقل تتضمن حروفًا كبيرة وصغيرة ورقمًا. ستُسجَّل الخروج من كل الجلسات الأخرى.",
   newPassword: "كلمة المرور الجديدة",
   confirmPassword: "تأكيد كلمة المرور الجديدة",
-  passwordHint: "١٠ أحرف على الأقل، مع حروف كبيرة وصغيرة ورقم.",
+  passwordHint: "10 أحرف على الأقل، مع حروف كبيرة وصغيرة ورقم.",
   choosePassword: "تعيين كلمة المرور",
   choosingPassword: "جارٍ الحفظ…",
   passwordMismatch: "كلمتا المرور غير متطابقتين.",
@@ -111,7 +111,7 @@ const ar: AuthEmailCopy = {
   signedOutVerify: "سجّل الدخول لطلب رسالة تحقق أخرى.",
   rateLimited: "طلبات كثيرة جدًا. حاول لاحقًا.",
   backToSignIn: "العودة لتسجيل الدخول",
-  passwordTooWeak: "استخدم ١٠ أحرف على الأقل مع حروف كبيرة وصغيرة ورقم.",
+  passwordTooWeak: "استخدم 10 أحرف على الأقل مع حروف كبيرة وصغيرة ورقم.",
 };
 
 export function authEmailCopy(locale: CreativeLocale): AuthEmailCopy {

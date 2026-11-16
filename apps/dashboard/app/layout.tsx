@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
 import { RootFrame } from "@/components/root-frame";
 import { creativeLocale } from "@/lib/creative-locale";
 import "./globals.css";
@@ -8,6 +8,12 @@ import "./creative.css";
 import "./public.css";
 
 const inter = Inter({ subsets: ["latin"], display: "swap", variable: "--font-inter" });
+const arabic = IBM_Plex_Sans_Arabic({
+  subsets: ["arabic"],
+  weight: ["400", "500", "700"],
+  display: "swap",
+  variable: "--font-arabic",
+});
 
 export const metadata: Metadata = {
   title: { default: "Tanaghom", template: "%s · Tanaghom" },
@@ -31,7 +37,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   }
   return (
     <html lang={locale} dir={dir}>
-      <body className={inter.variable}>
+      <body className={`${inter.variable} ${arabic.variable}`}>
         <RootFrame initialLocale={locale}>{children}</RootFrame>
       </body>
     </html>

@@ -84,10 +84,10 @@ test("onboarding is four honest steps with a ready-to-launch tab title", () => {
   assert.equal(en.step3Label, "Step 3 of 4 · First knowledge");
   assert.match(en.step4Label, /^Step 4 of 4/);
   assert.equal(en.readyTabTitle, "Ready to launch");
-  assert.equal(ar.stepLabel, "الخطوة ١ من ٤ · ملف النشاط التجاري");
-  assert.equal(ar.step2Label, "الخطوة ٢ من ٤ · الهوية البصرية");
-  assert.equal(ar.step3Label, "الخطوة ٣ من ٤ · أول معرفة");
-  assert.match(ar.step4Label, /^الخطوة ٤ من ٤/);
+  assert.equal(ar.stepLabel, "الخطوة 1 من 4 · ملف النشاط التجاري");
+  assert.equal(ar.step2Label, "الخطوة 2 من 4 · الهوية البصرية");
+  assert.equal(ar.step3Label, "الخطوة 3 من 4 · أول معرفة");
+  assert.match(ar.step4Label, /^الخطوة 4 من 4/);
   assert.equal(ar.readyTabTitle, "جاهز للانطلاق");
   for (const copy of [en, ar]) {
     assert.equal(copy.readyChecklist.length, 3);

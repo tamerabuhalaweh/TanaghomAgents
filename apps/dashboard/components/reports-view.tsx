@@ -3,12 +3,11 @@
 import { AlertTriangle, CheckCircle2, Clock3, ExternalLink, ShieldAlert } from "lucide-react";
 
 import { useLocale } from "@/lib/client/use-locale";
+import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 import { useOperations, type OperationsSnapshot } from "./operations-context";
 import { DomainEmpty, OperationsError, OperationsLoading } from "./operations-state";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
-
-function number(value: string | number) { return new Intl.NumberFormat("en-US").format(Number(value)); }
 
 function label(value: string) { return value.replaceAll("_", " ").replace(/\b\w/g, (character) => character.toUpperCase()); }
 
@@ -28,9 +27,10 @@ function ReportContent({ data }: { data: OperationsSnapshot }) {
   const { locale } = useLocale();
   const ar = locale === "ar";
   const text = (en: string, arabic: string) => (ar ? arabic : en);
+  const number = (value: string | number) => formatNumber(Number(value), locale);
   const date = (value: string | null) => {
     if (!value) return text("Not synchronized", "لم تتم المزامنة");
-    return new Intl.DateTimeFormat(ar ? "ar-JO" : "en-US", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value));
+    return formatDateTime(value, locale);
   };
   const statusLabel = (value: string) => ar
     ? ({ succeeded: "ناجح", failed: "فشل", stale: "متأخر", queued: "قيد الانتظار", running: "قيد التشغيل", published: "منشور", draft: "مسودة" } as Record<string, string>)[value] || value

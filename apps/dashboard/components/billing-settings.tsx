@@ -4,6 +4,7 @@ import { Check, CreditCard, ExternalLink, LoaderCircle, LockKeyhole, RefreshCw, 
 import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { formatDate as formatLocalizedDate, formatMoney as formatLocalizedMoney } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
@@ -155,7 +156,7 @@ const copy = {
     checkoutError: "تعذر بدء الدفع عبر Stripe. حاول بعد قليل.",
     portalError: "تعذر فتح بوابة الفوترة. حاول بعد قليل.",
     forbidden: "مالك مساحة العمل وحده يمكنه إدارة الفوترة.",
-    launchBadge: "LAUNCH100 — عرض الإطلاق لأول ١٠٠ مساحة عمل",
+    launchBadge: "LAUNCH100 — عرض الإطلاق لأول 100 مساحة عمل",
     launchRemaining: "مقعداً بسعر الإطلاق متبقٍ",
     listPrice: "السعر الأساسي",
     sandboxTitle: "الصندوق المجاني نشط: حملة واحدة كاملة",
@@ -176,20 +177,13 @@ const STATUS_TONE: Record<Status, "success" | "working" | "attention" | "danger"
 };
 
 function formatMoney(amountMinor: number, currency: string, locale: string) {
-  return new Intl.NumberFormat(locale === "ar" ? "ar" : "en-US", {
-    style: "currency",
-    currency: currency.toUpperCase(),
-    maximumFractionDigits: 0,
-  }).format(amountMinor / 100);
+  return formatLocalizedMoney(amountMinor / 100, locale === "ar" ? "ar" : "en", currency);
 }
 
 function formatDate(value: string | null, locale: string) {
   if (!value) return null;
-  const date = new Date(value);
-  if (Number.isNaN(date.getTime())) return null;
-  return new Intl.DateTimeFormat(locale === "ar" ? "ar-JO" : "en-GB", {
-    dateStyle: "medium",
-  }).format(date);
+  const formatted = formatLocalizedDate(value, locale === "ar" ? "ar" : "en");
+  return formatted || null;
 }
 
 function planName(plan: PlanId | null, arabic: boolean) {

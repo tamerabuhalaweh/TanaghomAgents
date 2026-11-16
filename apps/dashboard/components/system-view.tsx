@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
+import { formatDateTime } from "@/lib/i18n/format";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -263,7 +264,7 @@ const copy: Record<Lang, UiCopy> = {
 };
 
 function date(value: string | null, lang: Lang, notObserved: string) {
-  return value ? new Intl.DateTimeFormat(lang === "ar" ? "ar-JO" : "en-GB", { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : notObserved;
+  return value ? formatDateTime(value, lang) : notObserved;
 }
 function duration(seconds: number) { if (seconds < 60) return `${seconds}s`; if (seconds < 3600) return `${Math.floor(seconds / 60)}m ${seconds % 60}s`; return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`; }
 function toneForSeverity(severity: string): Tone { return severity === "critical" || severity === "error" ? "danger" : severity === "warning" ? "attention" : "neutral"; }

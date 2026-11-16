@@ -10,6 +10,7 @@ import { StatusPill } from "./status-pill";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import type { OnboardingProfile } from "@/lib/onboarding-types";
 import { useLocale } from "@/lib/client/use-locale";
+import { formatDateTime, formatNumber } from "@/lib/i18n/format";
 
 function campaignTone(status: string) {
   if (status === "blocked_missing_info") return "danger" as const;
@@ -25,7 +26,7 @@ function campaignStage(campaign: OperationsCampaign) {
 const quickStart = [
   {
     step: "1",
-    stepAr: "١",
+    stepAr: "1",
     title: "Brief AI Team",
     titleAr: "وجّه فريق الذكاء الاصطناعي",
     cta: "Open AI workspace",
@@ -34,7 +35,7 @@ const quickStart = [
   },
   {
     step: "2",
-    stepAr: "٢",
+    stepAr: "2",
     title: "Design Visuals",
     titleAr: "صمّم الإعلانات البصرية",
     cta: "Open Design Studio",
@@ -43,7 +44,7 @@ const quickStart = [
   },
   {
     step: "3",
-    stepAr: "٣",
+    stepAr: "3",
     title: "Review & Approve",
     titleAr: "راجع واعتمد المحتوى",
     cta: "Review approvals",
@@ -100,8 +101,8 @@ export function OverviewDashboard() {
     };
   }, []);
 
-  if (operations.status === "loading") return <div className="page-stack"><PageHeading title={ar ? "نظرة عامة" : "Overview"} description={ar ? "جارٍ تحميل الحالة المعتمدة الحالية." : "Loading the current source-of-truth state."} /><OperationsLoading /></div>;
-  if (operations.status === "error") return <div className="page-stack"><PageHeading title={ar ? "نظرة عامة" : "Overview"} description={ar ? "حالة المصدر المعتمد مطلوبة قبل تشغيل الوكلاء." : "Source-of-truth status is required before operating agents."} /><OperationsError retry={operations.retry} /></div>;
+  if (operations.status === "loading") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "جارٍ تحميل الحالة المعتمدة الحالية." : "Loading the current source-of-truth state."} /><OperationsLoading /></div>;
+  if (operations.status === "error") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "حالة المصدر المعتمد مطلوبة قبل تشغيل الوكلاء." : "Source-of-truth status is required before operating agents."} /><OperationsError retry={operations.retry} /></div>;
 
   const { data } = operations;
   const description = data.summary.campaigns_total
@@ -121,7 +122,7 @@ export function OverviewDashboard() {
 
   return (
     <div className="page-stack">
-      <PageHeading title={ar ? "نظرة عامة" : "Overview"} description={description} actions={<Link className="primary-button" href="/workspace">{ar ? "موجز حملة جديد" : "New campaign brief"}<ArrowRight size={16} /></Link>} />
+      <PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={description} actions={<Link className="primary-button" href="/workspace">{ar ? "موجز حملة جديد" : "New campaign brief"}<ArrowRight size={16} /></Link>} />
 
       {nextStep ? <section className="setup-banner" aria-labelledby="setup-banner-title">
         <CircleAlert size={22} aria-hidden="true" />
@@ -168,11 +169,11 @@ export function OverviewDashboard() {
       <div className="overview-footer-grid">
         <section className="performance-section" aria-labelledby="performance-title">
           <div className="section-heading compact-heading"><div><h2 id="performance-title">{ar ? "الأداء المسجّل" : "Recorded performance"}</h2><p>{ar ? "إجماليات من سجلات النشر والعملاء المحتملين الفعلية." : "Totals from live published-post and lead records."}</p></div><Link href="/reports" className="text-link">{ar ? "التقرير الكامل" : "Full report"} <ArrowRight size={16} /></Link></div>
-          <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{Number(data.performance.impressions).toLocaleString()}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{Number(data.performance.clicks).toLocaleString()}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>${Number(data.performance.spend).toLocaleString()}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{data.summary.leads_total}</dd><span>{data.summary.leads_won} {ar ? "فوز" : "won"}</span></div></dl>
+          <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{formatNumber(Number(data.performance.impressions), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{formatNumber(Number(data.performance.clicks), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>${formatNumber(Number(data.performance.spend), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{formatNumber(data.summary.leads_total, locale)}</dd><span>{formatNumber(data.summary.leads_won, locale)} {ar ? "فوز" : "won"}</span></div></dl>
         </section>
         <section className="alerts-section" aria-labelledby="alerts-title">
           <div className="section-heading compact-heading"><div><h2 id="alerts-title">{ar ? "التنبيهات" : "Alerts"}</h2><p>{ar ? `${data.summary.notifications_unread} إشعار تشغيلي غير مقروء.` : `${data.summary.notifications_unread} unread operational notifications.`}</p></div></div>
-          {data.notifications.length ? <ul className="alert-list">{data.notifications.slice(0, 5).map((notification) => <li key={notification.id}><div><strong>{notification.title}</strong><span>{notification.body}</span></div><time>{new Date(notification.created_at).toLocaleDateString()}</time></li>)}</ul> : <DomainEmpty title={ar ? "لا تنبيهات نشطة" : "No active alerts"} description={ar ? "لا يوجد إشعار تشغيلي غير مقروء يحتاج انتباهك." : "No unread operational notification requires attention."} />}
+          {data.notifications.length ? <ul className="alert-list">{data.notifications.slice(0, 5).map((notification) => <li key={notification.id}><div><strong>{notification.title}</strong><span>{notification.body}</span></div><time>{formatDateTime(notification.created_at, locale)}</time></li>)}</ul> : <DomainEmpty title={ar ? "لا تنبيهات نشطة" : "No active alerts"} description={ar ? "لا يوجد إشعار تشغيلي غير مقروء يحتاج انتباهك." : "No unread operational notification requires attention."} />}
         </section>
       </div>
     </div>

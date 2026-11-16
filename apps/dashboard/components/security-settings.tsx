@@ -105,7 +105,7 @@ export function SecuritySettings() {
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
               />
-              <small>{ar ? "١٢ حرفاً على الأقل. لا تعد استخدام بريدك الإلكتروني أو عبارة شائعة." : "At least 12 characters. Do not reuse your email address or a common phrase."}</small>
+              <small>{ar ? "12 حرفاً على الأقل. لا تعد استخدام بريدك الإلكتروني أو عبارة شائعة." : "At least 12 characters. Do not reuse your email address or a common phrase."}</small>
             </div>
             <div className="form-field">
               <label htmlFor="confirm-password">{ar ? "تأكيد كلمة المرور الجديدة" : "Confirm new password"}</label>

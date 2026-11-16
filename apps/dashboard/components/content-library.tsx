@@ -235,7 +235,7 @@ export function ContentLibrary() {
         <label className="search-field">
           <Search size={17} />
           <span className="sr-only">Search content</span>
-          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={ar ? "ابحث في الحملة أو القناة أو النص" : "Search campaign, channel, or copy"} />
+          <input value={search} onChange={(event) => setSearch(event.target.value)} placeholder={ar ? "ابحث عن…" : "Search campaign, channel, or copy"} />
         </label>
       </section>
       {!visible.length ? <section className="library-empty">

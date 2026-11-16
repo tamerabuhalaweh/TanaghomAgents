@@ -22,6 +22,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { LocaleToggle } from "@/components/creative/locale-toggle";
 import type { CreativeLocale } from "@/lib/i18n/creative";
+import { formatDate, formatMoney, formatNumber, normalizeNumericInput, numericLocale } from "@/lib/i18n/format";
 
 interface WaitlistEntry {
   email: string | null;
@@ -193,14 +194,14 @@ const COPY = {
     breakerReset: "إعادة ضبط قاطع الذكاء الاصطناعي",
     breakerBody: "استعد التوليد فوراً بعد أي حادث. تُسجّل إعادة الضبط في سجل تدقيق المنصة.",
     presets: "إعدادات سريعة",
-    inviteCohort: "دفعة بالدعوة فقط: ٢٠",
-    launchCohort: "دفعة الإطلاق ١٠٠: ١٠٠",
+    inviteCohort: "دفعة بالدعوة فقط: 20",
+    launchCohort: "دفعة الإطلاق 100: 100",
     openAccess: "وصول عام مفتوح: بلا حد",
     customCap: "حد مخصص لمساحات العمل النشطة",
     applyCap: "تطبيق الحد",
-    capPlaceholder: "٢٠",
+    capPlaceholder: "20",
     promo: "عرض LAUNCH100",
-    promoBody: "يُطبق تلقائياً بسعر ١٥ / ٢٥ / ٥٠ دولاراً عند الدفع طالما بقيت مقاعد الإطلاق.",
+    promoBody: "يُطبق تلقائياً بسعر 15 / 25 / 50 دولاراً عند الدفع طالما بقيت مقاعد الإطلاق.",
     promoOn: "العرض مفعّل",
     promoOff: "العرض متوقف",
     currentState: "مساحات نشطة {active} · الحد {cap} · قائمة الانتظار {waitlist}",
@@ -219,7 +220,7 @@ const COPY = {
     noWaitlist: "لا توجد شركات في قائمة الانتظار.",
     noWorkspaces: "لا توجد مساحات عمل بعد.",
     tierNone: "—",
-    autoRefresh: "يتحدث كل ٣٠ ثانية",
+    autoRefresh: "يتحدث كل 30 ثانية",
   },
 } as const;
 
@@ -228,20 +229,18 @@ function format(template: string, values: Record<string, string | number>) {
 }
 
 function number(value: number, locale: CreativeLocale) {
-  return new Intl.NumberFormat(locale === "ar" ? "ar" : "en-US").format(value);
+  return formatNumber(value, locale);
 }
 
 function money(value: number, locale: CreativeLocale, decimals = 0) {
-  return new Intl.NumberFormat(locale === "ar" ? "ar" : "en-US", {
-    style: "currency",
-    currency: "USD",
+  return formatMoney(value, locale, "USD", {
     maximumFractionDigits: decimals,
     minimumFractionDigits: decimals,
-  }).format(value);
+  });
 }
 
 function compact(value: number, locale: CreativeLocale) {
-  return new Intl.NumberFormat(locale === "ar" ? "ar" : "en-US", {
+  return new Intl.NumberFormat(numericLocale(locale), {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
@@ -258,11 +257,7 @@ function subscriptionStatus(status: string, locale: CreativeLocale) {
 }
 
 function date(value: string, locale: CreativeLocale) {
-  return new Date(value).toLocaleDateString(locale === "ar" ? "ar" : "en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-  });
+  return formatDate(value, locale);
 }
 
 function Pill({ ok, children }: { ok: boolean; children: React.ReactNode }) {
@@ -449,7 +444,7 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
               <button type="button" className={unlimited ? "super-preset super-preset-active" : "super-preset"} disabled={Boolean(busy)} onClick={() => void saveConfig({ cap: snapshot.cohort.cap, unlimited: true, enabled: promoEnabled })}>{text.openAccess}</button>
             </div>
             <div className="super-cap-row">
-              <label><span>{text.customCap}</span><input type="number" min={1} max={100000} inputMode="numeric" value={cap} onChange={(event) => setCap(event.target.value)} /></label>
+              <label><span>{text.customCap}</span><input type="number" min={1} max={100000} inputMode="numeric" value={cap} onChange={(event) => setCap(normalizeNumericInput(event.target.value))} /></label>
               <button className="secondary-button" type="button" disabled={Boolean(busy) || !Number.isSafeInteger(Number(cap)) || Number(cap) < 1 || Number(cap) > 100000} onClick={() => void saveConfig({ cap: Number(cap), unlimited: false, enabled: promoEnabled })}>{text.applyCap}</button>
             </div>
             <div className="super-promo">
