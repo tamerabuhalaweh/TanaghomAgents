@@ -7,6 +7,7 @@ const easternDigits = /[\u0660-\u0669\u06F0-\u06F9]/;
 
 test("Arabic UI ships Western digits only", () => {
   const files = [
+    "apps/dashboard/components/agency-workspace.tsx",
     "apps/dashboard/components/billing-settings.tsx",
     "apps/dashboard/components/overview-dashboard.tsx",
     "apps/dashboard/components/public-pages.tsx",

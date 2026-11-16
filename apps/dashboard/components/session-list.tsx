@@ -5,6 +5,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import type { AuthCopy } from "@/lib/i18n/auth";
+import { formatDateTime } from "@/lib/i18n/format";
 
 interface Session {
   id: string;
@@ -16,7 +17,7 @@ interface Session {
   current: boolean;
 }
 
-export function SessionList({ copy }: { copy: AuthCopy }) {
+export function SessionList({ copy, locale = "en" }: { copy: AuthCopy; locale?: "ar" | "en" }) {
   const [sessions, setSessions] = useState<Session[] | null>(null);
   const [error, setError] = useState("");
   const [revoking, setRevoking] = useState("");
@@ -91,7 +92,7 @@ export function SessionList({ copy }: { copy: AuthCopy }) {
                   {session.current ? <strong> · {copy.sessionsCurrent}</strong> : null}
                 </p>
                 <small>
-                  {copy.sessionsLastSeen}: {new Date(session.last_seen_at).toLocaleString()}
+                  {copy.sessionsLastSeen}: {formatDateTime(session.last_seen_at, locale)}
                   {session.user_agent ? ` · ${session.user_agent.slice(0, 80)}` : ""}
                 </small>
               </div>
