@@ -105,8 +105,8 @@ try{
  await reject('expired result cannot overwrite quarantined work','SELECT tanaghom.complete_agency_workspace_task($1,$2,NULL,$3)',[lease.task_id,lease.lease_token,'inference_failed']);
  count++;console.log('PASS expired inference is quarantined with evidence and no automatic retry');
  await query("UPDATE tanaghom.agency_workspace_control SET emergency_stop=false");
- const retryWs=await create('en',['content_creator','executive_summary']);
- await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,retryWs,[bindingIds[1],bindingIds[5]],model]);
+ const retryWs=await create('en');
+ await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,retryWs,bindingIds,model]);
  const retryFirst=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(retryFirst);
  await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[retryFirst.task_id,retryFirst.lease_token,workspaceArtifact(retryFirst,{modelVersion:retryFirst.model,candidates:[{finishReason:'STOP',content:{parts:[{text:'This completed draft is preserved across the retry.'}]}}]},1)]);
  const retryFailed=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(retryFailed);
@@ -124,8 +124,13 @@ try{
  assert.equal((await query('SELECT started_at FROM tanaghom.agency_workspaces WHERE id=$1',[retryWs])).rows[0].started_at.toISOString(),retriedStart.toISOString());
  const resumed=(await query("SELECT evidence FROM tanaghom.agency_workspace_events WHERE workspace_id=$1 AND event_type='resumed' ORDER BY id DESC LIMIT 1",[retryWs])).rows[0].evidence;
  assert.equal(resumed.retried_from_failed,true);assert.equal(resumed.retried_tasks.length,1);assert.equal(resumed.external_actions,0);
- const retryClaim=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.equal(retryClaim.task_id,afterRetry[1].task_id);assert.equal(retryClaim.profile,'executive_summary');
- await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[retryClaim.task_id,retryClaim.lease_token,workspaceArtifact(retryClaim,null,1)]);
+ const retryClaim=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.equal(retryClaim.task_id,afterRetry[1].task_id);assert.equal(retryClaim.profile,'content_creator');
+ await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[retryClaim.task_id,retryClaim.lease_token,workspaceArtifact(retryClaim,{modelVersion:retryClaim.model,candidates:[{finishReason:'STOP',content:{parts:[{text:'The retried content draft is grounded in the approved fictional facts.'}]}}]},1)]);
+ for(let step=3;step<=6;step++){
+  const next=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(next);assert.equal(next.profile,codes[step-1]);
+  const response=next.profile==='executive_summary'?null:{modelVersion:next.model,candidates:[{finishReason:'STOP',content:{parts:[{text:'This remaining step completed after the human retry.'}]}}]};
+  await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[next.task_id,next.lease_token,workspaceArtifact(next,response,1)]);
+ }
  assert.equal((await query('SELECT status FROM tanaghom.agency_workspaces WHERE id=$1',[retryWs])).rows[0].status,'waiting_review');
  count++;console.log('PASS failed step retry preserves completed work and immutable failed evidence beyond 24h');
  const capped=await create('en',['content_creator']);await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,capped,[bindingIds[1]],model]);
