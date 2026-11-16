@@ -491,7 +491,9 @@ test("Packet B removes jargon, duplication, and raw provider labels from custome
   assert.match(channels, /النشر على المنصات الاجتماعية/);
   assert.doesNotMatch(knowledge, /72%|confidence_threshold\) \* 100/);
   assert.match(knowledge, /Strict factual grounding/);
-  assert.match(knowledge, /الاستدلال الصارم بالحقائق/);
+  assert.match(knowledge, /الاعتماد على الحقائق الموثقة مفعّل/);
+  assert.match(knowledge, /دليل النسخ/);
+  assert.doesNotMatch(knowledge, /كتالوج/);
   assert.match(templates, /KIND_COPY/);
   assert.match(templates, /Ad creative/);
   assert.match(templates, /إعلان إبداعي/);
@@ -510,8 +512,17 @@ test("Packet B auth has show-hide password controls, legal links, and home-linke
   }
   for (const page of [loginPage, signupPage]) {
     assert.match(page, /href="\/"/);
+    assert.match(page, /<LocaleToggle locale=\{locale\} \/>/);
     for (const href of ["/pricing", "/privacy", "/terms"]) assert.match(page, new RegExp(`href="${href}"`));
   }
+  assert.match(loginPage, /سجّل الدخول إلى تناغم/);
+  assert.match(loginPage, /أهلًا بعودتك/);
+  assert.match(loginPage, /سجّل الدخول للمتابعة إلى مساحة عملك/);
+  assert.match(login, /البريد الإلكتروني/);
+  assert.match(login, /تسجيل الدخول/);
+  assert.match(login, /نسيت كلمة المرور؟/);
+  assert.match(signupPage, /تتم عملية الدفع بالكامل عبر Stripe بأمان/);
+  assert.match(signupPage, /هويات بصرية وقوالب/);
 });
 
 test("Packet B empty states offer the next action", async () => {

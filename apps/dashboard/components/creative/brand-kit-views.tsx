@@ -6,7 +6,7 @@ import { useEffect, useState, type CSSProperties, type Dispatch, type SetStateAc
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
-import { normalizeDigits } from "@/lib/i18n/format";
+import { formatNumber, normalizeDigits } from "@/lib/i18n/format";
 
 interface KitRow {
   kit_id: string;
@@ -116,7 +116,7 @@ function ColorControl({ label, optional, value, onChange, locale }: {
       <span>{label}{optional ? <small>{locale === "ar" ? " اختياري" : " optional"}</small> : null}</span>
       <div className="brand-color-controls">
         <input type="color" value={safe} aria-label={label} onChange={(event) => onChange(event.target.value.toUpperCase())} />
-        <input type="text" value={value} maxLength={7} dir="ltr" aria-label={`${label} hex`} onChange={(event) => onChange(normalizeDigits(event.target.value))} />
+        <input type="text" value={value} maxLength={7} dir="ltr" aria-label={`${label} ${locale === "ar" ? "قيمة اللون" : "color value"}`} onChange={(event) => onChange(normalizeDigits(event.target.value))} />
         <i style={{ background: safe }} aria-hidden="true" />
       </div>
     </div>
@@ -137,18 +137,28 @@ function BrandPreview({ draft, locale }: { draft: BrandDraft; locale: CreativeLo
     <section className="brand-preview" style={style} aria-label={t(locale, "brands.previewTitle")}>
       <header><span>{t(locale, "brands.previewTitle")}</span><i /><i /><i /></header>
       <div className="brand-preview-posts">
+        {ar ? (
+          <article lang="ar" dir="rtl">
+            <span className="brand-preview-label">ع</span>
+            <div className="brand-preview-art"><b /><em /></div>
+            <strong style={{ fontFamily: draft.arabicFont || "Tajawal, Cairo, sans-serif" }}>اجعل خطوتك القادمة مؤثرة.</strong>
+            <p style={{ fontFamily: draft.arabicFont || "Tajawal, Cairo, sans-serif" }}>{draft.tone.trim() || "دافئة وواضحة وواثقة."}</p>
+          </article>
+        ) : null}
         <article lang="en" dir="ltr">
           <span className="brand-preview-label">EN</span>
           <div className="brand-preview-art"><b /><em /></div>
           <strong style={{ fontFamily: draft.latinFont || "Inter, sans-serif" }}>Make the next move count.</strong>
           <p style={{ fontFamily: draft.latinFont || "Inter, sans-serif" }}>{draft.tone.trim() || "Warm, clear, and confident."}</p>
         </article>
-        <article lang="ar" dir="rtl">
-          <span className="brand-preview-label">ع</span>
-          <div className="brand-preview-art"><b /><em /></div>
-          <strong style={{ fontFamily: draft.arabicFont || "Tajawal, Cairo, sans-serif" }}>اجعل خطوتك القادمة مؤثرة.</strong>
-          <p style={{ fontFamily: draft.arabicFont || "Tajawal, Cairo, sans-serif" }}>{draft.tone.trim() || "دافئة وواضحة وواثقة."}</p>
-        </article>
+        {!ar ? (
+          <article lang="ar" dir="rtl">
+            <span className="brand-preview-label">ع</span>
+            <div className="brand-preview-art"><b /><em /></div>
+            <strong style={{ fontFamily: draft.arabicFont || "Tajawal, Cairo, sans-serif" }}>اجعل خطوتك القادمة مؤثرة.</strong>
+            <p style={{ fontFamily: draft.arabicFont || "Tajawal, Cairo, sans-serif" }}>{draft.tone.trim() || "دافئة وواضحة وواثقة."}</p>
+          </article>
+        ) : null}
       </div>
     </section>
   );
@@ -299,7 +309,7 @@ export function BrandKitsView({ locale, dir }: { locale: CreativeLocale; dir: "r
             {kits.data.kits.map((kit) => (
               <li key={kit.kit_id} className="creative-card">
                 <h2><Link href={`/creative/brand-kits/${kit.kit_id}`}>{kit.name}</Link></h2>
-                <p>{t(locale, "brands.current")}: {t(locale, "common.version")}{kit.current_version} · {kit.versions}</p>
+                <p>{t(locale, "brands.current")}: {formatNumber(kit.current_version, locale)} · {formatNumber(kit.versions, locale)}</p>
               </li>
             ))}
           </ul>
@@ -370,7 +380,7 @@ export function BrandKitDetailView({ locale, dir, kitId }: { locale: CreativeLoc
         : detail.data && (
           <>
             <h1>{detail.data.kit.name}</h1>
-            <p>{t(locale, "brands.current")}: {t(locale, "common.version")}{detail.data.kit.current_version}</p>
+            <p>{t(locale, "brands.current")}: {formatNumber(detail.data.kit.current_version, locale)}</p>
             <ul className="creative-grid brand-version-grid">
               {detail.data.versions.map((version) => (
                 <li key={version.version_id} className="creative-card brand-version-card">

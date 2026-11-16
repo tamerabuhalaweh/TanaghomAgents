@@ -148,7 +148,7 @@ export function OnboardingProfileForm({ copy, locale }: { copy: OnboardingCopy; 
 
       <button className="onboarding-submit" type="submit" disabled={status === "saving"}>
         <span>{status === "saving" ? copy.saving : copy.save}</span>
-        <ArrowRight size={17} aria-hidden="true" />
+        <ArrowRight className="directional-arrow" size={17} aria-hidden="true" />
       </button>
     </form>
   );

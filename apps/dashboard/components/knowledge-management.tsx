@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
+import { formatDateTime } from "@/lib/i18n/format";
 import { PageHeading } from "@/components/page-heading";
 import { StatusPill } from "@/components/status-pill";
 import type { Tone } from "@/data/fixtures";
@@ -72,13 +73,28 @@ const actionLabels: Record<LifecycleAction, string> = {
   review: "Mark reviewed", approve: "Approve", activate: "Activate",
   revoke: "Revoke", rollback: "Restore version",
 };
+const actionLabelsAr: Record<LifecycleAction, string> = {
+  review: "تعليم كمُراجَع", approve: "اعتماد", activate: "تفعيل",
+  revoke: "إلغاء", rollback: "استعادة نسخة",
+};
+const statusLabelsAr: Record<KnowledgeStatus, string> = {
+  draft: "مسودة", reviewed: "مُراجَعة", approved: "معتمدة", active: "نشطة",
+  superseded: "مستبدلة", revoked: "ملغاة",
+};
+const categoryLabelsAr: Record<string, string> = {
+  product: "منتج", service: "خدمة", pricing: "تسعير", faq: "أسئلة شائعة",
+  policy: "سياسة", offer: "عرض", objection: "معالجة اعتراضات",
+  qualification: "تأهيل", location: "الموقع", hours: "ساعات العمل",
+  escalation_rule: "قاعدة تصعيد", disclaimer: "إخلاء مسؤولية",
+  dialect_example: "مثال لهجة",
+};
 const nextActions: Record<KnowledgeStatus, LifecycleAction[]> = {
   draft: ["review"], reviewed: ["approve", "revoke"], approved: ["activate", "revoke"],
   active: ["revoke"], superseded: ["rollback"], revoked: [],
 };
 
-function formatted(value: string | null) {
-  return value ? new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(value)) : "Not yet";
+function formatted(value: string | null, locale: "ar" | "en") {
+  return value ? formatDateTime(value, locale) : (locale === "ar" ? "لم يبدأ بعد" : "Not yet");
 }
 
 export function KnowledgeManagement() {
@@ -118,13 +134,13 @@ export function KnowledgeManagement() {
     {state === "ready" && payload ? <>
       <section className="knowledge-safety" aria-label={ar ? "حدود أمان المعرفة" : "Knowledge safety boundary"}>
         <ShieldCheck size={20} />
-        <div><strong>{ar ? "الاستدلال الصارم بالحقائق مفعّل" : "Strict factual grounding is enforced"}</strong><p>{ar ? "لا تُستخدم إلا النسخ النشطة، ويجب أن يستند كل رد إلى المعرفة الموثقة. الحالات غير المؤكدة أو الحساسة تُحال إلى مراجعة بشرية." : "Only active versions can be retrieved, and every factual response must rely on verified knowledge. Uncertain or sensitive cases go to a person for review."}</p></div>
+        <div><strong>{ar ? "الاعتماد على الحقائق الموثقة مفعّل" : "Strict factual grounding is enforced"}</strong><p>{ar ? "لا تُستخدم إلا النسخ النشطة، ويجب أن يستند كل رد إلى المعرفة الموثقة. الحالات غير المؤكدة أو الحساسة تُحال إلى مراجعة بشرية." : "Only active versions can be retrieved, and every factual response must rely on verified knowledge. Uncertain or sensitive cases go to a person for review."}</p></div>
         <StatusPill tone="success">{ar ? "لا رد تلقائي" : "No auto-reply"}</StatusPill>
       </section>
 
       {composerOpen ? <KnowledgeComposer hasExisting={payload.counts.sources > 0 || payload.versions.length > 0} onCreated={async () => { setComposerOpen(false); setFeedback(ar ? "أُنشئت المسودة. راجعها وفعّلها قبل أن يتمكن الوكلاء من استرجاعها." : "Draft created. Review and activate it before agents can retrieve it."); await load(); }} /> : null}
 
-      <section className="knowledge-overview" aria-label={ar ? "ملخص كتالوج المعرفة" : "Knowledge catalog summary"}>
+      <section className="knowledge-overview" aria-label={ar ? "ملخص دليل المعرفة" : "Knowledge catalog summary"}>
         <dl>
           <div><dt>{ar ? "المصادر" : "Sources"}</dt><dd>{payload.counts.sources}</dd></div>
           <div><dt>{ar ? "النسخ النشطة" : "Active versions"}</dt><dd>{payload.counts.active}</dd></div>
@@ -133,13 +149,13 @@ export function KnowledgeManagement() {
         </dl>
         <div className="knowledge-policy-summary">
           <Languages size={18} />
-          <span><strong>{ar ? "سياسة المعرفة العربية والإنجليزية" : "English and Arabic knowledge policy"} v{payload.policy?.version_number || "—"}</strong><small>{ar ? "الاستدلال الصارم بالحقائق: تتطلب ردود الذكاء الاصطناعي معرفة موثقة ومراجعة بشرية عند عدم اليقين." : "Strict factual grounding: AI responses require verified knowledge and human review when uncertain."}</small></span>
+          <span><strong>{ar ? `سياسة المعرفة العربية والإنجليزية — الإصدار ${payload.policy?.version_number || "—"}` : `English and Arabic knowledge policy v${payload.policy?.version_number || "—"}`}</strong><small>{ar ? "الاعتماد على الحقائق الموثقة: تتطلب ردود الذكاء الاصطناعي معرفة موثقة ومراجعة بشرية عند عدم اليقين." : "Strict factual grounding: AI responses require verified knowledge and human review when uncertain."}</small></span>
         </div>
       </section>
 
       <section className="knowledge-catalog" aria-labelledby="knowledge-catalog-title">
         <header className="knowledge-catalog-header">
-          <div><h2 id="knowledge-catalog-title">{ar ? "كتالوج النسخ" : "Version catalog"}</h2><p>{ar ? "تبقى المسودات غير مرئية للوكلاء حتى تتم مراجعتها واعتمادها وتفعيلها." : "Drafts are invisible to agents until reviewed, approved, and activated."}</p></div>
+          <div><h2 id="knowledge-catalog-title">{ar ? "دليل النسخ" : "Version catalog"}</h2><p>{ar ? "تبقى المسودات غير مرئية للوكلاء حتى تتم مراجعتها واعتمادها وتفعيلها." : "Drafts are invisible to agents until reviewed, approved, and activated."}</p></div>
           <label><span className="sr-only">{ar ? "تصفية النسخ حسب الحالة" : "Filter versions by status"}</span><select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}><option value="all">{ar ? "جميع الحالات" : "All statuses"}</option>{Object.keys(nextActions).map((status) => <option value={status} key={status}>{ar ? ({ draft: "مسودة", reviewed: "مُراجعة", approved: "معتمدة", active: "نشطة", superseded: "مستبدلة", revoked: "ملغاة" } as Record<string, string>)[status] : status[0].toUpperCase() + status.slice(1)}</option>)}</select></label>
         </header>
         {visible.length ? <div className="knowledge-version-list">{visible.map((version) => <KnowledgeRow key={version.version_id} version={version} onChanged={async (message) => { setFeedback(message); await load(); }} />)}</div> : <div className="knowledge-empty"><BookCheck size={22} /><div><h3>{payload.versions.length ? (ar ? "لا توجد نسخ تطابق هذا التصفية" : "No versions match this filter") : (ar ? "ابنِ مجموعة الإجابات المعتمدة" : "Build the approved answer set")}</h3><p>{payload.versions.length ? (ar ? "اختر حالة دورة حياة أخرى للمتابعة." : "Choose another lifecycle status to continue.") : (ar ? "أضف حقيقة أو سياسة أو سؤالاً شائعاً أو عرضاً قدّمه العميل كمسودة." : "Add a customer-supplied fact, policy, FAQ, offer, or language example as a draft.")}</p></div>{!payload.versions.length ? <button className="primary-button" type="button" onClick={() => { setComposerOpen(true); window.setTimeout(() => document.getElementById("knowledge-composer")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}><FilePlus2 size={16} />{ar ? "أضف أول إجابة معتمدة" : "Add first approved answer"}</button> : null}</div>}
@@ -192,6 +208,8 @@ function KnowledgeComposer({ hasExisting, onCreated }: { hasExisting: boolean; o
 }
 
 function KnowledgeRow({ version, onChanged }: { version: KnowledgeVersion; onChanged: (message: string) => Promise<void> }) {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [busy, setBusy] = useState<LifecycleAction | null>(null);
   const [revokeOpen, setRevokeOpen] = useState(false);
   const [reason, setReason] = useState("");
@@ -207,18 +225,20 @@ function KnowledgeRow({ version, onChanged }: { version: KnowledgeVersion; onCha
       });
       if (!response.ok) throw new Error("This lifecycle transition was rejected. Refresh and verify the current version state.");
       setRevokeOpen(false); setReason("");
-      await onChanged(action === "activate" ? "Knowledge activated for future proposals." : action === "rollback" ? "Earlier version restored; the previous active version was superseded." : `Version ${actionLabels[action].toLowerCase()}.`);
+      await onChanged(ar
+        ? action === "activate" ? "تم تفعيل المعرفة للمقترحات المقبلة." : action === "rollback" ? "تمت استعادة النسخة السابقة واستُبدلت النسخة النشطة." : actionLabelsAr[action] + "."
+        : action === "activate" ? "Knowledge activated for future proposals." : action === "rollback" ? "Earlier version restored; the previous active version was superseded." : `Version ${actionLabels[action].toLowerCase()}.`);
     } catch (caught) { setError(caught instanceof Error ? caught.message : "The version could not be updated."); }
     finally { setBusy(null); }
   }
 
   return <article className="knowledge-version-row">
     <div className="knowledge-version-main">
-      <div className="knowledge-version-title"><div><h3>{version.title}</h3><p>{categoryLabels[version.category] || version.category} · {version.language === "ar" ? "Arabic" : version.language === "en" ? "English" : "Language-neutral"} · v{version.version_number}</p></div><StatusPill tone={statusTone[version.status]}>{version.status}</StatusPill></div>
-      <details><summary>View source content and provenance</summary><div className="knowledge-version-detail"><p dir={version.language === "ar" ? "rtl" : "ltr"}>{version.content}</p><dl><div><dt>Source key</dt><dd>{version.source_key}</dd></div><div><dt>Created by</dt><dd>{version.created_by_name}</dd></div><div><dt>Provenance</dt><dd>{version.provenance_ref || version.provenance_type.replaceAll("_", " ")}</dd></div><div><dt>Fingerprint</dt><dd><code>{version.content_fingerprint}</code></dd></div><div><dt>Activated</dt><dd>{formatted(version.activated_at)}</dd></div></dl>{version.revoked_reason ? <p className="knowledge-revoked-reason"><ShieldX size={15} /> {version.revoked_reason}</p> : null}</div></details>
+      <div className="knowledge-version-title"><div><h3>{version.title}</h3><p>{ar ? categoryLabelsAr[version.category] || version.category : categoryLabels[version.category] || version.category} · {version.language === "ar" ? "العربية" : version.language === "en" ? "الإنجليزية" : (ar ? "محايد لغويًا" : "Language-neutral")} · v{version.version_number}</p></div><StatusPill tone={statusTone[version.status]}>{ar ? statusLabelsAr[version.status] : version.status}</StatusPill></div>
+      <details><summary>{ar ? "عرض المصدر ومصدر المحتوى" : "View source content and provenance"}</summary><div className="knowledge-version-detail"><p dir={version.language === "ar" ? "rtl" : "ltr"}>{version.content}</p><dl><div><dt>{ar ? "مفتاح المصدر" : "Source key"}</dt><dd>{version.source_key}</dd></div><div><dt>{ar ? "أنشأها" : "Created by"}</dt><dd>{version.created_by_name}</dd></div><div><dt>{ar ? "المصدر" : "Provenance"}</dt><dd>{version.provenance_ref || version.provenance_type.replaceAll("_", " ")}</dd></div><div><dt>{ar ? "البصمة" : "Fingerprint"}</dt><dd><code>{version.content_fingerprint}</code></dd></div><div><dt>{ar ? "تاريخ التفعيل" : "Activated"}</dt><dd>{formatted(version.activated_at, locale)}</dd></div></dl>{version.revoked_reason ? <p className="knowledge-revoked-reason"><ShieldX size={15} /> {version.revoked_reason}</p> : null}</div></details>
     </div>
     <div className="knowledge-version-actions">
-      {nextActions[version.status].map((action) => <button key={action} className={action === "revoke" ? "text-danger-button compact-button" : action === "activate" ? "primary-button compact-button" : "secondary-button compact-button"} type="button" disabled={Boolean(busy)} onClick={() => void transition(action)}>{action === "rollback" ? <ArchiveRestore size={15} /> : action === "activate" ? <CheckCircle2 size={15} /> : null}{busy === action ? "Working…" : actionLabels[action]}</button>)}
+      {nextActions[version.status].map((action) => <button key={action} className={action === "revoke" ? "text-danger-button compact-button" : action === "activate" ? "primary-button compact-button" : "secondary-button compact-button"} type="button" disabled={Boolean(busy)} onClick={() => void transition(action)}>{action === "rollback" ? <ArchiveRestore size={15} /> : action === "activate" ? <CheckCircle2 size={15} /> : null}{busy === action ? (ar ? "جارٍ التنفيذ…" : "Working…") : (ar ? actionLabelsAr[action] : actionLabels[action])}</button>)}
       {revokeOpen ? <div className="knowledge-revoke"><label><span>Reason for revocation</span><input value={reason} onChange={(event) => setReason(event.target.value)} minLength={3} maxLength={1000} autoFocus /></label><div><button className="danger-button compact-button" type="button" disabled={reason.trim().length < 3 || Boolean(busy)} onClick={() => void transition("revoke")}>Confirm revoke</button><button className="ghost-button compact-button" type="button" onClick={() => { setRevokeOpen(false); setReason(""); }}>Cancel</button></div></div> : null}
       {error ? <p role="alert">{error}</p> : null}
     </div>

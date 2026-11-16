@@ -4,7 +4,7 @@ import { Check, CreditCard, ExternalLink, LoaderCircle, LockKeyhole, RefreshCw, 
 import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
-import { formatDate as formatLocalizedDate, formatMoney as formatLocalizedMoney } from "@/lib/i18n/format";
+import { formatDate as formatLocalizedDate, formatMoney as formatLocalizedMoney, formatNumber } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
@@ -54,7 +54,7 @@ interface BillingPayload {
 
 const copy = {
   en: {
-    title: "Billing & subscription",
+    title: "Billing",
     lede: "Review your workspace plan, start a secure Stripe Checkout, or manage invoices and payment methods in the Billing Portal.",
     status: "Workspace status",
     plan: "Current plan",
@@ -66,6 +66,7 @@ const copy = {
     subscribe: "Subscribe",
     switchPlan: "Switch plan",
     current: "Current plan",
+    currentPlanSection: "Your current plan",
     manage: "Manage billing & invoices",
     opening: "Opening…",
     checkout: "Opening secure checkout…",
@@ -111,7 +112,7 @@ const copy = {
     checkoutFull: "The launch cohort filled before checkout started. Your priority place has been saved.",
   },
   ar: {
-    title: "الفوترة والاشتراك",
+    title: "الفوترة",
     lede: "راجع خطة مساحة العمل، وابدأ الدفع الآمن عبر Stripe، أو أدِر الفواتير ووسائل الدفع من بوابة الفوترة.",
     status: "حالة مساحة العمل",
     plan: "الخطة الحالية",
@@ -123,6 +124,7 @@ const copy = {
     subscribe: "اشترك",
     switchPlan: "تغيير الخطة",
     current: "الخطة الحالية",
+    currentPlanSection: "خطتك الحالية",
     manage: "إدارة الفوترة والفواتير",
     opening: "جارٍ الفتح…",
     checkout: "جارٍ فتح الدفع الآمن…",
@@ -152,16 +154,16 @@ const copy = {
       canceled: "ملغاة",
     },
     perMonth: "شهريًا",
-    secure: "تتم المدفوعات عبر Stripe. لا تستلم تناغم بيانات البطاقة أبدًا.",
+    secure: "تتم عملية الدفع بالكامل عبر Stripe بأمان. تناغم لا يحفظ بيانات بطاقتك أبدًا.",
     checkoutError: "تعذر بدء الدفع عبر Stripe. حاول بعد قليل.",
     portalError: "تعذر فتح بوابة الفوترة. حاول بعد قليل.",
     forbidden: "مالك مساحة العمل وحده يمكنه إدارة الفوترة.",
     launchBadge: "LAUNCH100 — عرض الإطلاق لأول 100 مساحة عمل",
-    launchRemaining: "مقعداً بسعر الإطلاق متبقٍ",
+    launchRemaining: "مكان بسعر الإطلاق متبقٍ",
     listPrice: "السعر الأساسي",
     sandboxTitle: "الصندوق المجاني نشط: حملة واحدة كاملة",
     sandboxBody: "تشمل مساحتك حزمة حملة ذكاء اصطناعي كاملة وثلاث عمليات تشغيل. تُفتح قنوات التواصل الحقيقية مع أي خطة مدفوعة.",
-    reverseCharge: "B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A.",
+    reverseCharge: "فوترة B2B بالدولار الأمريكي من شركتنا البريطانية المحدودة. خارج نطاق ضريبة القيمة المضافة البريطانية. هذه ليست عملية بيع بالتجزئة للمستهلكين في المملكة المتحدة، ولا تسري عليها حماية البيع عن بُعد للمستهلكين. نستلم المدفوعات عبر Stripe بالبطاقة أو بالتحويل البنكي. (مرجع HMRC Notice 741A)",
     campaigns: "حملة ذكاء اصطناعي شهرياً",
     cohortFull: "اكتملت الدفعة الحالية. انضم إلى قائمة الأولوية أدناه أو تواصل مع مالك المنصة.",
     queue: "ترتيبك في القائمة",
@@ -177,7 +179,12 @@ const STATUS_TONE: Record<Status, "success" | "working" | "attention" | "danger"
 };
 
 function formatMoney(amountMinor: number, currency: string, locale: string) {
-  return formatLocalizedMoney(amountMinor / 100, locale === "ar" ? "ar" : "en", currency);
+  const amount = amountMinor / 100;
+  if (locale === "ar") {
+    const decimals = Number.isInteger(amount) ? 0 : 2;
+    return `${formatNumber(amount, "ar", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ${decimals ? "دولار" : "دولارًا"}`;
+  }
+  return formatLocalizedMoney(amount, "en", currency);
 }
 
 function formatDate(value: string | null, locale: string) {
@@ -297,7 +304,7 @@ export function BillingSettings() {
       {state === "ready" && payload ? <>
         {!payload.can_manage_billing ? <div className="billing-banner billing-banner-neutral"><LockKeyhole size={17} /><span><strong>{text.ownerOnly}</strong> {text.ownerOnlyBody}</span></div> : null}
         {!payload.billing_configured ? <div className="billing-banner billing-banner-neutral"><ShieldCheck size={17} /><span><strong>{text.unconfigured}</strong> {text.unconfiguredBody}</span></div> : null}
-        {payload.launch_offer?.launch100_active ? <div className="billing-banner billing-banner-success billing-launch-banner"><Sparkles size={18} /><span><strong>{text.launchBadge}</strong> — {payload.launch_offer.redemptions_remaining} {text.launchRemaining}. {text.reverseCharge}</span></div> : null}
+        {payload.launch_offer?.launch100_active ? <div className="billing-banner billing-banner-success billing-launch-banner"><Sparkles size={18} /><span><strong>{text.launchBadge}</strong> — {ar ? `تبقّى ${formatNumber(payload.launch_offer.redemptions_remaining, "ar")} مكان بسعر الإطلاق.` : `${payload.launch_offer.redemptions_remaining} ${text.launchRemaining}.`} {text.reverseCharge}</span></div> : null}
         {payload.subscription_status !== "active" ? <div className="billing-sandbox-callout"><ShieldCheck size={19} /><div><strong>{text.sandboxTitle}</strong><p>{text.sandboxBody}</p></div></div> : null}
         {payload.launch_offer?.cohort_full ? <div className="billing-sandbox-callout billing-cohort-callout"><LockKeyhole size={19} /><div><strong>{text.cohortFull}</strong>{payload.launch_offer.queue_position ? <p>{text.queue}: <bdi>#{payload.launch_offer.queue_position}</bdi></p> : null}</div></div> : null}
 
@@ -316,12 +323,12 @@ export function BillingSettings() {
             <div><dt>{text.customer}</dt><dd>{payload.can_manage_billing ? payload.stripe_customer_id_masked || text.none : text.ownerOnly}</dd></div>
             <div><dt>{text.tax}</dt><dd>{payload.automatic_tax ? text.taxOn : text.taxOff}</dd></div>
           </dl>
-          {payload.plan_tier ? <p className="billing-renewal">{payload.cancel_at_period_end ? text.cancels : text.renews}</p> : null}
+          {payload.plan_tier && periodEnd ? <p className="billing-renewal">{payload.cancel_at_period_end ? text.cancels : text.renews}</p> : null}
           {payload.can_manage_billing && payload.has_stripe_customer ? <div className="billing-actions"><button className="primary-button" type="button" disabled={busy !== null || !payload.billing_configured} onClick={() => void openPortal()}><ExternalLink size={16} /> {busy === "portal" ? text.opening : text.manage}</button></div> : null}
         </section>
 
         <section className="billing-plans-section" aria-labelledby="billing-plans-title">
-          <div className="billing-plans-head"><div><h2 id="billing-plans-title">{text.title}</h2><p>{text.secure}</p></div></div>
+          <div className="billing-plans-head"><div><h2 id="billing-plans-title">{text.currentPlanSection}</h2><p>{text.secure}</p></div></div>
           <div className="billing-plans">
             {payload.plans.map((plan) => {
               const current = payload.plan_tier === plan.id;
