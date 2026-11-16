@@ -220,10 +220,10 @@ remove or modify the canary.
 Expected database marker:
 
 ```text
-DEMO_DATABASE_READY migrations=49
+DEMO_DATABASE_READY migrations=50
 ```
 
-There are 49 up migrations, ending at `0052_security_hardening`; numbering gaps `0041`-`0043` are
+There are 50 up migrations, ending at `0053_workspace_step_retry`; numbering gaps `0041`-`0043` are
 intentional. The role/ledger guard requires exactly that chain.
 
 ## Validate
@@ -485,7 +485,7 @@ commands as a recovery step.
   and wait for an operator decision; the database emergency stop blocks further inference.
 - `schema_migrations does not exist`: the fresh-database runner must check
   `to_regclass('public.schema_migrations')` before querying the ledger; rebuild from reviewed source.
-- `demo database must be at exact migration 0052 ledger`: confirm the runtime has all 49 up
+- `demo database must be at exact migration 0053 ledger`: confirm the runtime has all 50 up
   migrations and no extra/missing ledger rows.
 - Login `401`: read the synthetic credentials file again; do not rotate production credentials.
 - Login `503` or health not ready: check `auth` health and the dashboard secret mounts.

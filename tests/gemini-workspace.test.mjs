@@ -114,3 +114,15 @@ test('gemini adapter: missing model, non-text model and credentials are rejected
  assert.throws(()=>createGeminiWorkspaceClient({apiKey:' leading and trailing ',baseUrl:`${base}/v1beta`}),e=>e.code==='model_unavailable');
  assert.equal(calls,1);
 });
+
+test('gemini adapter: retry delays and attempts share one bounded generation deadline',async()=>{
+ let calls=0;
+ const client=createGeminiWorkspaceClient({apiKey:key,timeoutMs:120,retryDelaysMs:[1000,1000],
+  fetch:async()=>{calls++;return new Response('{}',{status:503,headers:{'content-type':'application/json'}});}});
+ const started=Date.now();
+ await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='inference_outcome_unknown');
+ const elapsed=Date.now()-started;
+ assert.equal(calls,1,'the retry must not start after the cumulative deadline is spent');
+ assert.ok(elapsed>=100,`deadline was not honoured (${elapsed}ms)`);
+ assert.ok(elapsed<400,`retry overran the deadline (${elapsed}ms)`);
+});

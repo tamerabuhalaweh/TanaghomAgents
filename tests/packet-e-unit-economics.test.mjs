@@ -182,8 +182,8 @@ test("deployment passes Turnstile keys and an optional secret mount through Comp
   assert.match(validator, /turnstile_secret_key/);
 });
 
-test("the 49-migration ledger is unchanged", () => {
+test("the 50-migration ledger is unchanged", () => {
   const ledger = read("deployment/dashboard-demo/scripts/validate-compose.py");
-  assert.match(ledger, /len\(migrations\) == 49/);
-  assert.match(ledger, /0052_security_hardening\.up\.sql/);
+  assert.match(ledger, /len\(migrations\) == 50/);
+  assert.match(ledger, /0053_workspace_step_retry\.up\.sql/);
 });

@@ -145,6 +145,6 @@ test("no SQL migration was added for WS8", async () => {
   const migrations = (await readdir(new URL("../packages/database/migrations", import.meta.url)))
     .filter((file) => file.endsWith(".up.sql"))
     .sort();
-  assert.equal(migrations.length, 49);
-  assert.equal(migrations.at(-1), "0052_security_hardening.up.sql");
+  assert.equal(migrations.length, 50);
+  assert.equal(migrations.at(-1), "0053_workspace_step_retry.up.sql");
 });

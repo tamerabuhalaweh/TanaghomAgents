@@ -5,25 +5,38 @@ import test from "node:test";
 const root = new URL("../", import.meta.url);
 const read = (path) => readFile(new URL(path, root), "utf8");
 
-test("Packet D1 workspace SQL isolates failures and resumes only failed steps", async () => {
-  const sql = await read("deployment/dashboard-demo/sql/configure-api-role.sql");
-  assert.match(sql, /CREATE OR REPLACE FUNCTION tanaghom\.complete_agency_workspace_task/);
-  assert.match(sql, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task_for_models/);
-  assert.match(sql, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task\(\)/);
-  assert.match(sql, /CREATE OR REPLACE FUNCTION tanaghom\.decide_agency_workspace/);
+test("Packet G step retry replaces failed steps without mutating terminal tasks", async () => {
+  const configure = await read("deployment/dashboard-demo/sql/configure-api-role.sql");
+  const sql = await read("packages/database/migrations/0053_workspace_step_retry.up.sql");
+  const down = await read("packages/database/migrations/0053_workspace_step_retry.down.sql");
+
+  // Fresh installs must not overwrite the immutable 0053 contract.
+  assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.complete_agency_workspace_task/);
+  assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task_for_models/);
+  assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task\(\)/);
+  assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.decide_agency_workspace/);
+  assert.match(configure, /CREATE OR REPLACE FUNCTION tanaghom\.set_agency_workspace_circuit_breaker/);
+  assert.match(configure, /GRANT EXECUTE ON FUNCTION tanaghom\.set_agency_workspace_circuit_breaker\(boolean,boolean,text\) TO tanaghom_api/);
+
+  assert.match(sql, /<> 49/);
+  assert.match(sql, /0052_security_hardening/);
+  assert.match(sql, /CREATE FUNCTION tanaghom\.guard_agency_workspace_step/);
+  assert.match(sql, /current_setting\('tanaghom\.allowing_workspace_step_retry',true\) IS DISTINCT FROM 'on'/);
+  assert.match(sql, /id=OLD\.task_id AND status='failed'/);
+  assert.match(sql, /NEW\.task_id IS NOT DISTINCT FROM OLD\.task_id/);
+  assert.match(sql, /status='queued' AND correlation_id=OLD\.workspace_id/);
+  assert.match(sql, /'workspace:'\|\|w\.id::text\|\|':'\|\|v_step\.sequence\|\|':retry:'\|\|v_step\.old_id::text/);
+  assert.match(sql, /set_config\('tanaghom\.allowing_workspace_step_retry','on',true\)/);
+  assert.match(sql, /set_config\('tanaghom\.allowing_workspace_step_retry','',true\)/);
+  assert.match(sql, /'retried_tasks',v_retried/);
+  assert.match(sql, /v_retry_count>=3/);
+  assert.match(sql, /x\.started_at>now\(\)-interval '24 hours'/);
+  assert.match(sql, /event_type='resumed' AND e\.occurred_at>now\(\)-interval '24 hours'/);
+  assert.doesNotMatch(sql, /UPDATE tanaghom\.agency_pilot_tasks SET status='queued'/);
   assert.doesNotMatch(sql, /emergency_stop\s*=\s*true/);
-  assert.doesNotMatch(sql, /SET\s+enabled\s*=\s*false/);
-  assert.match(sql, /p_action='retry'/);
-  assert.match(sql, /attempt=0,lease_token=NULL,claimed_at=NULL,lease_expires_at=NULL/);
-  assert.match(sql, /error_code=NULL,response_hash=NULL,result=NULL/);
-  assert.match(sql, /'resumed','human'/);
-  assert.match(sql, /'retried_from_failed',true,'external_actions',0/);
-  assert.match(sql, /CREATE OR REPLACE FUNCTION tanaghom\.set_agency_workspace_circuit_breaker/);
-  assert.match(sql, /GRANT EXECUTE ON FUNCTION tanaghom\.set_agency_workspace_circuit_breaker\(boolean,boolean,text\) TO tanaghom_api/);
-  assert.match(sql, /ALTER COLUMN enabled SET DEFAULT true/);
-  assert.match(sql, /ALTER COLUMN emergency_stop SET DEFAULT false/);
-  assert.match(sql, /ALTER COLUMN reason SET DEFAULT 'Operational'/);
-  assert.match(sql, /WHERE reason NOT LIKE 'OPERATOR_STOP:%'/);
+  assert.match(down, /CREATE TRIGGER workspace_steps_immutable BEFORE UPDATE OR DELETE/);
+  assert.match(down, /prevent_audit_mutation/);
+  assert.match(down, /DELETE FROM public\.schema_migrations WHERE version='0053_workspace_step_retry'/);
 });
 
 test("Packet D1 enforces sandbox and paid monthly quotas under one advisory lock", async () => {
