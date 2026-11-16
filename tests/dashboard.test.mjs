@@ -451,6 +451,15 @@ test("Packet B help dialog is accessible, bilingual, and links the customer jour
   assert.match(shell, /الاعتماد البشري/);
 });
 
+test("Packet C seeds the overview locale on the server and exposes mobile help", async () => {
+  const overview = await readFile(new URL("app/page.tsx", dashboard), "utf8");
+  const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
+  assert.match(overview, /LocaleProvider initialLocale=\{locale\}/);
+  assert.match(shell, /mobile-header-actions/);
+  assert.match(shell, /sidebar-trust/);
+  assert.match(shell, /sidebar-help-button/);
+});
+
 test("Packet B localizes session roles and removes duplicate creative locale toggles", async () => {
   const profile = await readFile(new URL("components/session-profile.tsx", dashboard), "utf8");
   const subnav = await readFile(new URL("components/creative/creative-subnav.tsx", dashboard), "utf8");
