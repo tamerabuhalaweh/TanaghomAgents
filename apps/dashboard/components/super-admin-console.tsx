@@ -185,7 +185,7 @@ const COPY = {
     connected: "متصل",
     configured: "مهيأ",
     notConfigured: "غير مهيأ",
-    operational: "يعمل",
+    operational: "يعمل بشكل طبيعي",
     paused: "متوقف",
     maintenance: "صيانة",
     breakerTitle: "قاطع دائرة توليد الذكاء الاصطناعي",
@@ -245,6 +245,16 @@ function compact(value: number, locale: CreativeLocale) {
     notation: "compact",
     maximumFractionDigits: 1,
   }).format(value);
+}
+
+function subscriptionStatus(status: string, locale: CreativeLocale) {
+  const labels: Record<string, [string, string]> = {
+    trialing: ["Trialing", "تجريبي"],
+    active: ["Active", "نشط"],
+    past_due: ["Past due", "متأخر السداد"],
+    canceled: ["Canceled", "ملغى"],
+  };
+  return labels[status]?.[locale === "ar" ? 1 : 0] || status;
 }
 
 function date(value: string, locale: CreativeLocale) {
@@ -366,7 +376,7 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
           <article className="super-kpi">
             <div className="super-kpi-label"><Building2 size={15} />{text.workspaces}</div>
             <strong>{number(snapshot.kpis.total_workspaces, locale)}</strong>
-            <small>{Object.entries(snapshot.kpis.workspaces_by_status).map(([status, count]) => `${status} ${count}`).join(" · ")}</small>
+            <small>{Object.entries(snapshot.kpis.workspaces_by_status).map(([status, count]) => `${subscriptionStatus(status, locale)} ${number(count, locale)}`).join(" · ")}</small>
           </article>
           <article className="super-kpi">
             <div className="super-kpi-label"><Users size={15} />{text.verifiedUsers}</div>
@@ -459,7 +469,7 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
               <tbody>
                 {snapshot.recent_workspaces.map((workspace) => <tr key={workspace.id}>
                   <td><strong>{workspace.name}</strong><small>{workspace.slug}</small></td>
-                  <td><span className={`super-status super-status-${workspace.status}`}>{workspace.status}</span></td>
+                  <td><span className={`super-status super-status-${workspace.status}`}>{subscriptionStatus(workspace.status, locale)}</span></td>
                   <td>{workspace.plan_tier || text.tierNone}</td>
                   <td>{number(workspace.campaigns_count, locale)}</td>
                   <td>{date(workspace.created_at, locale)}</td>

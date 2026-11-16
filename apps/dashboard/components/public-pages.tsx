@@ -44,7 +44,7 @@ function PublicFooter({ locale }: { locale: Locale }) {
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
         <Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
       </nav>
-      <p className="public-copyright">© {new Date().getFullYear()} Tanaghom</p>
+      <p className="public-copyright">{`© ${new Date().getFullYear()} Tanaghom`}</p>
     </footer>
   );
 }
@@ -153,15 +153,15 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         </div>
         <div className="public-advantages-grid">
           <article className="public-advantage">
-            <h3>{ar ? "اعتماد بشري إلزامي في كل خطة" : "Mandatory human approval on every plan"}</h3>
+            <h3>{ar ? "لا يُنشر شيء حتى تقول نعم." : "Nothing publishes until you say yes."}</h3>
             <p>{ar ? "لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — Sprout Social من ٢٩٩ دولاراً للمقعد، وHootsuite من ٣٩٩ دولاراً للمستخدم شهرياً، وHubSpot Enterprise بعرض سعر — الاعتماد مشمول في كل خطط تناغم." : "Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every Tanaghom plan."}</p>
           </article>
           <article className="public-advantage">
-            <h3>{ar ? "عربية أصلية من اليمين إلى اليسار" : "Native Arabic RTL, not a translation"}</h3>
+            <h3>{ar ? "مبني بالعربية. وليس مترجمًا إليها." : "Built in Arabic. Not translated into it."}</h3>
             <p>{ar ? "عربية أولاً ومن اليمين إلى اليسار، مع Cairo وTajawal وIBM Plex Sans Arabic وAlmarai ضمن نظام الخطوط — لا ترجمة لاحقة." : "Arabic-first RTL with Cairo, Tajawal, IBM Plex Sans Arabic and Almarai in the type stack — not a translated afterthought."}</p>
           </article>
           <article className="public-advantage">
-            <h3>{ar ? "دورة الوكلاء الكاملة من خمس خطوات" : "The complete 5-step agent loop"}</h3>
+            <h3>{ar ? "خطّط. أنشئ. وافق. انشر. قِس. في مكان واحد." : "Plan. Create. Approve. Publish. Measure. One place."}</h3>
             <p>{ar ? "خطّط، وأنشئ، واعتمد، وانشر، وقِس. مساحة عمل واحدة من الموجز إلى الدليل، لا خمس أدوات منفصلة." : "Plan, Create, Approve, Publish, Measure. One workspace from brief to evidence, not five disconnected tools."}</p>
           </article>
         </div>
@@ -214,12 +214,12 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
 
       <section className="public-faq public-faq-landing">
         <h2>{ar ? "أسئلة الإطلاق" : "Launch questions"}</h2>
+        <details><summary>{ar ? "هل تناغم بالدعوة فقط؟" : "Is Tanaghom invite-only?"}</summary><p>{ar ? "نبدأ بدفعة بالدعوة فقط من ٢٠ مساحة عمل نشطة، ثم نتوسع إلى ١٠٠ مساحة إطلاق عبر قائمة الأولوية. سعر LAUNCH100 مخصص لأول ١٠٠ مساحة عمل." : "We start with an invite-only cohort of 20 active workspaces, then expand to 100 launch workspaces through the priority waitlist. LAUNCH100 pricing is reserved for those first 100 workspaces."}</p></details>
+        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو ٢٩٩ دولاراً للمقعد) وHootsuite (من نحو ٣٩٩ دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
+        <details><summary>{ar ? "من يملك الحملات والبيانات التي ننشئها؟" : "Who owns the campaigns and data we create?"}</summary><p>{ar ? "أنت. يبقى موجزك ومحتواك واعتماداتك ومعرفتك بالعلامة في مساحة عملك. فصل قناة تواصل يلغي رمز OAuth ويحذفه؛ ويبقى محتواك وسجل اعتمادك ملكاً لك." : "You do. Your briefs, content, approvals and brand knowledge stay in your workspace. Disconnecting a social channel revokes and purges its OAuth token; your content and approval history remain yours."}</p></details>
         <details><summary>{ar ? "ما الذي يفعله تناغم بالضبط؟" : "What exactly does Tanaghom do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
-        <details><summary>{ar ? "هل أحتاج بطاقة للبدء؟" : "Do I need a card to start?"}</summary><p>{ar ? "ابدأ بصندوق الحملة المجاني: حزمة حملة كاملة وثلاث عمليات تشغيل ذكاء اصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة." : "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required."}</p></details>
         <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، مع خطوط Cairo وTajawal وIBM Plex Sans Arabic وAlmarai. يُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
-        <details><summary>{ar ? "من يعتمد المحتوى؟" : "Who approves content?"}</summary><p>{ar ? "فريقك. الاعتماد البشري إلزامي في كل خطة، وكل اعتماد يُسجّل في سجل التدقيق." : "Your team. Human approval is mandatory on every plan, and every approval is recorded in the audit trail."}</p></details>
-        <details><summary>{ar ? "كيف يعمل LAUNCH100؟" : "How does LAUNCH100 work?"}</summary><p>{ar ? "تحصل أول ١٠٠ مساحة عمل على سعر الإطلاق: البداية ١٥ دولاراً شهرياً، النمو ٢٥ دولاراً شهرياً، التوسع ٥٠ دولاراً شهرياً. يُطبّق الرمز عند الدفع ما دامت الأماكن متاحة." : "The first 100 workspaces get launch pricing: Starter $15/mo, Growth $25/mo, Scale $50/mo. The code is applied at checkout while places remain."}</p></details>
-        <details><summary>{ar ? "هل يمكنني التغيير أو الإلغاء لاحقاً؟" : "Can I change or cancel later?"}</summary><p>{ar ? "نعم. الخطط شهرية، ويمكنك تغييرها أو إلغاءها من إعدادات الفوترة. يبقى محتواك وسجل اعتمادك في مساحة عملك." : "Yes. Plans are monthly, and you can change or cancel from billing settings. Your content and approval history stay in your workspace."}</p></details>
+        <details><summary>{ar ? "هل أحتاج بطاقة للبدء؟" : "Do I need a card to start?"}</summary><p>{ar ? "ابدأ بصندوق الحملة المجاني: حزمة حملة كاملة وثلاث عمليات تشغيل ذكاء اصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة." : "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required."}</p></details>
       </section>
 
       <section className="public-cta">

@@ -45,6 +45,16 @@ function superAdminEmails() {
   );
 }
 
+export function isPlatformSuperAdmin(
+  user: Pick<ApplicationUser, "organizationId" | "role">,
+  email: string,
+  allowedEmails = superAdminEmails(),
+) {
+  const normalized = email.trim().toLowerCase();
+  if (allowedEmails.size > 0) return Boolean(normalized && allowedEmails.has(normalized));
+  return user.organizationId === PLATFORM_ORGANIZATION_ID && user.role === "owner";
+}
+
 export async function requireSuperAdmin(request: Parameters<typeof authorize>[0]): Promise<SuperAdminUser> {
   const user = await authorize(request, ["owner"]);
   const profile = await database().query<{ email: string }>(
@@ -52,9 +62,7 @@ export async function requireSuperAdmin(request: Parameters<typeof authorize>[0]
     [user.id, user.organizationId],
   );
   const email = profile.rows[0]?.email?.trim().toLowerCase() || "";
-  const allowed = Boolean(email && superAdminEmails().has(email))
-    || (user.organizationId === PLATFORM_ORGANIZATION_ID && user.role === "owner");
-  if (!allowed) throw new SuperAdminNotFound("not_found");
+  if (!isPlatformSuperAdmin(user, email)) throw new SuperAdminNotFound("not_found");
   return { ...user, email };
 }
 
