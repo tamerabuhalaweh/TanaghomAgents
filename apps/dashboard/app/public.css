@@ -127,11 +127,20 @@
 .public-steps li > span { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 50%; background: var(--primary); color: var(--bg); font-size: 0.75rem; font-weight: 780; }
 .public-steps strong { display: block; margin-block-start: 0.85rem; font-size: 0.85rem; }
 .public-steps p { margin-block-start: 0.35rem; color: var(--muted); font-size: 0.7rem; line-height: 1.55; }
+.public-advantages-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
+.public-advantage { padding: 1.35rem; border: 1px solid var(--border); border-radius: var(--radius-lg); background: color-mix(in oklch, var(--surface) 65%, var(--bg)); }
+.public-advantage h3 { font-size: 1rem; line-height: 1.3; letter-spacing: -0.02em; }
+.public-advantage p { margin-block-start: 0.6rem; color: var(--muted); font-size: 0.74rem; line-height: 1.65; }
+.public-loop { margin-block-start: 2.4rem; }
+.public-loop-heading { margin-block-end: 0.6rem; }
+.public-loop-steps { grid-template-columns: repeat(5, minmax(0, 1fr)); margin-block-start: 0.9rem; }
 
 .public-pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
 .public-price-card { position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1.35rem; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
 .public-price-featured { border-color: color-mix(in oklch, var(--primary) 55%, var(--border)); background: linear-gradient(160deg, var(--primary-soft), var(--bg)); box-shadow: 0 0.8rem 2rem oklch(0.42 0.09 185 / 0.1); }
 .public-price-tag { position: absolute; inset-block-start: -0.65rem; inset-inline-start: 1.1rem; max-inline-size: calc(100% - 2.2rem); padding: 0.22rem 0.55rem; border-radius: 999px; background: var(--primary); color: var(--bg); font-size: 0.57rem; font-weight: 750; line-height: 1.3; }
+.public-price-popular { position: absolute; inset-block-start: -0.65rem; inset-inline-end: 1.1rem; max-inline-size: calc(50% - 0.9rem); overflow: hidden; padding: 0.22rem 0.55rem; border: 1px solid color-mix(in oklch, var(--primary) 55%, var(--border)); border-radius: 999px; background: var(--bg); color: var(--primary); font-size: 0.57rem; font-weight: 750; line-height: 1.3; text-overflow: ellipsis; white-space: nowrap; }
+.public-price-featured .public-price-tag { max-inline-size: calc(100% - 9rem); }
 .public-price-card h3 { font-size: 0.9rem; }
 .public-price-lede { min-height: 2.3rem; color: var(--muted); font-size: 0.7rem; line-height: 1.55; }
 .public-price-value { display: flex; align-items: baseline; gap: 0.35rem; padding-block: 0.2rem 0.4rem; border-block-end: 1px solid var(--border); }
@@ -173,6 +182,7 @@
 .public-faq details { padding-block: 0.85rem; border-block-start: 1px solid var(--border); }
 .public-faq summary { cursor: pointer; font-size: 0.8rem; font-weight: 650; }
 .public-faq details p { margin-block-start: 0.5rem; color: var(--muted); font-size: 0.75rem; line-height: 1.65; }
+.public-faq-landing { padding-block: 0 2rem; }
 
 .public-document { width: min(100% - 2.5rem, 47rem); margin-inline: auto; padding-block: clamp(2.75rem, 7vw, 5rem) 4rem; }
 .public-document h1 { margin-block-start: 0.75rem; font-size: clamp(2.1rem, 4.2vw, 3.15rem); line-height: 1.08; letter-spacing: -0.035em; }
@@ -187,6 +197,8 @@
   .public-pricing-grid { grid-template-columns: 1fr; }
   .public-pricing-grid .public-price-lede { min-height: 0; }
   .public-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .public-advantages-grid { grid-template-columns: 1fr; }
+  .public-loop-steps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .public-footer { grid-template-columns: 1fr; gap: 1.25rem; }
 }
 @media (max-width: 760px) {
@@ -198,6 +210,7 @@
   .public-preview-body { grid-template-columns: 1fr; }
   .public-post-visual { min-height: 4rem; }
   .public-steps { grid-template-columns: 1fr; }
+  .public-loop-steps { grid-template-columns: 1fr; }
   .public-cta { align-items: flex-start; flex-direction: column; }
   .public-cta .public-button { width: 100%; }
 }
@@ -205,6 +218,10 @@
   .public-header, .public-hero, .public-section, .public-cta, .public-footer, .public-inner-hero, .public-faq, .public-document { width: min(100% - 1.5rem, 76rem); }
   .public-signin { display: none; }
   .public-hero-actions .public-button { width: 100%; }
+  .public-price-card { padding-block-start: 3rem; }
+  .public-price-tag { inset-block-start: 0.6rem; max-inline-size: calc(100% - 7.5rem); }
+  .public-price-featured .public-price-tag { max-inline-size: calc(100% - 7.5rem); }
+  .public-price-popular { inset-block-start: 0.6rem; max-inline-size: 6.5rem; }
 }
 @media (prefers-reduced-motion: reduce) {
   .public-button { transition: none; }

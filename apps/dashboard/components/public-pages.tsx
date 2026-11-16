@@ -53,21 +53,21 @@ const tiers = [
   {
     id: "starter",
     list: 49, promo: 15,
-    en: { name: "Starter", lede: "For one brand finding its rhythm.", features: ["1 workspace", "15 AI campaigns / month", "2 team seats", "4 AI specialists", "Arabic and English content"] },
-    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["مساحة عمل واحدة", "١٥ حملة ذكاء اصطناعي شهرياً", "مقعدان للفريق", "٤ مختصين بالذكاء الاصطناعي", "محتوى عربي وإنجليزي"] },
+    en: { name: "Starter", lede: "For one brand finding its rhythm.", features: ["15 AI campaigns / month", "Unlimited team members in 1 workspace", "Full 5-step agent loop", "Mandatory human approval", "EN + AR RTL workspace", "Visual Brand Kit & Knowledge Base"] },
+    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["١٥ حملة ذكاء اصطناعي شهرياً", "أعضاء فريق غير محدودين في مساحة عمل واحدة", "دورة الوكلاء الكاملة من ٥ خطوات", "اعتماد بشري إلزامي", "مساحة عمل إنجليزية وعربية RTL", "هوية بصرية مرئية وقاعدة معرفة"] },
   },
   {
     id: "growth",
     list: 129, promo: 25,
-    en: { name: "Growth", lede: "For teams running always-on campaigns.", features: ["1 workspace", "50 AI campaigns / month", "8 team seats", "All AI specialists", "Brand kits and approvals", "Knowledge base and reports"] },
-    ar: { name: "النمو", lede: "للفرق التي تدير حملات مستمرة.", features: ["مساحة عمل واحدة", "٥٠ حملة ذكاء اصطناعي شهرياً", "٨ مقاعد للفريق", "جميع المختصين", "هويات بصرية واعتمادات", "قاعدة معرفة وتقارير"] },
+    en: { name: "Growth", lede: "For teams running always-on campaigns.", features: ["Everything in Starter", "50 AI campaigns / month", "Multi-channel publishing sync", "Priority generation"] },
+    ar: { name: "النمو", lede: "للفرق التي تدير حملات مستمرة.", features: ["كل ما في باقة البداية", "٥٠ حملة ذكاء اصطناعي شهرياً", "مزامنة النشر متعدد القنوات", "توليد ذو أولوية"] },
     featured: true,
   },
   {
     id: "scale",
     list: 249, promo: 50,
-    en: { name: "Scale", lede: "For agencies coordinating multiple brands.", features: ["Multiple brand workspaces", "200 AI campaigns / month", "Priority onboarding", "Advanced roles and reviews", "Operational monitoring", "Guided rollout"] },
-    ar: { name: "التوسع", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["مساحات عمل متعددة", "٢٠٠ حملة ذكاء اصطناعي شهرياً", "تهيئة ذات أولوية", "أدوار ومراجعات متقدمة", "مراقبة تشغيلية", "طرح موجّه"] },
+    en: { name: "Scale", lede: "For agencies coordinating multiple brands.", features: ["Everything in Growth", "200 AI campaigns / month", "Full workspace capacity", "Dedicated onboarding support"] },
+    ar: { name: "التوسع", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["كل ما في باقة النمو", "٢٠٠ حملة ذكاء اصطناعي شهرياً", "سعة مساحة عمل كاملة", "دعم تهيئة مخصص"] },
   },
 ] as const;
 
@@ -80,6 +80,7 @@ function PricingCards({ locale, detailed = false, launch100Active = true }: { lo
         return (
           <article key={tier.id} className={`public-price-card ${"featured" in tier && tier.featured ? "public-price-featured" : ""}`}>
             {launch100Active ? <span className="public-price-tag">{ar ? "LAUNCH100 — عرض الإطلاق لأول ١٠٠ مساحة عمل" : "LAUNCH100 — First 100 Workspaces"}</span> : null}
+            {"featured" in tier && tier.featured ? <span className="public-price-popular">{ar ? "الأكثر شيوعًا" : "Most popular"}</span> : null}
             <h3>{text.name}</h3>
             <p className="public-price-lede">{text.lede}</p>
             <div className="public-price-value">
@@ -105,13 +106,13 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
       <section className="public-hero">
         <div className="public-hero-copy">
           <p className="public-eyebrow"><Sparkles size={15} aria-hidden="true" />{ar ? "ذكاء اصطناعي تحت إشرافك" : "AI with your hand on the wheel"}</p>
-          <h1>{ar ? "حملات أسرع، وقرارات تبقى بيدك." : "Campaigns move faster when people stay in control."}</h1>
-          <p className="public-hero-lede">{ar ? "تناغم يجمع فريقاً من مختصي الذكاء الاصطناعي في مساحة عمل ثنائية اللغة، يخططون ويكتبون ويصممون، بينما يعتمد فريقك كل شيء قبل النشر." : "Tanaghom gives your team a bilingual AI specialist team that plans, writes and designs — while your people approve every piece before it goes live."}</p>
+          <h1>{ar ? "حملات أسرع. وكل قرار يبقى بيدك." : "Campaigns move faster. Every decision stays in your hands."}</h1>
+          <p className="public-hero-lede">{ar ? "تناغم هو فريقك التسويقي بالذكاء الاصطناعي. يخطط لحملاتك، ويكتب محتواك، ويجهّز كل منشور — ثم ينتظر موافقتك. لا يُنشر شيء من دونك. بالإنجليزية والعربية، في مساحة عمل واحدة، وبسعر ثابت واحد." : "Tanaghom is your AI marketing team. It plans your campaigns, writes your content, and prepares every post — then waits for your approval. Nothing goes live without you. In English and Arabic, in one workspace, for one flat price."}</p>
           <div className="public-hero-actions">
             <Link className="public-button" href="/signup">{ar ? "أنشئ مساحة عملك" : "Create your workspace"}<ArrowRight size={17} /></Link>
             <Link className="public-button public-button-outline" href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
           </div>
-          <p className="public-trust"><ShieldCheck size={18} aria-hidden="true" />{ar ? "اعتماد بشري وسجل تدقيق غير قابل للتغيير في كل خطوة." : "Human approval and an immutable audit trail at every step."}</p>
+          <p className="public-trust"><ShieldCheck size={18} aria-hidden="true" />{ar ? "ابدأ بحملة ذكاء اصطناعي مجانية (دون بطاقة) · موافقة بشرية في كل باقة · الترقية تبدأ من ١٥ دولارًا شهريًا برمز LAUNCH100" : "Start with 1 free AI campaign (no card required) · Human approval on every plan · Upgrade from $15/mo with LAUNCH100"}</p>
         </div>
 
         <div className="public-preview" aria-label={ar ? "معاينة حملة ثنائية اللغة مع اعتماد بشري" : "Bilingual campaign preview with human approval"}>
@@ -144,6 +145,43 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         </div>
       </section>
 
+      <section className="public-section public-advantages">
+        <div className="public-section-heading">
+          <p className="public-eyebrow">{ar ? "لماذا تنتقل الفرق إلينا" : "Why teams switch"}</p>
+          <h2>{ar ? "ثلاثة أسباب تجعل الفرق تنتقل إلى تناغم." : "Three reasons teams switch to Tanaghom."}</h2>
+          <p>{ar ? "سرعة الإطلاق لا تعني التخلي عن السيطرة — ومساحة عمل مبنية للعربية منذ البداية." : "A faster launch without giving up control — and a workspace built for Arabic from the start."}</p>
+        </div>
+        <div className="public-advantages-grid">
+          <article className="public-advantage">
+            <h3>{ar ? "اعتماد بشري إلزامي في كل خطة" : "Mandatory human approval on every plan"}</h3>
+            <p>{ar ? "لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — Sprout Social من ٢٩٩ دولاراً للمقعد، وHootsuite من ٣٩٩ دولاراً للمستخدم شهرياً، وHubSpot Enterprise بعرض سعر — الاعتماد مشمول في كل خطط تناغم." : "Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every Tanaghom plan."}</p>
+          </article>
+          <article className="public-advantage">
+            <h3>{ar ? "عربية أصلية من اليمين إلى اليسار" : "Native Arabic RTL, not a translation"}</h3>
+            <p>{ar ? "عربية أولاً ومن اليمين إلى اليسار، مع Cairo وTajawal وIBM Plex Sans Arabic وAlmarai ضمن نظام الخطوط — لا ترجمة لاحقة." : "Arabic-first RTL with Cairo, Tajawal, IBM Plex Sans Arabic and Almarai in the type stack — not a translated afterthought."}</p>
+          </article>
+          <article className="public-advantage">
+            <h3>{ar ? "دورة الوكلاء الكاملة من خمس خطوات" : "The complete 5-step agent loop"}</h3>
+            <p>{ar ? "خطّط، وأنشئ، واعتمد، وانشر، وقِس. مساحة عمل واحدة من الموجز إلى الدليل، لا خمس أدوات منفصلة." : "Plan, Create, Approve, Publish, Measure. One workspace from brief to evidence, not five disconnected tools."}</p>
+          </article>
+        </div>
+        <div className="public-loop">
+          <div className="public-section-heading public-loop-heading">
+            <p className="public-eyebrow">{ar ? "دورة الوكلاء" : "The agent loop"}</p>
+            <h2>{ar ? "من الموجز إلى الدليل، في خمس خطوات متصلة." : "From brief to evidence, in five connected steps."}</h2>
+          </div>
+          <ol className="public-steps public-loop-steps">
+            {[
+              [ar ? "خطّط" : "Plan", ar ? "الموجز والجمهور وخطة القنوات." : "Brief, audience and channel plan."],
+              [ar ? "أنشئ" : "Create", ar ? "المنشورات والنصوص والتصاميم بالإنجليزية والعربية." : "Posts, copy and visuals in English and Arabic."],
+              [ar ? "اعتمد" : "Approve", ar ? "يعتمد إنسان كل مخرج قبل النشر." : "A person signs off before anything ships."],
+              [ar ? "انشر" : "Publish", ar ? "تنشر القنوات المرتبطة وفق الجدول." : "Connected channels publish on schedule."],
+              [ar ? "قِس" : "Measure", ar ? "تعود النتائج والأدلة إلى الدورة." : "Results and evidence return to the loop."],
+            ].map(([title, copy], index) => <li key={title}><span>{index + 1}</span><strong>{title}</strong><p>{copy}</p></li>)}
+          </ol>
+        </div>
+      </section>
+
       <section className="public-section public-workflow">
         <div className="public-section-heading">
           <p className="public-eyebrow">{ar ? "أربع خطوات" : "Four steps"}</p>
@@ -172,6 +210,16 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         </aside>
         {cohortFull ? <div className="public-waitlist"><WaitlistForm locale={locale} /></div> : null}
         <p className="public-center-link"><Link href="/pricing">{ar ? "تفاصيل الخطط والمقارنة" : "Compare plans and details"}<ArrowRight size={16} /></Link></p>
+      </section>
+
+      <section className="public-faq public-faq-landing">
+        <h2>{ar ? "أسئلة الإطلاق" : "Launch questions"}</h2>
+        <details><summary>{ar ? "ما الذي يفعله تناغم بالضبط؟" : "What exactly does Tanaghom do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
+        <details><summary>{ar ? "هل أحتاج بطاقة للبدء؟" : "Do I need a card to start?"}</summary><p>{ar ? "ابدأ بصندوق الحملة المجاني: حزمة حملة كاملة وثلاث عمليات تشغيل ذكاء اصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة." : "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required."}</p></details>
+        <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، مع خطوط Cairo وTajawal وIBM Plex Sans Arabic وAlmarai. يُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
+        <details><summary>{ar ? "من يعتمد المحتوى؟" : "Who approves content?"}</summary><p>{ar ? "فريقك. الاعتماد البشري إلزامي في كل خطة، وكل اعتماد يُسجّل في سجل التدقيق." : "Your team. Human approval is mandatory on every plan, and every approval is recorded in the audit trail."}</p></details>
+        <details><summary>{ar ? "كيف يعمل LAUNCH100؟" : "How does LAUNCH100 work?"}</summary><p>{ar ? "تحصل أول ١٠٠ مساحة عمل على سعر الإطلاق: البداية ١٥ دولاراً شهرياً، النمو ٢٥ دولاراً شهرياً، التوسع ٥٠ دولاراً شهرياً. يُطبّق الرمز عند الدفع ما دامت الأماكن متاحة." : "The first 100 workspaces get launch pricing: Starter $15/mo, Growth $25/mo, Scale $50/mo. The code is applied at checkout while places remain."}</p></details>
+        <details><summary>{ar ? "هل يمكنني التغيير أو الإلغاء لاحقاً؟" : "Can I change or cancel later?"}</summary><p>{ar ? "نعم. الخطط شهرية، ويمكنك تغييرها أو إلغاءها من إعدادات الفوترة. يبقى محتواك وسجل اعتمادك في مساحة عملك." : "Yes. Plans are monthly, and you can change or cancel from billing settings. Your content and approval history stay in your workspace."}</p></details>
       </section>
 
       <section className="public-cta">
@@ -207,6 +255,7 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
         <details><summary>{ar ? "هل يمكنني تجربة المساحة قبل الدفع؟" : "Can I try the workspace before paying?"}</summary><p>{ar ? "أنشئ مساحة عملك وأكمل الإعداد. تظهر إعدادات الفوترة بوضوح، ولا تُنشر أي حملة دون اعتمادك." : "Create your workspace and complete setup. Billing readiness is shown clearly, and nothing publishes without your approval."}</p></details>
         <details><summary>{ar ? "ماذا يحدث لمحتواي إذا غيّرت الخطة؟" : "What happens to my work if I change plans?"}</summary><p>{ar ? "يبقى محتواك ومسوداتك وسجل اعتمادك في مساحة عملك. تتغير حدود الخطة والمقاعد فقط." : "Your content, drafts and approval history stay in your workspace. Only plan limits and seats change."}</p></details>
         <details><summary>{ar ? "هل تنشرون تلقائياً؟" : "Do you publish automatically?"}</summary><p>{ar ? "لا. كل مخرج يبقى مسودة حتى يعتمده إنسان. وحتى النشر يمر عبر قنواتك وإعداداتك." : "No. Every output stays a draft until a person approves it. Publishing still follows your channels and settings."}</p></details>
+        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو ٢٩٩ دولاراً للمقعد) وHootsuite (من نحو ٣٩٩ دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without paying for extra seats; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
       </section>
       <PublicFooter locale={locale} />
     </main>
