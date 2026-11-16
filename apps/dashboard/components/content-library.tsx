@@ -244,6 +244,7 @@ export function ContentLibrary() {
           <h2>{ar ? "لا يوجد محتوى في هذا العرض" : "No content in this view"}</h2>
           <p>{items.length ? (ar ? "اختر حالة أخرى أو امسح البحث." : "Choose another status or clear the search.") : (ar ? "ستظهر المسودات المولَّدة هنا وتبقى مرئية بعد كل قرار اعتماد." : "Generated drafts will appear here and remain visible after every approval decision.")}</p>
         </div>
+        {!items.length ? <Link className="primary-button" href="/creative/designs">{ar ? "أنشئ تصميمك الأول" : "Create your first design"} <ExternalLink size={16} /></Link> : null}
       </section> : null}
       <section className="content-records" aria-label="Content records">
         {visible.map((item) => {

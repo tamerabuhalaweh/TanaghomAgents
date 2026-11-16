@@ -1,11 +1,12 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import { ArrowRight, LockKeyhole } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 
 export function LoginForm() {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -47,7 +48,13 @@ export function LoginForm() {
           <label htmlFor="password">Password</label>
           <a className="field-link" href="/forgot-password">Forgot password?</a>
         </div>
-        <input id="password" name="password" type="password" autoComplete="current-password" required />
+        <div className="password-input">
+          <input id="password" name="password" type={showPassword ? "text" : "password"} autoComplete="current-password" required />
+          <button type="button" className="password-toggle" aria-controls="password" aria-pressed={showPassword} aria-label={showPassword ? "Hide password" : "Show password"} onClick={() => setShowPassword((value) => !value)}>
+            {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+            {showPassword ? "Hide" : "Show"}
+          </button>
+        </div>
       </div>
       <p className="login-error" role="alert" aria-live="polite">{error}</p>
       <button className="login-submit" type="submit" disabled={submitting}>

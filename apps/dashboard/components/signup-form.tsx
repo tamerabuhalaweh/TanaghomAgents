@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, UserRoundPlus } from "lucide-react";
+import { ArrowRight, Eye, EyeOff, UserRoundPlus } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import type { AuthCopy } from "@/lib/i18n/auth";
@@ -17,6 +17,8 @@ const PASSWORD_ERRORS = new Set([
 export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeLocale }) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const ar = locale === "ar";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -89,15 +91,21 @@ export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeL
       </div>
       <div className="form-field">
         <label htmlFor="password">{copy.passwordLabel}</label>
-        <input
-          id="password"
-          name="password"
-          type="password"
-          autoComplete="new-password"
-          minLength={12}
-          maxLength={128}
-          required
-        />
+        <div className="password-input">
+          <input
+            id="password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            autoComplete="new-password"
+            minLength={12}
+            maxLength={128}
+            required
+          />
+          <button type="button" className="password-toggle" aria-controls="password" aria-pressed={showPassword} aria-label={showPassword ? (ar ? "إخفاء كلمة المرور" : "Hide password") : (ar ? "إظهار كلمة المرور" : "Show password")} onClick={() => setShowPassword((value) => !value)}>
+            {showPassword ? <EyeOff size={16} aria-hidden="true" /> : <Eye size={16} aria-hidden="true" />}
+            {showPassword ? (ar ? "إخفاء" : "Hide") : (ar ? "إظهار" : "Show")}
+          </button>
+        </div>
         <small>{copy.passwordHint}</small>
       </div>
       <p className="login-error" role="alert" aria-live="polite">{error}</p>

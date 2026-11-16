@@ -251,7 +251,7 @@ function ApprovalEmptyState({ feedback, ar }: { feedback: string; ar: boolean })
     <section className="approval-state approval-state-empty" aria-labelledby="approval-empty-title">
       <span className="approval-state-icon"><CheckCircle2 size={28} aria-hidden="true" /></span>
       <div><h2 id="approval-empty-title">{ar ? "قائمة الاعتماد فارغة" : "Approval queue is clear"}</h2><p>{feedback || (ar ? "لا يوجد محتوى بانتظار قرار بشري. ستظهر المسودات الجديدة هنا عندما يسلّمها منتج المحتوى." : "There is no content waiting for a human decision. New drafts will appear here when the Content Producer submits them.")}</p></div>
-      <a className="secondary-button" href="/content">{ar ? "فتح مكتبة المحتوى" : "Open Content Library"}</a>
+      <a className="primary-button" href="/workspace">{ar ? "ابدأ موجز حملة" : "Start a campaign brief"}</a>
       <span className="approval-state-meta">{ar ? "يبقى النشر محمياً بسياسة الاعتماد في قاعدة البيانات." : "Publishing remains protected by the database approval policy."}</span>
     </section>
   );

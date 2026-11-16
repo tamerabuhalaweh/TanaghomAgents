@@ -79,7 +79,7 @@ test("dashboard includes reduced-motion and responsive navigation behavior", asy
   assert.match(shell, /event\.key !== "Escape"/);
   assert.match(shell, /menuButtonRef\.current\?\.focus\(\)/);
   assert.match(shell, /href="\/team"[\s\S]*?aria-current=[\s\S]*?onClick=\{\(\) => closeMenu\(\)\}/);
-  assert.match(shell, /href="\/settings\/integrations"[\s\S]*?aria-current=[\s\S]*?onClick=\{\(\) => closeMenu\(\)\}/);
+  assert.match(shell, /href="\/settings\/channels"[\s\S]*?aria-current=[\s\S]*?onClick=\{\(\) => closeMenu\(\)\}/);
 });
 
 test("server API verifies Supabase JWTs and keeps fixture UI disconnected", async () => {
@@ -99,9 +99,9 @@ test("every form with a password field submits as POST", async () => {
   let checked = 0;
   for (const name of names) {
     const source = await readFile(new URL(name, directory), "utf8");
-    if (!source.includes('type="password"')) continue;
+    if (!source.includes('type="password"') && !source.includes('name="password"')) continue;
     const forms = [...source.matchAll(/<form\b[^>]*>[\s\S]*?<\/form>/g)].map((match) => match[0]);
-    const passwordForms = forms.filter((form) => form.includes('type="password"'));
+    const passwordForms = forms.filter((form) => form.includes('type="password"') || form.includes('name="password"'));
     assert.ok(passwordForms.length > 0, `${name} has a password field outside a form`);
     for (const form of passwordForms) {
       const openingTag = form.slice(0, form.indexOf(">") + 1);
@@ -397,4 +397,123 @@ test("public dashboard ingress enables secure cookies without exposing n8n", asy
   assert.match(deploy, /TANAGHOM_PUBLIC_DEPLOY_AUTHORIZED/);
   assert.match(rollback, /rm -f "\$NGINX_TARGET"/);
   assert.doesNotMatch(compose + nginx + deploy + rollback, /5678|webhook|n8n/);
+});
+
+test("Packet B brand kits use visual controls and rendered versions, never raw JSON forms", async () => {
+  const editor = await readFile(new URL("components/creative/brand-kit-views.tsx", dashboard), "utf8");
+  const copy = await readFile(new URL("lib/i18n/creative.ts", dashboard), "utf8");
+  assert.match(editor, /type="color"/);
+  assert.match(editor, /maxLength=\{7\}/);
+  assert.match(editor, /brandPayload/);
+  assert.match(editor, /arabic_font/);
+  assert.match(editor, /latin_font/);
+  assert.match(editor, /Emerald & Gold/);
+  assert.match(editor, /Ocean & Slate/);
+  assert.match(editor, /Royal & Sand/);
+  assert.match(editor, /Monochrome/);
+  assert.match(editor, /Warm & confident/);
+  assert.match(editor, /Professional & concise/);
+  assert.match(editor, /Friendly & conversational/);
+  assert.match(editor, /Tajawal/);
+  assert.match(editor, /IBM Plex Sans Arabic/);
+  assert.match(editor, /brand-version-swatches/);
+  assert.match(editor, /brands\.nameHelper/);
+  assert.doesNotMatch(editor, /Colors \(JSON\)|JSON\.stringify\(version\.colors\)/);
+  assert.doesNotMatch(copy, /Colors \(JSON\)|الألوان \(JSON\)/);
+  assert.match(copy, /Enter a brand kit name of at least 2 characters to save\./);
+  assert.match(copy, /أدخل اسم هوية من حرفين على الأقل للحفظ\./);
+});
+
+test("Packet B promotes Growth & CRM and keeps operator diagnostics in a disclosure", async () => {
+  const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
+  assert.match(shell, /Growth & CRM/);
+  assert.match(shell, /النمو وإدارة العملاء/);
+  assert.match(shell, /Advanced operations/);
+  assert.match(shell, /عمليات متقدمة/);
+  assert.match(shell, /href="\/settings\/channels"/);
+  assert.match(shell, /Human-Reviewed Workspace/);
+  assert.match(shell, /مساحة عمل بمراجعة بشرية/);
+  assert.doesNotMatch(shell, />Staging<|"Staging"/);
+  assert.ok(shell.indexOf("growthNavigation.map") < shell.indexOf("sidebar-more"), "Growth links must render outside the disclosure");
+  for (const href of ["/campaigns", "/leads", "/knowledge", "/reports"]) assert.match(shell, new RegExp(`href: "${href}"`));
+});
+
+test("Packet B help dialog is accessible, bilingual, and links the customer journey", async () => {
+  const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
+  assert.match(shell, /aria-haspopup="dialog"/);
+  assert.match(shell, /\.showModal\(\)/);
+  assert.match(shell, /aria-labelledby="help-dialog-title"/);
+  assert.match(shell, /onClose=\{\(\) => helpButtonRef\.current\?\.focus\(\)\}/);
+  for (const href of ["/onboarding", "/settings/channels", "/creative/brand-kits", "/workspace", "/settings/billing"]) {
+    assert.match(shell, new RegExp(`href: "${href}"`));
+  }
+  assert.match(shell, /Human-in-the-Loop|human-in-the-loop/);
+  assert.match(shell, /الاعتماد البشري/);
+});
+
+test("Packet B localizes session roles and removes duplicate creative locale toggles", async () => {
+  const profile = await readFile(new URL("components/session-profile.tsx", dashboard), "utf8");
+  const subnav = await readFile(new URL("components/creative/creative-subnav.tsx", dashboard), "utf8");
+  for (const [role, arabic] of [["Owner", "المالك"], ["Operator", "المشغّل"], ["Reviewer", "المراجع"], ["Viewer", "مشاهد"]]) {
+    assert.match(profile, new RegExp(role));
+    assert.match(profile, new RegExp(arabic));
+  }
+  assert.match(profile, /Loading profile/);
+  assert.match(profile, /جارٍ تحميل الملف/);
+  assert.match(profile, /Sign out/);
+  assert.match(subnav, /Studio Home/);
+  assert.match(subnav, /رئيسية الاستوديو/);
+  const files = await readdir(new URL("app/creative/", dashboard), { recursive: true });
+  const pages = files.filter((file) => file.endsWith("page.tsx"));
+  assert.ok(pages.length >= 18);
+  for (const page of pages) {
+    const source = await readFile(new URL(`app/creative/${page.replaceAll("\\", "/")}`, dashboard), "utf8");
+    assert.doesNotMatch(source, /LocaleToggle/, `${page} must rely on the AppShell locale toggle`);
+  }
+});
+
+test("Packet B removes jargon, duplication, and raw provider labels from customer pages", async () => {
+  const channels = await readFile(new URL("components/channels-settings.tsx", dashboard), "utf8");
+  const knowledge = await readFile(new URL("components/knowledge-management.tsx", dashboard), "utf8");
+  const templates = await readFile(new URL("components/creative/templates-view.tsx", dashboard), "utf8");
+  assert.equal((channels.match(/\{text\.human\}/g) ?? []).length, 1);
+  assert.doesNotMatch(channels, /Postiz/);
+  assert.match(channels, /Social Publishing/);
+  assert.match(channels, /النشر على المنصات الاجتماعية/);
+  assert.doesNotMatch(knowledge, /72%|confidence_threshold\) \* 100/);
+  assert.match(knowledge, /Strict factual grounding/);
+  assert.match(knowledge, /الاستدلال الصارم بالحقائق/);
+  assert.match(templates, /KIND_COPY/);
+  assert.match(templates, /Ad creative/);
+  assert.match(templates, /إعلان إبداعي/);
+});
+
+test("Packet B auth has show-hide password controls, legal links, and home-linked brand", async () => {
+  const login = await readFile(new URL("components/login-form.tsx", dashboard), "utf8");
+  const signup = await readFile(new URL("components/signup-form.tsx", dashboard), "utf8");
+  const loginPage = await readFile(new URL("app/login/page.tsx", dashboard), "utf8");
+  const signupPage = await readFile(new URL("app/signup/page.tsx", dashboard), "utf8");
+  for (const form of [login, signup]) {
+    assert.match(form, /password-toggle/);
+    assert.match(form, /type="button"/);
+    assert.match(form, /aria-controls="password"/);
+    assert.match(form, /aria-pressed=\{showPassword\}/);
+  }
+  for (const page of [loginPage, signupPage]) {
+    assert.match(page, /href="\/"/);
+    for (const href of ["/pricing", "/privacy", "/terms"]) assert.match(page, new RegExp(`href="${href}"`));
+  }
+});
+
+test("Packet B empty states offer the next action", async () => {
+  const campaigns = await readFile(new URL("components/campaigns-view.tsx", dashboard), "utf8");
+  const content = await readFile(new URL("components/content-library.tsx", dashboard), "utf8");
+  const approvals = await readFile(new URL("components/approval-workspace.tsx", dashboard), "utf8");
+  const knowledge = await readFile(new URL("components/knowledge-management.tsx", dashboard), "utf8");
+  assert.match(campaigns, /DomainEmpty[\s\S]*action=\{<Link className="primary-button" href="\/workspace">/);
+  assert.match(content, /href="\/creative\/designs"/);
+  assert.match(approvals, /href="\/workspace"/);
+  assert.match(knowledge, /id="knowledge-composer"/);
+  assert.match(knowledge, /scrollIntoView/);
+  assert.match(knowledge, /Add first approved answer/);
 });

@@ -110,7 +110,7 @@ test("creative server boundary stays provider-free with upload guards", async ()
   }
 });
 
-test("creative studio UI is bilingual, direction-aware, and role-gated", async () => {
+test("creative studio UI is bilingual, direction-aware, role-gated, and uses the shell locale control", async () => {
   for (const page of [
     "apps/dashboard/app/creative/page.tsx",
     "apps/dashboard/app/creative/jobs/page.tsx",
@@ -124,7 +124,7 @@ test("creative studio UI is bilingual, direction-aware, and role-gated", async (
   ]) {
     const source = await read(page);
     assert.match(source, /creativeLocale\(\)/);
-    assert.match(source, /LocaleToggle/);
+    assert.doesNotMatch(source, /LocaleToggle/);
   }
   for (const view of [
     "apps/dashboard/components/creative/creative-overview.tsx",

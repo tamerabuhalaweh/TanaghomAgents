@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
+  ArrowRight,
   Bell,
   Bot,
   BriefcaseBusiness,
@@ -41,16 +42,27 @@ const customerNavigation: NavItem[] = [
   { href: "/content", label: "Content", arabic: "المحتوى", icon: LibraryBig },
 ];
 
-// Operator and administration destinations live behind one disclosure.
-const operationsNavigation: NavItem[] = [
+// Customer growth features stay visible. Only operator diagnostics use a disclosure.
+const growthNavigation: NavItem[] = [
   { href: "/campaigns", label: "Campaigns", arabic: "الحملات", icon: BriefcaseBusiness },
   { href: "/leads", label: "Leads", arabic: "العملاء المحتملون", icon: ContactRound },
-  { href: "/inbox", label: "Supervisor inbox", arabic: "صندوق المشرف", icon: MessagesSquare },
-  { href: "/reports", label: "Reports", arabic: "التقارير", icon: ChartNoAxesCombined },
-  { href: "/actions", label: "Agent actions", arabic: "إجراءات الوكلاء", icon: ClipboardCheck },
   { href: "/knowledge", label: "Knowledge", arabic: "المعرفة", icon: BookOpenCheck },
+  { href: "/reports", label: "Reports", arabic: "التقارير", icon: ChartNoAxesCombined },
+];
+
+const advancedNavigation: NavItem[] = [
+  { href: "/actions", label: "Agent actions", arabic: "إجراءات الوكلاء", icon: ClipboardCheck },
   { href: "/agents", label: "Agents", arabic: "الوكلاء", icon: Bot },
   { href: "/quality", label: "Quality & rollout", arabic: "الجودة والطرح", icon: ShieldCheck },
+  { href: "/inbox", label: "Supervisor inbox", arabic: "صندوق المشرف", icon: MessagesSquare },
+];
+
+const helpLinks: NavItem[] = [
+  { href: "/onboarding", label: "Workspace setup", arabic: "إعداد مساحة العمل", icon: UsersRound },
+  { href: "/settings/channels", label: "Connect social channels", arabic: "ربط قنوات التواصل", icon: Bell },
+  { href: "/creative/brand-kits", label: "Create a brand kit", arabic: "إنشاء هوية بصرية", icon: Palette },
+  { href: "/workspace", label: "Draft with your AI team", arabic: "اكتب مسودة مع فريق الذكاء الاصطناعي", icon: ClipboardCheck },
+  { href: "/settings/billing", label: "Billing & plans", arabic: "الفوترة والخطط", icon: ShieldCheck },
 ];
 
 export function AppShell({ children }: { children: React.ReactNode }) {
@@ -59,6 +71,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const ar = locale === "ar";
   const [menuOpen, setMenuOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const helpButtonRef = useRef<HTMLButtonElement>(null);
+  const helpDialogRef = useRef<HTMLDialogElement>(null);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -77,7 +91,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   const navLabel = (item: NavItem) => (ar ? item.arabic : item.label);
-  const moreActive = operationsNavigation.some((item) => pathname.startsWith(item.href));
+  const moreActive = advancedNavigation.some((item) => pathname.startsWith(item.href));
+  const settingsActive = pathname.startsWith("/settings") || pathname === "/onboarding";
+
+  function openHelp() { helpDialogRef.current?.showModal(); }
+  function closeHelp() { helpDialogRef.current?.close(); }
 
   function renderNavLink(item: NavItem) {
     const { href, icon: Icon } = item;
@@ -112,13 +130,17 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <nav id="primary-navigation" className="primary-navigation" aria-label={ar ? "التنقل الأساسي" : "Primary navigation"}>
           {customerNavigation.map(renderNavLink)}
+          <div className="nav-section">
+            <p className="nav-section-label">{ar ? "النمو وإدارة العملاء" : "Growth & CRM"}</p>
+            {growthNavigation.map(renderNavLink)}
+          </div>
           <details className="sidebar-more" open={moreActive}>
             <summary>
               <ChevronDown size={16} aria-hidden="true" />
-              <span>{ar ? "المزيد والعمليات" : "More & operations"}</span>
+              <span>{ar ? "عمليات متقدمة" : "Advanced operations"}</span>
             </summary>
             <div className="sidebar-more-links">
-              {operationsNavigation.map(renderNavLink)}
+              {advancedNavigation.map(renderNavLink)}
             </div>
           </details>
         </nav>
@@ -132,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             <Bell size={18} />
             <span>{ar ? "التنبيهات" : "Alerts"}</span>
           </Link>
-          <Link href="/settings/integrations" className={`nav-link ${pathname.startsWith("/settings") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/settings") ? "page" : undefined} onClick={() => closeMenu()}>
+          <Link href="/settings/channels" className={`nav-link ${settingsActive ? "nav-link-active" : ""}`} aria-current={settingsActive ? "page" : undefined} onClick={() => closeMenu()}>
             <Settings size={18} />
             <span>{ar ? "الإعدادات" : "Settings"}</span>
           </Link>
@@ -145,14 +167,14 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="workspace">
         <header className="topbar">
           <TenantName />
-          <span className="environment-badge">{ar ? "بيئة العرض" : "Staging"}</span>
+          <span className="environment-badge">{ar ? "مساحة عمل بمراجعة بشرية" : "Human-Reviewed Workspace"}</span>
           <div className="topbar-actions">
             <LocaleToggle locale={locale} />
             <Link className="icon-button notification-button" href="/system" aria-label={ar ? "فتح تنبيهات النظام" : "Open system alerts"}>
               <Bell size={19} />
               <span aria-hidden="true" />
             </Link>
-            <button className="icon-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"}>
+            <button ref={helpButtonRef} className="icon-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={openHelp}>
               <CircleHelp size={19} />
             </button>
           </div>
@@ -172,6 +194,22 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           );
         })}
       </nav>
+
+      <dialog ref={helpDialogRef} className="help-dialog" aria-modal="true" aria-labelledby="help-dialog-title" onClose={() => helpButtonRef.current?.focus()}>
+        <header className="help-dialog-header">
+          <div><span className="help-dialog-eyebrow"><CircleHelp size={17} aria-hidden="true" />{ar ? "مساعدة سريعة" : "Quick help"}</span><h2 id="help-dialog-title">{ar ? "دليل مساحة العمل" : "Workspace quick guide"}</h2><p>{ar ? "كل ما تحتاجه للانتقال من الإعداد إلى أول حملة معتمدة." : "Everything you need to move from setup to your first approved campaign."}</p></div>
+          <button type="button" className="icon-button" onClick={closeHelp} aria-label={ar ? "إغلاق المساعدة" : "Close help"}><X size={19} /></button>
+        </header>
+        <nav className="help-dialog-links" aria-label={ar ? "روابط المساعدة" : "Help links"}>
+          {helpLinks.map(({ href, label, arabic, icon: Icon }) => <Link key={href} href={href} onClick={closeHelp}>
+            <span><Icon size={18} /></span><strong>{ar ? arabic : label}</strong><ArrowRight size={15} className="help-link-arrow" aria-hidden="true" />
+          </Link>)}
+        </nav>
+        <section className="help-dialog-note">
+          <ShieldCheck size={20} aria-hidden="true" />
+          <div><strong>{ar ? "لماذا الاعتماد البشري؟" : "Why human-in-the-loop approval?"}</strong><p>{ar ? "يقترح فريق الذكاء الاصطناعي المحتوى، لكن لا يُنشر شيء إلا بعد مراجعة شخص مسؤول. يبقى الموجز والمصدر وسجل القرار مرتبطاً بكل مسودة لحماية علامتك." : "Your AI team proposes the work, but nothing publishes until a responsible person reviews it. The brief, sources, and decision history stay attached to every draft so your brand stays protected."}</p></div>
+        </section>
+      </dialog>
     </div>
   );
 }

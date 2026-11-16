@@ -2275,3 +2275,38 @@ td a, td > strong { font-weight: 670; }
   .billing-meta { grid-template-columns: 1fr; }
   .billing-actions button { width: 100%; justify-content: center; }
 }
+
+/* Packet B navigation, help drawer and auth polish */
+.nav-section { display: flex; flex-direction: column; gap: 0.2rem; margin-block-start: 0.85rem; padding-block-start: 0.65rem; border-block-start: 1px solid var(--border); }
+.nav-section-label { margin: 0; padding-inline: 0.65rem; color: var(--muted); font-size: 0.66rem; font-weight: 750; letter-spacing: 0.07em; text-transform: uppercase; }
+.help-dialog { width: min(39rem, calc(100vw - 2rem)); max-height: min(44rem, calc(100vh - 2rem)); margin: auto; padding: 0; overflow: auto; border: 1px solid var(--border-strong); border-radius: 1.15rem; background: var(--bg); color: var(--ink); box-shadow: 0 2rem 6rem rgb(0 0 0 / 28%); }
+.help-dialog::backdrop { background: rgb(8 15 18 / 58%); backdrop-filter: blur(3px); }
+.help-dialog-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1.35rem 1.35rem 1rem; border-block-end: 1px solid var(--border); }
+.help-dialog-header h2 { margin-block: 0.35rem 0.3rem; font-size: 1.25rem; letter-spacing: -0.03em; }
+.help-dialog-header p { max-width: 31rem; margin: 0; color: var(--muted); font-size: 0.76rem; line-height: 1.6; }
+.help-dialog-eyebrow { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--primary); font-size: 0.69rem; font-weight: 750; }
+.help-dialog-links { display: grid; gap: 0.45rem; padding: 1rem 1.35rem; }
+.help-dialog-links a { display: grid; min-height: 3.1rem; grid-template-columns: 2rem minmax(0, 1fr) auto; align-items: center; gap: 0.7rem; padding: 0.55rem 0.7rem; border: 1px solid var(--border); border-radius: var(--radius-md); background: var(--surface); color: var(--ink); text-decoration: none; transition: border-color 140ms ease-out, transform 140ms ease-out; }
+.help-dialog-links a:hover { border-color: var(--primary); transform: translateY(-1px); }
+.help-dialog-links a > span { display: grid; width: 2rem; height: 2rem; place-items: center; border-radius: 0.6rem; background: var(--bg); color: var(--primary); }
+.help-dialog-links strong { font-size: 0.78rem; font-weight: 650; }
+.help-link-arrow { color: var(--muted); }
+.help-dialog-note { display: flex; gap: 0.7rem; margin: 0 1.35rem 1.35rem; padding: 0.9rem; border: 1px solid color-mix(in srgb, var(--primary) 30%, var(--border)); border-radius: var(--radius-md); background: color-mix(in srgb, var(--primary) 7%, var(--bg)); }
+.help-dialog-note > svg { flex: 0 0 auto; color: var(--primary); }
+.help-dialog-note strong { display: block; margin-block-end: 0.25rem; font-size: 0.76rem; }
+.help-dialog-note p { margin: 0; color: var(--muted); font-size: 0.72rem; line-height: 1.6; }
+.password-input { position: relative; }
+.password-input input { padding-inline-end: 5.25rem; }
+.password-toggle { position: absolute; inset-block-start: 0.25rem; inset-inline-end: 0.25rem; display: inline-flex; min-height: 2.45rem; align-items: center; gap: 0.3rem; padding-inline: 0.6rem; border: 0; border-radius: calc(var(--radius-sm) - 1px); background: transparent; color: var(--muted); font: inherit; font-size: 0.69rem; font-weight: 700; cursor: pointer; }
+.password-toggle:hover { background: var(--surface); color: var(--ink); }
+.password-toggle:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
+.auth-legal-links { display: flex; flex-wrap: wrap; justify-content: center; gap: 0.35rem 1rem; margin-block-start: 0.85rem; }
+.auth-legal-links a { color: var(--muted); font-size: 0.68rem; text-underline-offset: 0.18rem; }
+.auth-legal-links a:hover { color: var(--ink); }
+.domain-empty .primary-button { flex: 0 0 auto; white-space: nowrap; }
+@media (max-width: 560px) {
+  .help-dialog { width: calc(100vw - 1rem); max-height: calc(100vh - 1rem); }
+  .help-dialog-header, .help-dialog-links { padding-inline: 0.9rem; }
+  .help-dialog-note { margin-inline: 0.9rem; }
+  .domain-empty .primary-button { width: 100%; justify-content: center; }
+}

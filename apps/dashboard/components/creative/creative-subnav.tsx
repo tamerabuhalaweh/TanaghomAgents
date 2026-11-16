@@ -6,7 +6,7 @@ import { usePathname } from "next/navigation";
 import type { CreativeLocale } from "@/lib/i18n/creative";
 
 const items = [
-  { href: "/creative", en: "Overview", ar: "نظرة عامة" },
+  { href: "/creative", en: "Studio Home", ar: "رئيسية الاستوديو" },
   { href: "/creative/designs", en: "Designs & Carousels", ar: "التصاميم والكاروسيل" },
   { href: "/creative/motion", en: "Motion Studio", ar: "استوديو الموشن" },
   { href: "/creative/brand-kits", en: "Brand Kits", ar: "الهوية البصرية" },
