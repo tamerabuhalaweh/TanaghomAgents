@@ -35,7 +35,7 @@ type NavItem = { href: string; label: string; arabic: string; icon: typeof Layou
 
 // The five customer workflow pillars stay visible at all times.
 const customerNavigation: NavItem[] = [
-  { href: "/", label: "Overview", arabic: "نظرة عامة", icon: LayoutDashboard },
+  { href: "/", label: "Overview", arabic: "لوحة التحكم", icon: LayoutDashboard },
   { href: "/workspace", label: "AI workspace", arabic: "مساحة العمل الذكية", icon: UsersRound },
   { href: "/creative", label: "Creative Studio", arabic: "استوديو الإبداع", icon: Palette },
   { href: "/approvals", label: "Approvals", arabic: "الاعتمادات", icon: CheckCheck },
@@ -112,7 +112,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="app-shell">
       <a className="skip-link" href="#main-content">{ar ? "تخطَّ إلى المحتوى الرئيسي" : "Skip to main content"}</a>
       <header className="mobile-header">
-        <Link className="brand" href="/" aria-label={ar ? "نظرة عامة على تناغم" : "Tanaghom overview"}>
+        <Link className="brand" href="/" aria-label={ar ? "لوحة التحكم في تناغم" : "Tanaghom dashboard"}>
           <BrandMark />
           <span>Tanaghom</span>
         </Link>
@@ -128,7 +128,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <aside className={`sidebar ${menuOpen ? "sidebar-open" : ""}`}>
-        <Link className="brand desktop-brand" href="/" aria-label={ar ? "نظرة عامة على تناغم" : "Tanaghom overview"}>
+        <Link className="brand desktop-brand" href="/" aria-label={ar ? "لوحة التحكم في تناغم" : "Tanaghom dashboard"}>
           <BrandMark />
           <span>Tanaghom</span>
         </Link>

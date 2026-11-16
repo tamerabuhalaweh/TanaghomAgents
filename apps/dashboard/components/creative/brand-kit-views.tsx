@@ -6,6 +6,7 @@ import { useEffect, useState, type CSSProperties, type Dispatch, type SetStateAc
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
+import { normalizeDigits } from "@/lib/i18n/format";
 
 interface KitRow {
   kit_id: string;
@@ -115,7 +116,7 @@ function ColorControl({ label, optional, value, onChange, locale }: {
       <span>{label}{optional ? <small>{locale === "ar" ? " اختياري" : " optional"}</small> : null}</span>
       <div className="brand-color-controls">
         <input type="color" value={safe} aria-label={label} onChange={(event) => onChange(event.target.value.toUpperCase())} />
-        <input type="text" value={value} maxLength={7} dir="ltr" aria-label={`${label} hex`} onChange={(event) => onChange(event.target.value)} />
+        <input type="text" value={value} maxLength={7} dir="ltr" aria-label={`${label} hex`} onChange={(event) => onChange(normalizeDigits(event.target.value))} />
         <i style={{ background: safe }} aria-hidden="true" />
       </div>
     </div>

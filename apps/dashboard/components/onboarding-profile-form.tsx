@@ -101,7 +101,7 @@ export function OnboardingProfileForm({ copy, locale }: { copy: OnboardingCopy; 
             minLength={businessNameAr ? 2 : undefined}
             maxLength={120}
             onChange={(event) => setBusinessNameAr(event.target.value)}
-            dir="rtl"
+            dir="auto"
           />
           <small>{copy.arabicNameHint}</small>
         </label>
@@ -126,6 +126,7 @@ export function OnboardingProfileForm({ copy, locale }: { copy: OnboardingCopy; 
             value={location}
             minLength={location ? 2 : undefined}
             maxLength={160}
+            dir="auto"
             onChange={(event) => setLocation(event.target.value)}
           />
           <small>{copy.locationPlaceholder}</small>

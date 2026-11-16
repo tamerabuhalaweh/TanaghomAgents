@@ -53,6 +53,54 @@ body {
 }
 
 button, input, textarea { font: inherit; }
+
+/* Arabic typography: IBM Plex Sans Arabic, Western digits, and W3C RTL rules. */
+html:lang(ar) { font-size: 106.25%; }
+
+:lang(ar),
+:lang(ar) * {
+  font-family: var(--font-arabic), "IBM Plex Sans Arabic", "Segoe UI", Tahoma, sans-serif;
+  letter-spacing: 0 !important;
+  font-style: normal;
+  text-transform: none !important;
+}
+
+:lang(ar) body,
+:lang(ar) p,
+:lang(ar) li,
+:lang(ar) dd,
+:lang(ar) td,
+:lang(ar) th,
+:lang(ar) label,
+:lang(ar) input,
+:lang(ar) textarea,
+:lang(ar) button,
+:lang(ar) a {
+  line-height: 1.7;
+}
+
+:lang(ar) h1,
+:lang(ar) h2,
+:lang(ar) h3,
+:lang(ar) h4,
+:lang(ar) h5,
+:lang(ar) h6 {
+  line-height: 1.35 !important;
+  letter-spacing: 0 !important;
+}
+
+:lang(ar) :is(p, li, dd, td, th, h1, h2, h3, h4, h5, h6) {
+  text-align: start;
+  text-wrap: pretty;
+}
+
+:lang(ar) input,
+:lang(ar) textarea { text-align: start; }
+
+/* Directional arrows mirror in RTL; non-directional glyphs stay untouched. */
+[dir="rtl"] :is(.lucide-arrow-right, .lucide-arrow-left, .lucide-chevron-right, .lucide-chevron-left, .lucide-arrow-up-right, .lucide-arrow-down-left) {
+  transform: scaleX(-1);
+}
 button, a { -webkit-tap-highlight-color: transparent; }
 a { color: inherit; text-decoration: none; }
 button { color: inherit; }

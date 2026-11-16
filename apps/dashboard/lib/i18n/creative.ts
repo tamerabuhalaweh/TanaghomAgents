@@ -220,7 +220,7 @@ export type CreativeStringKey = keyof typeof en;
 
 const ar: Record<CreativeStringKey, string> = {
   "nav.creative": "استوديو الإبداع",
-  "nav.overview": "نظرة عامة",
+  "nav.overview": "لوحة التحكم",
   "nav.jobs": "المهام",
   "nav.assets": "الأصول",
   "nav.brands": "هوية العلامة",

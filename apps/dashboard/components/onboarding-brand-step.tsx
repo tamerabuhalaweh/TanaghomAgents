@@ -5,6 +5,7 @@ import { useEffect, useState, type FormEvent } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import type { OnboardingCopy } from "@/lib/i18n/onboarding";
+import { normalizeDigits } from "@/lib/i18n/format";
 import type { OnboardingProfile } from "@/lib/onboarding-types";
 import { tenantDisplayName } from "@/lib/tenant-name";
 
@@ -184,20 +185,20 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
       <div className="onboarding-grid">
         <label className="onboarding-field">
           <span>{copy.brandNameLabel}</span>
-          <input type="text" value={name} required minLength={2} maxLength={120} onChange={(event) => setName(event.target.value)} />
+          <input type="text" dir="auto" value={name} required minLength={2} maxLength={120} onChange={(event) => setName(event.target.value)} />
           <small>{copy.brandNameHint}</small>
         </label>
 
         <label className="onboarding-field">
           <span>{copy.toneLabel}</span>
-          <input type="text" value={tone} maxLength={500} placeholder={copy.tonePlaceholder} onChange={(event) => setTone(event.target.value)} />
+          <input type="text" dir="auto" value={tone} maxLength={500} placeholder={copy.tonePlaceholder} onChange={(event) => setTone(event.target.value)} />
         </label>
 
         <div className="onboarding-field">
           <span>{copy.primaryColorLabel}</span>
           <div className="onboarding-color">
             <input type="color" value={COLOR.test(primary) ? primary : "#1f6f5c"} aria-label={copy.primaryColorLabel} onChange={(event) => setPrimary(event.target.value.toUpperCase())} />
-            <input type="text" value={primary} maxLength={7} dir="ltr" aria-label={copy.primaryColorLabel} onChange={(event) => setPrimary(event.target.value)} />
+            <input type="text" value={primary} maxLength={7} dir="ltr" aria-label={copy.primaryColorLabel} onChange={(event) => setPrimary(normalizeDigits(event.target.value))} />
           </div>
         </div>
 
@@ -211,7 +212,7 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
               maxLength={7}
               dir="ltr"
               aria-label={copy.accentColorLabel}
-              onChange={(event) => setAccent(event.target.value)}
+              onChange={(event) => setAccent(normalizeDigits(event.target.value))}
               onBlur={() => { if (!accent) setAccent("#D9A441"); }}
             />
           </div>
@@ -219,12 +220,12 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
 
         <label className="onboarding-field">
           <span>{copy.arabicFontLabel}</span>
-          <input type="text" value={arabicFont} maxLength={120} placeholder={copy.fontPlaceholder} onChange={(event) => setArabicFont(event.target.value)} />
+          <input type="text" dir="auto" value={arabicFont} maxLength={120} placeholder={copy.fontPlaceholder} onChange={(event) => setArabicFont(event.target.value)} />
         </label>
 
         <label className="onboarding-field">
           <span>{copy.latinFontLabel}</span>
-          <input type="text" value={latinFont} maxLength={120} placeholder={copy.fontPlaceholder} onChange={(event) => setLatinFont(event.target.value)} />
+          <input type="text" dir="ltr" value={latinFont} maxLength={120} placeholder={copy.fontPlaceholder} onChange={(event) => setLatinFont(event.target.value)} />
         </label>
       </div>
 
