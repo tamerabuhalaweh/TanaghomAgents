@@ -8,6 +8,14 @@
 .agency-workspace p { max-inline-size:70ch; }
 .aw-boundary { display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-md);padding:var(--space-lg);background:var(--surface);font-size:.875rem; }
 .aw-boundary>.aw-state { margin-inline-start:auto; }
+.aw-quota { display:flex;align-items:center;flex-wrap:wrap;gap:var(--space-md);padding:var(--space-md) var(--space-lg);border-block-end:1px solid var(--border);font-size:.8125rem; }
+.aw-quota-badge { padding:var(--space-xs) var(--space-sm);border-radius:var(--radius-sm);background:var(--primary-soft);color:var(--primary);font-weight:650; }
+.aw-quota-limit .aw-quota-badge { background:var(--danger-soft);color:var(--danger); }
+.aw-quota-usage { color:var(--muted); }
+.aw-quota-upgrade { display:inline-flex;align-items:center;gap:var(--space-xs);margin-inline-start:auto;color:var(--primary);font-weight:650;text-decoration:none;min-block-size:44px; }
+.aw-upgrade-callout { display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:var(--space-lg);padding:var(--space-lg);border:1px solid color-mix(in srgb,var(--primary) 32%,var(--border));background:color-mix(in srgb,var(--primary) 8%,var(--bg)); }
+.aw-upgrade-callout strong { display:block;font-size:1rem; }
+.aw-upgrade-callout p { margin-block-start:var(--space-xs);color:var(--muted);font-size:.8125rem;line-height:1.55; }
 .aw-state { display:inline-flex;padding:var(--space-xs) var(--space-sm);border-radius:var(--radius-sm);background:var(--surface-strong);font-size:.75rem;font-weight:600;color:var(--ink); }
 .aw-state-ready,.aw-state-approved { background:var(--success-soft);color:var(--success); }
 .aw-state-waiting_review { background:var(--primary-soft);color:var(--primary); }

@@ -249,7 +249,7 @@ export function ContentLibrary() {
       <section className="content-records" aria-label="Content records">
         {visible.map((item) => {
           const isExpanded = expanded === item.id;
-          const canHandoff = item.status === "approved";
+          const canHandoff = item.status === "approved" && item.content_type !== "work_pack";
           const hasHandoff = Boolean(item.handoff_job_id);
           const isReady = Boolean(integration?.postiz_ready && integration.can_request_draft && item.postiz_channel_ready);
           const lockedReason = !integration?.can_request_draft
@@ -269,7 +269,7 @@ export function ContentLibrary() {
             <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto">{item.draft_copy}</p>
             <div className="content-record-meta">
               <span>Generation {item.generation}</span>
-              <span>Strategy v{item.strategy_version}</span>
+              {item.strategy_version ? <span>Strategy v{item.strategy_version}</span> : null}
               <span>Updated {date(item.updated_at)}</span>
             </div>
             {isExpanded ? <div className="content-details">

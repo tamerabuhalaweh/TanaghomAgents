@@ -43,10 +43,16 @@ async function tenantName(organizationId: string) {
 export async function GET(request: NextRequest) {
   try {
     const user = await authorize(request, ALL_ROLES);
+    const organization = await database().query<{ status: string }>(
+      "SELECT status FROM tanaghom.organizations WHERE id = $1::uuid",
+      [user.organizationId],
+    );
+    const subscriptionStatus = organization.rows[0]?.status || "trialing";
+    const canConnectLiveChannels = subscriptionStatus === "active";
     let connection = await findPostizConnection(user.organizationId);
     const ready = postizWorkspaceConfigured();
     const canManage = user.role === "owner" || user.role === "operator";
-    const canProvision = ready && canManage;
+    const canProvision = ready && canManage && canConnectLiveChannels;
 
     if (!isActivePostizConnection(connection) && canProvision) {
       const ensured = await ensurePostizTenantConnection(user, {
@@ -59,6 +65,8 @@ export async function GET(request: NextRequest) {
       return noStore({
         provisioning_ready: false,
         can_manage: canManage,
+        subscription_status: subscriptionStatus,
+        can_connect_live_channels: canConnectLiveChannels,
         human_approval_required: true,
         supported_platforms: SUPPORTED_PLATFORMS,
         channels: [],
@@ -73,6 +81,8 @@ export async function GET(request: NextRequest) {
     return noStore({
       provisioning_ready: true,
       can_manage: canManage,
+      subscription_status: subscriptionStatus,
+      can_connect_live_channels: canConnectLiveChannels,
       human_approval_required: true,
       supported_platforms: SUPPORTED_PLATFORMS,
       channels: channels.map((channel) => ({

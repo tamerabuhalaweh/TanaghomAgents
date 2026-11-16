@@ -79,7 +79,7 @@ export function CampaignsView() {
       <header><div><StatusPill tone={campaignTone(campaign.status)}>{label(campaign.status)}</StatusPill><h2>{campaign.name}</h2><p>{stage(campaign.status, campaign.core_job_type, campaign.core_job_status)}</p></div></header>
       {campaign.blocked_reason ? <div className="campaign-blocked"><strong>{ar ? "الاستراتيجية تحتاج إلى مزيد من المعلومات" : "Strategy needs more information"}</strong><p>{campaign.blocked_reason}</p></div> : null}
       <dl><div><dt><FileCheck2 size={16} /> {ar ? "المحتوى" : "Content"}</dt><dd>{ar ? `${campaign.content_total} إجمالي · ${campaign.content_pending} بانتظار` : `${campaign.content_total} total · ${campaign.content_pending} waiting`}</dd></div><div><dt><CircleDollarSign size={16} /> {ar ? "هدف الإيرادات" : "Revenue target"}</dt><dd><bdi>{money(campaign.revenue_target, campaign.currency)}</bdi></dd></div><div><dt><UsersRound size={16} /> {ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{campaign.leads_total}</dd></div></dl>
-      <Link className="secondary-button campaign-open-link" href={`/campaigns/${campaign.id}`}>{ar ? "فتح الحملة" : "Open campaign"} <ArrowRight size={17} /></Link>
+      <Link className="secondary-button campaign-open-link" href={campaign.source === "ai_workspace" ? `/workspace?id=${campaign.id}` : `/campaigns/${campaign.id}`}>{campaign.source === "ai_workspace" ? (ar ? "فتح حزمة العمل" : "Open work pack") : (ar ? "فتح الحملة" : "Open campaign")} <ArrowRight size={17} /></Link>
     </article>)}</section> : null}
   </div>;
 }
