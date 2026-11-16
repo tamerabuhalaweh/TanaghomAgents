@@ -43,6 +43,7 @@ let lastCheckoutForm;
 let lastCustomerForm;
 let lastPortalForm;
 let lastSessionOrganization;
+let checkoutSessions = 0;
 
 async function token(subject, email) {
   return new SignJWT({ role: "authenticated", email })
@@ -86,6 +87,7 @@ const stripeServer = createServer(async (request, response) => {
     return;
   }
   if (request.url === "/v1/checkout/sessions") {
+    checkoutSessions += 1;
     lastCheckoutForm = body;
     lastSessionOrganization = body.get("client_reference_id");
     response.writeHead(200, { "Content-Type": "application/json" });
@@ -465,6 +467,28 @@ try {
   assert.equal((await webhook(recoveredEvent)).response.status, 200);
   assert.equal((await billing(ownerToken)).subscription_status, "active");
 
+  const sessionsBeforeSwitch = checkoutSessions;
+  const switchPlan = await fetch(`${dashboardOrigin}/api/billing/checkout`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ plan_tier: "scale", locale: "en" }),
+  });
+  assert.equal(switchPlan.status, 200);
+  const switchBody = await switchPlan.json();
+  assert.equal(switchBody.via, "portal");
+  assert.equal(switchBody.url, "https://billing.stripe.test/session/portal");
+  assert.equal(checkoutSessions, sessionsBeforeSwitch, "active plan switches must not create a second Checkout Session");
+  assert.equal(lastPortalForm.get("customer"), "cus_TenantAIntegration");
+  assert.equal(lastPortalForm.get("return_url"), `${dashboardOrigin}/settings/billing`);
+  const upgradeLog = await pool.query(
+    `SELECT payload->>'requested_plan_tier' AS tier
+       FROM tanaghom.agent_actions_log
+      WHERE organization_id = $1::uuid AND action_type = 'billing.portal_upgrade_opened'
+      ORDER BY created_at DESC LIMIT 1`,
+    [organizationId],
+  );
+  assert.equal(upgradeLog.rows[0]?.tier, "scale");
+
   const beforeDuplicate = await pool.query(
     `SELECT count(*)::int AS count FROM tanaghom.agent_actions_log
       WHERE organization_id = $1::uuid AND action_type LIKE 'billing.webhook.%'`,
@@ -644,6 +668,14 @@ try {
   const publicWaitlistBody = await publicWaitlist.json();
   assert.equal(publicWaitlistBody.queue_position, 2);
 
+  const disposableWaitlist = await fetch(`${dashboardOrigin}/api/waitlist`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "X-Forwarded-For": "203.0.113.9, 198.51.100.7" },
+    body: JSON.stringify({ email: "burner@mailinator.com", company_name: "Temporary", locale: "en" }),
+  });
+  assert.equal(disposableWaitlist.status, 400);
+  assert.equal((await disposableWaitlist.json()).error, "disposable_email_not_allowed");
+
   const setHundred = await fetch(`${dashboardOrigin}/api/super-admin`, {
     method: "POST",
     headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
@@ -675,6 +707,15 @@ try {
   assert.equal(afterSnapshot.cohort.waitlist_count, 2);
   assert.equal(afterSnapshot.cohort.waitlist_entries[0].queue_position, 1);
   assert.equal(afterSnapshot.cohort.waitlist_entries[1].queue_position, 2);
+  const ownerEconomics = afterSnapshot.unit_economics.find((row) => row.id === organizationId);
+  assert.equal(ownerEconomics.plan_tier, "growth");
+  assert.equal(ownerEconomics.monthly_revenue_usd, 25);
+  assert.equal(ownerEconomics.tokens_limit, 2_000_000);
+  assert.equal(ownerEconomics.margin_status, "healthy");
+  assert.equal(typeof ownerEconomics.gross_margin_pct, "number");
+  assert.equal(ownerEconomics.gross_margin_pct <= 100, true);
+  assert.equal(afterSnapshot.ai_usage.at_risk_workspaces_count >= 0, true);
+  assert.equal(typeof afterSnapshot.ai_usage.gross_margin_usd, "number");
 
   console.log("STRIPE_BILLING_INTEGRATION_PASSED");
 } catch (error) {

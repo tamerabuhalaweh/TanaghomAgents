@@ -53,6 +53,9 @@ printf '%s\n' 'http://auth:43191/auth/v1/.well-known/jwks.json' > "$directory/su
 # make checkout report as unconfigured until the owner supplies real values.
 : > "$directory/stripe_secret_key"
 : > "$directory/stripe_webhook_secret"
+# Optional Turnstile secret. An empty file disables the challenge until the
+# owner supplies a production key.
+: > "$directory/turnstile_secret_key"
 printf '%s\n' "$s3_access_key" > "$directory/s3_access_key"
 printf '%s\n' "$s3_secret_key" > "$directory/s3_secret_key"
 
@@ -104,6 +107,7 @@ chmod 0444 \
   "$directory/gemini_api_key" \
   "$directory/auth_email_api_key" \
   "$directory/stripe_secret_key" \
-  "$directory/stripe_webhook_secret"
+  "$directory/stripe_webhook_secret" \
+  "$directory/turnstile_secret_key"
 chmod 0600 "$directory/demo-credentials.txt"
 echo "Demo runtime secrets created. Credentials are in $directory/demo-credentials.txt"

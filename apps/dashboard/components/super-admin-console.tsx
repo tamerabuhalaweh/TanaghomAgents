@@ -43,6 +43,27 @@ interface RecentWorkspace {
   campaigns_count: number;
 }
 
+interface UnitEconomicsWorkspace {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  plan_tier: "starter" | "growth" | "scale" | null;
+  used_launch100: boolean;
+  created_at: string;
+  monthly_revenue_usd: number;
+  campaigns_count: number;
+  month_campaigns_used: number;
+  month_prompt_tokens: number;
+  month_completion_tokens: number;
+  month_total_tokens: number;
+  tokens_limit: number;
+  estimated_ai_cost_usd: number;
+  net_margin_usd: number;
+  gross_margin_pct: number | null;
+  margin_status: "healthy" | "watch" | "at_risk" | "sandbox";
+}
+
 interface Snapshot {
   kpis: {
     total_workspaces: number;
@@ -68,7 +89,11 @@ interface Snapshot {
     tasks_failed: number;
     month_total_tokens: number;
     estimated_ai_spend_usd: number;
+    gross_margin_usd: number;
+    gross_margin_pct: number | null;
+    at_risk_workspaces_count: number;
   };
+  unit_economics: UnitEconomicsWorkspace[];
   recent_workspaces: RecentWorkspace[];
   ai_circuit_breaker: { enabled: boolean; emergency_stop: boolean; reason: string; updated_at: string };
   services: {
@@ -150,6 +175,25 @@ const COPY = {
     noWorkspaces: "No workspaces yet.",
     tierNone: "—",
     autoRefresh: "Refreshes every 30 seconds",
+    unitEconomics: "Customer Unit Economics & Cost Center",
+    unitEconomicsLede: "Revenue, campaign usage, token ceilings, and AI cost per account for the latest 50 workspaces.",
+    grossMargin: "Gross margin",
+    atRiskSummary: "{count} at-risk workspaces",
+    workspaceAndStatus: "Workspace & status",
+    planRevenue: "Plan & monthly revenue (USD)",
+    campaignsRun: "Campaigns (month / total)",
+    monthlyTokens: "Monthly AI tokens (used / limit)",
+    estimatedAiCost: "Estimated AI cost (USD)",
+    netMargin: "Net margin (USD & %)",
+    marginHealth: "Margin health",
+    monthTotal: "{month} / {total}",
+    usedLimit: "{used} / {limit}",
+    monthly: "monthly",
+    marginHealthy: "Healthy",
+    marginWatch: "Watch",
+    marginAtRisk: "At-Risk",
+    marginSandbox: "Sandbox",
+    noEconomics: "No customer economics yet.",
   },
   ar: {
     title: "لوحة المنصة",
@@ -221,6 +265,25 @@ const COPY = {
     noWorkspaces: "لا توجد مساحات عمل بعد.",
     tierNone: "—",
     autoRefresh: "يُحدَّث كل 30 ثانية",
+    unitEconomics: "مركز تكلفة العملاء واقتصاديات الوحدة",
+    unitEconomicsLede: "الإيراد واستهلاك الحملات وحدود وحدات الذكاء الاصطناعي وتكلفتها لكل حساب لأحدث 50 مساحة عمل.",
+    grossMargin: "الهامش الإجمالي",
+    atRiskSummary: "{count} مساحة عمل مرتفعة التكلفة",
+    workspaceAndStatus: "مساحة العمل والحالة",
+    planRevenue: "الخطة والإيراد الشهري (دولارًا)",
+    campaignsRun: "الحملات (الشهر / الإجمالي)",
+    monthlyTokens: "وحدات الذكاء الاصطناعي الشهرية (المستخدم / الحد)",
+    estimatedAiCost: "التكلفة التقديرية للذكاء الاصطناعي (دولارًا)",
+    netMargin: "الهامش الصافي (دولارًا و%)",
+    marginHealth: "صحة الهامش",
+    monthTotal: "{month} / {total}",
+    usedLimit: "{used} / {limit}",
+    monthly: "شهريًا",
+    marginHealthy: "سليم",
+    marginWatch: "مراقبة",
+    marginAtRisk: "مرتفع التكلفة",
+    marginSandbox: "تجريبي",
+    noEconomics: "لا تتوفر اقتصاديات عملاء بعد.",
   },
 } as const;
 
@@ -240,7 +303,7 @@ function tierLabel(value: string | null, locale: CreativeLocale) {
 
 function money(value: number, locale: CreativeLocale, decimals = 0) {
   if (locale === "ar") {
-    return `${formatNumber(value, "ar", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })} ${decimals ? "دولار" : "دولارًا"}`;
+    return `${formatNumber(value, "ar", { maximumFractionDigits: decimals, minimumFractionDigits: decimals })} دولارًا`;
   }
   return formatMoney(value, locale, "USD", {
     maximumFractionDigits: decimals,
@@ -278,6 +341,16 @@ function subscriptionStatus(status: string, locale: CreativeLocale) {
     canceled: ["Canceled", "ملغاة"],
   };
   return labels[status]?.[locale === "ar" ? 1 : 0] || status;
+}
+
+function marginLabel(status: UnitEconomicsWorkspace["margin_status"], locale: CreativeLocale) {
+  const labels = {
+    healthy: ["Healthy", "سليم"],
+    watch: ["Watch", "مراقبة"],
+    at_risk: ["At-Risk", "مرتفع التكلفة"],
+    sandbox: ["Sandbox", "تجريبي"],
+  } as const;
+  return labels[status][locale === "ar" ? 1 : 0];
 }
 
 function date(value: string, locale: CreativeLocale) {
@@ -478,6 +551,33 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
               </button>
             </div>
           </article>
+        </section>
+
+        <section className="super-panel super-ledger" aria-labelledby="unit-economics-title">
+          <div className="super-panel-head">
+            <div><span className="super-panel-icon"><Wallet size={17} /></span><div><h2 id="unit-economics-title">{text.unitEconomics}</h2><p className="super-econ-lede">{text.unitEconomicsLede}</p></div></div>
+            <div className="super-econ-summary">
+              <span>{text.grossMargin} <strong dir="ltr">{money(snapshot.ai_usage.gross_margin_usd, locale, 2)}</strong>{snapshot.ai_usage.gross_margin_pct === null ? "" : ` · ${number(snapshot.ai_usage.gross_margin_pct, locale)}%`}</span>
+              <span className="super-econ-risk">{format(text.atRiskSummary, { count: number(snapshot.ai_usage.at_risk_workspaces_count, locale) })}</span>
+            </div>
+          </div>
+          <div className="super-table-wrap">
+            <table className="super-table super-econ-table">
+              <thead><tr><th>{text.workspaceAndStatus}</th><th>{text.planRevenue}</th><th>{text.campaignsRun}</th><th>{text.monthlyTokens}</th><th>{text.estimatedAiCost}</th><th>{text.netMargin}</th><th>{text.marginHealth}</th></tr></thead>
+              <tbody>
+                {snapshot.unit_economics.map((workspace) => <tr key={workspace.id}>
+                  <td><strong>{workspace.name}</strong><small>{workspace.slug} · <span className={`super-status super-status-${workspace.status}`}>{subscriptionStatus(workspace.status, locale)}</span></small></td>
+                  <td><strong>{workspace.plan_tier ? tierLabel(workspace.plan_tier, locale) : text.tierNone}</strong><small dir="ltr">{money(workspace.monthly_revenue_usd, locale, 2)} {text.monthly}</small></td>
+                  <td dir="ltr">{format(text.monthTotal, { month: number(workspace.month_campaigns_used, locale), total: number(workspace.campaigns_count, locale) })}</td>
+                  <td dir="ltr">{format(text.usedLimit, { used: number(workspace.month_total_tokens, locale), limit: number(workspace.tokens_limit, locale) })}</td>
+                  <td dir="ltr">{money(workspace.estimated_ai_cost_usd, locale, 2)}</td>
+                  <td><strong dir="ltr">{money(workspace.net_margin_usd, locale, 2)}</strong><small dir="ltr">{workspace.gross_margin_pct === null ? text.tierNone : `${number(workspace.gross_margin_pct, locale)}%`}</small></td>
+                  <td><span className={`super-margin super-margin-${workspace.margin_status}`}>{marginLabel(workspace.margin_status, locale)}</span></td>
+                </tr>)}
+                {!snapshot.unit_economics.length ? <tr><td colSpan={7} className="super-empty">{text.noEconomics}</td></tr> : null}
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section className="super-panel super-ledger">

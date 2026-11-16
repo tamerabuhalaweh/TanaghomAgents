@@ -122,6 +122,9 @@ assert env["AGENCY_WORKSPACE_ENABLED"] in {"true", "false"}, "workspace activati
 assert env["GEMINI_API_KEY_FILE"] == "/run/secrets/gemini_api_key"
 assert env["STRIPE_SECRET_KEY_FILE"] == "/run/secrets/stripe_secret_key"
 assert env["STRIPE_WEBHOOK_SECRET_FILE"] == "/run/secrets/stripe_webhook_secret"
+assert env["TURNSTILE_SECRET_KEY_FILE"] == "/run/secrets/turnstile_secret_key"
+assert "NEXT_PUBLIC_TURNSTILE_SITE_KEY" in env
+assert "turnstile_secret_key" in secret_names(services["dashboard"])
 assert env["STRIPE_CURRENCY"] == "usd"
 assert env["STRIPE_AUTOMATIC_TAX"] in {"true", "false"}
 assert env["LAUNCH_COHORT_CAP"].isdigit() and 1 <= int(env["LAUNCH_COHORT_CAP"]) <= 100000
@@ -198,11 +201,11 @@ auth_email_key = secrets_dir / "auth_email_api_key"
 assert auth_email_key.is_file() and not auth_email_key.is_symlink(), \
     "optional auth email secret file must exist (empty until configured)"
 
-for name in ["stripe_secret_key", "stripe_webhook_secret"]:
-    stripe_secret = secrets_dir / name
-    assert stripe_secret.is_file() and not stripe_secret.is_symlink(), \
-        f"optional Stripe secret {name} must exist (empty until configured)"
-    assert stripe_secret.stat().st_size <= 4096
+for name in ["stripe_secret_key", "stripe_webhook_secret", "turnstile_secret_key"]:
+    optional_secret = secrets_dir / name
+    assert optional_secret.is_file() and not optional_secret.is_symlink(), \
+        f"optional integration secret {name} must exist (empty until configured)"
+    assert optional_secret.stat().st_size <= 4096
 
 gemini_key = secrets_dir / "gemini_api_key"
 assert gemini_key.is_file() and not gemini_key.is_symlink()

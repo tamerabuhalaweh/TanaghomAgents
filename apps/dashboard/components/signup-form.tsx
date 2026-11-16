@@ -3,6 +3,7 @@
 import { ArrowRight, Eye, EyeOff, UserRoundPlus } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import { TurnstileWidget } from "@/components/turnstile-widget";
 import type { AuthCopy } from "@/lib/i18n/auth";
 import type { CreativeLocale } from "@/lib/i18n/creative";
 
@@ -18,6 +19,7 @@ export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeL
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
   const ar = locale === "ar";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
@@ -35,6 +37,7 @@ export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeL
           organization_name: form.get("organization_name"),
           email: form.get("email"),
           password: form.get("password"),
+          turnstile_token: turnstileToken || undefined,
           locale,
         }),
       });
@@ -54,6 +57,8 @@ export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeL
     setSubmitting(false);
     if (code === "email_taken") setError(copy.emailTaken);
     else if (PASSWORD_ERRORS.has(code)) setError(copy.passwordTooShort);
+    else if (code === "disposable_email_not_allowed") setError(ar ? "لا نقبل عناوين البريد المؤقتة. استخدم بريد عمل دائمًا." : "Temporary email addresses are not accepted. Use a permanent work email.");
+    else if (code === "captcha_verification_failed") setError(ar ? "تعذر إكمال التحقق الأمني. أكمله مرة أخرى ثم أعد المحاولة." : "The security check could not be completed. Complete it again and retry.");
     else setError(copy.signupError);
   }
 
@@ -108,6 +113,7 @@ export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeL
         </div>
         <small>{copy.passwordHint}</small>
       </div>
+      <TurnstileWidget locale={locale} onToken={setTurnstileToken} />
       <p className="login-error" role="alert" aria-live="polite">{error}</p>
       <button className="login-submit" type="submit" disabled={submitting}>
         <span>{submitting ? copy.submitting : copy.submit}</span>

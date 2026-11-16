@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { hasValidSameOrigin } from "@/lib/server/auth";
 import { noStore } from "@/lib/server/responses";
 import { setSessionCookies } from "@/lib/server/session-cookies";
+import { isDisposableEmail, rightmostForwardedIp, verifyTurnstileToken } from "@/lib/server/turnstile";
 
 export const runtime = "nodejs";
 
@@ -47,6 +48,16 @@ export async function POST(request: NextRequest) {
   };
   if (!payload.email || !payload.password || !payload.full_name || !payload.organization_name) {
     return noStore({ error: "invalid_request" }, { status: 400 });
+  }
+  if (isDisposableEmail(payload.email)) {
+    return noStore({ error: "disposable_email_not_allowed" }, { status: 400 });
+  }
+  const captcha = await verifyTurnstileToken(
+    body.turnstile_token ?? body.cf_turnstile_token,
+    rightmostForwardedIp(request.headers.get("x-forwarded-for")),
+  );
+  if (!captcha.ok) {
+    return noStore({ error: "captcha_verification_failed" }, { status: 400 });
   }
 
   let upstream: Response;

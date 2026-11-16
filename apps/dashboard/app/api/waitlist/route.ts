@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { database } from "@/lib/server/database";
 import { joinWaitlist, lockLaunchControl } from "@/lib/server/launch-control";
 import { noStore } from "@/lib/server/responses";
+import { isDisposableEmail, rightmostForwardedIp, verifyTurnstileToken } from "@/lib/server/turnstile";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -14,7 +15,7 @@ const MAX_KEYS = 2_000;
 const attempts = new Map<string, { count: number; resetAt: number }>();
 
 function sourceKey(request: NextRequest) {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",", 1)[0]?.trim();
+  const forwarded = rightmostForwardedIp(request.headers.get("x-forwarded-for"));
   return forwarded || request.headers.get("x-real-ip") || "unknown";
 }
 
@@ -58,6 +59,16 @@ export async function POST(request: NextRequest) {
     }
     if (companyName.length > 160) {
       return noStore({ error: "waitlist_company_invalid" }, { status: 400 });
+    }
+    if (isDisposableEmail(email)) {
+      return noStore({ error: "disposable_email_not_allowed" }, { status: 400 });
+    }
+    const captcha = await verifyTurnstileToken(
+      body.turnstile_token ?? body.cf_turnstile_token,
+      rightmostForwardedIp(request.headers.get("x-forwarded-for")),
+    );
+    if (!captcha.ok) {
+      return noStore({ error: "captcha_verification_failed" }, { status: 400 });
     }
     const client = await database().connect();
     try {
