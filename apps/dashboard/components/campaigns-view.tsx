@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import { useState } from "react";
 import type { Tone } from "@/data/fixtures";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 import { CampaignForm, type CampaignFormValue } from "./campaign-form";
 import { useOperations } from "./operations-context";
 import { DomainEmpty, OperationsError, OperationsLoading } from "./operations-state";
@@ -39,6 +40,8 @@ const errorMessages: Record<string, string> = {
 };
 
 export function CampaignsView() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const operations = useOperations();
   const router = useRouter();
   const [creating, setCreating] = useState(false);
@@ -66,17 +69,17 @@ export function CampaignsView() {
     finally { setBusy(false); }
   }
 
-  return <div className="page-stack campaigns-page">
-    <PageHeading title="Campaigns" description="Create a business brief, direct the core agents, and keep every handoff visible." actions={canOperate ? <button className="primary-button" type="button" onClick={() => { setCreating(true); setError(null); }} aria-expanded={creating} aria-controls="campaign-creation"><Plus size={17} /> Create campaign</button> : undefined} />
-    {creating ? <div id="campaign-creation"><CampaignForm title="Create campaign draft" description="Define the verified business context the Campaign Strategist will use. You will start agent work from the campaign detail page." submitLabel="Create campaign draft" busy={busy} error={error} onSubmit={createCampaign} onClose={() => { if (!busy) setCreating(false); }} /></div> : null}
-    {operations.status === "loading" ? <OperationsLoading label="Loading campaigns" /> : null}
+  return <div className="page-stack campaigns-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
+    <PageHeading title={ar ? "الحملات" : "Campaigns"} description={ar ? "أنشئ موجزاً تجارياً، ووجّه الوكلاء الأساسيين، وأبقِ كل عملية تسليم مرئية." : "Create a business brief, direct the core agents, and keep every handoff visible."} actions={canOperate ? <button className="primary-button" type="button" onClick={() => { setCreating(true); setError(null); }} aria-expanded={creating} aria-controls="campaign-creation"><Plus size={17} /> {ar ? "إنشاء حملة" : "Create campaign"}</button> : undefined} />
+    {creating ? <div id="campaign-creation"><CampaignForm title={ar ? "إنشاء مسودة حملة" : "Create campaign draft"} description={ar ? "حدد السياق التجاري الموثّق الذي سيستخدمه استراتيجي الحملات. ستبدأ عمل الوكلاء من صفحة تفاصيل الحملة." : "Define the verified business context the Campaign Strategist will use. You will start agent work from the campaign detail page."} submitLabel={ar ? "إنشاء مسودة حملة" : "Create campaign draft"} busy={busy} error={error} onSubmit={createCampaign} onClose={() => { if (!busy) setCreating(false); }} /></div> : null}
+    {operations.status === "loading" ? <OperationsLoading label={ar ? "جارٍ تحميل الحملات" : "Loading campaigns"} /> : null}
     {operations.status === "error" ? <OperationsError retry={operations.retry} /> : null}
-    {operations.status === "ready" && operations.data.campaigns.length === 0 ? <DomainEmpty title="No campaigns yet" description={canOperate ? "Create the first campaign brief, then start Strategy from its detail page." : "An owner or operator can create the first campaign brief."} detail="Campaign work remains internal until a human approves every draft." action={<Link className="primary-button" href="/workspace">Create your first campaign brief <ArrowRight size={17} /></Link>} /> : null}
-    {operations.status === "ready" && operations.data.campaigns.length > 0 ? <section className="campaign-portfolio" aria-label="Campaign portfolio">{operations.data.campaigns.map((campaign) => <article className={`campaign-record campaign-record-${campaign.status}`} key={campaign.id}>
+    {operations.status === "ready" && operations.data.campaigns.length === 0 ? <DomainEmpty title={ar ? "لا توجد حملات بعد" : "No campaigns yet"} description={canOperate ? (ar ? "أنشئ أول موجز حملة، ثم ابدأ الاستراتيجية من صفحة تفاصيله." : "Create the first campaign brief, then start Strategy from its detail page.") : (ar ? "يمكن للمالك أو المشغّل إنشاء أول موجز حملة." : "An owner or operator can create the first campaign brief.")} detail={ar ? "يبقى عمل الحملات داخلياً حتى يعتمد شخص كل مسودة." : "Campaign work remains internal until a human approves every draft."} action={<Link className="primary-button" href="/workspace">{ar ? "أنشئ أول موجز حملة" : "Create your first campaign brief"} <ArrowRight size={17} /></Link>} /> : null}
+    {operations.status === "ready" && operations.data.campaigns.length > 0 ? <section className="campaign-portfolio" aria-label={ar ? "محفظة الحملات" : "Campaign portfolio"}>{operations.data.campaigns.map((campaign) => <article className={`campaign-record campaign-record-${campaign.status}`} key={campaign.id}>
       <header><div><StatusPill tone={campaignTone(campaign.status)}>{label(campaign.status)}</StatusPill><h2>{campaign.name}</h2><p>{stage(campaign.status, campaign.core_job_type, campaign.core_job_status)}</p></div></header>
-      {campaign.blocked_reason ? <div className="campaign-blocked"><strong>Strategy needs more information</strong><p>{campaign.blocked_reason}</p></div> : null}
-      <dl><div><dt><FileCheck2 size={16} /> Content</dt><dd>{campaign.content_total} total · {campaign.content_pending} waiting</dd></div><div><dt><CircleDollarSign size={16} /> Revenue target</dt><dd><bdi>{money(campaign.revenue_target, campaign.currency)}</bdi></dd></div><div><dt><UsersRound size={16} /> Leads</dt><dd>{campaign.leads_total}</dd></div></dl>
-      <Link className="secondary-button campaign-open-link" href={`/campaigns/${campaign.id}`}>Open campaign <ArrowRight size={17} /></Link>
+      {campaign.blocked_reason ? <div className="campaign-blocked"><strong>{ar ? "الاستراتيجية تحتاج إلى مزيد من المعلومات" : "Strategy needs more information"}</strong><p>{campaign.blocked_reason}</p></div> : null}
+      <dl><div><dt><FileCheck2 size={16} /> {ar ? "المحتوى" : "Content"}</dt><dd>{ar ? `${campaign.content_total} إجمالي · ${campaign.content_pending} بانتظار` : `${campaign.content_total} total · ${campaign.content_pending} waiting`}</dd></div><div><dt><CircleDollarSign size={16} /> {ar ? "هدف الإيرادات" : "Revenue target"}</dt><dd><bdi>{money(campaign.revenue_target, campaign.currency)}</bdi></dd></div><div><dt><UsersRound size={16} /> {ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{campaign.leads_total}</dd></div></dl>
+      <Link className="secondary-button campaign-open-link" href={`/campaigns/${campaign.id}`}>{ar ? "فتح الحملة" : "Open campaign"} <ArrowRight size={17} /></Link>
     </article>)}</section> : null}
   </div>;
 }

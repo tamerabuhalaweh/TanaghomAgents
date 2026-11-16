@@ -66,7 +66,7 @@ const tabs: { value: LibraryFilter; label: string; arabic: string }[] = [
   { value: "pending_approval", label: "Pending", arabic: "قيد الانتظار" },
   { value: "approved", label: "Approved", arabic: "معتمد" },
   { value: "scheduled", label: "Scheduled", arabic: "مجدول" },
-  { value: "sent_to_postiz", label: "Postiz handoff", arabic: "تسليم بوستيز" },
+  { value: "sent_to_postiz", label: "Social handoff", arabic: "تسليم النشر الاجتماعي" },
   { value: "posted", label: "Published", arabic: "منشور" },
   { value: "rejected", label: "Rejected", arabic: "مرفوض" },
   { value: "cancelled", label: "Cancelled", arabic: "ملغى" },
@@ -165,7 +165,7 @@ export function ContentLibrary() {
     setSubmitting(item.id);
     setFeedback((current) => ({
       ...current,
-      [item.id]: { tone: "success", message: "Recording your Postiz draft request…" },
+      [item.id]: { tone: "success", message: "Recording your social draft request…" },
     }));
     try {
       const response = await authenticatedFetch(`/api/content/${item.id}/postiz-draft`, {
@@ -176,12 +176,12 @@ export function ContentLibrary() {
       if (!response.ok) {
         const messages: Record<string, string> = {
           content_not_approved: "This item is no longer approved. Refresh before trying again.",
-          postiz_handoff_not_enabled: "Postiz handoff is still locked by the live enablement gate.",
+          postiz_handoff_not_enabled: "Social publishing handoff is still locked by the live enablement gate.",
           publisher_unavailable: "The Publisher agent is unavailable. Check System status before retrying.",
-          postiz_channel_not_configured: `No active Postiz mapping exists for ${item.channel}.`,
-          forbidden: "Your role cannot request a Postiz draft.",
+          postiz_channel_not_configured: `No active social publishing mapping exists for ${item.channel}.`,
+          forbidden: "Your role cannot request a social draft.",
         };
-        throw new Error(messages[payload.error || ""] || "The Postiz draft request could not be recorded.");
+        throw new Error(messages[payload.error || ""] || "The social draft request could not be recorded.");
       }
       await load();
       setFeedback((current) => ({
@@ -196,7 +196,7 @@ export function ContentLibrary() {
         ...current,
         [item.id]: {
           tone: "error",
-          message: error instanceof Error ? error.message : "The Postiz draft request failed.",
+          message: error instanceof Error ? error.message : "The social draft request failed.",
         },
       }));
     } finally {
@@ -282,12 +282,12 @@ export function ContentLibrary() {
                 {item.rejection_reason ? <blockquote>{item.rejection_reason}</blockquote> : null}
               </section>
               <section>
-                <h3>{ar ? "تسليم بوستيز" : "Postiz handoff"}</h3>
+                <h3>{ar ? "تسليم النشر الاجتماعي" : "Social publishing handoff"}</h3>
                 <p>{item.post_status
-                  ? <><CheckCircle2 size={16} /> Postiz {item.post_status} created · last synced {date(item.last_synced_at)}</>
+                  ? <><CheckCircle2 size={16} /> {ar ? "أُنشئت مسودة اجتماعية" : "Social draft created"} · {ar ? "آخر مزامنة" : "last synced"} {date(item.last_synced_at)}</>
                   : item.handoff_status
                     ? <><Clock3 size={16} /> Publisher job {item.handoff_status.replaceAll("_", " ")} · updated {date(item.handoff_updated_at)}</>
-                    : "Not sent to Postiz."}</p>
+                    : (ar ? "لم يُرسل إلى النشر الاجتماعي." : "Not sent to social publishing.")}</p>
                 {item.external_operation_status === "indeterminate" ? <p className="handoff-detail-error">
                   <TriangleAlert size={16} /> Delivery outcome is uncertain. Tanaghom will not retry automatically because that could create a duplicate draft.
                 </p> : null}
@@ -310,14 +310,14 @@ export function ContentLibrary() {
                   disabled={!isReady || submitting === item.id}
                   title={!isReady ? lockedReason : undefined}
                   onClick={() => void requestHandoff(item)}
-                ><Send size={15} /> {submitting === item.id ? "Queueing draft…" : "Send to Postiz as draft"}</button> : null}
+                ><Send size={15} /> {submitting === item.id ? "Queueing draft…" : "Send as social draft"}</button> : null}
                 {hasHandoff ? <span className={`handoff-state handoff-state-${item.handoff_status || "queued"}`}>
                   {item.post_status === "draft" ? <CheckCircle2 size={14} /> : <Clock3 size={14} />}
                   {handoffLabel(item)}
                 </span> : null}
               </div>
             </footer>
-            {canHandoff && !hasHandoff && !isReady ? <p className="handoff-note">Postiz handoff is locked: {lockedReason}</p> : null}
+            {canHandoff && !hasHandoff && !isReady ? <p className="handoff-note">Social publishing handoff is locked: {lockedReason}</p> : null}
             {feedback[item.id] ? <p
               className={`handoff-feedback handoff-feedback-${feedback[item.id].tone}`}
               role="status"

@@ -25,6 +25,7 @@ import { PageHeading } from "@/components/page-heading";
 import { StatusPill } from "@/components/status-pill";
 import type { Tone } from "@/data/fixtures";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 
 type Lifecycle = "draft" | "validated" | "simulation" | "shadow" | "assisted" | "active" | "paused" | "retired";
 type Language = "en" | "ar";
@@ -323,6 +324,8 @@ function requestMessage(code: string | undefined, fallback: string) {
 }
 
 export function AgentStudio() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [payload, setPayload] = useState<AgentStudioPayload | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "forbidden" | "error">("loading");
   const [composerOpen, setComposerOpen] = useState(false);
@@ -405,12 +408,12 @@ export function AgentStudio() {
 
   return <div className="page-stack agent-studio-page">
     <PageHeading
-      title="Agent Studio"
-      description="Create governed business agents by combining approved Skills, customer-managed integrations, clear rules, and an immutable rollout version."
+      title={ar ? "استوديو الوكلاء" : "Agent Studio"}
+      description={ar ? "أنشئ وكلاء أعمال محكومين من خلال الجمع بين المهارات المعتمدة والتكاملات التي يديرها العميل والقواعد الواضحة ونسخة طرح غير قابلة للتغيير." : "Create governed business agents by combining approved Skills, customer-managed integrations, clear rules, and an immutable rollout version."}
       actions={payload?.can_manage
         ? <button className="primary-button" type="button" onClick={() => composerOpen ? setComposerOpen(false) : openNew()}>
           {composerOpen ? <X size={17} /> : <Plus size={17} />}
-          {composerOpen ? "Close studio" : "Create agent"}
+          {composerOpen ? (ar ? "إغلاق الاستوديو" : "Close studio") : (ar ? "إنشاء وكيل" : "Create agent")}
         </button>
         : undefined}
     />
@@ -681,7 +684,7 @@ function AgentComposer({ payload, draft, setDraft, onCreated }: {
       <div className="studio-step-heading"><span>4</span><div><h3>Bind customer-managed integrations</h3><p>The browser sees readiness metadata only. Credentials stay inside the private gateway.</p></div></div>
       {payload.connections.length ? <div className="studio-connection-list">{payload.connections.map((connection) => <label key={connection.connection_id}>
         <input type="checkbox" checked={draft.integrations.includes(connection.connection_id)} onChange={(event) => update("integrations", event.target.checked ? [...draft.integrations, connection.connection_id] : draft.integrations.filter((id) => id !== connection.connection_id))} />
-        <span><strong>{connection.provider === "ghl" ? "GoHighLevel" : "Postiz"}</strong><small>{readable(connection.status)} · test {readable(connection.last_test_status || "not_run")}</small></span>
+        <span><strong>{connection.provider === "ghl" ? "GoHighLevel" : "Social publishing"}</strong><small>{readable(connection.status)} · test {readable(connection.last_test_status || "not_run")}</small></span>
         <StatusPill tone={connection.last_test_status === "passed" ? "success" : "attention"}>{connection.last_test_status === "passed" ? "Verified" : "Not verified"}</StatusPill>
       </label>)}</div> : <div className="studio-connection-empty"><Unplug size={19} /><div><strong>No customer integrations available</strong><p>You can still draft agents that use no provider Skill. Provider-dependent validation will remain blocked honestly.</p></div></div>}
       {missingProviders.length ? <p className="studio-inline-warning"><AlertTriangle size={16} /> Selected Skills require: {missingProviders.map(readable).join(", ")}.</p> : null}
@@ -799,7 +802,7 @@ function AgentVersionRow({ version, canManage, onRevise, onChanged }: {
       <div className="studio-detail-grid">
         <section><h4>Outcome and responsibility</h4><p><strong>Objective:</strong> {version.objective}</p><p><strong>Responsibility:</strong> {version.responsibility}</p><p><strong>Tone:</strong> {version.tone}</p><p><strong>Brand:</strong> {version.brand_profile_key || "No governed brand profile"}</p><p><strong>Knowledge:</strong> {version.knowledge_keys.join(", ") || "No knowledge version bound"}</p></section>
         <section><h4>Exact Skill assignments</h4><ul>{version.skills.map((skill) => <li key={skill.platform_skill_version_id || skill.organization_skill_version_id}><strong>{skill.skill_name}</strong><small>{skill.skill_source} · {readable(skill.operating_mode)} · approval {skill.approval_required ? "required" : "not required"}</small></li>)}</ul></section>
-        <section><h4>Integrations and channels</h4>{version.integrations.length ? <ul>{version.integrations.map((integration) => <li key={integration.connection_id}><strong>{integration.provider === "ghl" ? "GoHighLevel" : "Postiz"}</strong><small>{readable(integration.status)} · {integration.channels.map(readable).join(", ") || "no channel"}</small></li>)}</ul> : <p>No provider connection is bound to this version.</p>}</section>
+        <section><h4>Integrations and channels</h4>{version.integrations.length ? <ul>{version.integrations.map((integration) => <li key={integration.connection_id}><strong>{integration.provider === "ghl" ? "GoHighLevel" : "Social publishing"}</strong><small>{readable(integration.status)} · {integration.channels.map(readable).join(", ") || "no channel"}</small></li>)}</ul> : <p>No provider connection is bound to this version.</p>}</section>
         <section><h4>Hard limits</h4><dl><div><dt>Steps / tools</dt><dd>{version.policy.max_steps} / {version.policy.max_tool_calls}</dd></div><div><dt>Retries / concurrency</dt><dd>{version.policy.max_retries} / {version.policy.max_concurrency}</dd></div><div><dt>Runtime / tokens</dt><dd>{version.policy.max_runtime_seconds}s / {version.policy.max_tokens}</dd></div><div><dt>Daily / per minute</dt><dd>{version.policy.max_daily_actions} / {version.policy.max_actions_per_minute}</dd></div><div><dt>Follow-ups</dt><dd>{version.policy.max_follow_ups_per_contact} per contact</dd></div></dl></section>
         <section><h4>Approval matrix</h4><p><strong>Actions:</strong> {version.policy.approval_actions.map(readable).join(", ") || "None"}</p><p><strong>Eligible:</strong> {version.policy.approval_roles.map(readable).join(", ")}</p><p><strong>Expiry:</strong> {version.policy.approval_expiry_minutes} minutes</p><p>Review is bound to exact proposed parameters: {version.policy.parameter_bound_approval ? "required" : "not configured"}.</p></section>
         <section><h4>Runtime activity</h4><dl><div><dt>Jobs</dt><dd>{version.runtime.jobs_total} total · {version.runtime.open_jobs} open</dd></div><div><dt>Skill invocations</dt><dd>{version.runtime.invocations_total}</dd></div><div><dt>Open approvals</dt><dd>{version.runtime.open_approvals}</dd></div><div><dt>External actions</dt><dd>{version.runtime.external_actions}</dd></div><div><dt>Latest activity</dt><dd>{formatted(version.runtime.latest_activity_at)}</dd></div></dl></section>

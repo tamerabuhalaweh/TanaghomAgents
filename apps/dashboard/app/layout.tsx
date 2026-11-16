@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: Readonly<{ children: Reac
   return (
     <html lang={locale} dir={dir}>
       <body className={inter.variable}>
-        <RootFrame>{children}</RootFrame>
+        <RootFrame initialLocale={locale}>{children}</RootFrame>
       </body>
     </html>
   );

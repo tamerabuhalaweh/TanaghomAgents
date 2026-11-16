@@ -146,6 +146,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
 
         <div className="sidebar-footer">
+          <div className="sidebar-locale"><LocaleToggle locale={locale} /></div>
           <Link href="/team" className={`nav-link ${pathname.startsWith("/team") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/team") ? "page" : undefined} onClick={() => closeMenu()}>
             <UsersRound size={18} />
             <span>{ar ? "الفريق والصلاحيات" : "Team & access"}</span>

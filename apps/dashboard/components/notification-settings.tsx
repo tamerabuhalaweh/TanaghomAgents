@@ -4,6 +4,7 @@ import { BellRing, CircleAlert, Hash, Mail, MessageCircle, RefreshCw, ShieldChec
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "./page-heading";
 import { SettingsNavigation } from "./settings-navigation";
 import { StatusPill } from "./status-pill";
@@ -35,6 +36,8 @@ const errorCopy: Record<string, string> = {
 };
 
 export function NotificationSettings() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [state, setState] = useState<"loading" | "ready" | "forbidden" | "error">("loading");
   const [payload, setPayload] = useState<Payload | null>(null);
   const load = useCallback(async () => {
@@ -49,7 +52,7 @@ export function NotificationSettings() {
   useEffect(() => { void load(); }, [load]);
 
   return <div className="page-stack notification-settings-page">
-    <PageHeading title="Notification settings" description="Choose where Tanaghom should send operational alerts after the protected delivery runtime is approved." />
+    <PageHeading title={ar ? "إعدادات الإشعارات" : "Notification settings"} description={ar ? "اختر أين ترسل تناغم تنبيهات التشغيل بعد اعتماد وقت التسليم المحمي." : "Choose where Tanaghom should send operational alerts after the protected delivery runtime is approved."} />
     <SettingsNavigation />
     {state === "loading" ? <NotificationLoading /> : null}
     {state === "forbidden" ? <SettingsState title="Admin access required" copy="Only an active Tanaghom Admin can manage customer notification destinations." /> : null}

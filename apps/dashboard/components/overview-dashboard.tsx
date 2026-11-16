@@ -56,6 +56,7 @@ type SetupProgress = {
   profileDone: boolean;
   brandDone: boolean;
   knowledgeDone: boolean;
+  finished: boolean;
 };
 
 export function OverviewDashboard() {
@@ -80,10 +81,17 @@ export function OverviewDashboard() {
           knowledgeResponse.json() as Promise<{ counts?: { sources?: number } }>,
         ]);
         if (!active) return;
+        const profileDone = Boolean(
+          profile.businessNameEn
+          && profile.businessNameAr
+          && profile.industry
+          && profile.location,
+        );
         setSetup({
-          profileDone: Boolean(profile.completedAt || profile.businessNameEn || profile.businessNameAr || profile.industry || profile.location),
+          profileDone,
           brandDone: Boolean(kits.kits?.length),
           knowledgeDone: (knowledge.counts?.sources ?? 0) > 0,
+          finished: Boolean(profile.completedAt),
         });
       })
       .catch(() => undefined);
@@ -101,22 +109,28 @@ export function OverviewDashboard() {
       ? `${data.summary.campaigns_active} حملة نشطة، ${data.summary.jobs_open} مهمة مفتوحة، و${data.summary.approvals_pending} قرار بانتظارك.`
       : `${data.summary.campaigns_active} active campaigns, ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
     : (ar ? "لم تبدأ أي حملة أو مهمة وكيل بعد." : "No campaign or agent work has started yet.");
-  const remaining = setup ? [
-    !setup.profileDone ? (ar ? "أكمل ملف النشاط التجاري" : "Finish your business profile") : null,
-    !setup.brandDone ? (ar ? "أضف هويتك البصرية" : "Add your brand kit") : null,
-    !setup.knowledgeDone ? (ar ? "أضف أول مسودة معرفة" : "Add your first knowledge draft") : null,
-  ].filter((item): item is string => Boolean(item)) : [];
+  const setupSteps = setup ? [
+    { done: setup.profileDone, en: "Business profile", ar: "ملف النشاط التجاري" },
+    { done: setup.brandDone, en: "Brand Kit", ar: "الهوية البصرية" },
+    { done: setup.knowledgeDone, en: "Knowledge", ar: "المعرفة" },
+    { done: setup.finished, en: "Finish setup", ar: "إكمال الإعداد" },
+  ] : [];
+  const nextStepIndex = setupSteps.findIndex((step) => !step.done);
+  const nextStep = nextStepIndex >= 0 ? setupSteps[nextStepIndex] : null;
+  const remainingCount = setupSteps.filter((step) => !step.done).length;
 
   return (
     <div className="page-stack">
       <PageHeading title={ar ? "نظرة عامة" : "Overview"} description={description} actions={<Link className="primary-button" href="/workspace">{ar ? "موجز حملة جديد" : "New campaign brief"}<ArrowRight size={16} /></Link>} />
 
-      {setup && remaining.length ? <section className="setup-banner" aria-labelledby="setup-banner-title">
+      {nextStep ? <section className="setup-banner" aria-labelledby="setup-banner-title">
         <CircleAlert size={22} aria-hidden="true" />
         <div>
           <h2 id="setup-banner-title">{ar ? "أكمل إعداد مساحة عملك" : "Continue workspace setup"}</h2>
-          <p>{ar ? `${remaining.length} خطوات متبقية قبل أن يعمل فريقك بأكمل طاقته.` : `${remaining.length} ${remaining.length === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</p>
-          <ul>{remaining.map((item) => <li key={item}>{item}</li>)}</ul>
+          <p className="setup-banner-next">
+            <strong>{ar ? `الخطوة ${nextStepIndex + 1} من 4: ${nextStep.ar}` : `Step ${nextStepIndex + 1} of 4: ${nextStep.en}`}</strong>
+            <span>{ar ? `${remainingCount} خطوات متبقية قبل أن يعمل فريقك بأكمل طاقته.` : `${remainingCount} ${remainingCount === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</span>
+          </p>
         </div>
         <Link className="primary-button" href="/onboarding">{ar ? "أكمل الإعداد" : "Continue setup"}<ArrowRight size={16} /></Link>
       </section> : null}

@@ -37,7 +37,7 @@ interface ChannelsPayload {
 const copy = {
   en: {
     title: "Social channels",
-    lede: "Connect the social accounts your team may draft for. Each Tanaghom workspace gets its own isolated social publishing connection; publishing still requires a human in the social network.",
+    lede: "Connect the social accounts your team may draft for. Each Tanaghom workspace gets its own isolated social publishing connection.",
     privacy: "Credentials stay encrypted in Tanaghom and are never returned to this browser.",
     human: "Human approval is required before anything can publish.",
     supported: "Connect a channel",
@@ -69,7 +69,7 @@ const copy = {
   },
   ar: {
     title: "قنوات التواصل",
-    lede: "اربط حسابات التواصل التي يمكن لفريقك إعداد مسودات لها. لكل مساحة عمل تناغم اتصال نشر اجتماعي معزول؛ ولا يزال النشر يتطلب موافقة بشرية داخل شبكة التواصل.",
+    lede: "اربط حسابات التواصل التي يمكن لفريقك إعداد مسودات لها. لكل مساحة عمل تناغم اتصال نشر اجتماعي معزول.",
     privacy: "تبقى بيانات الاعتماد مشفرة في تناغم ولا تُعاد أبدًا إلى هذا المتصفح.",
     human: "الموافقة البشرية مطلوبة قبل أي نشر.",
     supported: "اربط قناة",

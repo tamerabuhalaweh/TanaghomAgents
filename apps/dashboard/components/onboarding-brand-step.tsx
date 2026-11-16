@@ -56,7 +56,7 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
   const [existing, setExisting] = useState<BrandKitRow | null>(null);
   const [name, setName] = useState("");
   const [primary, setPrimary] = useState("#1F6F5C");
-  const [accent, setAccent] = useState("");
+  const [accent, setAccent] = useState("#D9A441");
   const [tone, setTone] = useState("");
   const [arabicFont, setArabicFont] = useState("");
   const [latinFont, setLatinFont] = useState("");
@@ -204,8 +204,16 @@ export function OnboardingBrandStep({ copy, locale }: { copy: OnboardingCopy; lo
         <div className="onboarding-field">
           <span>{copy.accentColorLabel}</span>
           <div className="onboarding-color">
-            <input type="color" value={COLOR.test(accent) ? accent : "#d9a441"} aria-label={copy.accentColorLabel} onChange={(event) => setAccent(event.target.value.toUpperCase())} />
-            <input type="text" value={accent} maxLength={7} dir="ltr" aria-label={copy.accentColorLabel} onChange={(event) => setAccent(event.target.value)} />
+            <input type="color" value={COLOR.test(accent) ? accent : "#D9A441"} aria-label={copy.accentColorLabel} onChange={(event) => setAccent(event.target.value.toUpperCase())} />
+            <input
+              type="text"
+              value={accent}
+              maxLength={7}
+              dir="ltr"
+              aria-label={copy.accentColorLabel}
+              onChange={(event) => setAccent(event.target.value)}
+              onBlur={() => { if (!accent) setAccent("#D9A441"); }}
+            />
           </div>
         </div>
 

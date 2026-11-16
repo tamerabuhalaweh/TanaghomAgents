@@ -4,6 +4,7 @@ import { KeyRound, ShieldCheck } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 
 const ERROR_MESSAGES: Record<string, string> = {
   invalid_current_password: "That current password is not correct.",
@@ -19,6 +20,8 @@ const ERROR_MESSAGES: Record<string, string> = {
 };
 
 export function SecuritySettings() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmation, setConfirmation] = useState("");
@@ -57,12 +60,12 @@ export function SecuritySettings() {
   }
 
   return (
-    <div className="page-stack">
+    <div className="page-stack" dir={ar ? "rtl" : "ltr"} lang={locale}>
       <header className="page-heading">
         <div>
-          <p className="eyebrow">Account security</p>
-          <h1>Password</h1>
-          <p>Changing your password signs out every other session for this account.</p>
+          <p className="eyebrow">{ar ? "أمان الحساب" : "Account security"}</p>
+          <h1>{ar ? "كلمة المرور" : "Password"}</h1>
+          <p>{ar ? "تغيير كلمة المرور يسجّل خروج كل الجلسات الأخرى لهذا الحساب." : "Changing your password signs out every other session for this account."}</p>
         </div>
       </header>
 
@@ -70,15 +73,15 @@ export function SecuritySettings() {
         <section className="operations-state" role="status" aria-live="polite">
           <ShieldCheck size={22} aria-hidden="true" />
           <div>
-            <h2>Password changed</h2>
-            <p>Signing you out so the new password is used everywhere. You will return to the sign-in page.</p>
+            <h2>{ar ? "تم تغيير كلمة المرور" : "Password changed"}</h2>
+            <p>{ar ? "سيتم تسجيل خروجك لاستخدام كلمة المرور الجديدة في كل مكان. ستعود إلى صفحة تسجيل الدخول." : "Signing you out so the new password is used everywhere. You will return to the sign-in page."}</p>
           </div>
         </section>
       ) : (
         <section className="panel">
           <form className="login-form" method="post" onSubmit={submit}>
             <div className="form-field">
-              <label htmlFor="current-password">Current password</label>
+              <label htmlFor="current-password">{ar ? "كلمة المرور الحالية" : "Current password"}</label>
               <input
                 id="current-password"
                 name="current-password"
@@ -90,7 +93,7 @@ export function SecuritySettings() {
               />
             </div>
             <div className="form-field">
-              <label htmlFor="new-password">New password</label>
+              <label htmlFor="new-password">{ar ? "كلمة المرور الجديدة" : "New password"}</label>
               <input
                 id="new-password"
                 name="new-password"
@@ -102,10 +105,10 @@ export function SecuritySettings() {
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
               />
-              <small>At least 12 characters. Do not reuse your email address or a common phrase.</small>
+              <small>{ar ? "١٢ حرفاً على الأقل. لا تعد استخدام بريدك الإلكتروني أو عبارة شائعة." : "At least 12 characters. Do not reuse your email address or a common phrase."}</small>
             </div>
             <div className="form-field">
-              <label htmlFor="confirm-password">Confirm new password</label>
+              <label htmlFor="confirm-password">{ar ? "تأكيد كلمة المرور الجديدة" : "Confirm new password"}</label>
               <input
                 id="confirm-password"
                 name="confirm-password"
@@ -121,7 +124,7 @@ export function SecuritySettings() {
             <p className="login-error" role="alert" aria-live="polite">{error}</p>
             <button className="primary-button" type="submit" disabled={state === "working"}>
               <KeyRound size={16} aria-hidden="true" />
-              {state === "working" ? "Changing password…" : "Change password"}
+              {state === "working" ? (ar ? "جارٍ تغيير كلمة المرور…" : "Changing password…") : (ar ? "تغيير كلمة المرور" : "Change password")}
             </button>
           </form>
         </section>
