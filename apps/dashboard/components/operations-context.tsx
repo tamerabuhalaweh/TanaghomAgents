@@ -19,6 +19,7 @@ export interface OperationsCampaign {
   content_pending: number;
   leads_total: number;
   updated_at: string;
+  source?: "ai_workspace";
 }
 
 export interface OperationsAgent {

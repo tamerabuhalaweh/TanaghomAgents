@@ -46,6 +46,13 @@ export async function POST(request: NextRequest) {
   try {
     enforceSameOriginForCookieMutation(request);
     const user = await authorize(request, ["owner", "operator"]);
+    const organization = await database().query<{ status: string }>(
+      "SELECT status FROM tanaghom.organizations WHERE id = $1::uuid",
+      [user.organizationId],
+    );
+    if (organization.rows[0]?.status !== "active") {
+      return noStore({ error: "subscription_required_for_channels", upgrade_url: "/settings/billing" }, { status: 402 });
+    }
     let body: Record<string, unknown>;
     try {
       body = await request.json() as Record<string, unknown>;

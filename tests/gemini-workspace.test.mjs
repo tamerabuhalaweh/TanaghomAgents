@@ -2,7 +2,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createServer } from 'node:http';
 import { once } from 'node:events';
-import { createGeminiWorkspaceClient,geminiGenerateEndpoint } from '../packages/agent-runtime/gemini-workspace.mjs';
+import { createGeminiWorkspaceClient,geminiGenerateEndpoint,retryDelayFor } from '../packages/agent-runtime/gemini-workspace.mjs';
 
 const key='fixture-only-gemini-key-1234567890';
 const model='gemini-3.6-flash';
@@ -36,31 +36,58 @@ test('gemini adapter: exact inventory, key header, bounded request and no key in
  assert.equal(seenKey,key);assert.equal(seenBody.includes(key),false);assert.equal(seenBody.includes('fixture'),true);
 });
 
-test('gemini adapter: quota, reject and not-found fail without retry; unavailable retries then fails explicitly',async t=>{
- const statuses=[429,400,404,503];
- let calls=0;
+test('gemini adapter: 429/502/503/504 retry with Retry-After clamped into the bounded backoff',async t=>{
+ for(const [transient,retryAfter,expectedDelay] of [[429,'30',25000],[502,'1',2000],[503,null,2000],[504,null,2000]]){
+  let calls=0;
+  const base=await stub(t,async(req,res)=>{
+   req.resume();calls++;
+   if(calls===1){
+    res.writeHead(transient,{'content-type':'application/json',...(retryAfter?{'retry-after':retryAfter}:{})});
+    return res.end(JSON.stringify({error:{message:'private provider detail'}}));
+   }
+   res.setHeader('content-type','application/json');
+   res.end(JSON.stringify({modelVersion:model,candidates:[{finishReason:'STOP',content:{parts:[{text:'A bounded retry success document.'}]}}]}));
+  });
+  const delays=[];
+  const client=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${base}/v1beta`,sleep:async(ms)=>{delays.push(ms);}});
+  const result=await client.generate(model,{contents:[]});
+  assert.equal(result.modelVersion,model);
+  assert.equal(calls,2);
+  assert.deepEqual(delays,[expectedDelay]);
+ }
+});
+
+test('gemini adapter: inventory retries transient statuses and persistent quota fails explicitly',async t=>{
+ let inventoryCalls=0;
  const base=await stub(t,async(req,res)=>{
-  const status=statuses[Math.min(calls,statuses.length-1)];calls++;req.resume();
-  res.writeHead(status,{'content-type':'application/json'});res.end(JSON.stringify({error:{message:'private provider detail'}}));
+  inventoryCalls++;req.resume();
+  if(inventoryCalls===1){res.writeHead(502);return res.end('{}');}
+  res.setHeader('content-type','application/json');
+  res.end(JSON.stringify({models:[{name:'models/gemini-3.6-flash',inputTokenLimit:32768,outputTokenLimit:8192,supportedGenerationMethods:['generateContent']}]}));
  });
  const delays=[];
  const client=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${base}/v1beta`,sleep:async(ms)=>{delays.push(ms);}});
- await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='provider_quota_exceeded');
- await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='provider_request_rejected');
- await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='model_unavailable');
- await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='inference_outcome_unknown');
- // 503 is retried three times with bounded backoff before it is classified.
- assert.equal(calls,7);assert.deepEqual(delays,[2000,5000,10000]);
+ const inventory=await client.inventory(model);
+ assert.equal(inventory.id,model);assert.equal(inventoryCalls,2);assert.deepEqual(delays,[2000]);
+
+ let quotaCalls=0;
+ const quotaBase=await stub(t,async(req,res)=>{
+  quotaCalls++;req.resume();res.writeHead(429,{'content-type':'application/json'});res.end('{}');
+ });
+ const quotaDelays=[];
+ const quotaClient=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${quotaBase}/v1beta`,sleep:async(ms)=>{quotaDelays.push(ms);}});
+ await assert.rejects(quotaClient.inventory(model),e=>e.code==='provider_quota_exceeded');
+ assert.equal(quotaCalls,4);assert.deepEqual(quotaDelays,[2000,5000,10000]);
 });
 
-test('gemini adapter: inventory quota is explicit and not retried',async t=>{
- let calls=0;
- const base=await stub(t,async(req,res)=>{
-  calls++;req.resume();res.writeHead(429,{'content-type':'application/json'});res.end(JSON.stringify({error:{message:'private provider detail'}}));
- });
- const client=createGeminiWorkspaceClient({apiKey:key,baseUrl:`${base}/v1beta`});
- await assert.rejects(client.inventory(model),e=>e.code==='provider_quota_exceeded');
- assert.equal(calls,1);
+test('gemini adapter: Retry-After accepts positive integer seconds only and clamps to 25 seconds',()=>{
+ assert.equal(retryDelayFor({headers:{get:()=> '2'}},5000),5000);
+ assert.equal(retryDelayFor({headers:{get:()=> '9'}},2000),9000);
+ assert.equal(retryDelayFor({headers:{get:()=> '30'}},2000),25000);
+ assert.equal(retryDelayFor({headers:{get:()=> '0'}},3000),3000);
+ assert.equal(retryDelayFor({headers:{get:()=> '1.5'}},3000),3000);
+ assert.equal(retryDelayFor({headers:{get:()=> 'soon'}},4000),4000);
+ assert.equal(retryDelayFor({},5000),5000);
 });
 
 test('gemini adapter: malformed and oversized responses are rejected without exposing provider body',async t=>{

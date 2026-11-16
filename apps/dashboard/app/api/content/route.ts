@@ -67,8 +67,48 @@ export async function GET(request: NextRequest) {
         LIMIT 250`,
       [status, search, user.organizationId],
     );
+    const approvedWorkspaces = await database().query(
+      `WITH documents AS (
+         SELECT step.workspace_id,
+                string_agg(task.result->>'document', E'\n\n---\n\n' ORDER BY step.sequence) AS document
+           FROM tanaghom.agency_workspace_steps step
+           JOIN tanaghom.agency_pilot_tasks task ON task.id=step.task_id
+          WHERE task.status='succeeded' AND task.result IS NOT NULL
+          GROUP BY step.workspace_id
+       )
+       SELECT workspace.id,workspace.id AS campaign_id,workspace.title AS campaign_name,
+              'ai_workspace'::text AS channel,'work_pack'::text AS content_type,
+              left(coalesce(documents.document,workspace.brief),4000) AS draft_copy,
+              'Approved AI Workspace work pack'::text AS media_brief,NULL::text AS media_url,
+              'approved'::text AS status,'workspace'::text AS generation,NULL::timestamptz AS scheduled_time,
+              workspace.created_at,coalesce(workspace.finished_at,workspace.created_at) AS updated_at,
+              NULL::integer AS strategy_version,'approved'::text AS decision,NULL::text AS rejection_reason,
+              approved.occurred_at AS decided_at,reviewer.display_name AS decided_by_name,
+              NULL::text AS provider,NULL::text AS provider_post_id,NULL::text AS post_status,
+              NULL::timestamptz AS posted_at,NULL::timestamptz AS last_synced_at,
+              NULL::uuid AS handoff_job_id,NULL::text AS handoff_status,NULL::text AS handoff_error_code,
+              NULL::text AS handoff_error_message,NULL::timestamptz AS handoff_requested_at,
+              NULL::timestamptz AS handoff_updated_at,NULL::text AS external_operation_status,
+              false AS postiz_channel_ready
+         FROM tanaghom.agency_workspaces workspace
+         LEFT JOIN documents ON documents.workspace_id=workspace.id
+         LEFT JOIN LATERAL (
+           SELECT actor_ref,occurred_at FROM tanaghom.agency_workspace_events event
+            WHERE event.workspace_id=workspace.id AND event.event_type='approved'
+            ORDER BY event.id DESC LIMIT 1
+         ) approved ON true
+         LEFT JOIN tanaghom.app_users reviewer ON reviewer.id::text=approved.actor_ref
+        WHERE workspace.organization_id=$3::uuid AND workspace.status='approved'
+          AND ($1::text IS NULL OR $1::text='approved')
+          AND ($2::text='' OR workspace.title ILIKE '%'||$2||'%' OR workspace.brief ILIKE '%'||$2||'%')
+        ORDER BY coalesce(workspace.finished_at,workspace.created_at) DESC LIMIT 250`,
+      [status, search, user.organizationId],
+    );
+    const items = [...result.rows, ...approvedWorkspaces.rows]
+      .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
+      .slice(0, 250);
     return noStore({
-      items: result.rows,
+      items,
       integration: {
         postiz_ready: postizHandoffEnabled(),
         can_request_draft: user.role !== "viewer",

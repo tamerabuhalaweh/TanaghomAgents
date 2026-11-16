@@ -2314,6 +2314,12 @@ td a, td > strong { font-weight: 670; }
 .sidebar-trust { display: none; }
 .sidebar-help-button { width: 100%; border: 0; background: transparent; text-align: start; cursor: pointer; }
 .channels-page { width: 100%; min-width: 0; }
+.channel-paywall { display: flex; flex-wrap: wrap; align-items: center; gap: 0.9rem; padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, var(--primary) 32%, var(--border)); border-radius: var(--radius-md); background: color-mix(in srgb, var(--primary) 8%, var(--bg)); }
+.channel-paywall > svg { flex: 0 0 auto; color: var(--primary); }
+.channel-paywall > div { flex: 1 1 20rem; min-width: 0; }
+.channel-paywall strong { display: block; font-size: 0.9rem; }
+.channel-paywall p { margin-block-start: 0.25rem; color: var(--muted); font-size: 0.78rem; line-height: 1.55; }
+.channel-paywall .primary-button { flex: 0 0 auto; }
 .channel-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 16rem), 1fr)); }
 .channel-row > * { min-width: 0; }
 .brand-version-swatches li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

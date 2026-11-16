@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { ArrowRight, BookOpen, Check, ChevronRight, ClipboardList, Download, FileText, Pause, Play, Plus, RefreshCw, UsersRound, X } from "lucide-react";
+import Link from "next/link";
 
 import { useLocale } from "@/lib/client/use-locale";
 
@@ -11,12 +12,14 @@ type Artifact = { document: string; kind: string; provider: string | null; model
 type Step = { sequence: number; profile_code: string; task_id: string; status: string; attempt: number; claimed_at: string | null; finished_at: string | null; error_code: string | null; result: Artifact | null; response_hash: string | null; shared_context: { profile: string; task_id: string; document: string; response_hash: string }[] | null };
 type Event = { id: number; event_type: string; actor_kind: string; actor_ref: string; evidence: { feedback?: string; sequence?: number; task_id?: string }; occurred_at: string };
 type Detail = Assignment & { brief: string; source_facts: string; result_hash: string; steps: Step[]; events: Event[] };
-type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
+type Quota = { subscription_status: string; plan_tier: "starter" | "growth" | "scale" | null; is_sandbox: boolean; campaigns_used: number; campaigns_limit: number; runs_used: number; runs_limit: number | null; upgrade_required: boolean; upgrade_url: string };
+type Usage = { month_prompt_tokens: number; month_completion_tokens: number; month_total_tokens: number; estimated_cost_usd: number };
+type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; quota: Quota; usage: Usage; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
 
 const labels: Record<string, string> = { draft: "Brief saved", queued: "Queued", running: "Working", paused: "Paused", waiting_review: "Ready for your review", approved: "Approved by human", rejected: "Changes requested", failed: "Needs attention", cancelled: "Cancelled", in_progress: "Working", succeeded: "Draft ready" };
 const labelsAr: Record<string, string> = { draft: "تم حفظ الموجز", queued: "في الانتظار", running: "قيد العمل", paused: "متوقف مؤقتاً", waiting_review: "جاهز لمراجعتك", approved: "اعتمده إنسان", rejected: "طُلب التعديل", failed: "يحتاج إلى انتباه", cancelled: "أُلغي", in_progress: "قيد العمل", succeeded: "المسودة جاهزة" };
-const errorText: Record<string, string> = { workspace_model_not_configured: "The Gemini model worker is not connected. Your brief is saved; no generation has started.", workspace_not_found: "This assignment was not found in your workspace.", workspace_brief_invalid: "Write a brief between 30 and 6,000 characters.", workspace_source_facts_invalid: "Add source facts between 20 and 6,000 characters.", workspace_title_invalid: "Use a title between 3 and 120 characters.", inference_outcome_unknown: "The Gemini request did not finish with a confirmed result. Further inference is stopped for operator review.", output_rejected: "The result did not meet the document or context limits. Completed work is preserved; an operator must review the failure.", model_unavailable: "The configured Gemini connection or model identity could not be verified.", provider_request_rejected: "Google Gemini rejected the request. No automatic retry was made.", provider_quota_exceeded: "The Gemini free-tier quota was exhausted. No automatic retry was made.", workspace_cancelled: "This task was cancelled. Earlier completed work is preserved." };
-const errorTextAr: Record<string, string> = { workspace_model_not_configured: "عمال نموذج Gemini غير متصل. تم حفظ موجزك ولم يبدأ أي توليد.", workspace_not_found: "لم يتم العثور على هذه المهمة في مساحة عملك.", workspace_brief_invalid: "اكتب موجزاً بين 30 و6,000 حرف.", workspace_source_facts_invalid: "أضف حقائق المصدر بين 20 و6,000 حرف.", workspace_title_invalid: "استخدم عنواناً بين 3 و120 حرفاً.", inference_outcome_unknown: "لم ينتهِ طلب Gemini بنتيجة مؤكدة. أُوقفت الاستدلالات لمزيد من المراجعة.", output_rejected: "لم تستوفِ النتيجة حدود المستند أو السياق. العمل المكتمل محفوظ ويحتاج إلى مراجعة المشغّل.", workspace_cancelled: "أُلغيت هذه المهمة، والعمل المكتمل محفوظ." };
+const errorText: Record<string, string> = { workspace_model_not_configured: "The Gemini model worker is not connected. Your brief is saved; no generation has started.", workspace_not_found: "This assignment was not found in your workspace.", workspace_brief_invalid: "Write a brief between 30 and 6,000 characters.", workspace_source_facts_invalid: "Add source facts between 20 and 6,000 characters.", workspace_title_invalid: "Use a title between 3 and 120 characters.", inference_outcome_unknown: "The Gemini request did not finish with a confirmed result. Further inference is stopped for operator review.", output_rejected: "The result did not meet the document or context limits. Completed work is preserved; an operator must review the failure.", model_unavailable: "The configured Gemini connection or model identity could not be verified.", provider_request_rejected: "Google Gemini rejected the request. No automatic retry was made.", provider_quota_exceeded: "Gemini remained over quota after bounded retries. Completed work is preserved; retry when capacity is available.", workspace_cancelled: "This task was cancelled. Earlier completed work is preserved.", subscription_required_for_more_campaigns: "The Free Sandbox includes one complete campaign and three AI runs. Upgrade to continue.", plan_monthly_campaign_limit_reached: "This plan's monthly campaign limit has been reached. Upgrade or wait for the next month.", workspace_not_retryable: "Only a failed work pack can be retried." };
+const errorTextAr: Record<string, string> = { workspace_model_not_configured: "عمال نموذج Gemini غير متصل. تم حفظ موجزك ولم يبدأ أي توليد.", workspace_not_found: "لم يتم العثور على هذه المهمة في مساحة عملك.", workspace_brief_invalid: "اكتب موجزاً بين 30 و6,000 حرف.", workspace_source_facts_invalid: "أضف حقائق المصدر بين 20 و6,000 حرف.", workspace_title_invalid: "استخدم عنواناً بين 3 و120 حرفاً.", inference_outcome_unknown: "لم ينتهِ طلب Gemini بنتيجة مؤكدة. أُوقفت الاستدلالات لمزيد من المراجعة.", output_rejected: "لم تستوفِ النتيجة حدود المستند أو السياق. العمل المكتمل محفوظ ويحتاج إلى مراجعة المشغّل.", provider_quota_exceeded: "بقي Gemini فوق حد الحصة بعد محاولات محدودة. العمل المكتمل محفوظ؛ أعد المحاولة عند توفر السعة.", workspace_cancelled: "أُلغيت هذه المهمة، والعمل المكتمل محفوظ.", subscription_required_for_more_campaigns: "يشمل الصندوق المجاني حملة كاملة واحدة وثلاث عمليات تشغيل ذكاء اصطناعي. ارتقِ للمتابعة.", plan_monthly_campaign_limit_reached: "تم بلوغ الحد الشهري للحملات في هذه الخطة. ارتقِ أو انتظر الشهر التالي.", workspace_not_retryable: "يمكن إعادة محاولة حزمة عمل متوقفة فقط." };
 const date = (value: string) => new Date(value).toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 export function AgencyWorkspace() {
@@ -95,6 +98,8 @@ export function AgencyWorkspace() {
       } else {
         setNotice(body.action === "start"
           ? (ar ? "تم إرسال المهمة. سيستخدم المختصون موجزك المحفوظ ويسلّم كل منهم عمله للزميل التالي." : "Assignment queued. Specialists will use your saved brief and hand their work to the next teammate.")
+          : body.action === "retry"
+            ? (ar ? "أُعيد إرسال الخطوات غير المكتملة فقط. المخرجات المعتمدة والسجل محفوظان." : "Only the unfinished steps were re-queued. Completed deliverables and history are preserved.")
           : body.action === "approve"
             ? (ar ? "تم تسجيل اعتمادك لحزمة العمل هذه تحديداً. لم يُنشر أو يُرسل أي شيء." : "Your approval has been recorded for this exact work pack. Nothing was published or sent.")
             : body.action === "reject"
@@ -158,6 +163,11 @@ export function AgencyWorkspace() {
   }
 
   const tabsSpec = [["deliverable", ar ? "التسليم" : "Deliverable", FileText], ["context", ar ? "السياق المشترك" : "Shared context", BookOpen], ["history", ar ? "النشاط" : "Activity", ClipboardList]] as const;
+  const quota = data?.quota;
+  const planName = quota?.plan_tier ? `${quota.plan_tier[0].toUpperCase()}${quota.plan_tier.slice(1)}` : "";
+  const quotaLabel = quota ? (quota.is_sandbox
+    ? (ar ? `الصندوق المجاني: ${quota.campaigns_used} من ${quota.campaigns_limit} حملة · ${quota.runs_used} من ${quota.runs_limit} تشغيل ذكاء اصطناعي` : `Free Sandbox: ${quota.campaigns_used} of ${quota.campaigns_limit} campaign · ${quota.runs_used} of ${quota.runs_limit} AI runs used`)
+    : (ar ? `خطة ${planName}: ${quota.campaigns_used} من ${quota.campaigns_limit} حملة شهرياً` : `${planName} Plan: ${quota.campaigns_used} of ${quota.campaigns_limit} monthly campaigns used`)) : "";
 
   return <div className="agency-workspace">
     <header className="page-heading">
@@ -172,6 +182,15 @@ export function AgencyWorkspace() {
       <span>{ar ? "مختصو الوكالة · مساحة مسودات فقط · مراجعة بشرية قبل الاستخدام" : "Agency specialists · Draft-only workspace · Human review before use"}</span>
       <span className={`aw-state ${data?.runtime.ready ? "aw-state-ready" : ""}`}>{data?.runtime.ready ? (ar ? "المختصون جاهزون" : "AI specialists ready") : (ar ? "وضع حفظ المسودات" : "Draft-save mode")}</span>
     </div>
+    {quota ? <div className={`aw-quota ${quota.upgrade_required ? "aw-quota-limit" : ""}`}>
+      <span className="aw-quota-badge">{quotaLabel}</span>
+      {data?.usage.month_total_tokens ? <span className="aw-quota-usage">{ar ? `${data.usage.month_total_tokens.toLocaleString()} رمز هذا الشهر` : `${data.usage.month_total_tokens.toLocaleString()} tokens this month`}</span> : null}
+      {quota.is_sandbox ? <Link className="aw-quota-upgrade" href={quota.upgrade_url}>{ar ? "ترقية الخطة" : "Upgrade plan"} <ArrowRight size={15} /></Link> : null}
+    </div> : null}
+    {quota?.upgrade_required ? <section className="aw-upgrade-callout" role="status">
+      <div><strong>{ar ? "بلغت حد الصندوق المجاني" : "You have reached the Free Sandbox limit"}</strong><p>{ar ? "ارتقِ لبدء حملة أخرى وربط حسابات التواصل الحقيقية. سجل حملتك الحالي يبقى محفوظاً." : "Upgrade to start another campaign and connect live social accounts. Your existing campaign history stays intact."}</p></div>
+      <Link className="button button-primary" href={quota.upgrade_url}>{ar ? "عرض الخطط" : "View plans"} <ArrowRight size={16} /></Link>
+    </section> : null}
     {error ? <div className="aw-message aw-error" role="alert"><span>{error}</span><button className="button button-secondary" onClick={() => void load(selectedId)}><RefreshCw size={16} />{ar ? "تحديث" : "Refresh"}</button></div> : null}
     {notice ? <p className="aw-message" role="status">{notice}</p> : null}
     {loading && !data ? <div className="aw-loading" aria-busy="true" aria-label={ar ? "جارٍ تحميل مساحة العمل" : "Loading AI workspace"}><div /><div /><div /></div> : null}
@@ -217,6 +236,7 @@ export function AgencyWorkspace() {
                 {data.can_manage && selected.status === "draft" ? <button className="button button-primary" disabled={busy || !data.runtime.ready} onClick={() => void command({ action: "start", id: selected.id })}><Play size={16} />{busy ? (ar ? "جارٍ البدء…" : "Starting…") : (ar ? "بدء المهمة" : "Start assignment")}</button> : null}
                 {data.can_manage && ["queued", "running"].includes(selected.status) ? <button className="button button-secondary" disabled={busy} onClick={() => void command({ action: "pause", id: selected.id })}><Pause size={16} />{ar ? "إيقاف مؤقت" : "Pause"}</button> : null}
                 {data.can_manage && selected.status === "paused" ? <button className="button button-primary" disabled={busy || !data.runtime.ready} onClick={() => void command({ action: "resume", id: selected.id })}><Play size={16} />{ar ? "استئناف" : "Resume"}</button> : null}
+                {data.can_manage && selected.status === "failed" ? <button className="button button-primary" disabled={busy || !data.runtime.ready} onClick={() => void command({ action: "retry", id: selected.id })}><RefreshCw size={16} />{busy ? (ar ? "جارٍ إعادة المحاولة…" : "Retrying…") : (ar ? "إعادة محاولة الخطوة المتوقفة" : "Retry failed step")}</button> : null}
               </div>
             </header>
             {selected.error_code ? <p className="aw-message aw-error" role="alert">{reason(selected.error_code)}</p> : null}

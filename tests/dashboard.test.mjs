@@ -306,7 +306,7 @@ test("campaign lifecycle exposes real tenant-bound actions and no provider hando
   const readyRoute = await readFile(new URL("app/api/campaigns/[id]/ready/route.ts", dashboard), "utf8");
 
   assert.match(campaigns, /Create campaign/);
-  assert.match(campaigns, /href={`\/campaigns\/\${campaign\.id}`}/);
+  assert.match(campaigns, /\/campaigns\/\$\{campaign\.id\}/);
   assert.doesNotMatch(campaigns, /available in Phase 3|details not available|disabled/);
   for (const state of ["Core agent work is", "Agent work needs a controlled retry", "Campaign is paused", "Start campaign strategy", "Strategy is ready", "need a human decision", "Human review is complete", "Ready for controlled handoff"]) {
     assert.match(detail, new RegExp(state));

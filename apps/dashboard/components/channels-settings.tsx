@@ -1,6 +1,7 @@
 "use client";
 
 import { Link2, LoaderCircle, RefreshCw, ShieldCheck, Trash2, Unplug } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
@@ -29,6 +30,8 @@ interface Channel {
 interface ChannelsPayload {
   provisioning_ready: boolean;
   can_manage: boolean;
+  subscription_status: string;
+  can_connect_live_channels: boolean;
   human_approval_required: boolean;
   supported_platforms: SupportedPlatform[];
   channels: Channel[];
@@ -66,6 +69,9 @@ const copy = {
     revoking: "Revoking…",
     confirmRevoke: "Disconnect this channel and permanently revoke its stored OAuth token? Other connected channels are not affected.",
     channelMissing: "That channel is no longer connected. Refreshing the list.",
+    sandboxTitle: "Free Sandbox: 1 full AI Campaign Work Pack",
+    sandboxCopy: "Connecting live social accounts is unlocked on any paid plan — Starter, Growth or Scale. Upgrade to publish approved drafts and keep your sandbox campaign history.",
+    sandboxCta: "Upgrade plan",
   },
   ar: {
     title: "قنوات التواصل",
@@ -98,6 +104,9 @@ const copy = {
     revoking: "جارٍ الإبطال…",
     confirmRevoke: "فصل هذه القناة وإبطال رمز OAuth المخزن نهائيًا؟ لن تتأثر القنوات الأخرى.",
     channelMissing: "هذه القناة لم تعد متصلة. سيتم تحديث القائمة.",
+    sandboxTitle: "الصندوق المجاني: حزمة حملة ذكاء اصطناعي كاملة واحدة",
+    sandboxCopy: "يتاح ربط حسابات التواصل الحقيقية مع أي خطة مدفوعة — Starter أو Growth أو Scale. ارتقِ للنشر المسودات المعتمدة والاحتفاظ بسجل حملة الصندوق.",
+    sandboxCta: "ترقية الخطة",
   },
 } as const;
 
@@ -209,6 +218,11 @@ export function ChannelsSettings() {
     <div className="page-stack channels-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
       <PageHeading title={text.title} description={text.lede} />
       <SettingsNavigation />
+      {state === "ready" && payload && !payload.can_connect_live_channels ? <section className="channel-paywall" role="status">
+        <ShieldCheck size={22} />
+        <div><strong>{text.sandboxTitle}</strong><p>{text.sandboxCopy}</p></div>
+        <Link className="primary-button" href="/settings/billing">{text.sandboxCta}</Link>
+      </section> : null}
       <section className="credential-safety">
         <ShieldCheck size={20} />
         <div><strong>{text.privacy}</strong><p>{text.human}</p></div>
@@ -224,14 +238,14 @@ export function ChannelsSettings() {
             {payload.supported_platforms.map((item) => <article className="channel-card" key={item.platform}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(item.platform, ar).slice(0, 2)}</div>
               <div><h3>{platformLabel(item.platform, ar)}</h3><small>{text.socialPublishing}</small></div>
-              <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage} onClick={() => void connect(item.platform)}>
+              <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect(item.platform)}>
                 {busy === item.platform ? <LoaderCircle className="spin" size={16} /> : <Link2 size={16} />} {busy === item.platform ? text.connecting : text.connect}
               </button>
-              {item.platform === "instagram" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage} onClick={() => void connect("instagram", "instagram-standalone")}>{ar ? "إنستغرام مستقل" : "Instagram standalone"}</button> : null}
-              {item.platform === "linkedin" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage} onClick={() => void connect("linkedin", "linkedin")}>{ar ? "لينكدإن شخصي" : "LinkedIn personal"}</button> : null}
+              {item.platform === "instagram" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("instagram", "instagram-standalone")}>{ar ? "إنستغرام مستقل" : "Instagram standalone"}</button> : null}
+              {item.platform === "linkedin" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("linkedin", "linkedin")}>{ar ? "لينكدإن شخصي" : "LinkedIn personal"}</button> : null}
             </article>)}
           </div>
-          {!payload.provisioning_ready ? <div className="channel-empty"><ShieldCheck size={18} /><span><strong>{text.unavailableTitle}</strong><small>{text.unavailableCopy}</small></span></div> : null}
+          {payload.can_connect_live_channels && !payload.provisioning_ready ? <div className="channel-empty"><ShieldCheck size={18} /><span><strong>{text.unavailableTitle}</strong><small>{text.unavailableCopy}</small></span></div> : null}
           {payload.provisioning_ready && payload.can_manage ? <div className="channels-heading"><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void disconnect()}><Unplug size={16} /> {busy === "disconnect" ? text.disconnecting : text.disconnect}</button></div> : null}
         </section>
         <section className="channels-section" aria-labelledby="channel-connected-title">

@@ -35,6 +35,21 @@ export async function GET(request: NextRequest) {
             WHERE app.organization_id = $1 AND notification.read_at IS NULL) AS notifications_unread`,
         [user.organizationId],
       );
+      const approvedWorkspaceCampaigns = await client.query(
+        `SELECT workspace.id,workspace.title AS name,'ai_workspace'::text AS product_type,
+                'active'::text AS status,NULL::text AS blocked_reason,NULL::numeric AS budget_target,
+                NULL::numeric AS revenue_target,'GBP'::text AS currency,
+                count(step.task_id)::int AS content_item_target,
+                'workspace.approved'::text AS core_job_type,'completed'::text AS core_job_status,
+                count(step.task_id)::int AS content_total,0::int AS content_pending,0::int AS leads_total,
+                workspace.created_at,coalesce(workspace.finished_at,workspace.created_at) AS updated_at
+           FROM tanaghom.agency_workspaces workspace
+           LEFT JOIN tanaghom.agency_workspace_steps step ON step.workspace_id=workspace.id
+          WHERE workspace.organization_id=$1 AND workspace.status='approved'
+          GROUP BY workspace.id
+          ORDER BY coalesce(workspace.finished_at,workspace.created_at) DESC LIMIT 100`,
+        [user.organizationId],
+      );
       const campaigns = await client.query(
         `SELECT campaign.id, campaign.name, campaign.product_type, campaign.status,
                 campaign.blocked_reason, campaign.budget_target, campaign.revenue_target,
@@ -60,6 +75,9 @@ export async function GET(request: NextRequest) {
           LIMIT 100`,
         [user.organizationId],
       );
+      const campaignRows = [...campaigns.rows, ...approvedWorkspaceCampaigns.rows.map((row) => ({ ...row, source: "ai_workspace" }))]
+        .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
+        .slice(0, 100);
       const agentRoles = await client.query(
         `SELECT role.code,role.name,role.short_name,role.responsibility,role.display_order,
                 agent.id AS agent_record_id
@@ -372,7 +390,7 @@ export async function GET(request: NextRequest) {
       return noStore({
         current_user: user,
         summary: summary.rows[0],
-        campaigns: campaigns.rows,
+        campaigns: campaignRows,
         agents: agentRegistry.roles.map((role) => ({
           id: role.agent_record_id || role.code,
           code: role.code,

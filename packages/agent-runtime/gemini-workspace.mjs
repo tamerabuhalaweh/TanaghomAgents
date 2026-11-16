@@ -1,6 +1,7 @@
 const DEFAULT_BASE_URL = 'https://generativelanguage.googleapis.com/v1beta';
 const MODEL_ID = /^[a-z0-9][a-z0-9.-]{1,80}$/;
 const MAX_RESPONSE_BYTES = 100000;
+const RETRYABLE_STATUSES = new Set([429, 502, 503, 504]);
 
 export class GeminiWorkspaceError extends Error {
   constructor(code, status = 502) {
@@ -61,6 +62,21 @@ function statusError(status) {
   return new GeminiWorkspaceError('inference_failed', 502);
 }
 
+export function retryDelayFor(response, fallbackMs) {
+  const header = response?.headers?.get?.('retry-after');
+  if (typeof header === 'string' && /^\d+$/.test(header.trim())) {
+    const seconds = Number(header.trim());
+    if (Number.isSafeInteger(seconds) && seconds > 0) {
+      return Math.min(25000, Math.max(fallbackMs, seconds * 1000));
+    }
+  }
+  return fallbackMs;
+}
+
+async function releaseBody(response) {
+  try { await response?.body?.cancel?.(); } catch { /* cross-runtime empty bodies */ }
+}
+
 export function geminiGenerateEndpoint(model, baseUrl = DEFAULT_BASE_URL) {
   return `${baseUrl.replace(/\/$/, '')}/${modelResource(model)}:generateContent`;
 }
@@ -80,16 +96,26 @@ export function createGeminiWorkspaceClient({
 
   async function inventory(model) {
     const resource = modelResource(model);
+    const send = () => fetchImpl(`${base}/models?pageSize=1000`, {
+      headers: { 'x-goog-api-key': key, accept: 'application/json' },
+      redirect: 'error',
+      cache: 'no-store',
+      signal: AbortSignal.timeout(inventoryTimeoutMs),
+    });
     let response;
     try {
-      response = await fetchImpl(`${base}/models?pageSize=1000`, {
-        headers: { 'x-goog-api-key': key, accept: 'application/json' },
-        redirect: 'error',
-        cache: 'no-store',
-        signal: AbortSignal.timeout(inventoryTimeoutMs),
-      });
+      response = await send();
     } catch {
       throw new GeminiWorkspaceError('model_unavailable', 503);
+    }
+    for (let attempt = 0; RETRYABLE_STATUSES.has(response.status) && attempt < retryDelaysMs.length; attempt += 1) {
+      await releaseBody(response);
+      await sleep(retryDelayFor(response, retryDelaysMs[attempt]));
+      try {
+        response = await send();
+      } catch {
+        throw new GeminiWorkspaceError('model_unavailable', 503);
+      }
     }
     if (!response.ok) throw response.status === 429
       ? new GeminiWorkspaceError('provider_quota_exceeded', 429)
@@ -136,11 +162,11 @@ export function createGeminiWorkspaceClient({
     } catch {
       throw new GeminiWorkspaceError('inference_outcome_unknown', 502);
     }
-    // A 503 is Google's transient high-demand signal. Workspace generation is
-    // pure text (external_actions: 0), so repeating the identical request is
-    // safe; any other status is classified immediately by statusError().
-    for (let attempt = 0; response.status === 503 && attempt < retryDelaysMs.length; attempt += 1) {
-      await sleep(retryDelaysMs[attempt]);
+    // Workspace generation is pure text (external_actions: 0), so repeating
+    // the identical request is safe for transient quota/capacity statuses.
+    for (let attempt = 0; RETRYABLE_STATUSES.has(response.status) && attempt < retryDelaysMs.length; attempt += 1) {
+      await releaseBody(response);
+      await sleep(retryDelayFor(response, retryDelaysMs[attempt]));
       try {
         response = await send();
       } catch {
