@@ -246,6 +246,21 @@ function compact(value: number, locale: CreativeLocale) {
   }).format(value);
 }
 
+function breakerReason(reason: string, locale: CreativeLocale) {
+  if (!reason) return "—";
+  if (locale === "en") return reason;
+  const labels: Record<string, string> = {
+    operational: "يعمل بشكل طبيعي",
+    emergency_stop: "إيقاف طارئ",
+    manual_override: "إيقاف يدوي",
+    circuit_open: "القاطع مفتوح",
+    provider_outage: "انقطاع المزود",
+    maintenance: "صيانة",
+    paused: "متوقف",
+  };
+  return labels[reason.toLowerCase()] ?? "حالة تشغيلية مسجلة";
+}
+
 function subscriptionStatus(status: string, locale: CreativeLocale) {
   const labels: Record<string, [string, string]> = {
     trialing: ["Trialing", "تجريبي"],
@@ -424,7 +439,7 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
             <div className={`super-breaker ${aiPaused ? "super-breaker-paused" : ""}`}>
               <div className="super-breaker-head"><ShieldAlert size={17} /><strong>{text.breakerTitle}</strong></div>
               <p>{text.breakerBody}</p>
-              <small>{text.breakerReason}: {snapshot.ai_circuit_breaker.reason || "—"} · {date(snapshot.ai_circuit_breaker.updated_at, locale)}</small>
+              <small>{text.breakerReason}: {breakerReason(snapshot.ai_circuit_breaker.reason, locale)} · {date(snapshot.ai_circuit_breaker.updated_at, locale)}</small>
               <button className={aiPaused ? "primary-button" : "secondary-button"} type="button" disabled={Boolean(busy)} onClick={() => void post({ action: "reset_ai_circuit_breaker" }, "reset", text.saved)}>
                 {busy === "reset" ? <LoaderCircle className="spin" size={16} /> : <ShieldAlert size={16} />}{text.breakerReset}
               </button>
