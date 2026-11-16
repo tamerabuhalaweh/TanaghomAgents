@@ -110,6 +110,7 @@ const copy = {
     cohortFull: "The current launch cohort is full. Join the priority waitlist below or contact the platform owner.",
     queue: "Your queue position",
     checkoutFull: "The launch cohort filled before checkout started. Your priority place has been saved.",
+    portalSwitch: "Plan upgrades and downgrades modify your active subscription in the Stripe Billing Portal. Stripe applies proration automatically, so you only pay the difference for the current period.",
   },
   ar: {
     title: "الفوترة",
@@ -168,6 +169,7 @@ const copy = {
     cohortFull: "اكتملت الدفعة الحالية. انضم إلى قائمة الأولوية أدناه أو تواصل مع مالك المنصة.",
     queue: "ترتيبك في القائمة",
     checkoutFull: "اكتملت الدفعة قبل بدء الدفع. تم حفظ ترتيبك في قائمة الأولوية.",
+    portalSwitch: "يعدّل تغيير خطتك اشتراكك الحالي في بوابة فوترة Stripe، ويطبق Stripe التناسب الزمني تلقائيًا، فلا تدفع إلا الفرق عن الفترة الحالية.",
   },
 } as const;
 
@@ -182,7 +184,7 @@ function formatMoney(amountMinor: number, currency: string, locale: string) {
   const amount = amountMinor / 100;
   if (locale === "ar") {
     const decimals = Number.isInteger(amount) ? 0 : 2;
-    return `${formatNumber(amount, "ar", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} ${decimals ? "دولار" : "دولارًا"}`;
+    return `${formatNumber(amount, "ar", { minimumFractionDigits: decimals, maximumFractionDigits: decimals })} دولارًا`;
   }
   return formatLocalizedMoney(amount, "en", currency);
 }
@@ -243,7 +245,7 @@ export function BillingSettings() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ plan_tier: planId, company_name: payload.organization_name, locale }),
       });
-      const body = await response.json().catch(() => ({})) as { error?: string; url?: string; queue_position?: number };
+      const body = await response.json().catch(() => ({})) as { error?: string; url?: string; via?: "portal"; queue_position?: number };
       if (response.status === 409 && body.error === "billing_not_configured") {
         setNotice(text.unconfigured);
         return;
@@ -329,6 +331,7 @@ export function BillingSettings() {
 
         <section className="billing-plans-section" aria-labelledby="billing-plans-title">
           <div className="billing-plans-head"><div><h2 id="billing-plans-title">{text.currentPlanSection}</h2><p>{text.secure}</p></div></div>
+          {payload.subscription_status === "active" && payload.has_stripe_customer ? <p className="billing-plan-switch-note">{text.portalSwitch}</p> : null}
           <div className="billing-plans">
             {payload.plans.map((plan) => {
               const current = payload.plan_tier === plan.id;

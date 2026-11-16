@@ -3,6 +3,8 @@
 import { Check, LoaderCircle, Mail } from "lucide-react";
 import { useState, type FormEvent } from "react";
 
+import { TurnstileWidget } from "@/components/turnstile-widget";
+
 const copy = {
   en: {
     title: "Join the priority waitlist",
@@ -14,6 +16,8 @@ const copy = {
     joined: "You are in the priority queue.",
     position: "Queue position",
     error: "The waitlist could not be joined. Try again shortly.",
+    disposable: "Temporary email addresses are not accepted. Use a permanent work email.",
+    captcha: "The security check could not be completed. Complete it again and retry.",
   },
   ar: {
     title: "انضم إلى قائمة الأولوية",
@@ -25,6 +29,8 @@ const copy = {
     joined: "أنت الآن في قائمة الأولوية.",
     position: "ترتيبك",
     error: "تعذر الانضمام إلى القائمة. حاول بعد قليل.",
+    disposable: "لا نقبل عناوين البريد المؤقتة. استخدم بريد عمل دائمًا.",
+    captcha: "تعذر إكمال التحقق الأمني. أكمله مرة أخرى ثم أعد المحاولة.",
   },
 } as const;
 
@@ -35,6 +41,7 @@ export function WaitlistForm({ locale }: { locale: "en" | "ar" }) {
   const [busy, setBusy] = useState(false);
   const [position, setPosition] = useState<number | null>(null);
   const [error, setError] = useState("");
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   async function submit(event: FormEvent) {
     event.preventDefault();
@@ -45,12 +52,14 @@ export function WaitlistForm({ locale }: { locale: "en" | "ar" }) {
       const response = await fetch("/api/waitlist", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, company_name: company, locale }),
+        body: JSON.stringify({ email, company_name: company, turnstile_token: turnstileToken || undefined, locale }),
         cache: "no-store",
       });
       const payload = await response.json().catch(() => ({})) as { queue_position?: number; error?: string };
       if (!response.ok || !payload.queue_position) {
-        setError(text.error);
+        if (payload.error === "disposable_email_not_allowed") setError(text.disposable);
+        else if (payload.error === "captcha_verification_failed") setError(text.captcha);
+        else setError(text.error);
         return;
       }
       setPosition(payload.queue_position);
@@ -84,6 +93,7 @@ export function WaitlistForm({ locale }: { locale: "en" | "ar" }) {
           {busy ? text.joining : text.submit}
         </button>
       </div>
+      <TurnstileWidget locale={locale} onToken={setTurnstileToken} />
       {error ? <p className="waitlist-error" role="alert">{error}</p> : null}
     </form>
   );

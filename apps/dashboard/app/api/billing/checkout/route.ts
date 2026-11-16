@@ -15,6 +15,7 @@ import {
   StripeBillingError,
   createStripeCheckoutSession,
   createStripeCustomer,
+  createStripePortalSession,
   isStripeCheckoutConfigured,
   stripePriceIdFor,
   updateStripeCustomerMetadata,
@@ -91,6 +92,27 @@ export async function POST(request: NextRequest) {
       if (!row) {
         await client.query("ROLLBACK");
         return noStore({ error: "organization_not_found" }, { status: 404 });
+      }
+      if (row.status === "active" && row.stripe_customer_id) {
+        const portalSession = await createStripePortalSession(row.stripe_customer_id);
+        await client.query(
+          `INSERT INTO tanaghom.agent_actions_log
+             (correlation_id, actor_user_id, action_type, entity_type, entity_id, organization_id, payload, result)
+           VALUES ($1, $2, 'billing.portal_upgrade_opened', 'organization', $3::uuid, $3::uuid, $4::jsonb, 'success')`,
+          [
+            randomUUID(),
+            user.id,
+            user.organizationId,
+            JSON.stringify({
+              requested_plan_tier: planId,
+              stripe_customer_id: row.stripe_customer_id,
+              portal_url_host: new URL(portalSession.url).host,
+              current_status: row.status,
+            }),
+          ],
+        );
+        await client.query("COMMIT");
+        return noStore({ url: portalSession.url, via: "portal" });
       }
       const profile = await client.query<{ email: string }>(
         `SELECT email FROM tanaghom.app_users

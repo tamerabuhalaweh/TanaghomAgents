@@ -2315,6 +2315,8 @@ td a, td > strong { font-weight: 670; }
 .billing-plans-section { display: grid; gap: 1rem; }
 .billing-plans-head h2 { font-size: 1rem; }
 .billing-plans-head p { margin-block-start: 0.25rem; color: var(--muted); font-size: 0.74rem; }
+.turnstile-slot { min-block-size: 4.1rem; margin-block: 0.25rem 0.35rem; }
+.billing-plan-switch-note { margin-block: 0.7rem 0.9rem; padding: 0.65rem 0.8rem; border: 1px solid color-mix(in oklch, var(--primary) 22%, var(--border)); border-radius: var(--radius-md); background: var(--primary-soft); color: var(--primary-ink); font-size: 0.72rem; line-height: 1.55; }
 .billing-plans { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.85rem; }
 .billing-plan { display: flex; min-width: 0; flex-direction: column; gap: 0.65rem; padding: 1.15rem; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
 .billing-plan-current { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary) inset; }
@@ -2470,6 +2472,16 @@ td a, td > strong { font-weight: 670; }
 .super-status-trialing { background: var(--primary-soft); color: var(--primary-ink); }
 .super-status-past_due { background: var(--warning-soft); color: oklch(0.44 0.08 75); }
 .super-status-canceled { background: var(--danger-soft); color: var(--danger); }
+.super-econ-lede { max-inline-size: 44rem; margin-block-start: 0.12rem; color: var(--muted); font-size: 0.66rem; line-height: 1.45; }
+.super-econ-summary { display: flex; align-items: center; gap: 0.65rem; flex-wrap: wrap; justify-content: flex-end; color: var(--muted); font-size: 0.66rem; }
+.super-econ-summary strong { color: var(--ink); font-size: 0.76rem; }
+.super-econ-risk { padding: 0.2rem 0.45rem; border-radius: 999px; background: var(--warning-soft); color: oklch(0.44 0.08 75); font-weight: 700; }
+.super-econ-table td { min-inline-size: 6.2rem; }
+.super-margin { display: inline-flex; padding: 0.18rem 0.45rem; border-radius: 999px; font-size: 0.6rem; font-weight: 700; white-space: nowrap; }
+.super-margin-healthy { background: var(--success-soft); color: var(--success); }
+.super-margin-watch { background: var(--warning-soft); color: oklch(0.44 0.08 75); }
+.super-margin-at_risk { background: var(--danger-soft); color: var(--danger); }
+.super-margin-sandbox { background: var(--primary-soft); color: var(--primary-ink); }
 .super-empty { padding-block: 1.5rem !important; color: var(--muted); text-align: center; }
 @media (max-width: 960px) { .super-grid-main { grid-template-columns: 1fr; } }
 @media (max-width: 720px) {

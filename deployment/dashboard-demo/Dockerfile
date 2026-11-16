@@ -7,6 +7,8 @@ COPY packages/creative-runtime/package.json packages/creative-runtime/package.js
 RUN npm ci
 
 FROM dependencies AS builder
+ARG NEXT_PUBLIC_TURNSTILE_SITE_KEY=
+ENV NEXT_PUBLIC_TURNSTILE_SITE_KEY=$NEXT_PUBLIC_TURNSTILE_SITE_KEY
 COPY . .
 RUN npm run build:dashboard
 

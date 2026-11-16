@@ -24,6 +24,11 @@ import {
   type PlanId,
   type TenantSubscriptionStatus,
 } from "@/lib/server/stripe-billing";
+import {
+  PLAN_MONTHLY_TOKENS,
+  SANDBOX_MONTHLY_TOKEN_LIMIT,
+  estimatedAiCostUsd,
+} from "@/lib/server/workspace-quotas";
 
 type Queryable = Pick<Pool | PoolClient, "query">;
 
@@ -87,6 +92,40 @@ export function aiWorkerConfigured() {
 
 function money(value: number) {
   return Number(value.toFixed(2));
+}
+
+export type MarginStatus = "healthy" | "watch" | "at_risk" | "sandbox";
+
+export interface UnitEconomicsWorkspace {
+  id: string;
+  name: string;
+  slug: string;
+  status: string;
+  plan_tier: PlanId | null;
+  used_launch100: boolean;
+  created_at: Date;
+  monthly_revenue_usd: number;
+  campaigns_count: number;
+  month_campaigns_used: number;
+  month_prompt_tokens: number;
+  month_completion_tokens: number;
+  month_total_tokens: number;
+  tokens_limit: number;
+  estimated_ai_cost_usd: number;
+  net_margin_usd: number;
+  gross_margin_pct: number | null;
+  margin_status: MarginStatus;
+}
+
+function marginStatus(status: string, revenue: number, cost: number, tokens: number): MarginStatus {
+  if (status === "active") {
+    if (cost > revenue * 0.4) return "at_risk";
+    if (cost > revenue * 0.2) return "watch";
+    return "healthy";
+  }
+  if (tokens >= 100_000) return "at_risk";
+  if (tokens >= 70_000) return "watch";
+  return "sandbox";
 }
 
 export async function platformSnapshot(client: Queryable, actor: SuperAdminUser) {
@@ -224,6 +263,100 @@ export async function platformSnapshot(client: Queryable, actor: SuperAdminUser)
       LIMIT 20`,
   );
 
+  const economics = await client.query<{
+    id: string;
+    name: string;
+    slug: string;
+    status: string;
+    plan_tier: string | null;
+    used_launch100: boolean;
+    created_at: Date;
+    campaigns_count: string;
+    month_campaigns_used: string;
+    month_prompt_tokens: string;
+    month_completion_tokens: string;
+    month_total_tokens: string;
+  }>(
+    `SELECT organization.id, organization.name, organization.slug, organization.status,
+            latest.payload->>'plan_tier' AS plan_tier,
+            EXISTS (
+              SELECT 1 FROM tanaghom.agent_actions_log redemption
+               WHERE redemption.organization_id = organization.id
+                 AND redemption.action_type = 'billing.webhook.checkout.session.completed'
+                 AND redemption.payload->>'promo_code' = 'LAUNCH100'
+            ) AS used_launch100,
+            organization.created_at,
+            (SELECT count(*)::int FROM tanaghom.agency_workspaces workspace
+              WHERE workspace.organization_id = organization.id) AS campaigns_count,
+            (SELECT count(*)::int FROM tanaghom.agency_workspaces workspace
+              WHERE workspace.organization_id = organization.id
+                AND workspace.status <> 'draft'
+                AND workspace.started_at >= date_trunc('month', now())) AS month_campaigns_used,
+            COALESCE((SELECT sum(GREATEST(0, (task.result->'usage'->>'prompt_tokens')::bigint))
+                        FROM tanaghom.agency_pilot_tasks task
+                       WHERE task.organization_id = organization.id
+                         AND task.result->'usage' IS NOT NULL
+                         AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())), 0)::bigint AS month_prompt_tokens,
+            COALESCE((SELECT sum(GREATEST(0, (task.result->'usage'->>'completion_tokens')::bigint))
+                        FROM tanaghom.agency_pilot_tasks task
+                       WHERE task.organization_id = organization.id
+                         AND task.result->'usage' IS NOT NULL
+                         AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())), 0)::bigint AS month_completion_tokens,
+            COALESCE((SELECT sum(GREATEST(0, (task.result->'usage'->>'total_tokens')::bigint))
+                        FROM tanaghom.agency_pilot_tasks task
+                       WHERE task.organization_id = organization.id
+                         AND task.result->'usage' IS NOT NULL
+                         AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())), 0)::bigint AS month_total_tokens
+       FROM tanaghom.organizations organization
+       LEFT JOIN LATERAL (
+         SELECT payload
+           FROM tanaghom.agent_actions_log log
+          WHERE log.organization_id = organization.id
+            AND log.entity_type = 'organization'
+            AND log.entity_id = organization.id
+            AND log.action_type LIKE 'billing.webhook.%'
+            AND COALESCE((log.payload->>'stale_ignored')::boolean, false) = false
+          ORDER BY log.created_at DESC, log.id DESC
+          LIMIT 1
+       ) latest ON true
+      ORDER BY organization.created_at DESC`,
+  );
+  const unitEconomics: UnitEconomicsWorkspace[] = economics.rows.map((row) => {
+    const tier = TIERS.includes(row.plan_tier as PlanId) ? row.plan_tier as PlanId : null;
+    const plan = tier ? PLAN_DEFINITIONS.find((item) => item.id === tier) : undefined;
+    const monthlyRevenue = row.status === "active" && plan
+      ? (row.used_launch100 ? plan.promoAmountMinor : plan.amountMinor) / 100
+      : 0;
+    const promptTokens = Number(row.month_prompt_tokens) || 0;
+    const completionTokens = Number(row.month_completion_tokens) || 0;
+    const totalTokens = Number(row.month_total_tokens) || 0;
+    const aiCost = estimatedAiCostUsd(promptTokens, completionTokens);
+    const netMargin = Number((monthlyRevenue - aiCost).toFixed(4));
+    return {
+      id: row.id,
+      name: row.name,
+      slug: row.slug,
+      status: row.status,
+      plan_tier: tier,
+      used_launch100: row.used_launch100,
+      created_at: row.created_at,
+      monthly_revenue_usd: monthlyRevenue,
+      campaigns_count: Number(row.campaigns_count) || 0,
+      month_campaigns_used: Number(row.month_campaigns_used) || 0,
+      month_prompt_tokens: promptTokens,
+      month_completion_tokens: completionTokens,
+      month_total_tokens: totalTokens,
+      tokens_limit: row.status === "active" && tier ? PLAN_MONTHLY_TOKENS[tier] : SANDBOX_MONTHLY_TOKEN_LIMIT,
+      estimated_ai_cost_usd: aiCost,
+      net_margin_usd: netMargin,
+      gross_margin_pct: monthlyRevenue > 0 ? Number((((monthlyRevenue - aiCost) / monthlyRevenue) * 100).toFixed(1)) : null,
+      margin_status: marginStatus(row.status, monthlyRevenue, aiCost, totalTokens),
+    };
+  });
+  const totalRevenue = Number(unitEconomics.reduce((sum, row) => sum + row.monthly_revenue_usd, 0).toFixed(2));
+  const totalAiCost = Number(unitEconomics.reduce((sum, row) => sum + row.estimated_ai_cost_usd, 0).toFixed(4));
+  const grossMargin = Number((totalRevenue - totalAiCost).toFixed(4));
+
   const breaker = await client.query<{ enabled: boolean; emergency_stop: boolean; reason: string; updated_at: Date }>(
     `SELECT enabled, emergency_stop, reason, updated_at
        FROM tanaghom.agency_workspace_control
@@ -265,8 +398,12 @@ export async function platformSnapshot(client: Queryable, actor: SuperAdminUser)
       tasks_succeeded: Number(aiRow?.tasks_succeeded) || 0,
       tasks_failed: Number(aiRow?.tasks_failed) || 0,
       month_total_tokens: Number(aiRow?.month_total_tokens) || 0,
-      estimated_ai_spend_usd: money((prompt / 1_000_000) * 0.3 + (completion / 1_000_000) * 2.5),
+      estimated_ai_spend_usd: estimatedAiCostUsd(prompt, completion),
+      gross_margin_usd: grossMargin,
+      gross_margin_pct: totalRevenue > 0 ? Number(((grossMargin / totalRevenue) * 100).toFixed(1)) : null,
+      at_risk_workspaces_count: unitEconomics.filter((row) => row.margin_status === "at_risk").length,
     },
+    unit_economics: unitEconomics.slice(0, 50),
     recent_workspaces: recent.rows.map((row) => ({
       ...row,
       campaigns_count: Number(row.campaigns_count) || 0,
