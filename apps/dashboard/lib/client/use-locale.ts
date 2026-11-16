@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { createContext, createElement, useContext, useEffect, useState, type ReactNode } from "react";
 
 import {
   CREATIVE_LOCALE_COOKIE,
@@ -11,6 +11,14 @@ import {
 } from "@/lib/i18n/creative";
 
 export const LOCALE_CHANGE_EVENT = "tanaghom:locale-change";
+
+type LocaleValue = {
+  locale: CreativeLocale;
+  dir: "rtl" | "ltr";
+  setLocale: (next: CreativeLocale) => void;
+};
+
+const LocaleContext = createContext<LocaleValue | null>(null);
 
 export function readLocaleCookie(): CreativeLocale {
   if (typeof document === "undefined") return "en";
@@ -28,12 +36,16 @@ export function applyLocale(next: CreativeLocale) {
   window.dispatchEvent(new CustomEvent<CreativeLocale>(LOCALE_CHANGE_EVENT, { detail: next }));
 }
 
-export function useLocale() {
+/** Seeds the client tree from the server-rendered locale so the first frame never flashes English. */
+export function LocaleProvider({ initialLocale = "en", children }: { initialLocale?: CreativeLocale; children: ReactNode }) {
   const router = useRouter();
-  const [locale, setLocaleState] = useState<CreativeLocale>("en");
+  const [locale, setLocaleState] = useState<CreativeLocale>(initialLocale);
 
   useEffect(() => {
-    setLocaleState(readLocaleCookie());
+    setLocaleState(initialLocale);
+  }, [initialLocale]);
+
+  useEffect(() => {
     function onChange(event: Event) {
       setLocaleState(normalizeLocale((event as CustomEvent<CreativeLocale>).detail));
     }
@@ -49,5 +61,37 @@ export function useLocale() {
     router.refresh();
   }
 
-  return { locale, dir: directionOf(locale), setLocale };
+  return createElement(
+    LocaleContext.Provider,
+    { value: { locale, dir: directionOf(locale), setLocale } },
+    children,
+  );
+}
+
+export function useLocale() {
+  const context = useContext(LocaleContext);
+  const router = useRouter();
+  const [fallbackLocale, setFallbackLocale] = useState<CreativeLocale>("en");
+
+  useEffect(() => {
+    if (context) return;
+    setFallbackLocale(readLocaleCookie());
+    function onChange(event: Event) {
+      setFallbackLocale(normalizeLocale((event as CustomEvent<CreativeLocale>).detail));
+    }
+    window.addEventListener(LOCALE_CHANGE_EVENT, onChange);
+    return () => window.removeEventListener(LOCALE_CHANGE_EVENT, onChange);
+  }, [context]);
+
+  if (context) return context;
+
+  function setLocale(next: CreativeLocale) {
+    if (typeof document === "undefined") return;
+    document.cookie = `${CREATIVE_LOCALE_COOKIE}=${next}; path=/; max-age=31536000; samesite=lax`;
+    applyLocale(next);
+    setFallbackLocale(next);
+    router.refresh();
+  }
+
+  return { locale: fallbackLocale, dir: directionOf(fallbackLocale), setLocale };
 }

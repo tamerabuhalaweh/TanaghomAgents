@@ -23,6 +23,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "@/components/page-heading";
 import { StatusPill } from "@/components/status-pill";
 import type { Tone } from "@/data/fixtures";
@@ -178,6 +179,8 @@ function csv(value: string) {
 }
 
 export function SkillLibrary() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [payload, setPayload] = useState<SkillLibraryPayload | null>(null);
   const [state, setState] = useState<"loading" | "ready" | "forbidden" | "error">("loading");
   const [composerOpen, setComposerOpen] = useState(false);
@@ -242,12 +245,12 @@ export function SkillLibrary() {
 
   return <div className="page-stack skill-library-page">
     <PageHeading
-      title="Skill Library"
-      description="Discover reviewed platform capabilities and create safe, versioned organization guidance without code, credentials, or n8n access."
+      title={ar ? "مكتبة المهارات" : "Skill Library"}
+      description={ar ? "اكتشف قدرات المنصة المراجعة وأنشئ إرشادات تنظيمية آمنة وذات إصدارات دون تعليمات برمجية أو بيانات اعتماد أو وصول إلى n8n." : "Discover reviewed platform capabilities and create safe, versioned organization guidance without code, credentials, or n8n access."}
       actions={payload?.can_manage ? <button className="primary-button" type="button" onClick={() => {
         setComposerOpen((open) => !open);
         if (composerOpen) setDraft(emptyDraft);
-      }}>{composerOpen ? <X size={17} /> : <Plus size={17} />}{composerOpen ? "Close builder" : "Create skill"}</button> : undefined}
+      }}>{composerOpen ? <X size={17} /> : <Plus size={17} />}{composerOpen ? (ar ? "إغلاق المنشئ" : "Close builder") : (ar ? "إنشاء مهارة" : "Create skill")}</button> : undefined}
     />
 
     {state === "loading" ? <SkillLoading /> : null}

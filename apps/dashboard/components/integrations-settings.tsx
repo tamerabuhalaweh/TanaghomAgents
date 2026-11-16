@@ -17,6 +17,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "./page-heading";
 import { SettingsNavigation } from "./settings-navigation";
 import { StatusPill } from "./status-pill";
@@ -118,14 +119,14 @@ const errorCopy: Record<string, string> = {
   integration_base_url_https_required: "Provider API connections require HTTPS.",
   integration_provider_unreachable: "Tanaghom could not reach the provider safely. Try again shortly.",
   integration_test_failed: "The provider connection test did not pass.",
-  integration_channel_discovery_failed: "Tanaghom connected, but Postiz channel discovery did not pass.",
+  integration_channel_discovery_failed: "Tanaghom connected, but social channel discovery did not pass.",
   ghl_location_id_required: "A valid GoHighLevel Location ID is required.",
-  postiz_mapping_duplicate_channel: "Choose only one Postiz account for each Tanaghom channel.",
+  postiz_mapping_duplicate_channel: "Choose only one social publishing account for each Tanaghom channel.",
   automation_runtime_not_ready: "The protected background worker is not ready for automatic drafts.",
   automation_emergency_stopped: "Tanaghom operations have applied the emergency stop.",
-  postiz_connection_not_ready: "Connect and test Postiz before enabling automatic drafts.",
-  postiz_channel_mapping_not_ready: "Map at least one supported Postiz channel first.",
-  indeterminate_postiz_operation: "Resolve the uncertain Postiz operation before enabling automation.",
+  postiz_connection_not_ready: "Connect and test social publishing before enabling automatic drafts.",
+  postiz_channel_mapping_not_ready: "Map at least one supported social channel first.",
+  indeterminate_postiz_operation: "Resolve the uncertain social publishing operation before enabling automation.",
   ghl_action_runtime_not_ready: "The governed GHL action runtime is not ready.",
   ghl_action_emergency_stopped: "The GHL action emergency stop is active.",
   ghl_connection_not_ready: "Connect and test GoHighLevel before enabling agent actions.",
@@ -146,6 +147,8 @@ function statusTone(status?: ConnectionStatus) {
 }
 
 export function IntegrationsSettings() {
+  const { locale } = useLocale();
+  const ar = locale === "ar";
   const [state, setState] = useState<"loading" | "ready" | "forbidden" | "error">("loading");
   const [payload, setPayload] = useState<IntegrationsPayload | null>(null);
 
@@ -164,8 +167,8 @@ export function IntegrationsSettings() {
 
   return <div className="page-stack integrations-page">
     <PageHeading
-      title="Integrations"
-      description="Connect customer-owned services without sharing credentials with developers or exposing them to agent workflows."
+      title={ar ? "التكاملات" : "Integrations"}
+      description={ar ? "اربط خدمات يملكها العميل دون مشاركة بيانات الاعتماد مع المطورين أو تعريضها لسير عمل الوكلاء." : "Connect customer-owned services without sharing credentials with developers or exposing them to agent workflows."}
     />
     <SettingsNavigation />
     {state === "loading" ? <IntegrationsLoading /> : null}
@@ -343,9 +346,9 @@ function GhlActionAutomationControl({ automation, onChanged }: {
 }
 
 const modeContent: Record<AutomationMode, { title: string; copy: string; icon: React.ReactNode }> = {
-  manual: { title: "Manual only", copy: "An approved item moves only when a person selects Sync to Postiz.", icon: <Send size={18} /> },
+  manual: { title: "Manual only", copy: "An approved item moves only when a person selects Send as social draft.", icon: <Send size={18} /> },
   automatic: { title: "Automatic drafts", copy: "Newly approved, mapped content is queued for background draft creation.", icon: <Clock3 size={18} /> },
-  paused: { title: "Paused", copy: "Stop new Postiz queueing and worker claims while preserving every record.", icon: <CirclePause size={18} /> },
+  paused: { title: "Paused", copy: "Stop new social draft queueing and worker claims while preserving every record.", icon: <CirclePause size={18} /> },
 };
 
 const blockerCopy: Record<string, string> = {
@@ -354,9 +357,9 @@ const blockerCopy: Record<string, string> = {
   worker_authentication_not_ready: "Worker authentication is not ready.",
   gateway_not_ready: "Restricted provider gateway is not ready.",
   platform_emergency_stop: "Platform emergency stop is active.",
-  postiz_connection_not_ready: "Postiz connection has not passed verification.",
-  postiz_channel_mapping_not_ready: "No active Postiz channel mapping exists.",
-  indeterminate_postiz_operation: "An uncertain Postiz operation requires human review.",
+  postiz_connection_not_ready: "Social publishing connection has not passed verification.",
+  postiz_channel_mapping_not_ready: "No active social channel mapping exists.",
+  indeterminate_postiz_operation: "An uncertain social publishing operation requires human review.",
 };
 
 function PostizAutomationControl({ automation, onChanged }: { automation: AutomationStatus; onChanged: () => Promise<void> }) {
@@ -377,9 +380,9 @@ function PostizAutomationControl({ automation, onChanged }: { automation: Automa
       const body = await response.json() as { error?: string };
       if (!response.ok) throw new Error(body.error || "automation_update_failed");
       setFeedback(selected === "automatic"
-        ? "Automatic draft queueing enabled. Publishing still requires a human in Postiz."
+        ? "Automatic draft queueing enabled. Publishing still requires a human in the social network."
         : selected === "paused"
-          ? "Postiz draft automation paused. Existing records were preserved."
+          ? "Social draft automation paused. Existing records were preserved."
           : "Manual-only draft synchronization restored.");
       await onChanged();
     } catch (error) {
@@ -394,11 +397,11 @@ function PostizAutomationControl({ automation, onChanged }: { automation: Automa
 
   return <section className="automation-control" aria-labelledby="postiz-automation-title">
     <header className="automation-control-header">
-      <div><h2 id="postiz-automation-title">Postiz draft automation</h2><p>Choose when approved content may enter the draft-delivery queue. This control cannot publish content.</p></div>
+      <div><h2 id="postiz-automation-title">Social draft automation</h2><p>Choose when approved content may enter the draft-delivery queue. This control cannot publish content.</p></div>
       <StatusPill tone={statusTone}>{automation.emergency_stop ? "Platform stopped" : modeContent[automation.mode].title}</StatusPill>
     </header>
     <div className="automation-control-body">
-      <div className="automation-modes" role="radiogroup" aria-label="Postiz draft automation mode">
+      <div className="automation-modes" role="radiogroup" aria-label="Social draft automation mode">
         {(Object.keys(modeContent) as AutomationMode[]).map((mode) => {
           const content = modeContent[mode];
           const disabled = mode === "automatic" && !automation.readiness.ready_for_automatic && automation.mode !== "automatic";
@@ -421,7 +424,7 @@ function PostizAutomationControl({ automation, onChanged }: { automation: Automa
         <h3>Readiness</h3>
         <ul>
           <ReadinessItem ready={automation.readiness.runtime_ready}>Protected worker and gateway</ReadinessItem>
-          <ReadinessItem ready={automation.readiness.connection_ready}>Verified Postiz connection</ReadinessItem>
+          <ReadinessItem ready={automation.readiness.connection_ready}>Verified social publishing connection</ReadinessItem>
           <ReadinessItem ready={automation.readiness.channel_mapping_ready}>Active channel mapping</ReadinessItem>
           <ReadinessItem ready={automation.readiness.operations_clear}>No uncertain operation</ReadinessItem>
         </ul>
@@ -430,7 +433,7 @@ function PostizAutomationControl({ automation, onChanged }: { automation: Automa
       </aside>
     </div>
     <footer className="automation-control-footer">
-      <div><ShieldCheck size={17} /><span><strong>Draft-only boundary</strong><small>Automatic means queue and create a Postiz draft—never publish.</small></span></div>
+      <div><ShieldCheck size={17} /><span><strong>Draft-only boundary</strong><small>Automatic means queue and create a social draft—never publish.</small></span></div>
       <button className={selected === "paused" ? "danger-button" : "primary-button"} type="button" disabled={!changed || busy || automaticUnavailable} onClick={() => void save()}>{busy ? "Saving policy…" : selected === "automatic" ? "Enable automatic drafts" : selected === "paused" ? "Pause draft automation" : "Use manual only"}</button>
     </footer>
     {feedback ? <p className="integration-feedback" role="status" aria-live="polite">{feedback}</p> : null}
@@ -501,7 +504,7 @@ function ProviderPanel({ record, storageReady, mappings, onChanged }: {
     </div> : null}
 
     {editing ? <form className="integration-form" method="post" onSubmit={(event) => { event.preventDefault(); void request("save"); }}>
-      <div className="form-field"><label htmlFor={`${record.provider}-secret`}>{record.provider === "postiz" ? "Postiz API key or OAuth token" : "GoHighLevel private integration token"}</label><input id={`${record.provider}-secret`} type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} minLength={8} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">Write-only: Tanaghom will never display this value again.</span></div>
+      <div className="form-field"><label htmlFor={`${record.provider}-secret`}>{record.provider === "postiz" ? "Social publishing API key or OAuth token" : "GoHighLevel private integration token"}</label><input id={`${record.provider}-secret`} type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} minLength={8} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">Write-only: Tanaghom will never display this value again.</span></div>
       <div className="form-field"><label htmlFor={`${record.provider}-base-url`}>Approved API base URL</label><input id={`${record.provider}-base-url`} type="url" value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">{record.provider === "postiz" ? "Use the Public API base ending in /public/v1. Tanaghom adds /is-connected and /integrations safely." : "Only explicitly approved HTTPS provider base URLs are accepted."}</span></div>
       {record.provider === "ghl" ? <>
         <div className="form-field"><label htmlFor="ghl-location">Location ID</label><input id="ghl-location" value={locationId} onChange={(event) => setLocationId(event.target.value)} required disabled={!storageReady || Boolean(busy)} /></div>
@@ -533,7 +536,7 @@ function PostizMappings({ channels, current, busy, setBusy, onChanged, setFeedba
       const response = await authenticatedFetch("/api/admin/integrations/postiz/channels", { method: "PUT", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ mappings }) });
       const body = await response.json() as { error?: string };
       if (!response.ok) throw new Error(body.error || "mapping_failed");
-      setFeedback("Postiz channel mappings saved. No content was sent or published.");
+      setFeedback("Social channel mappings saved. No content was sent or published.");
       await onChanged();
     } catch (error) {
       const code = error instanceof Error ? error.message : "mapping_failed";
@@ -542,8 +545,8 @@ function PostizMappings({ channels, current, busy, setBusy, onChanged, setFeedba
   }
 
   return <div className="channel-mapping" aria-labelledby="postiz-channels-title">
-    <div><h3 id="postiz-channels-title">Channel mapping</h3><p>Choose which Postiz account receives a Tanaghom draft for each channel. This does not enable publishing.</p></div>
-    {tanaghomChannels.length ? <div className="channel-mapping-grid">{tanaghomChannels.map((channel) => <label key={channel}><span>{channel}</span><select value={selected[channel] || ""} onChange={(event) => setSelected((value) => ({ ...value, [channel]: event.target.value }))}><option value="">Not mapped</option>{eligible.filter((item) => providerToChannel[item.identifier] === channel).map((item) => <option key={item.id} value={item.id}>{item.name}{item.profile ? ` · ${item.profile}` : ""}</option>)}</select></label>)}</div> : <div className="channel-empty"><Link2 size={18} /><span><strong>No supported Postiz channels found</strong><small>Connect social accounts in Postiz, then test this connection again.</small></span></div>}
+    <div><h3 id="postiz-channels-title">Channel mapping</h3><p>Choose which social publishing account receives a Tanaghom draft for each channel. This does not enable publishing.</p></div>
+    {tanaghomChannels.length ? <div className="channel-mapping-grid">{tanaghomChannels.map((channel) => <label key={channel}><span>{channel}</span><select value={selected[channel] || ""} onChange={(event) => setSelected((value) => ({ ...value, [channel]: event.target.value }))}><option value="">Not mapped</option>{eligible.filter((item) => providerToChannel[item.identifier] === channel).map((item) => <option key={item.id} value={item.id}>{item.name}{item.profile ? ` · ${item.profile}` : ""}</option>)}</select></label>)}</div> : <div className="channel-empty"><Link2 size={18} /><span><strong>No supported social channels found</strong><small>Connect social accounts in the social publishing service, then test this connection again.</small></span></div>}
     <button className="secondary-button compact-button" type="button" disabled={busy || !tanaghomChannels.length} onClick={() => void save()}>{busy ? "Saving mappings…" : "Save channel mappings"}</button>
   </div>;
 }

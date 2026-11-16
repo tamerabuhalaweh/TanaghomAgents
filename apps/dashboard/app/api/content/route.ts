@@ -73,8 +73,8 @@ export async function GET(request: NextRequest) {
         postiz_ready: postizHandoffEnabled(),
         can_request_draft: user.role !== "viewer",
         reason: postizHandoffEnabled()
-          ? "Postiz draft handoff is enabled for configured staging channels."
-          : "Postiz credentials and the inactive publisher workflow have not passed the live enablement gate yet.",
+          ? "Social publishing draft handoff is enabled for configured staging channels."
+          : "Social publishing credentials and the inactive publisher workflow have not passed the live enablement gate yet.",
       },
     });
   } catch (error) { return apiFailure(error); }

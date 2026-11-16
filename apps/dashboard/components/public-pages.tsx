@@ -51,19 +51,19 @@ function PublicFooter({ locale }: { locale: Locale }) {
 const tiers = [
   {
     id: "starter",
-    en: { name: "Starter", price: "JOD 29", period: "per month", lede: "For one brand finding its rhythm.", features: ["1 workspace", "2 team seats", "4 AI specialists", "Arabic and English content"] },
-    ar: { name: "البداية", price: "٢٩ د.أ", period: "شهرياً", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["مساحة عمل واحدة", "مقعدان للفريق", "٤ مختصين بالذكاء الاصطناعي", "محتوى عربي وإنجليزي"] },
+    en: { name: "Starter", price: "£249", period: "per month", lede: "For one brand finding its rhythm.", features: ["1 workspace", "2 team seats", "4 AI specialists", "Arabic and English content"] },
+    ar: { name: "البداية", price: "£249", period: "شهرياً", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["مساحة عمل واحدة", "مقعدان للفريق", "٤ مختصين بالذكاء الاصطناعي", "محتوى عربي وإنجليزي"] },
   },
   {
     id: "growth",
-    en: { name: "Growth", price: "JOD 79", period: "per month", lede: "For teams running always-on campaigns.", features: ["1 workspace", "8 team seats", "All AI specialists", "Brand kits and approvals", "Knowledge base and reports"] },
-    ar: { name: "النمو", price: "٧٩ د.أ", period: "شهرياً", lede: "للفرق التي تدير حملات مستمرة.", features: ["مساحة عمل واحدة", "٨ مقاعد للفريق", "جميع المختصين", "هويات بصرية واعتمادات", "قاعدة معرفة وتقارير"] },
+    en: { name: "Growth", price: "£499", period: "per month", lede: "For teams running always-on campaigns.", features: ["1 workspace", "8 team seats", "All AI specialists", "Brand kits and approvals", "Knowledge base and reports"] },
+    ar: { name: "النمو", price: "£499", period: "شهرياً", lede: "للفرق التي تدير حملات مستمرة.", features: ["مساحة عمل واحدة", "٨ مقاعد للفريق", "جميع المختصين", "هويات بصرية واعتمادات", "قاعدة معرفة وتقارير"] },
     featured: true,
   },
   {
     id: "scale",
-    en: { name: "Scale", price: "JOD 149", period: "per month", lede: "For agencies coordinating multiple brands.", features: ["Multiple brand workspaces", "Priority onboarding", "Advanced roles and reviews", "Operational monitoring", "Guided rollout"] },
-    ar: { name: "التوسع", price: "١٤٩ د.أ", period: "شهرياً", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["مساحات عمل متعددة", "تهيئة ذات أولوية", "أدوار ومراجعات متقدمة", "مراقبة تشغيلية", "طرح موجّه"] },
+    en: { name: "Scale", price: "£799", period: "per month", lede: "For agencies coordinating multiple brands.", features: ["Multiple brand workspaces", "Priority onboarding", "Advanced roles and reviews", "Operational monitoring", "Guided rollout"] },
+    ar: { name: "التوسع", price: "£799", period: "شهرياً", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["مساحات عمل متعددة", "تهيئة ذات أولوية", "أدوار ومراجعات متقدمة", "مراقبة تشغيلية", "طرح موجّه"] },
   },
 ] as const;
 
@@ -78,7 +78,7 @@ function PricingCards({ locale, detailed = false }: { locale: Locale; detailed?:
             {"featured" in tier && tier.featured ? <span className="public-price-tag">{ar ? "الأكثر اختياراً" : "Most popular"}</span> : null}
             <h3>{text.name}</h3>
             <p className="public-price-lede">{text.lede}</p>
-            <div className="public-price-value"><strong>{text.price}</strong><span>{text.period}</span></div>
+            <div className="public-price-value"><strong dir="ltr">{text.price}</strong><span>{text.period}</span></div>
             <ul>{text.features.map((feature) => <li key={feature}><Check size={16} aria-hidden="true" />{feature}</li>)}</ul>
             <Link className={tier.id === "growth" ? "public-button" : "public-button public-button-outline"} href="/signup">
               {ar ? "ابدأ بمساحة عملك" : "Start your workspace"}<ArrowRight size={16} />
@@ -183,7 +183,7 @@ export function PublicPricingPage({ locale }: { locale: Locale }) {
       </section>
       <section className="public-section">
         <PricingCards locale={locale} detailed />
-        <p className="public-pricing-note">{ar ? "الأسعار بالدينار الأردني، تُدفع شهرياً. يمكنك تغيير خطتك أو إلغاؤها من إعدادات الفوترة. قد تُفرض ضرائب محلية حيث ينطبق." : "Prices are in Jordanian dinars, billed monthly. Change or cancel your plan from billing settings. Local taxes may apply."}</p>
+        <p className="public-pricing-note">{ar ? "الأسعار بالجنيه الإسترليني، تُدفع شهرياً. يمكنك تغيير خطتك أو إلغاؤها من إعدادات الفوترة. قد تُفرض ضرائب محلية حيث ينطبق." : "Prices are in British pounds, billed monthly. Change or cancel your plan from billing settings. Local taxes may apply."}</p>
       </section>
       <section className="public-faq">
         <h2>{ar ? "أسئلة قبل أن تبدأ" : "Before you start"}</h2>

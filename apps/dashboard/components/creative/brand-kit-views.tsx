@@ -214,9 +214,33 @@ function BrandKitEditor({ draft, setDraft, locale }: {
 }
 
 function VersionSwatches({ colors, locale }: { colors: unknown; locale: CreativeLocale }) {
-  const entries = Object.entries(colorsRecord(colors)).filter(([, value]) => COLOR.test(value));
-  if (!entries.length) return <p className="brand-version-empty">{locale === "ar" ? "لا توجد ألوان محفوظة في هذه النسخة." : "No saved colours in this version."}</p>;
-  return <ul className="brand-version-swatches">{entries.map(([key, value]) => <li key={key}><i style={{ background: value }} /><span>{key}</span><code dir="ltr">{value.toUpperCase()}</code></li>)}</ul>;
+  const record = colorsRecord(colors);
+  const slots = [
+    { key: "primary", en: "Primary", ar: "الأساسي", optional: false },
+    { key: "accent", en: "Accent", ar: "التمييز", optional: true },
+    { key: "background", en: "Background / neutral", ar: "الخلفية / المحايد", optional: true },
+  ];
+  const known = new Set(slots.map((slot) => slot.key));
+  const extras = Object.entries(record).filter(([key]) => !known.has(key));
+  return (
+    <ul className="brand-version-swatches">
+      {slots.map((slot) => {
+        const value = record[slot.key] ?? "";
+        const saved = COLOR.test(value);
+        return (
+          <li key={slot.key} className={saved ? "" : "is-unset"}>
+            <i style={saved ? { background: value } : undefined} aria-hidden="true" />
+            <span>{locale === "ar" ? slot.ar : slot.en}</span>
+            <code dir="ltr">{saved ? value.toUpperCase() : locale === "ar" ? (slot.optional ? "غير محدد" : "مطلوب") : (slot.optional ? "Not set" : "Required")}</code>
+          </li>
+        );
+      })}
+      {extras.map(([key, value]) => {
+        const saved = COLOR.test(value);
+        return <li key={key} className={saved ? "" : "is-unset"}><i style={saved ? { background: value } : undefined} aria-hidden="true" /><span>{key}</span><code dir="ltr">{saved ? value.toUpperCase() : locale === "ar" ? "غير محدد" : "Not set"}</code></li>;
+      })}
+    </ul>
+  );
 }
 
 export function BrandKitsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl" | "ltr" }) {

@@ -37,7 +37,7 @@ test("Content Library is live, keeps approval evidence, and guards Postiz handof
   assert.match(route, /tanaghom\.posts/);
   assert.match(route, /postiz_ready: postizHandoffEnabled\(\)/);
   assert.match(route, /postiz_channel_ready/);
-  assert.match(component, /Send to Postiz as draft/);
+  assert.match(component, /Send as social draft/);
   assert.match(component, /disabled=\{!isReady \|\| submitting === item\.id\}/);
   assert.match(handoff, /queue_postiz_draft/);
   assert.doesNotMatch(handoff, /fetch\(|https?:\/\//);
