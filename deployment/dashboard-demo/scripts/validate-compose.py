@@ -122,8 +122,19 @@ assert env["AGENCY_WORKSPACE_ENABLED"] in {"true", "false"}, "workspace activati
 assert env["GEMINI_API_KEY_FILE"] == "/run/secrets/gemini_api_key"
 assert env["STRIPE_SECRET_KEY_FILE"] == "/run/secrets/stripe_secret_key"
 assert env["STRIPE_WEBHOOK_SECRET_FILE"] == "/run/secrets/stripe_webhook_secret"
-assert env["STRIPE_CURRENCY"] == "gbp"
+assert env["STRIPE_CURRENCY"] == "usd"
 assert env["STRIPE_AUTOMATIC_TAX"] in {"true", "false"}
+assert env["LAUNCH_COHORT_CAP"].isdigit() and 1 <= int(env["LAUNCH_COHORT_CAP"]) <= 100000
+assert env["LAUNCH_COHORT_UNLIMITED"] in {"true", "false"}
+assert env["LAUNCH100_ENABLED"] in {"true", "false"}
+assert env["LAUNCH100_MAX_REDEMPTIONS"].isdigit() and int(env["LAUNCH100_MAX_REDEMPTIONS"]) >= 1
+for name in [
+    "SUPER_ADMIN_EMAILS", "STRIPE_LAUNCH100_PRICE_ID_STARTER",
+    "STRIPE_LAUNCH100_PRICE_ID_GROWTH", "STRIPE_LAUNCH100_PRICE_ID_SCALE",
+    "STRIPE_LAUNCH100_COUPON_ID_STARTER", "STRIPE_LAUNCH100_COUPON_ID_GROWTH",
+    "STRIPE_LAUNCH100_COUPON_ID_SCALE", "STRIPE_LAUNCH100_PROMOTION_CODE_ID",
+]:
+    assert name in env, f"{name} must be passed to the dashboard"
 assert "STRIPE_SECRET_KEY" not in env
 assert "STRIPE_WEBHOOK_SECRET" not in env
 assert {"stripe_secret_key", "stripe_webhook_secret"} <= secret_names(services["dashboard"])

@@ -4,8 +4,10 @@ export type TenantSubscriptionStatus = "trialing" | "active" | "past_due" | "can
 export interface PlanDefinition {
   readonly id: PlanId;
   readonly amountMinor: number;
+  readonly promoAmountMinor: number;
   readonly currency: string;
   readonly interval: "month";
+  readonly monthlyCampaigns: number;
 }
 
 export const PLAN_DEFINITIONS: readonly PlanDefinition[];

@@ -3,6 +3,7 @@ import { ArrowRight, Check, CircleCheck, ShieldCheck, Sparkles } from "lucide-re
 
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/creative/locale-toggle";
+import { WaitlistForm } from "@/components/waitlist-form";
 import type { CreativeLocale } from "@/lib/i18n/creative";
 
 type Locale = CreativeLocale;
@@ -51,23 +52,26 @@ function PublicFooter({ locale }: { locale: Locale }) {
 const tiers = [
   {
     id: "starter",
-    en: { name: "Starter", price: "£249", period: "per month", lede: "For one brand finding its rhythm.", features: ["1 workspace", "2 team seats", "4 AI specialists", "Arabic and English content"] },
-    ar: { name: "البداية", price: "£249", period: "شهرياً", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["مساحة عمل واحدة", "مقعدان للفريق", "٤ مختصين بالذكاء الاصطناعي", "محتوى عربي وإنجليزي"] },
+    list: 49, promo: 15,
+    en: { name: "Starter", lede: "For one brand finding its rhythm.", features: ["1 workspace", "15 AI campaigns / month", "2 team seats", "4 AI specialists", "Arabic and English content"] },
+    ar: { name: "البداية", lede: "لعلامة واحدة تبحث عن إيقاعها.", features: ["مساحة عمل واحدة", "١٥ حملة ذكاء اصطناعي شهرياً", "مقعدان للفريق", "٤ مختصين بالذكاء الاصطناعي", "محتوى عربي وإنجليزي"] },
   },
   {
     id: "growth",
-    en: { name: "Growth", price: "£499", period: "per month", lede: "For teams running always-on campaigns.", features: ["1 workspace", "8 team seats", "All AI specialists", "Brand kits and approvals", "Knowledge base and reports"] },
-    ar: { name: "النمو", price: "£499", period: "شهرياً", lede: "للفرق التي تدير حملات مستمرة.", features: ["مساحة عمل واحدة", "٨ مقاعد للفريق", "جميع المختصين", "هويات بصرية واعتمادات", "قاعدة معرفة وتقارير"] },
+    list: 129, promo: 25,
+    en: { name: "Growth", lede: "For teams running always-on campaigns.", features: ["1 workspace", "50 AI campaigns / month", "8 team seats", "All AI specialists", "Brand kits and approvals", "Knowledge base and reports"] },
+    ar: { name: "النمو", lede: "للفرق التي تدير حملات مستمرة.", features: ["مساحة عمل واحدة", "٥٠ حملة ذكاء اصطناعي شهرياً", "٨ مقاعد للفريق", "جميع المختصين", "هويات بصرية واعتمادات", "قاعدة معرفة وتقارير"] },
     featured: true,
   },
   {
     id: "scale",
-    en: { name: "Scale", price: "£799", period: "per month", lede: "For agencies coordinating multiple brands.", features: ["Multiple brand workspaces", "Priority onboarding", "Advanced roles and reviews", "Operational monitoring", "Guided rollout"] },
-    ar: { name: "التوسع", price: "£799", period: "شهرياً", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["مساحات عمل متعددة", "تهيئة ذات أولوية", "أدوار ومراجعات متقدمة", "مراقبة تشغيلية", "طرح موجّه"] },
+    list: 249, promo: 50,
+    en: { name: "Scale", lede: "For agencies coordinating multiple brands.", features: ["Multiple brand workspaces", "200 AI campaigns / month", "Priority onboarding", "Advanced roles and reviews", "Operational monitoring", "Guided rollout"] },
+    ar: { name: "التوسع", lede: "للوكالات التي تنسّق علامات متعددة.", features: ["مساحات عمل متعددة", "٢٠٠ حملة ذكاء اصطناعي شهرياً", "تهيئة ذات أولوية", "أدوار ومراجعات متقدمة", "مراقبة تشغيلية", "طرح موجّه"] },
   },
 ] as const;
 
-function PricingCards({ locale, detailed = false }: { locale: Locale; detailed?: boolean }) {
+function PricingCards({ locale, detailed = false, launch100Active = true }: { locale: Locale; detailed?: boolean; launch100Active?: boolean }) {
   const ar = locale === "ar";
   return (
     <div className={`public-pricing-grid ${detailed ? "public-pricing-detailed" : ""}`}>
@@ -75,10 +79,13 @@ function PricingCards({ locale, detailed = false }: { locale: Locale; detailed?:
         const text = ar ? tier.ar : tier.en;
         return (
           <article key={tier.id} className={`public-price-card ${"featured" in tier && tier.featured ? "public-price-featured" : ""}`}>
-            {"featured" in tier && tier.featured ? <span className="public-price-tag">{ar ? "الأكثر اختياراً" : "Most popular"}</span> : null}
+            {launch100Active ? <span className="public-price-tag">{ar ? "LAUNCH100 — عرض الإطلاق لأول ١٠٠ مساحة عمل" : "LAUNCH100 — First 100 Workspaces"}</span> : null}
             <h3>{text.name}</h3>
             <p className="public-price-lede">{text.lede}</p>
-            <div className="public-price-value"><strong dir="ltr">{text.price}</strong><span>{text.period}</span></div>
+            <div className="public-price-value">
+              {launch100Active ? <s className="public-price-was" dir="ltr">${tier.list}</s> : null}
+              <strong dir="ltr">${launch100Active ? tier.promo : tier.list}</strong><span>{ar ? "شهرياً" : "per month"}</span>
+            </div>
             <ul>{text.features.map((feature) => <li key={feature}><Check size={16} aria-hidden="true" />{feature}</li>)}</ul>
             <Link className={tier.id === "growth" ? "public-button" : "public-button public-button-outline"} href="/signup">
               {ar ? "ابدأ بمساحة عملك" : "Start your workspace"}<ArrowRight size={16} />
@@ -90,7 +97,7 @@ function PricingCards({ locale, detailed = false }: { locale: Locale; detailed?:
   );
 }
 
-export function PublicLandingPage({ locale }: { locale: Locale }) {
+export function PublicLandingPage({ locale, launch100Active = true, cohortFull = false }: { locale: Locale; launch100Active?: boolean; cohortFull?: boolean }) {
   const ar = locale === "ar";
   return (
     <main className="public-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
@@ -158,7 +165,12 @@ export function PublicLandingPage({ locale }: { locale: Locale }) {
           <p className="public-eyebrow">{ar ? "أسعار واضحة" : "Simple pricing"}</p>
           <h2>{ar ? "ابدأ صغيراً، وتوسّع عندما ينمو فريقك." : "Start small. Scale when the work does."}</h2>
         </div>
-        <PricingCards locale={locale} />
+        <PricingCards locale={locale} launch100Active={launch100Active} />
+        <aside className="public-sandbox-callout public-sandbox-landing">
+          <ShieldCheck size={20} aria-hidden="true" />
+          <div><strong>{ar ? "ابدأ بصندوق مجاني: حملة كاملة واحدة" : "Start with a Free 1-Campaign Sandbox"}</strong><p>{ar ? "حزمة حملة كاملة، وثلاث عمليات تشغيل ذكاء اصطناعي، دون ربط قنوات اجتماعية حقيقية. ارتقِ عندما تكون جاهزاً." : "One complete AI Campaign Work Pack and three AI runs, without live social channels. Upgrade when you are ready."}</p></div>
+        </aside>
+        {cohortFull ? <div className="public-waitlist"><WaitlistForm locale={locale} /></div> : null}
         <p className="public-center-link"><Link href="/pricing">{ar ? "تفاصيل الخطط والمقارنة" : "Compare plans and details"}<ArrowRight size={16} /></Link></p>
       </section>
 
@@ -171,7 +183,7 @@ export function PublicLandingPage({ locale }: { locale: Locale }) {
   );
 }
 
-export function PublicPricingPage({ locale }: { locale: Locale }) {
+export function PublicPricingPage({ locale, launch100Active = true, cohortFull = false }: { locale: Locale; launch100Active?: boolean; cohortFull?: boolean }) {
   const ar = locale === "ar";
   return (
     <main className="public-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
@@ -182,8 +194,13 @@ export function PublicPricingPage({ locale }: { locale: Locale }) {
         <p>{ar ? "كل خطة تشمل المحتوى العربي والإنجليزي، والاعتماد البشري، وسجل التدقيق. لا مفاجآت في الفواتير." : "Every plan includes Arabic and English content, human approval and the audit trail. No billing surprises."}</p>
       </section>
       <section className="public-section">
-        <PricingCards locale={locale} detailed />
-        <p className="public-pricing-note">{ar ? "الأسعار بالجنيه الإسترليني، تُدفع شهرياً. يمكنك تغيير خطتك أو إلغاؤها من إعدادات الفوترة. قد تُفرض ضرائب محلية حيث ينطبق." : "Prices are in British pounds, billed monthly. Change or cancel your plan from billing settings. Local taxes may apply."}</p>
+        <PricingCards locale={locale} detailed launch100Active={launch100Active} />
+        <aside className="public-sandbox-callout">
+          <ShieldCheck size={20} aria-hidden="true" />
+          <div><strong>{ar ? "صندوق مجاني: حملة كاملة واحدة" : "Free 1-Campaign Sandbox"}</strong><p>{ar ? "جرّب حزمة حملة كاملة مع فريق الذكاء الاصطناعي وثلاث عمليات تشغيل، دون ربط قنوات اجتماعية حقيقية. لا حاجة لبطاقة للبدء." : "Try one complete AI Campaign Work Pack with three AI runs, without connecting live social channels. No card required to start."}</p></div>
+        </aside>
+        {cohortFull ? <div className="public-waitlist"><WaitlistForm locale={locale} /></div> : null}
+        <p className="public-pricing-note">{ar ? "الأسعار بالدولار الأمريكي وتُدفع شهرياً. B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A. يمكنك تغيير خطتك أو إلغاؤها من إعدادات الفوترة." : "Prices are in US dollars, billed monthly. B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A. Change or cancel your plan from billing settings."}</p>
       </section>
       <section className="public-faq">
         <h2>{ar ? "أسئلة قبل أن تبدأ" : "Before you start"}</h2>

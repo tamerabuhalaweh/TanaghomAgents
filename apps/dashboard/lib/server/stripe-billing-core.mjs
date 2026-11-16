@@ -5,9 +5,9 @@ import { createHmac, timingSafeEqual } from "node:crypto";
  * the server wrapper so this module stays deterministic and unit-testable.
  */
 export const PLAN_DEFINITIONS = Object.freeze([
-  Object.freeze({ id: "starter", amountMinor: 24_900, currency: "gbp", interval: "month" }),
-  Object.freeze({ id: "growth", amountMinor: 49_900, currency: "gbp", interval: "month" }),
-  Object.freeze({ id: "scale", amountMinor: 79_900, currency: "gbp", interval: "month" }),
+  Object.freeze({ id: "starter", amountMinor: 4_900, promoAmountMinor: 1_500, currency: "usd", interval: "month", monthlyCampaigns: 15 }),
+  Object.freeze({ id: "growth", amountMinor: 12_900, promoAmountMinor: 2_500, currency: "usd", interval: "month", monthlyCampaigns: 50 }),
+  Object.freeze({ id: "scale", amountMinor: 24_900, promoAmountMinor: 5_000, currency: "usd", interval: "month", monthlyCampaigns: 200 }),
 ]);
 
 export const PLAN_IDS = Object.freeze(PLAN_DEFINITIONS.map((plan) => plan.id));

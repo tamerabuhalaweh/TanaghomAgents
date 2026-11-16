@@ -8,6 +8,8 @@ import { PublicLandingPage } from "@/components/public-pages";
 import { LocaleProvider } from "@/lib/client/use-locale";
 import { creativeLocale } from "@/lib/creative-locale";
 import { requireTenant } from "@/lib/server/authorization";
+import { database } from "@/lib/server/database";
+import { loadPublicLaunchOffer } from "@/lib/server/launch-control";
 
 async function hasLiveSession() {
   const token = (await cookies()).get("tanaghom_access_token")?.value;
@@ -27,7 +29,16 @@ async function hasLiveSession() {
 
 export default async function OverviewPage() {
   const { locale } = await creativeLocale();
-  if (!(await hasLiveSession())) return <PublicLandingPage locale={locale} />;
+  if (!(await hasLiveSession())) {
+    let launch100Active = true;
+    let cohortFull = false;
+    try {
+      const launch = await loadPublicLaunchOffer(database());
+      launch100Active = launch.launch100_active;
+      cohortFull = launch.cohort_full;
+    } catch {}
+    return <PublicLandingPage locale={locale} launch100Active={launch100Active} cohortFull={cohortFull} />;
+  }
   return (
     <LocaleProvider initialLocale={locale}>
       <OperationsProvider>

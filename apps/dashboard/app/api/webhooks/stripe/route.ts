@@ -26,7 +26,9 @@ const LIFECYCLE_EVENTS = new Set([
   "customer.subscription.updated",
   "customer.subscription.deleted",
   "invoice.payment_failed",
+  "invoice.payment_action_required",
   "invoice.paid",
+  "charge.refunded",
 ]);
 const TENANT_STATUSES: readonly TenantSubscriptionStatus[] = ["trialing", "active", "past_due", "canceled"];
 
@@ -138,6 +140,36 @@ function eventPlanTier(event: StripeEvent, priceId: string | null): PlanId | nul
   return null;
 }
 
+function eventPromoCode(event: StripeEvent) {
+  const data = object(event.data.object);
+  const metadataValues = [
+    data.metadata,
+    object(data.subscription_details).metadata,
+    object(object(data.parent).subscription_details).metadata,
+  ];
+  for (const metadata of metadataValues) {
+    const candidate = stringValue(object(metadata).promo_code);
+    if (candidate) return candidate.slice(0, 80);
+  }
+  return null;
+}
+
+function eventCompanyName(event: StripeEvent) {
+  const data = object(event.data.object);
+  return stringValue(object(data.metadata).company_name)
+    || stringValue(object(object(object(data.parent).subscription_details).metadata).company_name)
+    || null;
+}
+
+function isFullRefund(event: StripeEvent) {
+  if (event.type !== "charge.refunded") return false;
+  const data = object(event.data.object);
+  const amount = Number(data.amount);
+  const refunded = Number(data.amount_refunded);
+  return Number.isSafeInteger(amount) && amount > 0
+    && Number.isSafeInteger(refunded) && refunded >= amount;
+}
+
 function isoFromUnix(value: unknown) {
   const seconds = typeof value === "number" ? value : Number(value);
   if (!Number.isSafeInteger(seconds) || seconds <= 0) return null;
@@ -171,6 +203,8 @@ function eventStatus(event: StripeEvent): TenantSubscriptionStatus | null {
   if (event.type === "customer.subscription.deleted" || event.type === "invoice.payment_failed") {
     return event.type === "invoice.payment_failed" ? "past_due" : "canceled";
   }
+  if (event.type === "invoice.payment_action_required") return "past_due";
+  if (event.type === "charge.refunded") return isFullRefund(event) ? "canceled" : null;
   if (event.type === "invoice.paid" || event.type === "checkout.session.completed") return "active";
   return mapStripeSubscriptionStatus(stringValue(data.status));
 }
@@ -384,6 +418,10 @@ export async function POST(request: NextRequest) {
         cancel_at_period_end: cancelAtPeriodEnd === null ? previousCancel : cancelAtPeriodEnd,
         currency,
         stripe_customer_id: customerId || row.stripe_customer_id,
+        promo_code: eventPromoCode(event),
+        company_name: eventCompanyName(event),
+        refunded: event.type === "charge.refunded",
+        full_refund: isFullRefund(event),
       };
 
       const actor = await resolveActor(client, organizationId);

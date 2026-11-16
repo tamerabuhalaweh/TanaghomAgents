@@ -131,12 +131,18 @@
 .public-pricing-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.9rem; }
 .public-price-card { position: relative; display: flex; flex-direction: column; gap: 0.75rem; padding: 1.35rem; border: 1px solid var(--border); border-radius: var(--radius-lg); background: var(--surface); }
 .public-price-featured { border-color: color-mix(in oklch, var(--primary) 55%, var(--border)); background: linear-gradient(160deg, var(--primary-soft), var(--bg)); box-shadow: 0 0.8rem 2rem oklch(0.42 0.09 185 / 0.1); }
-.public-price-tag { position: absolute; inset-block-start: -0.65rem; inset-inline-start: 1.1rem; padding: 0.22rem 0.55rem; border-radius: 999px; background: var(--primary); color: var(--bg); font-size: 0.57rem; font-weight: 750; }
+.public-price-tag { position: absolute; inset-block-start: -0.65rem; inset-inline-start: 1.1rem; max-inline-size: calc(100% - 2.2rem); padding: 0.22rem 0.55rem; border-radius: 999px; background: var(--primary); color: var(--bg); font-size: 0.57rem; font-weight: 750; line-height: 1.3; }
 .public-price-card h3 { font-size: 0.9rem; }
 .public-price-lede { min-height: 2.3rem; color: var(--muted); font-size: 0.7rem; line-height: 1.55; }
 .public-price-value { display: flex; align-items: baseline; gap: 0.35rem; padding-block: 0.2rem 0.4rem; border-block-end: 1px solid var(--border); }
 .public-price-value strong { font-size: 1.75rem; font-weight: 760; letter-spacing: -0.04em; }
+.public-price-was { color: var(--muted); font-size: 0.95rem; font-weight: 550; }
 .public-price-value span { color: var(--muted); font-size: 0.66rem; }
+.public-sandbox-callout { display: flex; align-items: flex-start; gap: 0.8rem; max-width: 62rem; margin: 1.35rem auto 0; padding: 1rem 1.15rem; border: 1px solid color-mix(in oklch, var(--primary) 30%, var(--border)); border-radius: var(--radius-lg); background: color-mix(in oklch, var(--primary-soft) 70%, var(--surface)); }
+.public-sandbox-callout > svg { flex: 0 0 auto; color: var(--primary); }
+.public-sandbox-callout strong { display: block; font-size: 0.85rem; }
+.public-sandbox-callout p { margin-block-start: 0.2rem; color: var(--muted); font-size: 0.72rem; line-height: 1.55; }
+.public-sandbox-landing { margin-block: 1.2rem 0; }
 .public-price-card ul { display: flex; flex: 1; flex-direction: column; gap: 0.5rem; margin: 0; padding: 0; list-style: none; }
 .public-price-card li { display: flex; align-items: flex-start; gap: 0.4rem; font-size: 0.69rem; line-height: 1.5; }
 .public-price-card li svg { flex: 0 0 auto; margin-block-start: 0.12rem; color: var(--success); }

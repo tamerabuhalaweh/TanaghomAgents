@@ -1,12 +1,13 @@
 "use client";
 
-import { Check, CreditCard, ExternalLink, LoaderCircle, LockKeyhole, RefreshCw, ShieldCheck } from "lucide-react";
+import { Check, CreditCard, ExternalLink, LoaderCircle, LockKeyhole, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
+import { WaitlistForm } from "./waitlist-form";
 
 type PlanId = "starter" | "growth" | "scale";
 type Status = "trialing" | "active" | "past_due" | "canceled";
@@ -14,9 +15,21 @@ type Status = "trialing" | "active" | "past_due" | "canceled";
 interface BillingPlan {
   id: PlanId;
   amount_minor: number;
+  promo_amount_minor: number;
   currency: string;
   interval: "month";
+  monthly_campaigns: number;
   configured: boolean;
+}
+
+interface LaunchOffer {
+  launch100_active: boolean;
+  redemptions_used: number;
+  redemptions_remaining: number;
+  cohort_cap: number;
+  active_workspaces: number;
+  cohort_full: boolean;
+  queue_position: number | null;
 }
 
 interface BillingPayload {
@@ -35,6 +48,7 @@ interface BillingPayload {
   currency: string;
   automatic_tax: boolean;
   plans: BillingPlan[];
+  launch_offer: LaunchOffer;
 }
 
 const copy = {
@@ -84,6 +98,16 @@ const copy = {
     checkoutError: "Stripe Checkout could not start. Try again shortly.",
     portalError: "The Billing Portal could not open. Try again shortly.",
     forbidden: "Only the workspace Owner can manage billing.",
+    launchBadge: "LAUNCH100 — First 100 Workspaces",
+    launchRemaining: "launch-price places remaining",
+    listPrice: "List price",
+    sandboxTitle: "Free 1-Campaign Sandbox active",
+    sandboxBody: "Your workspace includes one complete AI Campaign Work Pack and three AI runs. Live social channels unlock on any paid plan.",
+    reverseCharge: "B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A.",
+    campaigns: "AI campaigns / month",
+    cohortFull: "The current launch cohort is full. Join the priority waitlist below or contact the platform owner.",
+    queue: "Your queue position",
+    checkoutFull: "The launch cohort filled before checkout started. Your priority place has been saved.",
   },
   ar: {
     title: "الفوترة والاشتراك",
@@ -131,6 +155,16 @@ const copy = {
     checkoutError: "تعذر بدء الدفع عبر Stripe. حاول بعد قليل.",
     portalError: "تعذر فتح بوابة الفوترة. حاول بعد قليل.",
     forbidden: "مالك مساحة العمل وحده يمكنه إدارة الفوترة.",
+    launchBadge: "LAUNCH100 — عرض الإطلاق لأول ١٠٠ مساحة عمل",
+    launchRemaining: "مقعداً بسعر الإطلاق متبقٍ",
+    listPrice: "السعر الأساسي",
+    sandboxTitle: "الصندوق المجاني نشط: حملة واحدة كاملة",
+    sandboxBody: "تشمل مساحتك حزمة حملة ذكاء اصطناعي كاملة وثلاث عمليات تشغيل. تُفتح قنوات التواصل الحقيقية مع أي خطة مدفوعة.",
+    reverseCharge: "B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A.",
+    campaigns: "حملة ذكاء اصطناعي شهرياً",
+    cohortFull: "اكتملت الدفعة الحالية. انضم إلى قائمة الأولوية أدناه أو تواصل مع مالك المنصة.",
+    queue: "ترتيبك في القائمة",
+    checkoutFull: "اكتملت الدفعة قبل بدء الدفع. تم حفظ ترتيبك في قائمة الأولوية.",
   },
 } as const;
 
@@ -141,12 +175,12 @@ const STATUS_TONE: Record<Status, "success" | "working" | "attention" | "danger"
   canceled: "danger",
 };
 
-function formatPlanPrice(plan: BillingPlan) {
-  return new Intl.NumberFormat("en-GB", {
+function formatMoney(amountMinor: number, currency: string, locale: string) {
+  return new Intl.NumberFormat(locale === "ar" ? "ar" : "en-US", {
     style: "currency",
-    currency: plan.currency.toUpperCase(),
+    currency: currency.toUpperCase(),
     maximumFractionDigits: 0,
-  }).format(plan.amount_minor / 100);
+  }).format(amountMinor / 100);
 }
 
 function formatDate(value: string | null, locale: string) {
@@ -206,11 +240,16 @@ export function BillingSettings() {
       const response = await authenticatedFetch("/api/billing/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ plan_tier: planId }),
+        body: JSON.stringify({ plan_tier: planId, company_name: payload.organization_name, locale }),
       });
-      const body = await response.json().catch(() => ({})) as { error?: string; url?: string };
+      const body = await response.json().catch(() => ({})) as { error?: string; url?: string; queue_position?: number };
       if (response.status === 409 && body.error === "billing_not_configured") {
         setNotice(text.unconfigured);
+        return;
+      }
+      if (response.status === 409 && body.error === "launch_cohort_full") {
+        setNotice(`${text.checkoutFull}${body.queue_position ? ` ${text.queue} #${body.queue_position}.` : ""}`);
+        await load();
         return;
       }
       if (!response.ok || !body.url) {
@@ -264,6 +303,9 @@ export function BillingSettings() {
       {state === "ready" && payload ? <>
         {!payload.can_manage_billing ? <div className="billing-banner billing-banner-neutral"><LockKeyhole size={17} /><span><strong>{text.ownerOnly}</strong> {text.ownerOnlyBody}</span></div> : null}
         {!payload.billing_configured ? <div className="billing-banner billing-banner-neutral"><ShieldCheck size={17} /><span><strong>{text.unconfigured}</strong> {text.unconfiguredBody}</span></div> : null}
+        {payload.launch_offer?.launch100_active ? <div className="billing-banner billing-banner-success billing-launch-banner"><Sparkles size={18} /><span><strong>{text.launchBadge}</strong> — {payload.launch_offer.redemptions_remaining} {text.launchRemaining}. {text.reverseCharge}</span></div> : null}
+        {payload.subscription_status !== "active" ? <div className="billing-sandbox-callout"><ShieldCheck size={19} /><div><strong>{text.sandboxTitle}</strong><p>{text.sandboxBody}</p></div></div> : null}
+        {payload.launch_offer?.cohort_full ? <div className="billing-sandbox-callout billing-cohort-callout"><LockKeyhole size={19} /><div><strong>{text.cohortFull}</strong>{payload.launch_offer.queue_position ? <p>{text.queue}: <bdi>#{payload.launch_offer.queue_position}</bdi></p> : null}</div></div> : null}
 
         <section className="panel billing-summary" aria-labelledby="billing-summary-title">
           <header className="billing-summary-head">
@@ -292,7 +334,11 @@ export function BillingSettings() {
               const disabled = !payload.can_manage_billing || !payload.billing_configured || !plan.configured || busy !== null || current;
               return <article className={`billing-plan ${current ? "billing-plan-current" : ""}`} key={plan.id}>
                 <div className="billing-plan-head"><h3>{planName(plan.id, ar)}</h3>{current ? <StatusPill tone="success">{text.current}</StatusPill> : null}</div>
-                <p className="billing-price"><strong>{formatPlanPrice(plan)}</strong><span>{text.perMonth}</span></p>
+                <p className="billing-price">
+                  {payload.launch_offer?.launch100_active ? <s>{formatMoney(plan.amount_minor, plan.currency, locale)}</s> : null}
+                  <strong>{formatMoney(payload.launch_offer?.launch100_active ? plan.promo_amount_minor : plan.amount_minor, plan.currency, locale)}</strong><span>{text.perMonth}</span>
+                </p>
+                <small className="billing-plan-quota">{plan.monthly_campaigns} {text.campaigns}</small>
                 <p className="billing-plan-copy">{text.planBlurb[plan.id]}</p>
                 {!plan.configured ? <small className="billing-plan-missing">{text.notConfigured}</small> : <small className="billing-plan-missing" aria-hidden="true" />}
                 <button className={current ? "secondary-button" : "primary-button"} type="button" disabled={disabled} onClick={() => void checkout(plan.id)}>
@@ -302,6 +348,8 @@ export function BillingSettings() {
               </article>;
             })}
           </div>
+          {payload.launch_offer?.cohort_full ? <WaitlistForm locale={locale} /> : null}
+          <p className="billing-reverse-charge">{text.reverseCharge}</p>
         </section>
       </> : null}
     </div>
