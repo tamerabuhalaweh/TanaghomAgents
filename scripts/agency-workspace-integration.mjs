@@ -92,7 +92,7 @@ try{
  await query("SELECT tanaghom.decide_agency_workspace($1,$2,'resume',NULL,'')",[owner,paused]);
  const inFlight=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(inFlight);
  await query("SELECT tanaghom.decide_agency_workspace($1,$2,'cancel',NULL,'')",[owner,paused]);
- assert.equal((await query('SELECT emergency_stop FROM tanaghom.agency_workspace_control')).rows[0].emergency_stop,true);count++;console.log('PASS pause/resume/cancel; in-flight cancellation stops further inference');
+ assert.equal((await query('SELECT emergency_stop FROM tanaghom.agency_workspace_control')).rows[0].emergency_stop,false);count++;console.log('PASS pause/resume/cancel; cancellation stays tenant-scoped');
  assert.equal((await query("SELECT has_table_privilege('tanaghom_agency_pilot_worker','tanaghom.agency_workspaces','UPDATE') AS can_write,has_function_privilege('tanaghom_agency_pilot_worker','tanaghom.decide_agency_workspace(uuid,uuid,text,text,text)','EXECUTE') AS can_approve")).rows[0].can_write,false);
  assert.equal((await query("SELECT has_function_privilege('tanaghom_agency_pilot_worker','tanaghom.decide_agency_workspace(uuid,uuid,text,text,text)','EXECUTE') AS x")).rows[0].x,false);count++;console.log('PASS worker cannot approve or directly write assignment state');
  await query("UPDATE tanaghom.agency_workspace_control SET emergency_stop=false");
@@ -101,9 +101,44 @@ try{
  await query("UPDATE tanaghom.agency_pilot_tasks SET lease_expires_at=now()-interval '1 second' WHERE id=$1",[lease.task_id]);
  assert.equal((await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task,null);
  assert.equal((await query('SELECT status,error_code FROM tanaghom.agency_workspaces WHERE id=$1',[expiring])).rows[0].error_code,'inference_outcome_unknown');
- assert.equal((await query('SELECT emergency_stop FROM tanaghom.agency_workspace_control')).rows[0].emergency_stop,true);
+ assert.equal((await query('SELECT emergency_stop FROM tanaghom.agency_workspace_control')).rows[0].emergency_stop,false);
  await reject('expired result cannot overwrite quarantined work','SELECT tanaghom.complete_agency_workspace_task($1,$2,NULL,$3)',[lease.task_id,lease.lease_token,'inference_failed']);
  count++;console.log('PASS expired inference is quarantined with evidence and no automatic retry');
+ await query("UPDATE tanaghom.agency_workspace_control SET emergency_stop=false");
+ const retryWs=await create('en',['content_creator','executive_summary']);
+ await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,retryWs,[bindingIds[1],bindingIds[5]],model]);
+ const retryFirst=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(retryFirst);
+ await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[retryFirst.task_id,retryFirst.lease_token,workspaceArtifact(retryFirst,{modelVersion:retryFirst.model,candidates:[{finishReason:'STOP',content:{parts:[{text:'This completed draft is preserved across the retry.'}]}}]},1)]);
+ const retryFailed=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(retryFailed);
+ await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,NULL,$3)',[retryFailed.task_id,retryFailed.lease_token,'inference_failed']);
+ const beforeRetry=(await query(`SELECT s.sequence,s.task_id,t.status,t.idempotency_key,t.options FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_pilot_tasks t ON t.id=s.task_id WHERE s.workspace_id=$1 ORDER BY s.sequence`,[retryWs])).rows;
+ await query("UPDATE tanaghom.agency_workspaces SET started_at=now()-interval '25 hours' WHERE id=$1",[retryWs]);
+ const retriedStart=(await query('SELECT started_at FROM tanaghom.agency_workspaces WHERE id=$1',[retryWs])).rows[0].started_at;
+ assert.equal((await query("SELECT tanaghom.decide_agency_workspace($1,$2,'retry',NULL,'') AS status",[owner,retryWs])).rows[0].status,'queued');
+ const afterRetry=(await query(`SELECT s.sequence,s.task_id,t.status,t.idempotency_key,t.options FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_pilot_tasks t ON t.id=s.task_id WHERE s.workspace_id=$1 ORDER BY s.sequence`,[retryWs])).rows;
+ assert.equal(afterRetry[0].task_id,beforeRetry[0].task_id);assert.equal(afterRetry[0].status,'succeeded');
+ assert.notEqual(afterRetry[1].task_id,beforeRetry[1].task_id);assert.equal(afterRetry[1].status,'queued');
+ assert.equal(afterRetry[1].idempotency_key,`workspace:${retryWs}:2:retry:${beforeRetry[1].task_id}`);
+ assert.equal(afterRetry[1].options.retry,1);
+ assert.equal((await query('SELECT status,error_code FROM tanaghom.agency_pilot_tasks WHERE id=$1',[beforeRetry[1].task_id])).rows[0].status,'failed');
+ assert.equal((await query('SELECT started_at FROM tanaghom.agency_workspaces WHERE id=$1',[retryWs])).rows[0].started_at.toISOString(),retriedStart.toISOString());
+ const resumed=(await query("SELECT evidence FROM tanaghom.agency_workspace_events WHERE workspace_id=$1 AND event_type='resumed' ORDER BY id DESC LIMIT 1",[retryWs])).rows[0].evidence;
+ assert.equal(resumed.retried_from_failed,true);assert.equal(resumed.retried_tasks.length,1);assert.equal(resumed.external_actions,0);
+ const retryClaim=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.equal(retryClaim.task_id,afterRetry[1].task_id);assert.equal(retryClaim.profile,'executive_summary');
+ await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,NULL)',[retryClaim.task_id,retryClaim.lease_token,workspaceArtifact(retryClaim,null,1)]);
+ assert.equal((await query('SELECT status FROM tanaghom.agency_workspaces WHERE id=$1',[retryWs])).rows[0].status,'waiting_review');
+ count++;console.log('PASS failed step retry preserves completed work and immutable failed evidence beyond 24h');
+ const capped=await create('en',['content_creator']);await query('SELECT tanaghom.start_agency_workspace($1,$2,$3,$4)',[owner,capped,[bindingIds[1]],model]);
+ let cappedTask=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(cappedTask);
+ await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,NULL,$3)',[cappedTask.task_id,cappedTask.lease_token,'inference_failed']);
+ for(let retry=0;retry<3;retry++){
+  await query("SELECT tanaghom.decide_agency_workspace($1,$2,'retry',NULL,'')",[owner,capped]);
+  cappedTask=(await query('SELECT tanaghom.claim_agency_workspace_task() AS task')).rows[0].task;assert.ok(cappedTask);
+  await query('SELECT tanaghom.complete_agency_workspace_task($1,$2,NULL,$3)',[cappedTask.task_id,cappedTask.lease_token,'inference_failed']);
+ }
+ await reject('fourth workspace retry rejected by the cap','SELECT tanaghom.decide_agency_workspace($1,$2,\'retry\',NULL,\'\')',[owner,capped]);
+ assert.equal(Number((await query("SELECT count(*) FROM tanaghom.agency_workspace_events WHERE workspace_id=$1 AND event_type='resumed'",[capped])).rows[0].count),3);
+ count++;console.log('PASS workspace retry cap is three and failed rows remain immutable');
  if(process.argv.includes('--browser')){
   await query(`ALTER ROLE tanaghom_api LOGIN PASSWORD '${password}';ALTER ROLE tanaghom_agency_pilot_worker LOGIN PASSWORD '${password}'`);
   await workspaceBrowser(pool,`postgresql://tanaghom_api:${password}@127.0.0.1:${port}/tanaghom_workspace_test`,`postgresql://tanaghom_agency_pilot_worker:${password}@127.0.0.1:${port}/tanaghom_workspace_test`);

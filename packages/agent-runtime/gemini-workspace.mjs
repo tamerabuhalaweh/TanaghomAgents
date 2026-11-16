@@ -148,14 +148,22 @@ export function createGeminiWorkspaceClient({
       throw new GeminiWorkspaceError('inference_failed', 400);
     }
     if (Buffer.byteLength(body, 'utf8') > 64000) throw new GeminiWorkspaceError('inference_failed', 400);
-    const send = () => fetchImpl(geminiGenerateEndpoint(model, base), {
-      method: 'POST',
-      headers: { 'x-goog-api-key': key, accept: 'application/json', 'content-type': 'application/json' },
-      body,
-      redirect: 'error',
-      cache: 'no-store',
-      signal: AbortSignal.timeout(timeoutMs),
-    });
+    // One overall deadline covers retry delays and every inference attempt, so
+    // a 429/503 retry loop cannot outlive the Postgres workspace lease.
+    const deadline = Date.now() + timeoutMs;
+    const remainingMs = () => deadline - Date.now();
+    const send = () => {
+      const remaining = remainingMs();
+      if (remaining <= 0) throw new GeminiWorkspaceError('inference_outcome_unknown', 502);
+      return fetchImpl(geminiGenerateEndpoint(model, base), {
+        method: 'POST',
+        headers: { 'x-goog-api-key': key, accept: 'application/json', 'content-type': 'application/json' },
+        body,
+        redirect: 'error',
+        cache: 'no-store',
+        signal: AbortSignal.timeout(Math.min(timeoutMs, remaining)),
+      });
+    };
     let response;
     try {
       response = await send();
@@ -166,7 +174,10 @@ export function createGeminiWorkspaceClient({
     // the identical request is safe for transient quota/capacity statuses.
     for (let attempt = 0; RETRYABLE_STATUSES.has(response.status) && attempt < retryDelaysMs.length; attempt += 1) {
       await releaseBody(response);
-      await sleep(retryDelayFor(response, retryDelaysMs[attempt]));
+      const remaining = remainingMs();
+      if (remaining <= 0) throw new GeminiWorkspaceError('inference_outcome_unknown', 502);
+      await sleep(Math.min(retryDelayFor(response, retryDelaysMs[attempt]), remaining));
+      if (remainingMs() <= 0) throw new GeminiWorkspaceError('inference_outcome_unknown', 502);
       try {
         response = await send();
       } catch {

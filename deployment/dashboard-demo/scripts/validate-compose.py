@@ -9,9 +9,9 @@ config = json.load(sys.stdin)
 services = config["services"]
 root = Path(__file__).resolve().parents[3]
 migrations = sorted((root / "packages/database/migrations").glob("*.up.sql"))
-assert len(migrations) == 49, "demo source must contain the exact 49-migration chain"
-assert migrations[-1].name == "0052_security_hardening.up.sql"
-assert len({path.name.split("_", 1)[0] for path in migrations}) == 49
+assert len(migrations) == 50, "demo source must contain the exact 50-migration chain"
+assert migrations[-1].name == "0053_workspace_step_retry.up.sql"
+assert len({path.name.split("_", 1)[0] for path in migrations}) == 50
 # The workspace profile is always validated. Caddy is optional because it lives
 # behind the https profile and deploy/validate enable only the workspace profile;
 # when the https profile is enabled, its full contract is validated too.

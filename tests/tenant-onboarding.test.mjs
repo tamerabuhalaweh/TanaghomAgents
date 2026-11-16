@@ -85,31 +85,31 @@ test("the down migration reverses only the schema change", async () => {
   assert.doesNotMatch(sql, /INSERT INTO tanaghom\./i);
 });
 
-test("the demo ledger guards track the 49-migration chain", async () => {
+test("the demo ledger guards track the 50-migration chain", async () => {
   const migrations = (await readdir(new URL("packages/database/migrations/", root)))
     .filter((name) => name.endsWith(".up.sql"))
     .sort();
-  assert.equal(migrations.length, 49);
-  assert.equal(migrations.at(-1), "0052_security_hardening.up.sql");
+  assert.equal(migrations.length, 50);
+  assert.equal(migrations.at(-1), "0053_workspace_step_retry.up.sql");
 
   const validateCompose = await read("deployment/dashboard-demo/scripts/validate-compose.py");
-  assert.match(validateCompose, /len\(migrations\) == 49/);
-  assert.match(validateCompose, /migrations\[-1\]\.name == "0052_security_hardening\.up\.sql"/);
-  assert.match(validateCompose, /path\.name\.split\("_", 1\)\[0\] for path in migrations\}\) == 49/);
+  assert.match(validateCompose, /len\(migrations\) == 50/);
+  assert.match(validateCompose, /migrations\[-1\]\.name == "0053_workspace_step_retry\.up\.sql"/);
+  assert.match(validateCompose, /path\.name\.split\("_", 1\)\[0\] for path in migrations\}\) == 50/);
 
   const configureRole = await read("deployment/dashboard-demo/sql/configure-api-role.sql");
-  assert.match(configureRole, /<> 49/);
-  assert.match(configureRole, /'0052_security_hardening' THEN/);
-  assert.match(configureRole, /exact migration 0052 ledger \(49 migrations\)/);
+  assert.match(configureRole, /<> 50/);
+  assert.match(configureRole, /'0053_workspace_step_retry' THEN/);
+  assert.match(configureRole, /exact migration 0053 ledger \(50 migrations\)/);
 
   const applyMigrations = await read("deployment/dashboard-demo/scripts/apply-migrations.sh");
   assert.match(applyMigrations, /version='0050_tenant_onboarding'/);
 
   const runbook = await read("deployment/dashboard-demo/RUNBOOK.md");
-  assert.match(runbook, /DEMO_DATABASE_READY migrations=49/);
-  assert.match(runbook, /49 up migrations, ending at `0052_security_hardening`/);
-  assert.match(runbook, /demo database must be at exact migration 0052 ledger/);
-  assert.match(runbook, /all 49 up/);
+  assert.match(runbook, /DEMO_DATABASE_READY migrations=50/);
+  assert.match(runbook, /50 up migrations, ending at `0053_workspace_step_retry`/);
+  assert.match(runbook, /demo database must be at exact migration 0053 ledger/);
+  assert.match(runbook, /all 50 up/);
 });
 
 test("tenant display names resolve per locale without rewriting the canonical name", () => {

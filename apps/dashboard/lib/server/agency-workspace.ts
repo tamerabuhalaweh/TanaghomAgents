@@ -8,6 +8,7 @@ import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
 import { database } from "@/lib/server/database";
 import { parseOrganizationAgentDraft, agentValidationReport } from "@/lib/server/agent-studio-validation";
 import { assertWorkspaceStartAllowed,loadWorkspaceQuota,loadWorkspaceUsage,WorkspaceQuotaError } from "@/lib/server/workspace-quotas";
+import { mapWorkspaceStateError } from "@/lib/server/workspace-state-error";
 const requireRuntime=process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`);
 const { workspaceManifest, workspaceRequest, workspaceArtifact }: typeof import("@tanaghom/agent-runtime/workspace")
  = requireRuntime("@tanaghom/agent-runtime/workspace");
@@ -51,6 +52,10 @@ async function boundedBody(request:NextRequest) {
 }
 function closed(body:Record<string,unknown>,keys:string[]){if(Object.keys(body).some(k=>!keys.includes(k)))throw new WorkspaceError("workspace_unknown_fields",400);}
 function identifier(value:unknown){if(typeof value!=="string"||!uuid.test(value))throw new WorkspaceError("workspace_id_invalid",400);return value;}
+function workspaceStateError(error:unknown){
+ const mapped=mapWorkspaceStateError(error);
+ return mapped?new WorkspaceError(mapped.code,mapped.status):null;
+}
 
 async function defaultArabicDialect(organizationId:string){
  const result=await database().query(`SELECT o.location,
@@ -194,13 +199,15 @@ export async function workspaceWrite(request:NextRequest){
    const r=await client.query("SELECT tanaghom.decide_agency_workspace($1,$2,$3,$4,$5) AS status",[actor.id,id,"retry",null,""]);
    await client.query("COMMIT");
    return {id,...r.rows[0]};
-  }catch(error){await client.query("ROLLBACK");throw error;}finally{client.release();}
+  }catch(error){await client.query("ROLLBACK");throw workspaceStateError(error)??error;}finally{client.release();}
  }
  closed(body,["action","id","result_hash","feedback"]);
  if(!["approve","reject","pause","resume","cancel"].includes(String(body.action)))throw new WorkspaceError("workspace_action_invalid",400);
  if(body.feedback!==undefined&&typeof body.feedback!=="string")throw new WorkspaceError("workspace_feedback_invalid",400);
- const r=await database().query("SELECT tanaghom.decide_agency_workspace($1,$2,$3,$4,$5) AS status",[actor.id,id,body.action,body.result_hash||null,body.feedback||""]);
- return {id,...r.rows[0]};
+ try{
+  const r=await database().query("SELECT tanaghom.decide_agency_workspace($1,$2,$3,$4,$5) AS status",[actor.id,id,body.action,body.result_hash||null,body.feedback||""]);
+  return {id,...r.rows[0]};
+ }catch(error){throw workspaceStateError(error)??error;}
 }
 
 function workspaceFailure(error:unknown){
@@ -267,7 +274,7 @@ export async function workspaceTick(request:NextRequest){
    output=await responseJson(response);
   }else if(task.profile!=="executive_summary"){
    if(!apiKey)throw new WorkspaceError("model_unavailable");
-   const client=createGeminiWorkspaceClient({apiKey,timeoutMs:workspaceManifest.timeout_ms});
+   const client=createGeminiWorkspaceClient({apiKey,timeoutMs:130_000});
    const inventory=await verifiedInventory(client,task.model,apiKey);
    if(inventory.id!==task.model)throw new WorkspaceError("model_unavailable");
    const payload=workspaceRequest(task,inventory.inputTokenLimit,inventory.outputTokenLimit);
