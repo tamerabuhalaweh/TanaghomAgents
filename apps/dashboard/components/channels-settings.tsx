@@ -249,8 +249,8 @@ export function ChannelsSettings() {
           {payload.provisioning_ready && payload.can_manage ? <div className="channels-heading"><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void disconnect()}><Unplug size={16} /> {busy === "disconnect" ? text.disconnecting : text.disconnect}</button></div> : null}
         </section>
         <section className="channels-section" aria-labelledby="channel-connected-title">
-          <div className="channels-heading"><div><h2 id="channel-connected-title">{text.connected}</h2><p>{text.emptyHint}</p></div><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void load()}><RefreshCw size={16} /> {text.refresh}</button></div>
-          {payload.channels.length === 0 ? <div className="channel-empty"><Link2 size={18} /><span><strong>{text.empty}</strong><small>{text.emptyHint}</small></span></div> : <div className="channel-list">
+          <div className="channels-heading"><div><h2 id="channel-connected-title">{text.connected}</h2></div><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void load()}><RefreshCw size={16} /> {text.refresh}</button></div>
+          {payload.channels.length === 0 ? <div className="channel-empty"><Link2 size={18} /><span><strong>{text.empty}</strong></span></div> : <div className="channel-list">
             {payload.channels.map((channel) => <article className={`channel-row ${channel.disabled ? "channel-row-disabled" : ""}`} key={channel.id}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(channel.platform, ar).slice(0, 2)}</div>
               <div><h3>{channel.name}</h3><small>{platformLabel(channel.platform, ar)}{channel.profile ? ` · ${channel.profile}` : ""}</small></div>
