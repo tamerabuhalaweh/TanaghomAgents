@@ -1,16 +1,16 @@
 const ARABIC_AGENT_NAMES: Record<string, string> = {
-  "campaign strategist": "استراتيجي الحملات",
-  "content producer": "منتج المحتوى",
+  "campaign strategist": "مخطّط الحملات",
+  "content producer": "كاتب المحتوى",
   "publisher & performance monitor": "الناشر ومراقب الأداء",
   "publisher and performance monitor": "الناشر ومراقب الأداء",
   "sales & crm agent": "وكيل المبيعات وإدارة العملاء",
   "sales and crm agent": "وكيل المبيعات وإدارة العملاء",
-  "social media strategist": "استراتيجي وسائل التواصل",
-  "content creator": "صانع المحتوى",
-  "brand guardian": "حارس العلامة",
-  "discovery coach": "مدرّب الاكتشاف",
-  "support responder": "مجيب الدعم",
-  "executive summary": "الملخص التنفيذي",
+  "social media strategist": "مخطّط وسائل التواصل",
+  "content creator": "منشئ المحتوى",
+  "brand guardian": "مدقّق الهوية والالتزام",
+  "discovery coach": "مستشار تأهيل العملاء",
+  "support responder": "منسّق خدمة العملاء",
+  "executive summary": "المُلخّص التنفيذي",
 };
 
 export function agentDisplayName(name: string | null | undefined, arabic: boolean): string {

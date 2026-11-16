@@ -2225,6 +2225,13 @@ td a, td > strong { font-weight: 670; }
 .onboarding-field textarea { width: 100%; min-height: 2.75rem; padding: 0.65rem 0.75rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink); font: inherit; }
 .onboarding-field textarea { min-height: 8rem; resize: vertical; }
 .onboarding-field small { color: var(--muted); font-size: 0.65rem; }
+.onboarding-dialect-badge { align-self: flex-start; display: inline-flex; align-items: center; gap: 0.35rem; padding: 0.3rem 0.55rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-muted, var(--bg)); color: var(--muted); font-size: 0.66rem; }
+.onboarding-dialect-badge strong { color: var(--ink); }
+.brand-dialect-badge { display: inline-flex; align-items: center; width: fit-content; padding: 0.2rem 0.5rem; border: 1px solid var(--border); border-radius: 999px; background: var(--surface-muted, var(--bg)); color: var(--ink); font-size: 0.64rem; font-weight: 650; }
+.aw-dialect-field { display: flex; flex-direction: column; gap: 0.35rem; padding: 0.85rem 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }
+.aw-dialect-field label { display: flex; flex-direction: column; gap: 0.35rem; font-size: 0.76rem; font-weight: 650; }
+.aw-dialect-field select { min-height: 2.6rem; padding: 0.55rem 0.7rem; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); background: var(--bg); color: var(--ink); font: inherit; }
+.aw-dialect-field small { color: var(--muted); font-size: 0.67rem; }
 .onboarding-preview { display: flex; flex-direction: column; gap: 0.6rem; padding: 1rem; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--bg); }
 .onboarding-preview > strong { font-size: 0.72rem; font-weight: 700; }
 .onboarding-preview dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.75rem; margin: 0; }

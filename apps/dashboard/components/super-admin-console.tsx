@@ -22,7 +22,7 @@ import { useCallback, useEffect, useState } from "react";
 
 import { LocaleToggle } from "@/components/creative/locale-toggle";
 import type { CreativeLocale } from "@/lib/i18n/creative";
-import { formatDate, formatMoney, formatNumber, normalizeNumericInput, numericLocale } from "@/lib/i18n/format";
+import { formatArabicCount, formatDate, formatMoney, formatNumber, normalizeNumericInput, numericLocale } from "@/lib/i18n/format";
 
 interface WaitlistEntry {
   email: string | null;
@@ -213,18 +213,18 @@ const COPY = {
     verifiedUsers: "المستخدمون الموثّقون",
     totalUsers: "من أصل {total} مستخدمين",
     paidSubscribers: "المشتركون المدفوعون النشطون",
-    tierSplit: "البداية {starter} · النمو {growth} · التوسع {scale}",
+    tierSplit: "باقة البداية {starter} · باقة النمو {growth} · باقة التوسع {scale}",
     mrr: "الإيراد الشهري المباشر",
     estimated: "تقديري من الاشتراكات النشطة",
-    launchRemaining: "أماكن LAUNCH100 المتبقية",
-    launch100Used: "{used} من {max} مستخدمة",
+    launchRemaining: "أماكن عرض الإطلاق المتبقية",
+    launch100Used: "استُخدم {used} من أصل {max}",
     campaigns: "الحملات المولّدة",
     campaignSplit: "إنجليزي {en} · عربي {ar}",
     aiSpend: "إنفاق وحدات الذكاء الاصطناعي الشهري",
     tokens: "{tokens} وحدة ذكاء اصطناعي",
-    tasks: "{ok} ناجحة · {failed} فاشلة",
+    tasks: "نجحت {ok} · فشلت {failed}",
     database: "PostgreSQL",
-    aiWorker: "عامل نموذج الذكاء الاصطناعي",
+    aiWorker: "محرك الذكاء الاصطناعي",
     publishing: "النشر الاجتماعي",
     billing: "فوترة Stripe",
     connected: "متصل",
@@ -233,9 +233,9 @@ const COPY = {
     operational: "يعمل بشكل طبيعي",
     paused: "متوقف",
     maintenance: "صيانة",
-    breakerTitle: "إيقاف توليد الذكاء الاصطناعي الطارئ",
+    breakerTitle: "الإيقاف الطارئ للتوليد",
     breakerReason: "السبب",
-    breakerReset: "إعادة ضبط قاطع الذكاء الاصطناعي",
+    breakerReset: "إعادة تفعيل محرك الذكاء الاصطناعي",
     breakerBody: "استعد التوليد فوراً بعد أي حادث. تُسجّل إعادة الضبط في سجل تدقيق المنصة.",
     presets: "إعدادات سريعة",
     inviteCohort: "دفعة بالدعوة فقط: 20",
@@ -248,7 +248,7 @@ const COPY = {
     promoBody: "يُطبق تلقائياً بسعر 15 / 25 / 50 دولاراً عند الدفع طالما بقيت مقاعد الإطلاق.",
     promoOn: "العرض مفعّل",
     promoOff: "العرض متوقف",
-    currentState: "مساحات نشطة {active} · الحد {cap} · قائمة الانتظار {waitlist}",
+    currentState: "النشط {active} · الحد {cap} · قائمة الانتظار {waitlist}",
     unlimited: "بلا حد",
     recent: "أحدث مساحات العمل",
     name: "مساحة العمل",
@@ -325,7 +325,7 @@ function breakerReason(reason: string, locale: CreativeLocale) {
     operational: "يعمل بشكل طبيعي",
     emergency_stop: "إيقاف طارئ",
     manual_override: "إيقاف يدوي",
-    circuit_open: "القاطع مفتوح",
+    circuit_open: "التوليد موقوف مؤقتًا",
     provider_outage: "انقطاع المزود",
     maintenance: "صيانة",
     paused: "متوقف",
@@ -558,7 +558,7 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
             <div><span className="super-panel-icon"><Wallet size={17} /></span><div><h2 id="unit-economics-title">{text.unitEconomics}</h2><p className="super-econ-lede">{text.unitEconomicsLede}</p></div></div>
             <div className="super-econ-summary">
               <span>{text.grossMargin} <strong dir="ltr">{money(snapshot.ai_usage.gross_margin_usd, locale, 2)}</strong>{snapshot.ai_usage.gross_margin_pct === null ? "" : ` · ${number(snapshot.ai_usage.gross_margin_pct, locale)}%`}</span>
-              <span className="super-econ-risk">{format(text.atRiskSummary, { count: number(snapshot.ai_usage.at_risk_workspaces_count, locale) })}</span>
+              <span className="super-econ-risk">{locale === "ar" ? formatArabicCount(snapshot.ai_usage.at_risk_workspaces_count, { zero: "لا مساحات عمل مرتفعة التكلفة", one: "مساحة عمل واحدة مرتفعة التكلفة", two: "مساحتا عمل مرتفعتا التكلفة", few: "{count} مساحات عمل مرتفعة التكلفة", many: "{count} مساحة عمل مرتفعة التكلفة", other: "{count} مساحة عمل مرتفعة التكلفة" }) : format(text.atRiskSummary, { count: number(snapshot.ai_usage.at_risk_workspaces_count, locale) })}</span>
             </div>
           </div>
           <div className="super-table-wrap">

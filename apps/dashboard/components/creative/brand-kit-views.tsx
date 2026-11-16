@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useEffect, useState, type CSSProperties, type Dispatch, type SetStateAction } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
+import { DIALECTS, dialectLabel, normalizeDialect, type DialectId } from "@/lib/i18n/dialects";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
 import { formatNumber, normalizeDigits } from "@/lib/i18n/format";
@@ -29,6 +30,7 @@ interface KitVersionRow {
   tone: string | null;
   arabic_font: string | null;
   latin_font: string | null;
+  rules: unknown;
 }
 
 interface BrandDraft {
@@ -38,6 +40,8 @@ interface BrandDraft {
   tone: string;
   arabicFont: string;
   latinFont: string;
+  dialect: DialectId;
+  rules: Record<string, unknown>;
 }
 
 const COLOR = /^#[0-9a-f]{6}$/i;
@@ -49,6 +53,8 @@ const emptyDraft: BrandDraft = {
   tone: "",
   arabicFont: "",
   latinFont: "",
+  dialect: "msa",
+  rules: {},
 };
 
 const palettes = [
@@ -61,7 +67,7 @@ const palettes = [
 const toneChips = [
   { en: "Warm & confident", ar: "دافئة وواثقة" },
   { en: "Professional & concise", ar: "مهنية ومختصرة" },
-  { en: "Friendly & conversational", ar: "ودودة ومحادثة" },
+  { en: "Friendly & conversational", ar: "ودودة وعفوية" },
 ] as const;
 
 const arabicFonts = ["", "Cairo", "Tajawal", "IBM Plex Sans Arabic", "Almarai"];
@@ -70,6 +76,15 @@ const latinFonts = ["", "Inter", "Plus Jakarta Sans", "DM Sans"];
 function colorsRecord(value: unknown): Record<string, string> {
   if (!value || typeof value !== "object" || Array.isArray(value)) return {};
   return Object.fromEntries(Object.entries(value).filter((entry): entry is [string, string] => typeof entry[1] === "string"));
+}
+
+function objectRecord(value: unknown): Record<string, unknown> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  return value as Record<string, unknown>;
+}
+
+function dialectFromRules(rules: unknown): DialectId {
+  return normalizeDialect(objectRecord(rules).arabic_dialect) ?? "msa";
 }
 
 function draftFromVersion(version: KitVersionRow | undefined): BrandDraft {
@@ -82,6 +97,8 @@ function draftFromVersion(version: KitVersionRow | undefined): BrandDraft {
     tone: version.tone ?? "",
     arabicFont: version.arabic_font ?? "",
     latinFont: version.latin_font ?? "",
+    dialect: dialectFromRules(version.rules),
+    rules: objectRecord(version.rules),
   };
 }
 
@@ -94,6 +111,7 @@ function brandPayload(draft: BrandDraft) {
     tone: draft.tone.trim() || null,
     arabic_font: draft.arabicFont || null,
     latin_font: draft.latinFont || null,
+    rules: { ...draft.rules, arabic_dialect: draft.dialect },
   };
 }
 
@@ -135,7 +153,7 @@ function BrandPreview({ draft, locale }: { draft: BrandDraft; locale: CreativeLo
   } as CSSProperties;
   return (
     <section className="brand-preview" style={style} aria-label={t(locale, "brands.previewTitle")}>
-      <header><span>{t(locale, "brands.previewTitle")}</span><i /><i /><i /></header>
+      <header><span>{t(locale, "brands.previewTitle")}</span><span className="brand-dialect-badge">{dialectLabel(draft.dialect, locale)}</span><i /><i /><i /></header>
       <div className="brand-preview-posts">
         {ar ? (
           <article lang="ar" dir="rtl">
@@ -204,6 +222,14 @@ function BrandKitEditor({ draft, setDraft, locale }: {
             {toneChips.map((chip) => <button key={chip.en} type="button" aria-pressed={draft.tone === (ar ? chip.ar : chip.en)} onClick={() => field("tone", ar ? chip.ar : chip.en)}>{ar ? chip.ar : chip.en}</button>)}
           </div>
           <input className="brand-text-input" type="text" value={draft.tone} maxLength={500} placeholder={t(locale, "brands.tonePlaceholder")} aria-label={t(locale, "brands.tone")} onChange={(event) => field("tone", event.target.value)} />
+        </fieldset>
+
+        <fieldset className="brand-fieldset">
+          <legend>{t(locale, "brands.dialect")}</legend>
+          <select className="brand-text-input" value={draft.dialect} onChange={(event) => field("dialect", event.target.value as DialectId)}>
+            {DIALECTS.map((dialect) => <option key={dialect.id} value={dialect.id}>{dialectLabel(dialect.id, locale)}</option>)}
+          </select>
+          <small>{t(locale, "brands.dialectHelper")}</small>
         </fieldset>
 
         <div className="brand-font-grid">
@@ -390,6 +416,7 @@ export function BrandKitDetailView({ locale, dir, kitId }: { locale: CreativeLoc
                     <span>{t(locale, "brands.tone")}<strong>{version.tone || t(locale, "brands.toneNotSet")}</strong></span>
                     <span>{t(locale, "brands.arabicFont")}<strong>{version.arabic_font || t(locale, "brands.studioDefault")}</strong></span>
                     <span>{t(locale, "brands.latinFont")}<strong>{version.latin_font || t(locale, "brands.studioDefault")}</strong></span>
+                    <span>{t(locale, "brands.dialect")}<strong className="brand-dialect-badge">{dialectLabel(dialectFromRules(version.rules), locale)}</strong></span>
                   </div>
                   {canAdmin && version.version !== detail.data!.kit.current_version && (
                     <button type="button" className="creative-button creative-button-secondary" disabled={working} onClick={() => setCurrent(version.version)}>

@@ -34,6 +34,7 @@ export interface OnboardingCopy {
   industryPlaceholder: string;
   locationLabel: string;
   locationPlaceholder: string;
+  dialectPreview: string;
   previewTitle: string;
   previewEn: string;
   previewAr: string;
@@ -52,6 +53,8 @@ export interface OnboardingCopy {
   accentColorLabel: string;
   toneLabel: string;
   tonePlaceholder: string;
+  dialectLabel: string;
+  dialectHint: string;
   arabicFontLabel: string;
   latinFontLabel: string;
   fontPlaceholder: string;
@@ -128,7 +131,8 @@ const en: OnboardingCopy = {
   industryLabel: "Industry",
   industryPlaceholder: "Choose an industry",
   locationLabel: "Location",
-  locationPlaceholder: "City or region",
+  locationPlaceholder: "City or region — pick a market or type your own",
+  dialectPreview: "Suggested content dialect",
   previewTitle: "How your name appears",
   previewEn: "English",
   previewAr: "Arabic",
@@ -147,6 +151,8 @@ const en: OnboardingCopy = {
   accentColorLabel: "Accent colour (optional)",
   toneLabel: "Tone of voice",
   tonePlaceholder: "Warm, confident, and plain-spoken",
+  dialectLabel: "Content dialect",
+  dialectHint: "Defaulted from your business location. You can change it for this brand kit.",
   arabicFontLabel: "Arabic font",
   latinFontLabel: "Latin font",
   fontPlaceholder: "Leave empty to use the studio default",
@@ -244,7 +250,8 @@ const ar: OnboardingCopy = {
   industryLabel: "القطاع",
   industryPlaceholder: "اختر القطاع",
   locationLabel: "الموقع",
-  locationPlaceholder: "المدينة أو المنطقة",
+  locationPlaceholder: "المدينة أو المنطقة — اختر السوق أو اكتب موقعك",
+  dialectPreview: "اللهجة الافتراضية المقترحة",
   previewTitle: "كيف يظهر اسمك",
   previewEn: "بالإنجليزية",
   previewAr: "بالعربية",
@@ -262,7 +269,9 @@ const ar: OnboardingCopy = {
   primaryColorLabel: "اللون الأساسي",
   accentColorLabel: "اللون الثانوي (اختياري)",
   toneLabel: "نبرة الصوت",
-  tonePlaceholder: "دافئة وواثقة وبسيطة",
+  tonePlaceholder: "دافئة وواثقة وعفوية",
+  dialectLabel: "لهجة المحتوى",
+  dialectHint: "محددة تلقائيًا حسب موقع نشاطك، ويمكنك تغييرها لهذه الهوية.",
   arabicFontLabel: "الخط العربي",
   latinFontLabel: "الخط اللاتيني",
   fontPlaceholder: "اتركه فارغًا لاستخدام الخط الافتراضي للاستوديو",
@@ -278,17 +287,17 @@ const ar: OnboardingCopy = {
   brandInvalidColor: "استخدم لونًا سداسيًا بصيغة hex، مثل ‎#1F6F5C‎.",
   knowledgeTitle: "أول معرفة",
   knowledgeLede: "أضف حقيقة أو سؤالًا شائعًا أو عرضًا معتمدًا واحدًا. يُحفظ كمسودة: يجب أن يراجعها معتمِد ويفعّلها قبل أن يستخدمها الوكلاء.",
-  knowledgeSourceKeyLabel: "مفتاح المصدر",
-  knowledgeSourceKeyHint: "معرّف ثابت لهذا الموضوع. إضافة مسودة جديدة بالمفتاح نفسه تنشئ نسخة جديدة بدل استبدال النص المعتمد.",
+  knowledgeSourceKeyLabel: "المعرّف المرجعي",
+  knowledgeSourceKeyHint: "معرّف ثابت لهذا الموضوع. وإضافة مسودة جديدة بالمعرّف نفسه تنشئ نسخة جديدة بدل استبدال النص المعتمد.",
   knowledgeTitleLabel: "العنوان",
   knowledgeTitlePlaceholder: "مناطق وأوقات التوصيل",
-  knowledgeCategoryLabel: "الفئة",
+  knowledgeCategoryLabel: "التصنيف",
   knowledgeLanguageLabel: "اللغة",
-  knowledgeContentLabel: "مادة الإجابة المعتمدة",
+  knowledgeContentLabel: "نص الإجابة المعتمدة",
   knowledgeContentPlaceholder: "اكتب فقط الحقائق والصياغة التي قدّمها العميل ويمكن للمراجع التحقق منها.",
   knowledgeContentHint: "لا تُدرج كلمات مرور أو رموز وصول أو بيانات بطاقات دفع أو معلومات شخصية غير ضرورية.",
   knowledgeAdvancedLabel: "معرّف متقدم",
-  knowledgeRequiredHint: "أدخل عنوانًا و3 أحرف على الأقل من مادة الإجابة المعتمدة لحفظ هذه المسودة.",
+  knowledgeRequiredHint: "أدخل عنوانًا و3 أحرف على الأقل من نص الإجابة المعتمدة لحفظ هذه المسودة.",
   checklistSaved: "تم الحفظ",
   checklistPending: "لم يُضف بعد",
   checklistChecking: "جارٍ التحقق من إعدادك المحفوظ…",
@@ -298,7 +307,7 @@ const ar: OnboardingCopy = {
   knowledgeSaving: "جارٍ حفظ المسودة…",
   knowledgeSaved: "تم حفظ المسودة. راجعها وفعّلها في المعرفة قبل أن يستخدمها الوكلاء.",
   knowledgeExisting: "تحتوي قاعدة معرفتك على مصادر بالفعل. تضيف هذه الخطوة مسودة أخرى؛ يمكنك متابعة الدليل في المعرفة.",
-  knowledgeError: "تعذّر حفظ المسودة. تحقّق من مفتاح المصدر والعنوان والمحتوى وحاول مرة أخرى.",
+  knowledgeError: "تعذّر حفظ المسودة. تحقّق من المعرّف المرجعي والعنوان والمحتوى وحاول مرة أخرى.",
   knowledgeLoading: "جارٍ التحقق من قاعدة معرفتك…",
   knowledgeOpen: "فتح المعرفة",
   knowledgeDraftNote: "الحفظ ينشئ مسودة فقط. لا يصل شيء إلى العملاء حتى يعتمدها مراجع ويفعّلها.",

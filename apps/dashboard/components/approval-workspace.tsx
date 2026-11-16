@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { formatArabicCount } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
@@ -151,7 +152,7 @@ export function ApprovalWorkspace() {
 
   const description = loadState === "ready"
     ? (ar
-      ? `${items.length} عنصر محتوى بحاجة إلى قرار قبل النشر.`
+      ? `${formatArabicCount(items.length, { zero: "لا عناصر محتوى بحاجة إلى قرار قبل النشر.", one: "عنصر محتوى واحد بحاجة إلى قرار قبل النشر.", two: "عنصرا محتوى بحاجة إلى قرار قبل النشر.", few: "{count} عناصر محتوى بحاجة إلى قرار قبل النشر.", many: "{count} عنصر محتوى بحاجة إلى قرار قبل النشر.", other: "{count} عنصر محتوى بحاجة إلى قرار قبل النشر." })}`
       : `${items.length} content ${items.length === 1 ? "item needs" : "items need"} a decision before publishing.`)
     : (ar ? "راجع المحتوى قبل أن تتقدم أي أعمال نشر." : "Review content before any publishing work can move forward.");
 
@@ -167,7 +168,7 @@ export function ApprovalWorkspace() {
       {loadState === "ready" && active ? (
         <div className="approval-workspace">
           <aside className="review-inbox" aria-label={ar ? "محتوى بانتظار المراجعة" : "Content awaiting review"}>
-            <div className="inbox-heading"><h2>{ar ? "قائمة المراجعة" : "Review queue"}</h2><span>{items.length} {ar ? "قيد الانتظار" : "pending"}</span></div>
+            <div className="inbox-heading"><h2>{ar ? "قائمة المراجعة" : "Review queue"}</h2><span>{ar ? formatArabicCount(items.length, { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" }) : `${items.length} pending`}</span></div>
             <div className="review-list">
               {items.map((item) => (
                 <button key={item.id} type="button" className={`review-list-item ${active.id === item.id ? "review-list-item-active" : ""}`} onClick={() => select(item.id)}>
@@ -188,7 +189,7 @@ export function ApprovalWorkspace() {
             <dl className="review-metadata">
               <div><dt>{ar ? "القناة" : "Channel"}</dt><dd>{active.channel}</dd></div>
               <div><dt>{ar ? "أُنشئ" : "Created"}</dt><dd>{formatCreatedAt(active.created_at)}</dd></div>
-              <div><dt>{ar ? "أعدّه" : "Prepared by"}</dt><dd>{ar ? "منتج المحتوى" : "Content Producer"}</dd></div>
+              <div><dt>{ar ? "أعدّه" : "Prepared by"}</dt><dd>{ar ? "كاتب المحتوى" : "Content Producer"}</dd></div>
               <div><dt>{ar ? "سياسة الاعتماد" : "Approval policy"}</dt><dd>{ar ? "مراجعة بشرية مطلوبة" : "Human required"}</dd></div>
             </dl>
 
@@ -199,7 +200,7 @@ export function ApprovalWorkspace() {
 
             <section className="media-brief" aria-labelledby="media-brief-title">
               <MessageSquareText size={19} />
-              <div><h3 id="media-brief-title">{ar ? "الموجز الإعلامي" : "Media brief"}</h3><p dir="auto">{active.media_brief}</p></div>
+              <div><h3 id="media-brief-title">{ar ? "توصيف الوسائط والتصميم" : "Media brief"}</h3><p dir="auto">{active.media_brief}</p></div>
             </section>
 
             <section className="decision-history" aria-labelledby="decision-history-title">
@@ -250,7 +251,7 @@ function ApprovalEmptyState({ feedback, ar }: { feedback: string; ar: boolean })
   return (
     <section className="approval-state approval-state-empty" aria-labelledby="approval-empty-title">
       <span className="approval-state-icon"><CheckCircle2 size={28} aria-hidden="true" /></span>
-      <div><h2 id="approval-empty-title">{ar ? "قائمة الاعتماد فارغة" : "Approval queue is clear"}</h2><p>{feedback || (ar ? "لا يوجد محتوى بانتظار قرار بشري. ستظهر المسودات الجديدة هنا عندما يسلّمها منتج المحتوى." : "There is no content waiting for a human decision. New drafts will appear here when the Content Producer submits them.")}</p></div>
+      <div><h2 id="approval-empty-title">{ar ? "قائمة الاعتماد فارغة" : "Approval queue is clear"}</h2><p>{feedback || (ar ? "لا يوجد محتوى بانتظار قرار بشري. ستظهر المسودات الجديدة هنا عندما يسلّمها كاتب المحتوى." : "There is no content waiting for a human decision. New drafts will appear here when the Content Producer submits them.")}</p></div>
       <a className="primary-button" href="/workspace">{ar ? "ابدأ موجز حملة" : "Start a campaign brief"}</a>
       <span className="approval-state-meta">{ar ? "يبقى النشر محمياً بسياسة الاعتماد في قاعدة البيانات." : "Publishing remains protected by the database approval policy."}</span>
     </section>

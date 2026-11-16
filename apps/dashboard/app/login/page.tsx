@@ -23,7 +23,7 @@ export default async function LoginPage({
       <section className="login-context" aria-labelledby="login-context-title">
         <Link className="brand login-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لتناغم" : "Tanaghom home"}>
           <BrandMark />
-          <span>Tanaghom</span>
+          <span>{ar ? "تناغم" : "Tanaghom"}</span>
         </Link>
         <div className="login-promise">
           <p className="login-context-label">{ar ? "سجّل الدخول إلى تناغم" : "Sign in to Tanaghom"}</p>
@@ -49,7 +49,7 @@ export default async function LoginPage({
           <div className="auth-locale-row"><LocaleToggle locale={locale} /></div>
           <Link className="login-mobile-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لتناغم" : "Tanaghom home"}>
             <BrandMark />
-            <span>Tanaghom</span>
+            <span>{ar ? "تناغم" : "Tanaghom"}</span>
           </Link>
           <p className="login-access-label">{ar ? "مساحة عمل خاصة" : "Private workspace"}</p>
           <h2 id="login-title">{ar ? "أهلًا بعودتك" : "Welcome back"}</h2>

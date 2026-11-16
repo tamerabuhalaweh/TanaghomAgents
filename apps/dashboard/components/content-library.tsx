@@ -273,7 +273,7 @@ export function ContentLibrary() {
               <span>Updated {date(item.updated_at)}</span>
             </div>
             {isExpanded ? <div className="content-details">
-              <section><h3>{ar ? "الموجز الإعلامي" : "Media brief"}</h3><p dir="auto">{item.media_brief}</p></section>
+              <section><h3>{ar ? "توصيف الوسائط والتصميم" : "Media brief"}</h3><p dir="auto">{item.media_brief}</p></section>
               <section>
                 <h3>{ar ? "القرار البشري" : "Human decision"}</h3>
                 {item.decision

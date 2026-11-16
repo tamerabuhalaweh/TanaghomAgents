@@ -152,7 +152,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
         <div className="sidebar-footer">
           <div className="sidebar-trust">
-            <span className="environment-badge">{ar ? "مساحة عمل بمراجعة بشرية" : "Human-Reviewed Workspace"}</span>
+            <span className="environment-badge">{ar ? "موافقة بشرية قبل النشر" : "Human-Reviewed Workspace"}</span>
             <button className="nav-link sidebar-help-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={() => { closeMenu(); openHelp(); }}>
               <CircleHelp size={18} />
               <span>{ar ? "المساعدة السريعة" : "Quick help"}</span>
@@ -180,7 +180,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       <div className="workspace">
         <header className="topbar">
           <TenantName />
-          <span className="environment-badge">{ar ? "مساحة عمل بمراجعة بشرية" : "Human-Reviewed Workspace"}</span>
+          <span className="environment-badge">{ar ? "موافقة بشرية قبل النشر" : "Human-Reviewed Workspace"}</span>
           <div className="topbar-actions">
             <LocaleToggle locale={locale} />
             <Link className="icon-button notification-button" href="/system" aria-label={ar ? "فتح تنبيهات النظام" : "Open system alerts"}>

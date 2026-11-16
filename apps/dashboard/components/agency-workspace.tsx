@@ -6,22 +6,23 @@ import Link from "next/link";
 
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDisplayName } from "@/lib/i18n/agent-names";
-import { formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { DIALECTS, dialectLabel, type DialectId } from "@/lib/i18n/dialects";
+import { formatArabicCount, formatDateTime, formatNumber } from "@/lib/i18n/format";
 
 type Profile = { code: string; name: string; role: string; deliverable: string };
-type Assignment = { id: string; title: string; language: "en" | "ar"; profile_codes: string[]; status: string; error_code: string | null; created_at: string };
+type Assignment = { id: string; title: string; language: "en" | "ar"; profile_codes: string[]; status: string; error_code: string | null; created_at: string; dialect?: DialectId | null };
 type Artifact = { document: string; kind: string; provider: string | null; model: string | null; context_hash: string; source_tasks: string[]; procedure_version: string; elapsed_ms: number; usage: { total_tokens: number } | null };
 type Step = { sequence: number; profile_code: string; task_id: string; status: string; attempt: number; claimed_at: string | null; finished_at: string | null; error_code: string | null; result: Artifact | null; response_hash: string | null; shared_context: { profile: string; task_id: string; document: string; response_hash: string }[] | null };
 type Event = { id: number; event_type: string; actor_kind: string; actor_ref: string; evidence: { feedback?: string; sequence?: number; task_id?: string }; occurred_at: string };
 type Detail = Assignment & { brief: string; source_facts: string; result_hash: string; steps: Step[]; events: Event[] };
 type Quota = { subscription_status: string; plan_tier: "starter" | "growth" | "scale" | null; is_sandbox: boolean; campaigns_used: number; campaigns_limit: number; runs_used: number; runs_limit: number | null; tokens_used: number; tokens_limit: number; max_retries_per_campaign: number; upgrade_required: boolean; upgrade_url: string };
 type Usage = { month_prompt_tokens: number; month_completion_tokens: number; month_total_tokens: number; estimated_cost_usd: number };
-type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; quota: Quota; usage: Usage; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
+type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; quota: Quota; usage: Usage; default_dialect: DialectId; default_dialect_source: "brand_kit" | "location" | "default"; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
 
 const labels: Record<string, string> = { draft: "Brief saved", queued: "Queued", running: "Working", paused: "Paused", waiting_review: "Ready for your review", approved: "Approved by human", rejected: "Changes requested", failed: "Needs attention", cancelled: "Cancelled", in_progress: "Working", succeeded: "Draft ready" };
 const labelsAr: Record<string, string> = { draft: "تم حفظ الموجز", queued: "في الانتظار", running: "قيد العمل", paused: "متوقف مؤقتاً", waiting_review: "جاهز لمراجعتك", approved: "اعتمدها إنسان", rejected: "طُلب التعديل", failed: "يحتاج إلى انتباه", cancelled: "أُلغي", in_progress: "قيد العمل", succeeded: "المسودة جاهزة" };
-const errorText: Record<string, string> = { workspace_model_not_configured: "The Gemini model worker is not connected. Your brief is saved; no generation has started.", workspace_not_found: "This assignment was not found in your workspace.", workspace_brief_invalid: "Write a brief between 30 and 6,000 characters.", workspace_source_facts_invalid: "Add source facts between 20 and 6,000 characters.", workspace_title_invalid: "Use a title between 3 and 120 characters.", inference_outcome_unknown: "The Gemini request did not finish with a confirmed result. Further inference is stopped for operator review.", output_rejected: "The result did not meet the document or context limits. Completed work is preserved; an operator must review the failure.", model_unavailable: "The configured Gemini connection or model identity could not be verified.", provider_request_rejected: "Google Gemini rejected the request. No automatic retry was made.", provider_quota_exceeded: "Gemini remained over quota after bounded retries. Completed work is preserved; retry when capacity is available.", workspace_cancelled: "This task was cancelled. Earlier completed work is preserved.", subscription_required_for_more_campaigns: "The Free Sandbox includes one complete campaign and three AI runs. Upgrade to continue.", plan_monthly_campaign_limit_reached: "This plan's monthly campaign limit has been reached. Upgrade or wait for the next month.", plan_monthly_token_limit_reached: "This plan's monthly AI token limit has been reached. Completed work is preserved; upgrade or wait until next month.", workspace_retry_limit_reached: "This campaign has reached its three-retry limit. Review the saved result or start a new campaign.", workspace_not_retryable: "Only a failed work pack can be retried." };
-const errorTextAr: Record<string, string> = { workspace_model_not_configured: "عمال نموذج Gemini غير متصل. تم حفظ موجزك ولم يبدأ أي توليد.", workspace_not_found: "لم يتم العثور على هذه المهمة في مساحة عملك.", workspace_brief_invalid: "اكتب موجزاً بين 30 و6,000 حرف.", workspace_source_facts_invalid: "أضف حقائق المصدر بين 20 و6,000 حرف.", workspace_title_invalid: "استخدم عنواناً بين 3 و120 حرفاً.", inference_outcome_unknown: "لم ينتهِ طلب Gemini بنتيجة مؤكدة. أُوقفت الاستدلالات لمزيد من المراجعة.", output_rejected: "لم تستوفِ النتيجة حدود المستند أو السياق. العمل المكتمل محفوظ ويحتاج إلى مراجعة المشغّل.", provider_quota_exceeded: "بقي Gemini فوق حد الحصة بعد محاولات محدودة. العمل المكتمل محفوظ؛ أعد المحاولة عند توفر السعة.", workspace_cancelled: "أُلغيت هذه المهمة، والعمل المكتمل محفوظ.", subscription_required_for_more_campaigns: "يشمل الصندوق المجاني حملة كاملة واحدة وثلاث عمليات تشغيل ذكاء اصطناعي. ارتقِ للمتابعة.", plan_monthly_campaign_limit_reached: "تم بلوغ الحد الشهري للحملات في هذه الخطة. ارتقِ أو انتظر الشهر التالي.", plan_monthly_token_limit_reached: "بلغت خطتك حد وحدات الذكاء الاصطناعي الشهري. عملك المكتمل محفوظ؛ ارتقِ بالخطة أو انتظر الشهر التالي.", workspace_retry_limit_reached: "بلغت هذه الحملة حد المحاولات الثلاث. راجع النتيجة المحفوظة أو ابدأ حملة جديدة.", workspace_not_retryable: "يمكن إعادة محاولة حزمة عمل متوقفة فقط." };
+const errorText: Record<string, string> = { workspace_dialect_invalid: "Choose a valid Arabic content dialect.", workspace_model_not_configured: "The Gemini model worker is not connected. Your brief is saved; no generation has started.", workspace_not_found: "This assignment was not found in your workspace.", workspace_brief_invalid: "Write a brief between 30 and 6,000 characters.", workspace_source_facts_invalid: "Add source facts between 20 and 6,000 characters.", workspace_title_invalid: "Use a title between 3 and 120 characters.", inference_outcome_unknown: "The Gemini request did not finish with a confirmed result. Further inference is stopped for operator review.", output_rejected: "The result did not meet the document or context limits. Completed work is preserved; an operator must review the failure.", model_unavailable: "The configured Gemini connection or model identity could not be verified.", provider_request_rejected: "Google Gemini rejected the request. No automatic retry was made.", provider_quota_exceeded: "Gemini remained over quota after bounded retries. Completed work is preserved; retry when capacity is available.", workspace_cancelled: "This task was cancelled. Earlier completed work is preserved.", subscription_required_for_more_campaigns: "The Free Sandbox includes one complete campaign and three AI runs. Upgrade to continue.", plan_monthly_campaign_limit_reached: "This plan's monthly campaign limit has been reached. Upgrade or wait for the next month.", plan_monthly_token_limit_reached: "This plan's monthly AI token limit has been reached. Completed work is preserved; upgrade or wait until next month.", workspace_retry_limit_reached: "This campaign has reached its three-retry limit. Review the saved result or start a new campaign.", workspace_not_retryable: "Only a failed work pack can be retried." };
+const errorTextAr: Record<string, string> = { workspace_dialect_invalid: "اختر لهجة محتوى عربية صحيحة.", workspace_model_not_configured: "محرك الذكاء الاصطناعي غير متصل. حُفظ موجزك ولم يبدأ أي توليد.", workspace_not_found: "لم يتم العثور على هذه المهمة في مساحة عملك.", workspace_brief_invalid: "اكتب موجزاً بين 30 و6,000 حرف.", workspace_source_facts_invalid: "أضف حقائق المصدر بين 20 و6,000 حرف.", workspace_title_invalid: "استخدم عنواناً بين 3 و120 حرفاً.", inference_outcome_unknown: "لم ينتهِ طلب Gemini بنتيجة مؤكدة. أُوقفت الاستدلالات لمزيد من المراجعة.", output_rejected: "لم تستوفِ النتيجة حدود المستند أو السياق. العمل المكتمل محفوظ ويحتاج إلى مراجعة المشغّل.", provider_quota_exceeded: "بقي Gemini فوق حد الحصة بعد محاولات محدودة. العمل المكتمل محفوظ؛ أعد المحاولة عند توفر السعة.", workspace_cancelled: "أُلغيت هذه المهمة، والعمل المكتمل محفوظ.", subscription_required_for_more_campaigns: "تشمل التجربة المجانية حملة متكاملة واحدة وثلاث عمليات توليد بالذكاء الاصطناعي. ارتقِ للمتابعة.", plan_monthly_campaign_limit_reached: "تم بلوغ الحد الشهري للحملات في هذه الخطة. ارتقِ أو انتظر الشهر التالي.", plan_monthly_token_limit_reached: "بلغت خطتك حد وحدات الذكاء الاصطناعي الشهري. عملك المكتمل محفوظ؛ ارتقِ بالخطة أو انتظر الشهر التالي.", workspace_retry_limit_reached: "بلغت هذه الحملة حد المحاولات الثلاث. راجع النتيجة المحفوظة أو ابدأ حملة جديدة.", workspace_not_retryable: "يمكن إعادة محاولة حزمة عمل متوقفة فقط." };
 const date = (value: string, locale: "ar" | "en") => formatDateTime(value, locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 
 export function AgencyWorkspace() {
@@ -39,6 +40,7 @@ export function AgencyWorkspace() {
   const [feedback, setFeedback] = useState("");
   const [profile, setProfile] = useState("team");
   const [language, setLanguage] = useState("en");
+  const [dialect, setDialect] = useState<DialectId>("msa");
   const [title, setTitle] = useState("");
   const [brief, setBrief] = useState("");
   const [facts, setFacts] = useState("");
@@ -121,7 +123,7 @@ export function AgencyWorkspace() {
     const startNow = startAfterSave.current;
     startAfterSave.current = false;
     void (async () => {
-      const id = await command({ action: "create", title, brief, source_facts: facts, language, profile, idempotency_key: key.current });
+      const id = await command({ action: "create", title, brief, source_facts: facts, language, profile, dialect: language === "ar" ? dialect : undefined, idempotency_key: key.current });
       if (startNow && id) await command({ action: "start", id });
     })();
   }
@@ -129,7 +131,9 @@ export function AgencyWorkspace() {
   function newAssignment() {
     startAfterSave.current = false;
     setCreating(true); setError(""); setNotice(""); key.current = null;
-    setLanguage(locale === "ar" ? "ar" : "en");
+    const nextLanguage = locale === "ar" ? "ar" : "en";
+    setLanguage(nextLanguage);
+    setDialect(data?.default_dialect ?? "msa");
     setTimeout(() => heading.current?.focus(), 0);
   }
 
@@ -146,6 +150,7 @@ export function AgencyWorkspace() {
         facts: "The price is 180 JOD instead of 240 when registering before 20 January. The course includes 8 weekly sessions, a hands-on workshop and an attendance certificate. It starts on 3 February in Amman with 18 seats. The trainer is a certified digital marketing practitioner. There is no job guarantee, and unverified sales figures must not be used.",
       };
     setTitle(example.title); setBrief(example.brief); setFacts(example.facts); setLanguage(kind);
+    if (kind === "ar") setDialect(data?.default_dialect ?? "msa");
     key.current = null; startAfterSave.current = false; setError("");
   }
 
@@ -166,10 +171,13 @@ export function AgencyWorkspace() {
 
   const tabsSpec = [["deliverable", ar ? "التسليم" : "Deliverable", FileText], ["context", ar ? "السياق المشترك" : "Shared context", BookOpen], ["history", ar ? "النشاط" : "Activity", ClipboardList]] as const;
   const quota = data?.quota;
-  const planName = quota?.plan_tier ? `${quota.plan_tier[0].toUpperCase()}${quota.plan_tier.slice(1)}` : "";
+  const planName = quota?.plan_tier
+    ? (ar ? ({ starter: "البداية", growth: "النمو", scale: "التوسع" } as Record<string, string>)[quota.plan_tier] : `${quota.plan_tier[0].toUpperCase()}${quota.plan_tier.slice(1)}`)
+    : "";
+  const campaignForms = { zero: "لا حملات", one: "حملة واحدة", two: "حملتان", few: "{count} حملات", many: "{count} حملة", other: "{count} حملة" };
   const quotaLabel = quota ? (quota.is_sandbox
-    ? (ar ? `الصندوق المجاني: ${quota.campaigns_used} من ${quota.campaigns_limit} حملة · ${quota.runs_used} من ${quota.runs_limit} تشغيل ذكاء اصطناعي` : `Free Sandbox: ${quota.campaigns_used} of ${quota.campaigns_limit} campaign · ${quota.runs_used} of ${quota.runs_limit} AI runs used`)
-    : (ar ? `خطة ${planName}: ${quota.campaigns_used} من ${quota.campaigns_limit} حملة شهرياً` : `${planName} Plan: ${quota.campaigns_used} of ${quota.campaigns_limit} monthly campaigns used`)) : "";
+    ? (ar ? `التجربة المجانية: ${formatArabicCount(quota.campaigns_used, campaignForms)} من ${formatArabicCount(quota.campaigns_limit, campaignForms)} · ${formatArabicCount(quota.runs_used, { zero: "لا عمليات توليد", one: "عملية توليد واحدة", two: "عمليتا توليد", few: "{count} عمليات توليد", many: "{count} عملية توليد", other: "{count} عملية توليد" })} بالذكاء الاصطناعي` : `Free Sandbox: ${quota.campaigns_used} of ${quota.campaigns_limit} campaign · ${quota.runs_used} of ${quota.runs_limit} AI runs used`)
+    : (ar ? `باقة ${planName}: ${formatArabicCount(quota.campaigns_used, campaignForms)} من ${formatArabicCount(quota.campaigns_limit, campaignForms)} شهريًا` : `${planName} Plan: ${quota.campaigns_used} of ${quota.campaigns_limit} monthly campaigns used`)) : "";
 
   return <div className="agency-workspace">
     <header className="page-heading">
@@ -190,7 +198,7 @@ export function AgencyWorkspace() {
       {quota.is_sandbox ? <Link className="aw-quota-upgrade" href={quota.upgrade_url}>{ar ? "ترقية الخطة" : "Upgrade plan"} <ArrowRight size={15} /></Link> : null}
     </div> : null}
     {quota?.upgrade_required ? <section className="aw-upgrade-callout" role="status">
-      <div><strong>{ar ? "بلغت حد الصندوق المجاني" : "You have reached the Free Sandbox limit"}</strong><p>{ar ? "ارتقِ لبدء حملة أخرى وربط حسابات التواصل الحقيقية. سجل حملتك الحالي يبقى محفوظاً." : "Upgrade to start another campaign and connect live social accounts. Your existing campaign history stays intact."}</p></div>
+      <div><strong>{ar ? "بلغت حد التجربة المجانية" : "You have reached the Free Sandbox limit"}</strong><p>{ar ? "ارتقِ لبدء حملة أخرى وربط حسابات التواصل الحقيقية. سجل حملتك الحالي يبقى محفوظاً." : "Upgrade to start another campaign and connect live social accounts. Your existing campaign history stays intact."}</p></div>
       <Link className="button button-primary" href={quota.upgrade_url}>{ar ? "عرض الخطط" : "View plans"} <ArrowRight size={16} /></Link>
     </section> : null}
     {error ? <div className="aw-message aw-error" role="alert"><span>{error}</span><button className="button button-secondary" onClick={() => void load(selectedId)}><RefreshCw size={16} />{ar ? "تحديث" : "Refresh"}</button></div> : null}
@@ -217,6 +225,14 @@ export function AgencyWorkspace() {
               <label>{ar ? "عنوان المهمة" : "Assignment title"}<input required minLength={3} maxLength={120} value={title} onChange={(e) => { setTitle(e.target.value); key.current = null; }} placeholder={ar ? "حزمة عمل حملة الدورة الصيفية" : "Summer course campaign work pack"} /></label>
               <label>{ar ? "لغة المخرجات" : "Output language"}<select value={language} onChange={(e) => { setLanguage(e.target.value); key.current = null; }}><option value="en">English</option><option value="ar">العربية — Arabic</option></select></label>
             </div>
+            {language === "ar" ? <div className="aw-dialect-field">
+              <label>{ar ? "لهجة المحتوى" : "Content dialect"}<select value={dialect} onChange={(e) => { setDialect(e.target.value as DialectId); key.current = null; }}>{DIALECTS.map((item) => <option key={item.id} value={item.id}>{dialectLabel(item.id, locale)}</option>)}</select></label>
+              <small>{data.default_dialect_source === "brand_kit"
+                ? (ar ? "محددة من لهجة هويتك البصرية، ويمكنك تغييرها لهذا الموجز." : "From your brand kit; you can change it for this brief.")
+                : data.default_dialect_source === "location"
+                  ? (ar ? "محددة تلقائيًا حسب موقع نشاطك، ويمكنك تغييرها لهذا الموجز." : "Selected automatically from your business location; you can change it for this brief.")
+                  : (ar ? "الفصحى المعاصرة هي اللهجة الافتراضية، ويمكنك اختيار لهجة أخرى." : "White Arabic is the default; choose another dialect if you prefer.")}</small>
+            </div> : null}
             <label>{ar ? "من يعمل على المهمة؟" : "Who should work on it?"}<select value={profile} onChange={(e) => { setProfile(e.target.value); key.current = null; }}><option value="team">{ar ? "حزمة عمل الحملة — المختصون الستة" : "Campaign Work Pack — all six specialists"}</option>{data.profiles.map((p) => <option key={p.code} value={p.code}>{agentDisplayName(p.name, ar)} — {p.deliverable}</option>)}</select></label>
             <div className="aw-team-preview" aria-label={ar ? "المختصون المحددون" : "Selected specialists"}>{data.profiles.filter((p) => profile === "team" || p.code === profile).map((p, i) => <span key={p.code}>{i > 0 ? <ArrowRight size={14} /> : null}{agentDisplayName(p.name, ar)}</span>)}</div>
             <label>{ar ? "موجز المهمة" : "Task brief"}<textarea required minLength={30} maxLength={6000} rows={4} value={brief} onChange={(e) => { setBrief(e.target.value); key.current = null; }} placeholder={ar ? "صف الجمهور والهدف والقنوات المسموح بها والنبرة والمخرجات. مثال: مسودات إنستغرام عضوية لدورتنا دون إعلانات مدفوعة." : "Describe the audience, outcome, allowed channels, tone and deliverables. For example: prepare organic Instagram drafts for our course; no paid ads."} /></label>
@@ -229,10 +245,10 @@ export function AgencyWorkspace() {
             </div>
             <p className="aw-muted aw-submit-note">{data.runtime.ready
               ? (ar ? "يُحفظ الموجز فوراً. يبدأ المختصون العمل بعد الحفظ، وتبقى كل النتائج مقترحات بانتظار اعتمادك." : "Your brief is saved immediately. Specialists start after saving, and every result stays a proposal until you approve it.")
-              : (ar ? "يُحفظ موجزك فوراً ويمكنك العودة إليه في أي وقت. يتاح زر «احفظ وابدأ الآن» عندما يصبح عامل النموذج المباشر متصلاً." : "Your brief is saved immediately and stays available in your workspace. “Save & start now” activates when the live model worker is connected.")}</p>
+              : (ar ? "يُحفظ موجزك فوراً ويمكنك العودة إليه في أي وقت. يتاح زر «احفظ وابدأ الآن» عندما يصبح محرك الذكاء الاصطناعي متصلاً." : "Your brief is saved immediately and stays available in your workspace. “Save & start now” activates when the live model worker is connected.")}</p>
           </form> : selected ? <>
             <header className="aw-assignment-header">
-              <div><span className={`aw-state aw-state-${selected.status}`}>{stateLabel(selected.status)}</span><h2>{selected.title}</h2><p>{selected.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")} · {selected.profile_codes.length} {ar ? "مختص" : `specialist${selected.profile_codes.length === 1 ? "" : "s"}`} · {ar ? "أُنشئت" : "Created"} {date(selected.created_at, locale)}</p></div>
+              <div><span className={`aw-state aw-state-${selected.status}`}>{stateLabel(selected.status)}</span><h2>{selected.title}</h2><p>{selected.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")}{selected.language === "ar" ? ` · ${dialectLabel(selected.dialect ?? "msa", locale)}` : ""} · {ar ? formatArabicCount(selected.profile_codes.length, { zero: "لا مختصين", one: "مختص واحد", two: "مختصان", few: "{count} مختصين", many: "{count} مختصًا", other: "{count} مختص" }) : `${selected.profile_codes.length} specialist${selected.profile_codes.length === 1 ? "" : "s"}`} · {ar ? "أُنشئت" : "Created"} {date(selected.created_at, locale)}</p></div>
               <div className="aw-actions">
                 {selected.steps.some((s) => s.result) ? <button className="button button-secondary" onClick={download}><Download size={16} />{ar ? "تصدير الحزمة" : "Export pack"}</button> : null}
                 {data.can_manage && selected.status === "draft" ? <button className="button button-primary" disabled={busy || !data.runtime.ready} onClick={() => void command({ action: "start", id: selected.id })}><Play size={16} />{busy ? (ar ? "جارٍ البدء…" : "Starting…") : (ar ? "بدء المهمة" : "Start assignment")}</button> : null}
@@ -249,7 +265,7 @@ export function AgencyWorkspace() {
               <h3>{ar ? "مختصوك" : "Your specialists"}</h3>
               <ol className="aw-roster-preview">{selected.profile_codes.map((code) => <li key={code}><strong>{who(code)}</strong><span>{data.profiles.find((p) => p.code === code)?.deliverable}</span></li>)}</ol>
             </section> : <>
-              <div className="aw-progress" aria-label={ar ? "تقدم المهام" : "Task progress"}><span>{ar ? `${formatNumber(selected.steps.filter((s) => s.status === "succeeded").length, locale)} من ${formatNumber(selected.steps.length, locale)} مخرجات جاهزة` : `${selected.steps.filter((s) => s.status === "succeeded").length} of ${selected.steps.length} deliverables ready`}</span><progress max={selected.steps.length || 1} value={selected.steps.filter((s) => s.status === "succeeded").length} /><small>{ar ? "حالة مسجّلة · تُحدَّث كل 5 ثوانٍ" : "Recorded task state · refreshes every 5 seconds"}</small></div>
+              <div className="aw-progress" aria-label={ar ? "تقدم المهام" : "Task progress"}><span>{ar ? `${formatArabicCount(selected.steps.filter((s) => s.status === "succeeded").length, { zero: "لا مخرجات جاهزة", one: "مخرج واحد جاهز", two: "مخرجان جاهزان", few: "{count} مخرجات جاهزة", many: "{count} مخرجًا جاهزًا", other: "{count} مخرج جاهز" })} من ${formatArabicCount(selected.steps.length, { zero: "لا مخرجات", one: "مخرج واحد", two: "مخرجان", few: "{count} مخرجات", many: "{count} مخرجًا", other: "{count} مخرج" })}` : `${selected.steps.filter((s) => s.status === "succeeded").length} of ${selected.steps.length} deliverables ready`}</span><progress max={selected.steps.length || 1} value={selected.steps.filter((s) => s.status === "succeeded").length} /><small>{ar ? "حالة مسجّلة · تُحدَّث كل 5 ثوانٍ" : "Recorded task state · refreshes every 5 seconds"}</small></div>
               <div className="aw-workbench">
                 <nav className="aw-roster" aria-label={ar ? "مهام المختصين" : "Specialist tasks"}>{selected.steps.map((s) => <button key={s.task_id} onClick={() => { setSelectedStep(s.sequence); setTab("deliverable"); }} className={step?.task_id === s.task_id ? "aw-selected" : ""} aria-pressed={step?.task_id === s.task_id}><span className={`aw-step-number aw-step-${s.status}`}>{s.status === "succeeded" ? <Check size={16} /> : s.sequence}</span><span><strong>{who(s.profile_code)}</strong><small>{s.status === "queued" && s.sequence > 1 ? (ar ? "بانتظار تسليم الزميل السابق" : "Waiting for prior handoff") : stateLabel(s.status)}</small></span></button>)}</nav>
                 <div className="aw-artifact-panel">
