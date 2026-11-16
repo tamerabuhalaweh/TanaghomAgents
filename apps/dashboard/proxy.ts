@@ -14,6 +14,7 @@ const PUBLIC_PAGES = new Set([
   "/forgot-password",
   "/reset-password",
   "/accept-invite",
+  "/super-admin",
 ]);
 
 export function proxy(request: NextRequest) {
