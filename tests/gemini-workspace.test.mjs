@@ -115,6 +115,28 @@ test('gemini adapter: missing model, non-text model and credentials are rejected
  assert.equal(calls,1);
 });
 
+test('gemini adapter: a stalled attempt aborts at the per-attempt timeout and retries cleanly',async()=>{
+ let calls=0;const delays=[];
+ const client=createGeminiWorkspaceClient({apiKey:key,timeoutMs:3000,attemptTimeoutMs:1000,retryDelaysMs:[1],sleep:async(ms)=>{delays.push(ms);},
+  fetch:async(_url,init)=>{
+   calls+=1;
+   if(calls===1)return new Promise((_,reject)=>{
+    const keepAlive=setTimeout(()=>{},5000);
+    init.signal.addEventListener('abort',()=>{clearTimeout(keepAlive);reject(Object.assign(new Error('The operation was aborted due to timeout'),{name:'TimeoutError'}));},{once:true});
+   });
+   return new Response(JSON.stringify({modelVersion:model,candidates:[{finishReason:'STOP',content:{parts:[{text:'A retried document.'}]}}]}),{status:200,headers:{'content-type':'application/json'}});
+  }});
+ const result=await client.generate(model,{contents:[]});
+ assert.equal(result.candidates[0].finishReason,'STOP');
+ assert.equal(calls,2);assert.deepEqual(delays,[1]);
+});
+
+test('gemini adapter: upstream status and sanitized error message are retained on failure',async()=>{
+ const client=createGeminiWorkspaceClient({apiKey:key,retryDelaysMs:[],fetch:async()=>new Response(JSON.stringify({error:{message:`API key ${key} is invalid`}}),{status:400,headers:{'content-type':'application/json'}})});
+ await assert.rejects(client.generate(model,{contents:[]}),e=>e.code==='provider_request_rejected'&&e.status===400
+  &&e.details.http_status===400&&e.upstream_error.includes('is invalid')&&!e.upstream_error.includes(key));
+});
+
 test('gemini adapter: retry delays and attempts share one bounded generation deadline',async()=>{
  let calls=0;
  const client=createGeminiWorkspaceClient({apiKey:key,timeoutMs:120,retryDelaysMs:[1000,1000],

@@ -8,10 +8,12 @@ export const workspaceHash = createHash('sha256').update(JSON.stringify(workspac
 const profiles = new Map(workspaceManifest.profiles.map(p => [p.code, p]));
 const safeText = value => typeof value === 'string' && !/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/u.test(value);
 export class WorkspaceOutputError extends Error {
-  constructor(code) {
+  constructor(code, details = null) {
     super(code);
     this.name = 'WorkspaceOutputError';
     this.code = code;
+    this.details = details;
+    this.finish_reason = details?.finish_reason ?? null;
   }
 }
 export function workspaceRequest(task, contextLimit, outputLimit = workspaceManifest.max_output_tokens) {
@@ -34,10 +36,15 @@ export function workspaceRequest(task, contextLimit, outputLimit = workspaceMani
   const inputByteBound = Buffer.byteLength(system,'utf8') + Buffer.byteLength(user,'utf8') + 512;
   if (!Number.isInteger(contextLimit) || contextLimit < 2048 || !Number.isInteger(outputLimit)
     || outputLimit < max_tokens || inputByteBound + max_tokens > contextLimit) throw new Error('workspace_context_budget');
+  // Gemini 3 models reject the legacy thinkingBudget field; use the same
+  // low-latency thinking level verified against the live v1beta endpoint.
+  const thinkingConfig = /^gemini-3(?:[.-]|$)/.test(task.model)
+    ? { thinkingLevel: 'low' }
+    : { thinkingBudget: 0 };
   const request = {
     systemInstruction: { parts: [{ text: system }] },
     contents: [{ role: 'user', parts: [{ text: user }] }],
-    generationConfig: { temperature: 0.3, maxOutputTokens: max_tokens, responseMimeType: 'text/plain', thinkingConfig: { thinkingBudget: 0 } },
+    generationConfig: { temperature: 0.3, maxOutputTokens: max_tokens, responseMimeType: 'text/plain', thinkingConfig },
   };
   if (Buffer.byteLength(JSON.stringify(request)) > workspaceManifest.max_request_bytes) throw new Error('workspace_request_budget');
   return request;
@@ -52,16 +59,22 @@ export function workspaceArtifact(task, response, elapsedMs) {
       : '\n\nThese are draft documents for human review. No publishing, messages or CRM updates occurred. This assignment contains no measured sales or conversion results.';
     kind = 'deterministic_summary';
   } else {
-    if (response?.promptFeedback?.blockReason) throw new WorkspaceOutputError('provider_request_rejected');
+    if (response?.promptFeedback?.blockReason) {
+      throw new WorkspaceOutputError('provider_request_rejected', { block_reason: response.promptFeedback.blockReason });
+    }
     const candidate = response?.candidates?.[0];
     const finish = candidate?.finishReason;
     if (finish !== 'STOP') {
-      if (['SAFETY','RECITATION','BLOCKLIST','PROHIBITED_CONTENT','SPII'].includes(finish)) throw new WorkspaceOutputError('provider_request_rejected');
-      throw new WorkspaceOutputError('output_rejected');
+      if (['SAFETY','RECITATION','BLOCKLIST','PROHIBITED_CONTENT','SPII'].includes(finish)) {
+        throw new WorkspaceOutputError('provider_request_rejected', { finish_reason: finish });
+      }
+      throw new WorkspaceOutputError('output_rejected', { finish_reason: finish ?? null });
     }
     const parts = candidate?.content?.parts;
-    if (!Array.isArray(parts) || !parts.length) throw new WorkspaceOutputError('output_rejected');
-    if (parts.some(part => part?.functionCall || part?.functionResponse || part?.inlineData)) throw new WorkspaceOutputError('output_rejected');
+    if (!Array.isArray(parts) || !parts.length) throw new WorkspaceOutputError('output_rejected', { finish_reason: finish });
+    if (parts.some(part => part?.functionCall || part?.functionResponse || part?.inlineData)) {
+      throw new WorkspaceOutputError('output_rejected', { finish_reason: finish, output_kind: 'tool_call' });
+    }
     document = parts.filter(part => part?.thought !== true).map(part => part?.text).filter(text => typeof text === 'string').join('');
     const actualModel = response?.modelVersion;
     const modelPattern = new RegExp(`^${task.model.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}(?:-\\d{3})?$`);

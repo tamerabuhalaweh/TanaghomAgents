@@ -10,7 +10,7 @@ import { parseOrganizationAgentDraft, agentValidationReport } from "@/lib/server
 import { assertWorkspaceStartAllowed,loadWorkspaceQuota,loadWorkspaceUsage,WorkspaceQuotaError } from "@/lib/server/workspace-quotas";
 import { mapWorkspaceStateError } from "@/lib/server/workspace-state-error";
 const requireRuntime=process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`);
-const { workspaceManifest, workspaceRequest, workspaceArtifact }: typeof import("@tanaghom/agent-runtime/workspace")
+const { workspaceManifest, workspaceRequest, workspaceArtifact, WorkspaceOutputError }: typeof import("@tanaghom/agent-runtime/workspace")
  = requireRuntime("@tanaghom/agent-runtime/workspace");
 const { createGeminiWorkspaceClient, GeminiWorkspaceError }: typeof import("@tanaghom/agent-runtime/gemini-workspace")
  = requireRuntime("@tanaghom/agent-runtime/gemini-workspace");
@@ -210,6 +210,12 @@ export async function workspaceWrite(request:NextRequest){
  }catch(error){throw workspaceStateError(error)??error;}
 }
 
+function workspaceDiagnostic(error:unknown){
+ if(error instanceof GeminiWorkspaceError||error instanceof WorkspaceOutputError)return error.details??null;
+ if(error instanceof Error&&["TimeoutError","AbortError"].includes(error.name))return {error_name:error.name,error_message:error.message.slice(0,300)};
+ return null;
+}
+
 function workspaceFailure(error:unknown){
  if(error instanceof WorkspaceError)return error.code;
  if(error instanceof GeminiWorkspaceError)return error.code;
@@ -255,7 +261,7 @@ export async function workspaceTick(request:NextRequest){
    task={...task,dialect:resolveArabicDialect({campaignDialect:context?.brief_dialect,brandKitDialect:context?.brand_dialect,location:context?.location})};
   }catch{task={...task,dialect:"msa"};}
  }
- let artifact=null,errorCode:string|null=null;const started=Date.now();
+ let artifact=null,errorCode:string|null=null,errorDetail:Record<string,unknown>|null=null;const started=Date.now();
  try{
   let output=null;
   const isGemma=task.model==="gemma4-26b-a4b-canary";
@@ -274,7 +280,7 @@ export async function workspaceTick(request:NextRequest){
    output=await responseJson(response);
   }else if(task.profile!=="executive_summary"){
    if(!apiKey)throw new WorkspaceError("model_unavailable");
-   const client=createGeminiWorkspaceClient({apiKey,timeoutMs:130_000});
+   const client=createGeminiWorkspaceClient({apiKey,timeoutMs:130_000,attemptTimeoutMs:45_000});
    const inventory=await verifiedInventory(client,task.model,apiKey);
    if(inventory.id!==task.model)throw new WorkspaceError("model_unavailable");
    const payload=workspaceRequest(task,inventory.inputTokenLimit,inventory.outputTokenLimit);
@@ -282,19 +288,25 @@ export async function workspaceTick(request:NextRequest){
    output=await client.generate(task.model,payload);
   }
   artifact=isGemma?legacy.workspaceArtifact(task,output,Date.now()-started):workspaceArtifact(task,output,Date.now()-started);
- }catch(error){errorCode=workspaceFailure(error);}
+ }catch(error){errorCode=workspaceFailure(error);errorDetail=workspaceDiagnostic(error);}
  const completed=(await pool.query("SELECT tanaghom.complete_agency_workspace_task($1,$2,$3,$4) AS result",[task.task_id,task.lease_token,artifact,errorCode])).rows[0].result;
  try{
   const context=(await database().query(`SELECT w.id AS workspace_id,w.organization_id,actor.id AS actor_user_id
    FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_workspaces w ON w.id=s.workspace_id
    JOIN tanaghom.app_users actor ON actor.id=w.requested_by AND actor.organization_id=w.organization_id AND actor.is_active
    WHERE s.task_id=$1`,[task.task_id])).rows[0];
-  if(context)await database().query(`INSERT INTO tanaghom.agent_actions_log
+  if(context){
+   if(errorCode&&errorDetail)await database().query(`INSERT INTO tanaghom.agency_pilot_events
+    (organization_id,task_id,event_type,reference_id,evidence)
+    SELECT $1,id,'failed',id,$3::jsonb FROM tanaghom.agency_pilot_tasks WHERE id=$2`,
+    [context.organization_id,task.task_id,JSON.stringify({reason:errorCode,diagnostic:errorDetail,source:"workspace_tick"})]);
+   await database().query(`INSERT INTO tanaghom.agent_actions_log
    (correlation_id,actor_user_id,action_type,entity_type,entity_id,organization_id,payload,result)
    VALUES($1,$2,$3,'agency_workspace',$4,$5,$6::jsonb,$7)`,[randomUUID(),context.actor_user_id,
    errorCode?"workspace.inference_failed":"workspace.inference_succeeded",context.workspace_id,context.organization_id,
-   JSON.stringify({task_id:task.task_id,workspace_id:context.workspace_id,error_code:errorCode,usage:artifact?.usage||null,
+   JSON.stringify({task_id:task.task_id,workspace_id:context.workspace_id,error_code:errorCode,diagnostic:errorDetail,usage:artifact?.usage||null,
     elapsed_ms:Date.now()-started,external_actions:0}),errorCode?"failed":"success"]);
+  }
  }catch{/* completion is durable; audit transport must not redeliver it */}
  return {claimed:true,task_id:task.task_id,...completed};
 }

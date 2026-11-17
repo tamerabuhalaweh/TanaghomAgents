@@ -39,12 +39,13 @@ test("fresh-install role configuration delegates workspace functions to 0053", a
   const configure = await read("deployment/dashboard-demo/sql/configure-api-role.sql");
   for (const name of [
     "complete_agency_workspace_task",
-    "claim_agency_workspace_task_for_models",
     "claim_agency_workspace_task",
     "decide_agency_workspace",
   ]) {
-    assert.doesNotMatch(configure, new RegExp(`CREATE OR REPLACE FUNCTION tanaghom\\.${name}`));
+    assert.doesNotMatch(configure, new RegExp(`CREATE OR REPLACE FUNCTION tanaghom\\.${name}\\(`));
   }
+  assert.match(configure, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task_for_models/);
+  assert.match(configure, /lease_expires_at=now\(\)\+interval '300 seconds'/);
   assert.match(configure, /<> 50/);
   assert.match(configure, /0053_workspace_step_retry/);
   assert.match(configure, /set_agency_workspace_circuit_breaker/);
@@ -56,7 +57,7 @@ test("Gemini workspace calls use the 130s deadline and map stopped retries to 40
   const { mapWorkspaceStateError } = await import("../apps/dashboard/lib/server/workspace-state-error.ts");
 
   assert.equal(manifest.timeout_ms, 90_000);
-  assert.match(server, /createGeminiWorkspaceClient\(\{apiKey,timeoutMs:130_000\}\)/);
+  assert.match(server, /createGeminiWorkspaceClient\(\{apiKey,timeoutMs:130_000,attemptTimeoutMs:45_000\}\)/);
   assert.doesNotMatch(server, /createGeminiWorkspaceClient\(\{apiKey,timeoutMs:workspaceManifest\.timeout_ms\}\)/);
   assert.match(server, /mapWorkspaceStateError\(error\)/);
   assert.match(server, /throw workspaceStateError\(error\)\?\?error/g);
@@ -86,4 +87,8 @@ test("workspace retry errors have natural English and White-Arabic copy", async 
   assert.match(ui, /workspace_runtime_stopped: "توليد المحتوى متوقف مؤقتًا من المنصة\./);
   assert.match(ui, /Your completed work is preserved; retry when generation resumes\./);
   assert.match(ui, /عملك المكتمل محفوظ؛ يمكنك إعادة المحاولة بعد استئناف التوليد\./);
+  assert.match(ui, /The Gemini request timed out before a confirmed result\. Completed work is preserved; click “Retry failed step” to continue\./);
+  assert.match(ui, /انتهت مهلة طلب Gemini قبل تأكيد النتيجة\. عملك المكتمل محفوظ؛ اضغط «إعادة محاولة الخطوة المتوقفة» للمتابعة\./);
+  assert.doesNotMatch(ui, /Further inference is stopped for operator review/);
+  assert.doesNotMatch(ui, /أُوقفت الاستدلالات لمزيد من المراجعة/);
 });

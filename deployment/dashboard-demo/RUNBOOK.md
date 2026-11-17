@@ -2,7 +2,7 @@
 
 > **Current target:** `13.60.253.82`, root `/home/ubuntu/tanaghom-demo`. This runbook
 > documents the Phase 1 cutover that runs there today: dashboard, PostgreSQL 17,
-> RustFS, the `gemini-3.6-flash` workspace worker and a draft-only Postiz stack.
+> RustFS, the `gemini-3.5-flash-lite` workspace worker and a draft-only Postiz stack.
 > The historical Astra host is retired and is not a target for any step below.
 > Take a verified backup (`demo-backup.sh`) before changing anything.
 
@@ -151,7 +151,7 @@ TANAGHOM_DEMO_SECRETS_DIR=/home/ubuntu/tanaghom-demo/runtime/secrets \
 
 The worker polls the internal dashboard endpoint with the 64-hex worker token. It has no host
 port, no database credentials, no provider key, and no external-action capability. The Gemini
-model (`gemini-3.6-flash`) is verified against the provider inventory (cached for ten minutes per
+model (`gemini-3.5-flash-lite`) is verified against the provider inventory (cached for ten minutes per
 dashboard process) before specialist requests; failures are recorded as explicit workspace errors and stop further inference for human
 review.
 
