@@ -41,7 +41,7 @@
     },
     {
       "path": "package-lock.json",
-      "sha256": "e6580989388f6d7ed10b094c8f3fea24c548406516e9631680a2238f07a3c70d"
+      "sha256": "98487339db639c2a5f1d4a1ab6b19946b478b752ad5dc1d2583f617de1e702a1"
     },
     {
       "path": "packages/agent-runtime/agency-pilot.mjs",

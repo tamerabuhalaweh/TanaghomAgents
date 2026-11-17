@@ -12,7 +12,11 @@ test("Packet G step retry replaces failed steps without mutating terminal tasks"
 
   // Fresh installs must not overwrite the immutable 0053 contract.
   assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.complete_agency_workspace_task/);
-  assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task_for_models/);
+  // The claim function is repeated only to widen the lease to 300 seconds; it
+  // must carry the same 0053 claim body otherwise.
+  assert.match(configure, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task_for_models/);
+  assert.match(configure, /lease_expires_at=now\(\)\+interval '300 seconds'/);
+  assert.match(configure, /a\.status='queued' AND a\.attempt=0 AND x\.status IN \('queued','running'\)/);
   assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task\(\)/);
   assert.doesNotMatch(configure, /CREATE OR REPLACE FUNCTION tanaghom\.decide_agency_workspace/);
   assert.match(configure, /CREATE OR REPLACE FUNCTION tanaghom\.set_agency_workspace_circuit_breaker/);
@@ -48,7 +52,8 @@ test("Packet D1 enforces sandbox and paid monthly quotas under one advisory lock
   assert.match(quota, /scale: 200/);
   assert.match(quota, /SANDBOX_CAMPAIGN_LIMIT = 1/);
   assert.match(quota, /SANDBOX_RUN_LIMIT = 3/);
-  assert.match(quota, /status <> 'draft'/);
+  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved'\)/);
+  assert.match(quota, /workspace\.status = 'failed' AND EXISTS/);
   assert.match(quota, /event_type IN \('started', 'resumed'\)/);
   assert.match(quota, /started_at >= date_trunc\('month', now\(\)\)/);
   assert.match(quota, /subscription_required_for_more_campaigns/);

@@ -32,11 +32,11 @@ test('security overrides keep audited URI and image dependencies on patched rele
   assert.equal(manifest.overrides['fast-uri'], '3.1.9');
   assert.equal(manifest.overrides.postcss, '$postcss');
   assert.equal(manifest.overrides.sharp, '$sharp');
-  assert.equal(manifest.devDependencies.next, '16.4.3');
+  assert.equal(manifest.devDependencies.next, '16.4.6');
   assert.equal(manifest.devDependencies.postcss, '8.5.23');
   assert.equal(manifest.devDependencies.sharp, '0.35.5');
   assert.equal(lock.packages['node_modules/fast-uri'].version, '3.1.9');
-  assert.equal(lock.packages['node_modules/next'].version, '16.4.3');
+  assert.equal(lock.packages['node_modules/next'].version, '16.4.6');
   assert.equal(lock.packages['node_modules/postcss'].version, '8.5.23');
   assert.equal(lock.packages['node_modules/nanoid'].version, '3.3.18');
   assert.equal(lock.packages['node_modules/sharp'].version, '0.35.5');

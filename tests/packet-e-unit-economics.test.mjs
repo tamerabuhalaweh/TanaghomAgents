@@ -26,12 +26,13 @@ test("Packet E defines per-tier token ceilings and the per-campaign retry cap", 
   assert.match(ui, /quota\.tokens_limit/);
 });
 
-test("active-subscriber quota count excludes the retried workspace before counting", () => {
+test("campaign quota counts active or delivered work, never a zero-deliverable failure", () => {
   const quota = read("apps/dashboard/lib/server/workspace-quotas.ts");
-  assert.match(
-    quota,
-    /workspace\.status <> 'draft'\s+AND workspace\.id <> \$2::uuid\s+AND \(NOT \$3::boolean OR workspace\.started_at >= date_trunc\('month', now\(\)\)\)\) AS campaigns_used/,
-  );
+  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved'\)/);
+  assert.match(quota, /workspace\.status = 'failed' AND EXISTS \(/);
+  assert.match(quota, /task\.status = 'succeeded'/);
+  assert.doesNotMatch(quota, /workspace\.status <> 'draft'/);
+  assert.match(quota, /task\.result->'usage' IS NOT NULL/);
 });
 
 test("unit economics uses one shared four-decimal AI cost estimator", () => {
