@@ -89,6 +89,11 @@
 .aw-task-empty p,.aw-welcome p { color:var(--muted);font-size:1rem; }
 .aw-review { margin-block-start:var(--space-2xl);padding:var(--space-xl);background:var(--primary-soft);display:flex;flex-direction:column;gap:var(--space-lg); }
 .aw-review p { font-size:1rem; }
+.aw-reject-confirm { flex-basis:100%;padding:var(--space-md);border:1px solid var(--border);border-radius:var(--radius-md);background:var(--surface);display:flex;flex-direction:column;gap:var(--space-sm); }
+.aw-reject-confirm p { margin:0;font-size:.875rem;font-weight:600; }
+.aw-decision-summary { margin-block-start:var(--space-xl);padding:var(--space-xl);border:1px solid var(--border);border-radius:var(--radius-md);display:flex;flex-direction:column;gap:var(--space-sm); }
+.aw-decision-summary h3 { margin:0; }
+.aw-decision-summary p { margin:0;font-size:.875rem;color:var(--muted); }
 .aw-cancel { margin-block-start:var(--space-xl);font-size:.875rem;color:var(--muted); }
 .aw-cancel .button { margin-block-start:var(--space-md); }
 .aw-loading { display:flex;gap:var(--space-xl);min-block-size:20rem; }

@@ -1,6 +1,7 @@
 import test from "node:test";
 import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import { workspaceRequest, workspaceArtifact } from "../packages/agent-runtime/workspace.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -22,7 +23,13 @@ test("1: Arabic register, gender-neutral addressing and lexical bans are enforce
   assert.match(msa, /White Arabic/);
   assert.match(msa, /zero colloquial words/);
   assert.match(msa, /مش, بتوفّر, خلّي, تخلي, بتدفع or لازم/);
-  assert.match(msa, /gender-neutral inclusive Arabic/);
+  assert.match(msa, /strict plural-polite, gender-neutral Arabic/);
+  assert.match(msa, /صيغة الجمع المحايدة المخاطبة للجميع/);
+  assert.match(msa, /مرحباً بكم في…/);
+  assert.match(msa, /هل تبحثون عن…؟/);
+  assert.match(msa, /never write مرحباً بك, مرحباً بكِ, هل تعبت, هل تبحث/);
+  assert.match(msa, /يوفر متجرنا/);
+  assert.match(msa, /never the feminine «توفر متجرنا»/);
   assert.match(msa, /بكِ/);
   assert.match(msa, /تحتاجينه/);
   assert.match(msa, /بطقس ذكي/);
@@ -32,6 +39,8 @@ test("1: Arabic register, gender-neutral addressing and lexical bans are enforce
   assert.match(system({ dialect: "levant" }), /Levantine Arabic[\s\S]{0,120}never slip into a second dialect/);
   // Hashtags are mandatory for content drafts only.
   assert.match(system({ profile: "content_creator" }), /3 to 5 relevant hashtags/);
+  assert.match(system({ profile: "content_creator" }), /Do not open the content draft pack with a "Missing Information Notice" section/);
+  assert.match(system({ profile: "content_creator" }), /start directly with ## Post 1, ## Post 2 and ## Post 3/);
   assert.doesNotMatch(system({ profile: "discovery_coach" }), /3 to 5 relevant hashtags/);
   // English-only briefs stay free of Arabic style rules.
   assert.doesNotMatch(system({ language: "en", dialect: undefined, brief: "Write organic Instagram posts." }), /White Arabic|اللهجة/);
@@ -60,6 +69,9 @@ test("2: brand guardian audits claims, Arabic spelling and the resolved dialect,
   assert.match(review, /openings, bodies, CTAs and hashtags/);
   assert.match(review, /Gulf Arabic \(Khaleeji\)/);
   assert.match(review, /اللهجة الخليجية/);
+  assert.match(review, /masculine-singular, NOT gender-neutral/);
+  assert.match(review, /Grammatical & Register Corrections \/ تصحيحات نحوية وأسلوبية/);
+  assert.match(review, /NEVER as factual mismatches/);
   assert.match(review, /Never claim the brief mandated Modern Standard Arabic/);
   assert.match(review, /exactly ONE review status line/);
   assert.match(review, /Review Status: Ready for Human Review after applying the corrections above/);
@@ -122,10 +134,10 @@ test("5: post cards skip missing-information notices, strip labels and hand off 
   assert.match(cards, /const STRUCTURAL_PREFIX = \/\^\(\?:opening\|headline\|hook\|body\|caption\|cta/);
   assert.match(cards, /export function stripStructuralPrefix/);
   assert.match(cards, /export function completeText/);
-  assert.match(cards, /const headlineSize = card\.headline\.length > 64 \? 42/);
+  assert.match(cards, /const headlineSize = card\.headline\.length > 120 \? 34/);
   assert.match(cards, /const bodyLines = fitLines\(card\.body, bodyPerLine, maxBodyLines\)/);
-  // The CTA badge must end on a word boundary, never mid-word.
-  assert.match(cards, /\{completeText\(card\.cta, 24\)\}/);
+  // The CTA badge wraps the full call to action, never a hard slice.
+  assert.match(cards, /const ctaLines = card\.cta \? fitLines\(card\.cta, ctaPerLine, 3\) : \[\]/);
   assert.doesNotMatch(cards, /card\.cta\.slice\(/);
   assert.match(cards, /from: "workspace", title: card\.headline, headline: card\.headline, body: card\.body, cta: card\.cta, lang: language/);
   assert.match(cards, /افتح البطاقة في استوديو التصاميم/);
@@ -170,11 +182,16 @@ test("9: the executive summary reports 6 of 6 and carries its own usage without 
   const report = { ...task, profile: "executive_summary", language: "en", dialect: "msa", shared_context: steps };
   const out = workspaceArtifact(report, null, 0);
   assert.match(out.document, /Saved deliverables: 6 of 6 \(5 specialist deliverables \+ this executive summary\)/);
+  assert.match(out.document, /Work pack total AI units \(Tasks 1–5\): 500/);
+  assert.match(out.document, /Work pack total generation time \(Tasks 1–5\): 5\.0s/);
+  assert.match(out.document, /Step 6 cost \(deterministic executive summary\): 0 units · 0\.0s/);
   assert.deepEqual(out.usage, { prompt_tokens: 0, completion_tokens: 0, total_tokens: 500 });
   assert.equal(out.elapsed_ms, 5000);
   assert.equal(out.kind, "deterministic_summary");
   const arabic = workspaceArtifact({ ...report, language: "ar" }, null, 0);
   assert.match(arabic.document, /المخرجات المحفوظة: 6 من 6 \(5 مخرجات متخصصة \+ هذا الملخص التنفيذي\)/);
+  assert.match(arabic.document, /إجمالي وحدات الحزمة \(المهام 1–5\): 500/);
+  assert.match(arabic.document, /تكلفة الخطوة 6 \(الملخص التنفيذي الحتمي\): 0 وحدة · 0\.0 ثانية/);
   const quota = read("apps/dashboard/lib/server/workspace-quotas.ts");
   assert.equal(quota.match(/COALESCE\(task\.result->>'kind',''\) <> 'deterministic_summary'/g).length, 2);
   const admin = read("apps/dashboard/lib/server/super-admin.ts");
@@ -189,6 +206,91 @@ test("11: a test-account password reset can clear the forced password change", (
   assert.match(admin, /mustChangePassword,\s*\}\);/);
   const login = read("apps/dashboard/components/login-form.tsx");
   assert.match(login, /window\.location\.assign\(body\.must_change_password \? "\/settings\/security" : "\/"\)/);
+});
+
+// Loads the pure card extractor out of the client component: transpile the
+// TSX, then satisfy its UI imports with inert stubs.
+function loadPostCards() {
+  const requireCjs = createRequire(import.meta.url);
+  const ts = requireCjs("typescript");
+  const source = read("apps/dashboard/components/workspace-post-cards.tsx");
+  const js = ts.transpileModule(source, {
+    fileName: "workspace-post-cards.tsx",
+    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX, esModuleInterop: true },
+  }).outputText;
+  const module = { exports: {} };
+  const stub = (id) => {
+    if (id === "react/jsx-runtime") return { jsx: () => null, jsxs: () => null, Fragment: "Fragment" };
+    if (id === "react") return { useRef: () => ({ current: null }), useState: () => [null, () => {}] };
+    if (id === "lucide-react") return { Download: () => null, ExternalLink: () => null, Sparkles: () => null };
+    if (id === "next/link") return { default: () => null };
+    if (id === "@/lib/client/use-locale") return { useLocale: () => ({ locale: "en" }) };
+    throw new Error(`unexpected import: ${id}`);
+  };
+  new Function("require", "module", "exports", js)(stub, module, module.exports);
+  return module.exports;
+}
+
+test("Packet J: three cards from the Post 1/2/3 draft, full copy and no hashtags in the CTA", () => {
+  const first = "Welcome to HomeStff (أشياء بيتي), your new online destination for home goods in Jordan!";
+  const third = "From kitchen tools to decor, discover the home essentials that make everyday living in Amman calmer and easier";
+  const draft = [
+    "# HomeStff Instagram Post Drafts (Amman Launch)",
+    "",
+    "## Post 1: Welcome to HomeStff",
+    `* **Opening:** ${first}`,
+    "* **Body:** Discover a curated range of kitchen tools, storage and decor, delivered across Jordan with cash on delivery.",
+    "* **Call to Action:** Order your home essentials today and pay when they arrive at your door!",
+    "* **Hashtags:** #HomeStff #أشياء_بيتي #HomeGoods #Jordan",
+    "",
+    "## Post 2: Why HomeStff",
+    "* **Opening:** Who are you letting into your home?",
+    "* **Body:** Peace of mind starts with knowing who is working on your space, so every provider is vetted before the first visit.",
+    "* **Call to Action:** Send us a message to get started.",
+    "* **Hashtags:** #HomeStff #TrustedHomes",
+    "",
+    "## Post 3: Everyday essentials",
+    `* **Opening:** ${third}`,
+    "* **Body:** Browse the catalogue, choose what your home needs and pay in cash when the order reaches your door.",
+    "* **Call to Action:** Start your home essentials order today!",
+    "* **Hashtags:** #HomeEssentials #Jordan",
+  ].join("\n");
+  const { socialPostCards } = loadPostCards();
+  const cards = socialPostCards(draft, null);
+  assert.equal(cards.length, 3);
+  assert.equal(cards[0].headline, first);
+  assert.equal(cards[0].cta, "Order your home essentials today and pay when they arrive at your door!");
+  assert.equal(cards[2].headline, third);
+  assert.ok(cards[0].hashtags.includes("#HomeStff"));
+  for (const card of cards) {
+    assert.doesNotMatch(card.cta, /#/);
+    assert.doesNotMatch(card.cta, /hashtag/i);
+    assert.doesNotMatch(card.headline, /^(?:opening|body|call to action|hashtags)\b/i);
+  }
+});
+
+ test("Packet J: one approved label, two-step change request, MSA default and Task 6 cost", () => {
+  const view = read("apps/dashboard/components/agency-workspace.tsx");
+  assert.match(view, /approved: "Approved"/);
+  assert.match(view, /approved: "معتمدة"/);
+  assert.match(view, /معتمدة ضمن الحزمة/);
+  assert.match(view, /Approved in pack/);
+  assert.match(view, /step\.profile_code === "content_creator" \? <WorkspacePostCards/);
+  assert.match(view, /const \[confirmingReject, setConfirmingReject\] = useState\(false\)/);
+  assert.match(view, /setConfirmingReject\(true\); \}\}/);
+  assert.match(view, /setConfirmingReject\(false\); void command\(\{ action: "reject"/);
+  assert.equal(view.match(/action: "reject"/g).length, 1);
+  assert.match(view, /هل تريد تأكيد إرسال طلب التعديل/);
+  assert.match(view, /Confirm sending this change request and marking the work pack as “Changes requested”\?/);
+  assert.match(view, /تأكيد طلب التعديل/);
+  assert.match(view, /Confirm change request/);
+  assert.match(view, /لإجراء تعديلات بعد قرار نهائي، اضغط «موجز حملة جديد»/);
+  assert.match(view, /To make further edits after a final decision, click “New campaign brief”/);
+  assert.match(view, /0 units for this step \(Pack total: /);
+  assert.match(view, /0 وحدة لهذه الخطوة \(إجمالي الحزمة: /);
+  assert.match(view, /setDialect\(nextLanguage === "en" \? "msa" : data\?\.default_dialect \?\? "msa"\)/);
+  assert.match(view, /setDialect\(kind === "en" \? "msa" : data\?\.default_dialect \?\? "msa"\)/);
+  assert.match(view, /Modern Standard Arabic \(White Arabic\) is the default for English and bilingual briefs/);
 });
 
 test("no new SQL migration was added for Packet I", () => {
