@@ -46,7 +46,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   await page.goto(`${origin}/login`);await page.getByLabel('Email').fill('owner@example.test');await page.getByLabel('Password',{exact:true}).fill('disposable-browser-only');
   await page.getByRole('button',{name:'Enter workspace',exact:true}).click();await page.waitForURL(url=>url.pathname!=='/login');
   await page.goto(`${origin}/workspace`);await expect(page.getByRole('heading',{name:'AI workspace',exact:true})).toBeVisible();
-  await page.getByRole('button',{name:'New assignment',exact:true}).click();
+  await page.getByRole('button',{name:'New campaign brief',exact:true}).click();
   await page.getByLabel('Assignment title').fill('Photography launch — browser fixture');
   await page.getByLabel('Task brief',{exact:true}).fill('Prepare an organic Instagram launch for our beginner photography course, with practical content and a support playbook.');
   await page.getByLabel('Shared source facts & brand guidance').fill('Fictional studio in Amman. Six lessons teach exposure and composition. No confirmed price or date. Tone: helpful, clear, no sales guarantees.');
