@@ -124,6 +124,9 @@ test("5: post cards skip missing-information notices, strip labels and hand off 
   assert.match(cards, /export function completeText/);
   assert.match(cards, /const headlineSize = card\.headline\.length > 64 \? 42/);
   assert.match(cards, /const bodyLines = fitLines\(card\.body, bodyPerLine, maxBodyLines\)/);
+  // The CTA badge must end on a word boundary, never mid-word.
+  assert.match(cards, /\{completeText\(card\.cta, 24\)\}/);
+  assert.doesNotMatch(cards, /card\.cta\.slice\(/);
   assert.match(cards, /from: "workspace", title: card\.headline, headline: card\.headline, body: card\.body, cta: card\.cta, lang: language/);
   assert.match(cards, /افتح البطاقة في استوديو التصاميم/);
   const studio = read("apps/dashboard/components/creative/designs-view.tsx");
