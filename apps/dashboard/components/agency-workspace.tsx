@@ -8,16 +8,17 @@ import { useLocale } from "@/lib/client/use-locale";
 import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
 import { DIALECTS, dialectLabel, type DialectId } from "@/lib/i18n/dialects";
 import { formatArabicCount, formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { WorkspacePostCards, type WorkspaceBrandKit } from "./workspace-post-cards";
 
 type Profile = { code: string; name: string; role: string; deliverable: string };
 type Assignment = { id: string; title: string; language: "en" | "ar"; profile_codes: string[]; status: string; error_code: string | null; created_at: string; dialect?: DialectId | null };
 type Artifact = { document: string; kind: string; provider: string | null; model: string | null; context_hash: string; source_tasks: string[]; procedure_version: string; elapsed_ms: number; usage: { total_tokens: number } | null };
 type Step = { sequence: number; profile_code: string; task_id: string; status: string; attempt: number; claimed_at: string | null; finished_at: string | null; error_code: string | null; result: Artifact | null; response_hash: string | null; shared_context: { profile: string; task_id: string; document: string; response_hash: string }[] | null };
-type Event = { id: number; event_type: string; actor_kind: string; actor_ref: string; evidence: { feedback?: string; sequence?: number; task_id?: string }; occurred_at: string };
-type Detail = Assignment & { brief: string; source_facts: string; result_hash: string; steps: Step[]; events: Event[] };
+type Event = { id: number; event_type: string; actor_kind: string; actor_ref: string; evidence: { feedback?: string; sequence?: number; task_id?: string; error?: string; reason?: string }; occurred_at: string };
+type Detail = Assignment & { brief: string; source_facts: string; result_hash: string; retries_used?: number; steps: Step[]; events: Event[] };
 type Quota = { subscription_status: string; plan_tier: "starter" | "growth" | "scale" | null; is_sandbox: boolean; campaigns_used: number; campaigns_limit: number; runs_used: number; runs_limit: number | null; tokens_used: number; tokens_limit: number; max_retries_per_campaign: number; upgrade_required: boolean; upgrade_url: string };
 type Usage = { month_prompt_tokens: number; month_completion_tokens: number; month_total_tokens: number; estimated_cost_usd: number };
-type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; quota: Quota; usage: Usage; default_dialect: DialectId; default_dialect_source: "brand_kit" | "location" | "default"; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
+type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; quota: Quota; usage: Usage; brand_kit: WorkspaceBrandKit | null; default_dialect: DialectId; default_dialect_source: "brand_kit" | "location" | "default"; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
 
 const labels: Record<string, string> = { draft: "Brief saved", queued: "Queued", running: "Working", paused: "Paused", waiting_review: "Ready for your review", approved: "Approved by human", rejected: "Changes requested", failed: "Needs attention", cancelled: "Cancelled", in_progress: "Working", succeeded: "Draft ready" };
 const labelsAr: Record<string, string> = { draft: "تم حفظ الموجز", queued: "في الانتظار", running: "قيد العمل", paused: "متوقف مؤقتاً", waiting_review: "جاهز لمراجعتك", approved: "اعتمدها إنسان", rejected: "طُلب التعديل", failed: "يحتاج إلى انتباه", cancelled: "أُلغي", in_progress: "قيد العمل", succeeded: "المسودة جاهزة" };
@@ -76,6 +77,8 @@ export function AgencyWorkspace() {
 
   useEffect(() => { const id = new URLSearchParams(window.location.search).get("id"); setSelectedId(id); }, []);
   useEffect(() => { void load(selectedId); const interval = setInterval(() => { if (!document.hidden) void load(selectedId, true); }, 5000); return () => { clearInterval(interval); abort.current?.abort(); }; }, [load, selectedId]);
+  // Refresh on tab focus so a status changed elsewhere never looks stale.
+  useEffect(() => { const refresh = () => { if (!document.hidden) void load(selectedId, true); }; window.addEventListener("focus", refresh); document.addEventListener("visibilitychange", refresh); return () => { window.removeEventListener("focus", refresh); document.removeEventListener("visibilitychange", refresh); }; }, [load, selectedId]);
 
   const selected = data?.selected;
   const step = selected?.steps.find((s) => s.sequence === selectedStep) || selected?.steps[0];
@@ -195,6 +198,8 @@ export function AgencyWorkspace() {
     {quota ? <div className={`aw-quota ${quota.upgrade_required ? "aw-quota-limit" : ""}`}>
       <span className="aw-quota-badge">{quotaLabel}</span>
       <span className="aw-quota-usage">{ar ? `${formatNumber(quota.tokens_used, locale)} من ${formatNumber(quota.tokens_limit, locale)} وحدة ذكاء اصطناعي هذا الشهر` : `${formatNumber(quota.tokens_used, locale)} of ${formatNumber(quota.tokens_limit, locale)} AI units this month`}</span>
+      {selected ? <span className="aw-quota-retries">{ar ? `إعادة المحاولة: ${formatNumber(selected.retries_used ?? 0, locale)} من ${formatNumber(quota.max_retries_per_campaign, locale)}` : `Retries: ${selected.retries_used ?? 0} of ${quota.max_retries_per_campaign}`}</span> : null}
+      <span className="aw-quota-note">{ar ? "المحاولات الفاشلة أو التي انتهت مهلتها دون أي مخرج لا تستهلك رصيد الحملات الشهري." : "Failed or timed-out attempts with zero deliverables do not consume monthly campaign slots."}</span>
       {quota.is_sandbox ? <Link className="aw-quota-upgrade" href={quota.upgrade_url}>{ar ? "ترقية الخطة" : "Upgrade plan"} <ArrowRight size={15} /></Link> : null}
     </div> : null}
     {quota?.upgrade_required ? <section className="aw-upgrade-callout" role="status">
@@ -275,6 +280,7 @@ export function AgencyWorkspace() {
                       <header className="aw-artifact-title"><h3>{agentDeliverableLabel(data.profiles.find((p) => p.code === step.profile_code)?.deliverable, ar)}</h3><p>{who(step.profile_code)} · {stateLabel(step.status)}</p></header>
                       {step.result ? <>
                         <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}>{step.result.document}</article>
+                        {["content_creator", "social_media_strategist"].includes(step.profile_code) ? <WorkspacePostCards document={step.result.document} kit={data.brand_kit} language={selected.language} /> : null}
                         <footer className="aw-artifact-meta">
                           <span>{step.result.kind === "deterministic_summary" ? (ar ? "ملخص تسليم حتمي" : "Deterministic delivery summary") : `${ar ? "توليد" : "Generated by"} ${step.result.provider} · ${step.result.model}`}</span>
                           <span>{step.result.usage ? `${formatNumber(step.result.usage.total_tokens, locale)} ${ar ? "وحدة" : "units"}` : (ar ? "لم تُبلَّغ الوحدات" : "Usage not reported")} · {ar ? `${formatNumber(Number((step.result.elapsed_ms / 1000).toFixed(1)), locale)} ثوانٍ` : `${(step.result.elapsed_ms / 1000).toFixed(1)}s`}</span>
@@ -283,7 +289,7 @@ export function AgencyWorkspace() {
                       </> : <div className="aw-task-empty"><FileText size={28} /><h3>{step.status === "in_progress" ? (ar ? "مختصك يكتب المسودة" : "Your specialist is drafting") : step.status === "failed" ? (ar ? "تحتاج هذه المهمة إلى انتباه" : "This task needs attention") : (ar ? "بانتظار دورها" : "Waiting for its turn")}</h3><p>{step.status === "in_progress" ? (ar ? "يستخدم العامل الموجز المحفوظ والمخرجات السابقة، وستظهر النتيجة الكاملة هنا بعد حفظها." : "The worker is using the saved brief and prior deliverables. The complete result will appear here when it has been stored.") : step.status === "failed" ? reason(step.error_code) : (ar ? "يبدأ هذا المختص بعد تسليم المهمة السابقة عملها. لا يُحاكى أي نشاط." : "This specialist starts after the preceding task has delivered its work. No activity is simulated.")}</p></div>}
                     </> : null}
                     {tab === "context" ? <div className="aw-context"><h3>{ar ? "الموجز نفسه عبر الفريق" : "The same brief, carried through the team"}</h3><p className="aw-muted">{ar ? "تبقى حقائق المالك منفصلة عن مقترحات النموذج، وهذه السجلات تخص هذه المهمة وحدها." : "Owner-supplied facts remain separate from model proposals. These records belong only to this assignment."}</p><details open><summary>{ar ? "الموجز الأصلي" : "Original brief"}</summary><p className="aw-prose" dir="auto">{selected.brief}</p></details><details open><summary>{ar ? "حقائق المصدر من المالك" : "Owner-supplied source facts"}</summary><p className="aw-prose" dir="auto">{selected.source_facts}</p></details><h3>{ar ? "المخرجات المسلّمة إلى هذا المختص" : "Deliverables passed to this specialist"}</h3>{step?.shared_context?.length ? step.shared_context.map((m) => <details key={m.task_id}><summary>{who(m.profile)} · {ar ? "مقترح غير معتمد" : "unapproved proposal"}</summary><p className="aw-prose" dir="auto">{m.document}</p><small>{ar ? "المهمة المصدر" : "Source task"}: {m.task_id}</small></details>) : <p className="aw-muted">{ar ? "لم تُسلَّم أي مخرجات سابقة لهذه المهمة. يعمل المختص الأول من الموجز الأصلي." : "No prior deliverables were passed to this task. The first specialist works from the original brief."}</p>}</div> : null}
-                    {tab === "history" ? <ol className="aw-history">{selected.events.map((e) => <li key={e.id}><span className="aw-event-dot" /><div><strong>{e.actor_kind === "worker" ? who(e.actor_ref) : (ar ? "إنسان" : "Human")} · {e.event_type.replaceAll("_", " ")}</strong><time dateTime={e.occurred_at}>{date(e.occurred_at, locale)}</time>{e.evidence.feedback ? <p>{e.evidence.feedback}</p> : null}{e.evidence.sequence ? <p>{ar ? `استُلمت المهمة ${e.evidence.sequence} بسياق المهمة المشترك.` : `Task ${e.evidence.sequence} claimed with the shared assignment context.`}</p> : null}</div></li>)}</ol> : null}
+                    {tab === "history" ? <ol className="aw-history">{selected.events.map((e) => <li key={e.id}><span className="aw-event-dot" /><div><strong>{e.actor_kind === "worker" ? who(e.actor_ref) : (ar ? "إنسان" : "Human")} · {e.event_type.replaceAll("_", " ")}</strong><time dateTime={e.occurred_at}>{date(e.occurred_at, locale)}</time>{e.evidence.feedback ? <p>{e.evidence.feedback}</p> : null}{e.event_type === "failed" ? <p>{reason(e.evidence.error ?? e.evidence.reason ?? null)}</p> : null}{e.evidence.sequence ? <p>{ar ? `استُلمت المهمة ${e.evidence.sequence} بسياق المهمة المشترك.` : `Task ${e.evidence.sequence} claimed with the shared assignment context.`}</p> : null}</div></li>)}</ol> : null}
                   </section>
                 </div>
               </div>

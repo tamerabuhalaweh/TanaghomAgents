@@ -16,14 +16,26 @@ export async function GET(request: NextRequest) {
       await client.query("BEGIN TRANSACTION READ ONLY");
       const summary = await client.query(
         `SELECT
-           (SELECT count(*)::int FROM tanaghom.campaigns WHERE organization_id = $1) AS campaigns_total,
-           (SELECT count(*)::int FROM tanaghom.campaigns WHERE organization_id = $1 AND status = 'active') AS campaigns_active,
+           (SELECT count(*)::int FROM tanaghom.campaigns WHERE organization_id = $1)
+             + (SELECT count(*)::int FROM tanaghom.agency_workspaces
+                 WHERE organization_id = $1 AND status <> 'draft') AS campaigns_total,
+           (SELECT count(*)::int FROM tanaghom.campaigns WHERE organization_id = $1 AND status = 'active')
+             + (SELECT count(*)::int FROM tanaghom.agency_workspaces
+                 WHERE organization_id = $1
+                   AND status IN ('approved', 'running', 'in_progress', 'waiting_review')) AS campaigns_active,
            (SELECT count(*)::int FROM tanaghom.content_items content
              JOIN tanaghom.campaigns campaign ON campaign.id = content.campaign_id
-            WHERE campaign.organization_id = $1 AND content.status = 'pending_approval') AS approvals_pending,
+            WHERE campaign.organization_id = $1 AND content.status = 'pending_approval')
+             + (SELECT count(*)::int FROM tanaghom.agency_workspaces
+                 WHERE organization_id = $1 AND status = 'waiting_review') AS approvals_pending,
            (SELECT count(*)::int FROM tanaghom.agent_jobs job
              JOIN tanaghom.campaigns campaign ON campaign.id = job.campaign_id
-            WHERE campaign.organization_id = $1 AND job.status IN ('queued', 'running', 'waiting_approval')) AS jobs_open,
+            WHERE campaign.organization_id = $1 AND job.status IN ('queued', 'running', 'waiting_approval'))
+             + (SELECT count(*)::int FROM tanaghom.agency_workspace_steps step
+                 JOIN tanaghom.agency_workspaces workspace ON workspace.id = step.workspace_id
+                WHERE workspace.organization_id = $1
+                  AND workspace.status IN ('queued', 'running', 'in_progress', 'paused')
+                  AND step.status IN ('queued', 'in_progress')) AS jobs_open,
            (SELECT count(*)::int FROM tanaghom.leads lead
              JOIN tanaghom.campaigns campaign ON campaign.id = lead.campaign_id
             WHERE campaign.organization_id = $1) AS leads_total,
@@ -35,17 +47,28 @@ export async function GET(request: NextRequest) {
             WHERE app.organization_id = $1 AND notification.read_at IS NULL) AS notifications_unread`,
         [user.organizationId],
       );
-      const approvedWorkspaceCampaigns = await client.query(
+      // AI Workspace assignments share this campaign list so Overview and
+      // /campaigns never disagree with the workspace about live work.
+      const workspaceCampaigns = await client.query(
         `SELECT workspace.id,workspace.title AS name,'ai_workspace'::text AS product_type,
-                'active'::text AS status,NULL::text AS blocked_reason,NULL::numeric AS budget_target,
+                (CASE workspace.status WHEN 'in_progress' THEN 'running' ELSE workspace.status END)::text AS status,
+                NULL::text AS blocked_reason,NULL::numeric AS budget_target,
                 NULL::numeric AS revenue_target,'GBP'::text AS currency,
                 count(step.task_id)::int AS content_item_target,
-                'workspace.approved'::text AS core_job_type,'completed'::text AS core_job_status,
-                count(step.task_id)::int AS content_total,0::int AS content_pending,0::int AS leads_total,
+                ('workspace.'||workspace.status)::text AS core_job_type,
+                (CASE workspace.status WHEN 'waiting_review' THEN 'waiting_approval'
+                                       WHEN 'approved' THEN 'completed'
+                                       WHEN 'rejected' THEN 'completed'
+                                       WHEN 'failed' THEN 'failed'
+                                       ELSE 'running' END)::text AS core_job_status,
+                count(step.task_id)::int AS content_total,
+                count(step.task_id) FILTER (WHERE workspace.status='waiting_review')::int AS content_pending,
+                0::int AS leads_total,
                 workspace.created_at,coalesce(workspace.finished_at,workspace.created_at) AS updated_at
            FROM tanaghom.agency_workspaces workspace
            LEFT JOIN tanaghom.agency_workspace_steps step ON step.workspace_id=workspace.id
-          WHERE workspace.organization_id=$1 AND workspace.status='approved'
+          WHERE workspace.organization_id=$1
+            AND workspace.status IN ('queued','running','in_progress','paused','waiting_review','approved','rejected','failed')
           GROUP BY workspace.id
           ORDER BY coalesce(workspace.finished_at,workspace.created_at) DESC LIMIT 100`,
         [user.organizationId],
@@ -75,7 +98,7 @@ export async function GET(request: NextRequest) {
           LIMIT 100`,
         [user.organizationId],
       );
-      const campaignRows = [...campaigns.rows, ...approvedWorkspaceCampaigns.rows.map((row) => ({ ...row, source: "ai_workspace" }))]
+      const campaignRows = [...campaigns.rows, ...workspaceCampaigns.rows.map((row) => ({ ...row, source: "ai_workspace" }))]
         .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
         .slice(0, 100);
       const agentRoles = await client.query(

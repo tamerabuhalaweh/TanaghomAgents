@@ -100,7 +100,7 @@ test("Packet D1 surfaces approved AI work packs in campaigns and content", async
   const content = await read("apps/dashboard/app/api/content/route.ts");
   const campaignUi = await read("apps/dashboard/components/campaigns-view.tsx");
   const contentUi = await read("apps/dashboard/components/content-library.tsx");
-  assert.match(operations, /workspace\.status='approved'/);
+  assert.match(operations, /workspace\.status IN \('queued','running','in_progress','paused','waiting_review','approved','rejected','failed'\)/);
   assert.match(operations, /source: "ai_workspace"/);
   assert.match(operations, /campaigns: campaignRows/);
   assert.match(content, /workspace\.status='approved'/);

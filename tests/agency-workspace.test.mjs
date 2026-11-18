@@ -101,3 +101,35 @@ test('workspace: a transient 503 retries with bounded backoff and stays explicit
  await assert.rejects(()=>failing.generate('gemini-3.5-flash-lite',{contents:[]}),e=>e.code==='inference_outcome_unknown'&&e.status===502&&e.details.http_status===503&&e.upstream_error.includes('UNAVAILABLE'));
  assert.equal(attempts,4);assert.deepEqual(persistent,[2000,5000,10000]);
 });
+test('workspace: bilingual briefs force both languages for every specialist',()=>{
+ const bilingual={...task,profile:'discovery_coach',brief:'Prepare the discovery call script and qualification questions bilingually (Arabic + English).'};
+ const system=workspaceRequest(bilingual,32768).systemInstruction.parts[0].text;
+ assert.match(system,/BOTH English and/);
+ assert.match(system,/Label each Arabic item/);
+ assert.match(workspaceRequest({...bilingual,dialect:'levant'},32768).systemInstruction.parts[0].text,/Levantine Arabic/);
+ assert.doesNotMatch(workspaceRequest(task,32768).systemInstruction.parts[0].text,/BOTH English and/);
+ const arabic={...task,language:'ar',dialect:'gulf',profile:'support_responder',brief:'أعد ردود الدعم وأسئلة التأهيل بالعربية والإنجليزية.'};
+ const arabicSystem=workspaceRequest(arabic,32768).systemInstruction.parts[0].text;
+ assert.match(arabicSystem,/BOTH English and/);
+ assert.match(arabicSystem,/Gulf Arabic/);
+ const payload=JSON.parse(workspaceRequest(bilingual,32768).contents[0].parts[0].text);
+ assert.equal(payload.bilingual_output,true);
+});
+test('workspace: executive summary reports recorded usage, timings and key excerpts',()=>{
+ const report={...task,profile:'executive_summary',language:'ar',dialect:'levant',brief:'حملة دورة تصوير للراغبين في التعلم.',shared_context:[
+  {profile:'content_creator',task_id:'source1',document:'# مسودة المنشور\n\nمنشور إنستغرام عن دورة التصوير للأسبوع الأول.\n\nاحجز مقعدك الآن.',response_hash:'v1',usage:{total_tokens:1234},elapsed_ms:2100},
+  {profile:'social_media_strategist',task_id:'source2',document:'خطة النشر\n\n- منشوران أسبوعياً\n- مراجعة بشرية قبل أي نشر.',response_hash:'v2'}]};
+ const out=workspaceArtifact(report,null,0);
+ assert.equal(out.kind,'deterministic_summary');assert.equal(out.provider,null);assert.equal(out.model,null);
+ assert.match(out.document,/1234/);assert.match(out.document,/2\.1s/);
+ assert.match(out.document,/source1/);assert.match(out.document,/source2/);
+ assert.match(out.document,/منشور إنستغرام عن دورة التصوير/);
+ assert.match(out.document,/المراجعة البشرية/);
+ assert.match(out.document,/لم تُبلَّغ/);
+ assert.match(out.document,/مبلّغة من 1 من 2 خطوات/);
+ assert.doesNotMatch(out.document,/^#/m);
+ const english=workspaceArtifact({...report,language:'en'},null,0).document;
+ assert.match(english,/Executive delivery summary/);
+ assert.match(english,/no measured sales or conversion results/);
+ assert.match(english,/AI units: 1234/);
+});

@@ -101,3 +101,14 @@
 @media(max-width:420px){.aw-roster button{padding:var(--space-sm);gap:var(--space-sm)}.aw-progress{gap:var(--space-sm)}.aw-tabs button{font-size:.75rem}.aw-tabs button svg{display:none}.aw-review{padding:var(--space-lg)}}
 @media(max-width:350px){.aw-roster{grid-template-columns:1fr}}
 @media(prefers-reduced-motion:reduce){.agency-workspace button{transition:none}}
+.aw-quota-retries { color:var(--primary);font-weight:650; }
+.aw-quota-note { flex-basis:100%;color:var(--muted);font-size:.75rem; }
+.aw-post-cards { display:flex;flex-direction:column;gap:var(--space-md);padding:var(--space-xl);border-block-start:1px solid var(--border);background:var(--surface); }
+.aw-post-cards header h4 { display:flex;align-items:center;gap:var(--space-xs);font-size:.9375rem; }
+.aw-post-cards header p { color:var(--muted);font-size:.8125rem;margin-block-start:var(--space-xs); }
+.aw-post-card-strip { display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:var(--space-md); }
+.aw-post-card { display:flex;flex-direction:column;gap:var(--space-sm);background:var(--background);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-sm); }
+.aw-post-card svg { inline-size:100%;block-size:auto;border-radius:var(--radius-sm);display:block; }
+.aw-post-card-actions { display:flex;flex-wrap:wrap;gap:var(--space-xs); }
+.aw-post-card-actions .button { flex:1;justify-content:center;font-size:.75rem;min-block-size:40px; }
+@media(max-width:760px){.aw-post-cards{padding:var(--space-lg)}}
