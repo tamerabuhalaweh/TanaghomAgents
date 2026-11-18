@@ -5,7 +5,7 @@ import { ArrowRight, BookOpen, Check, ChevronRight, ClipboardList, Download, Fil
 import Link from "next/link";
 
 import { useLocale } from "@/lib/client/use-locale";
-import { agentDisplayName } from "@/lib/i18n/agent-names";
+import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
 import { DIALECTS, dialectLabel, type DialectId } from "@/lib/i18n/dialects";
 import { formatArabicCount, formatDateTime, formatNumber } from "@/lib/i18n/format";
 
@@ -216,7 +216,7 @@ export function AgencyWorkspace() {
         </aside>
         <section className="aw-main">
           {creating ? <form className="aw-create" onSubmit={create}>
-            <header><h2 ref={heading} tabIndex={-1}>{ar ? "على ماذا يعمل فريقك؟" : "What should your team work on?"}</h2><p>{ar ? "قدّم الهدف والحقائق مرة واحدة، ويعمل كل مختص من السياق المحفوظ نفسه." : "Supply the outcome and facts once. Every specialist works from the same saved context."}</p></header>
+            <header><h2 ref={heading} tabIndex={-1}>{ar ? "أنشئ حملة أو مهمة جديدة" : "Create a Campaign / Task"}</h2><p>{ar ? "ما الذي تريد أن يجهّزه الفريق؟" : "What should the team create?"}</p></header>
             <div className="aw-actions">
               <button type="button" className="button button-secondary" onClick={() => fillExample("ar")}>{ar ? "تعبئة مثال عربي" : "Fill Arabic example"}</button>
               <button type="button" className="button button-secondary" onClick={() => fillExample("en")}>{ar ? "تعبئة مثال إنجليزي" : "Fill English example"}</button>
@@ -233,7 +233,7 @@ export function AgencyWorkspace() {
                   ? (ar ? "محددة تلقائيًا حسب موقع نشاطك، ويمكنك تغييرها لهذا الموجز." : "Selected automatically from your business location; you can change it for this brief.")
                   : (ar ? "الفصحى المعاصرة هي اللهجة الافتراضية، ويمكنك اختيار لهجة أخرى." : "White Arabic is the default; choose another dialect if you prefer.")}</small>
             </div> : null}
-            <label>{ar ? "من يعمل على المهمة؟" : "Who should work on it?"}<select value={profile} onChange={(e) => { setProfile(e.target.value); key.current = null; }}><option value="team">{ar ? "حزمة عمل الحملة — المختصون الستة" : "Campaign Work Pack — all six specialists"}</option>{data.profiles.map((p) => <option key={p.code} value={p.code}>{agentDisplayName(p.name, ar)} — {p.deliverable}</option>)}</select></label>
+            <label>{ar ? "من يعمل على المهمة؟" : "Who should work on it?"}<select value={profile} onChange={(e) => { setProfile(e.target.value); key.current = null; }}><option value="team">{ar ? "حزمة عمل الحملة — المختصون الستة" : "Campaign Work Pack — all six specialists"}</option>{data.profiles.map((p) => <option key={p.code} value={p.code}>{agentDisplayName(p.name, ar)} — {agentDeliverableLabel(p.deliverable, ar)}</option>)}</select></label>
             <div className="aw-team-preview" aria-label={ar ? "المختصون المحددون" : "Selected specialists"}>{data.profiles.filter((p) => profile === "team" || p.code === profile).map((p, i) => <span key={p.code}>{i > 0 ? <ArrowRight size={14} /> : null}{agentDisplayName(p.name, ar)}</span>)}</div>
             <label>{ar ? "موجز المهمة" : "Task brief"}<textarea required minLength={30} maxLength={6000} rows={4} value={brief} onChange={(e) => { setBrief(e.target.value); key.current = null; }} placeholder={ar ? "صف الجمهور والهدف والقنوات المسموح بها والنبرة والمخرجات. مثال: مسودات إنستغرام عضوية لدورتنا دون إعلانات مدفوعة." : "Describe the audience, outcome, allowed channels, tone and deliverables. For example: prepare organic Instagram drafts for our course; no paid ads."} /></label>
             <label>{ar ? "حقائق المصدر المشتركة وإرشادات العلامة" : "Shared source facts & brand guidance"}<textarea required minLength={20} maxLength={6000} rows={6} value={facts} onChange={(e) => { setFacts(e.target.value); key.current = null; }} placeholder={ar ? "أضف الحقائق التي يجوز للفريق الاعتماد عليها: ما يشمله العرض، التواريخ أو الأسعار المؤكدة، الادعاءات المعتمدة، نبرة العلامة، وما هو غير معروف. لا تُدرج كلمات مرور أو بيانات عملاء حساسة." : "Add the facts the team may rely on: what the offer includes, confirmed dates or prices, approved claims, brand tone, and what is unknown. Do not include passwords or customer-sensitive data."} /></label>
@@ -263,7 +263,7 @@ export function AgencyWorkspace() {
               <p className="aw-prose" dir="auto">{selected.brief}</p>
               <details open><summary><BookOpen size={16} />{ar ? "حقائق المصدر وإرشادات العلامة" : "Source facts & brand guidance"}</summary><p className="aw-prose" dir="auto">{selected.source_facts}</p></details>
               <h3>{ar ? "مختصوك" : "Your specialists"}</h3>
-              <ol className="aw-roster-preview">{selected.profile_codes.map((code) => <li key={code}><strong>{who(code)}</strong><span>{data.profiles.find((p) => p.code === code)?.deliverable}</span></li>)}</ol>
+              <ol className="aw-roster-preview">{selected.profile_codes.map((code) => <li key={code}><strong>{who(code)}</strong><span>{agentDeliverableLabel(data.profiles.find((p) => p.code === code)?.deliverable, ar)}</span></li>)}</ol>
             </section> : <>
               <div className="aw-progress" aria-label={ar ? "تقدم المهام" : "Task progress"}><span>{ar ? `${formatArabicCount(selected.steps.filter((s) => s.status === "succeeded").length, { zero: "لا مخرجات جاهزة", one: "مخرج واحد جاهز", two: "مخرجان جاهزان", few: "{count} مخرجات جاهزة", many: "{count} مخرجًا جاهزًا", other: "{count} مخرج جاهز" })} من ${formatArabicCount(selected.steps.length, { zero: "لا مخرجات", one: "مخرج واحد", two: "مخرجان", few: "{count} مخرجات", many: "{count} مخرجًا", other: "{count} مخرج" })}` : `${selected.steps.filter((s) => s.status === "succeeded").length} of ${selected.steps.length} deliverables ready`}</span><progress max={selected.steps.length || 1} value={selected.steps.filter((s) => s.status === "succeeded").length} /><small>{ar ? "حالة مسجّلة · تُحدَّث كل 5 ثوانٍ" : "Recorded task state · refreshes every 5 seconds"}</small></div>
               <div className="aw-workbench">
@@ -272,7 +272,7 @@ export function AgencyWorkspace() {
                   <div className="aw-tabs" role="tablist" aria-label={ar ? "تفاصيل المهمة" : "Assignment detail"} onKeyDown={(event) => { const ids = ["deliverable", "context", "history"] as const; const index = ids.indexOf(tab); const next = event.key === "ArrowRight" ? (index + 1) % 3 : event.key === "ArrowLeft" ? (index + 2) % 3 : event.key === "Home" ? 0 : event.key === "End" ? 2 : null; if (next !== null) { event.preventDefault(); setTab(ids[next]); document.getElementById(`aw-tab-${ids[next]}`)?.focus(); } }}>{tabsSpec.map(([id, label, Icon]) => <button key={id} role="tab" id={`aw-tab-${id}`} tabIndex={tab === id ? 0 : -1} aria-selected={tab === id} aria-controls="aw-detail" onClick={() => setTab(id)}><Icon size={16} />{label}</button>)}</div>
                   <section id="aw-detail" role="tabpanel" tabIndex={0} aria-labelledby={`aw-tab-${tab}`}>
                     {tab === "deliverable" && step ? <>
-                      <header className="aw-artifact-title"><h3>{data.profiles.find((p) => p.code === step.profile_code)?.deliverable}</h3><p>{who(step.profile_code)} · {stateLabel(step.status)}</p></header>
+                      <header className="aw-artifact-title"><h3>{agentDeliverableLabel(data.profiles.find((p) => p.code === step.profile_code)?.deliverable, ar)}</h3><p>{who(step.profile_code)} · {stateLabel(step.status)}</p></header>
                       {step.result ? <>
                         <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}>{step.result.document}</article>
                         <footer className="aw-artifact-meta">

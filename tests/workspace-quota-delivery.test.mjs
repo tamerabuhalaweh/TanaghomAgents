@@ -6,7 +6,7 @@ const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf
 
 test("campaign quota counts queued/running/review work and failed work with a delivered step", () => {
   const quota = read("apps/dashboard/lib/server/workspace-quotas.ts");
-  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved'\)/);
+  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved', 'paused', 'rejected'\)/);
   assert.match(quota, /OR \(workspace\.status = 'failed' AND EXISTS \(/);
   assert.match(quota, /JOIN tanaghom\.agency_pilot_tasks task ON task\.id = step\.task_id/);
   assert.match(quota, /WHERE step\.workspace_id = workspace\.id AND task\.status = 'succeeded'/);

@@ -19,6 +19,21 @@ export function agentDisplayName(name: string | null | undefined, arabic: boolea
   return ARABIC_AGENT_NAMES[name.trim().toLowerCase()] ?? name;
 }
 
+const ARABIC_AGENT_DELIVERABLES: Record<string, string> = {
+  "campaign strategy": "استراتيجية الحملة",
+  "content draft pack": "حزمة مسودات المحتوى",
+  "brand review findings": "ملاحظات مراجعة الهوية",
+  "lead discovery playbook": "دليل استكشاف العملاء المحتملين",
+  "customer-care answer pack": "حزمة إجابات خدمة العملاء",
+  "delivery summary": "ملخص التسليم",
+};
+
+export function agentDeliverableLabel(deliverable: string | null | undefined, arabic: boolean): string {
+  if (!deliverable) return "";
+  if (!arabic) return deliverable;
+  return ARABIC_AGENT_DELIVERABLES[deliverable.trim().toLowerCase()] ?? deliverable;
+}
+
 const ARABIC_AGENT_STATUSES: Record<string, string> = {
   inactive: "غير نشط",
   active: "نشط",

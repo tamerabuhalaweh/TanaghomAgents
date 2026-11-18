@@ -20,8 +20,28 @@ function campaignTone(status: string) {
   return "neutral" as const;
 }
 
-function campaignStage(campaign: OperationsCampaign) {
-  return campaign.status.replaceAll("_", " ");
+const campaignStatusAr: Record<string, string> = {
+  draft: "مسودة",
+  queued: "في الانتظار",
+  running: "قيد العمل",
+  in_progress: "قيد العمل",
+  active: "نشطة",
+  awaiting_approval: "بانتظار الاعتماد",
+  waiting_review: "بانتظار الاعتماد",
+  approved: "معتمدة",
+  paused: "متوقفة",
+  rejected: "مرفوضة",
+  failed: "فاشلة",
+  cancelled: "ملغاة",
+  closed: "مغلقة",
+  blocked_missing_info: "بانتظار معلومات ناقصة",
+  strategy_ready: "الاستراتيجية جاهزة",
+  content_in_progress: "المحتوى قيد الإعداد",
+};
+
+function campaignStage(campaign: OperationsCampaign, arabic: boolean) {
+  if (!arabic) return campaign.status.replaceAll("_", " ");
+  return campaignStatusAr[campaign.status] ?? campaign.status.replaceAll("_", " ");
 }
 
 const quickStart = [
@@ -164,7 +184,7 @@ export function OverviewDashboard() {
 
       <section className="campaign-section" aria-labelledby="campaign-title">
         <div className="section-heading compact-heading"><div><h2 id="campaign-title">{ar ? "الحملات" : "Campaigns"}</h2><p>{ar ? "التقدم والمخاطر والمحتوى وإجمالي العملاء المحتملين." : "Live progress, risk, content, and lead totals."}</p></div><Link href="/campaigns" className="text-link">{ar ? "عرض الحملات" : "View campaigns"} <ArrowRight size={16} /></Link></div>
-        {data.campaigns.length ? <div className="table-scroll" tabIndex={0} aria-label={ar ? "جدول الحملات، قابل للتمرير أفقياً على الشاشات الصغيرة" : "Campaign table, horizontally scrollable on small screens"}><table><thead><tr><th>{ar ? "الحملة" : "Campaign"}</th><th>{ar ? "الحالة" : "Status"}</th><th>{ar ? "المرحلة" : "Stage"}</th><th>{ar ? "المحتوى" : "Content"}</th><th>{ar ? "الاعتمادات" : "Approvals"}</th><th>{ar ? "العملاء المحتملون" : "Leads"}</th></tr></thead><tbody>{data.campaigns.map((campaign) => <tr key={campaign.id}><td><Link href="/campaigns">{campaign.name}</Link></td><td><StatusPill tone={campaignTone(campaign.status)}>{campaignStage(campaign)}</StatusPill></td><td>{campaignStage(campaign)}</td><td>{campaign.content_total}</td><td>{campaign.content_pending}</td><td>{campaign.leads_total}</td></tr>)}</tbody></table></div> : <DomainEmpty title={ar ? "لا حملات بعد" : "No campaigns yet"} description={ar ? "محفظة الحملات الحالية فارغة." : "The live campaign portfolio is empty."} detail={ar ? "موجز الحملة هو أول سجل تشغيلي." : "A campaign brief is the first operational record."} />}
+        {data.campaigns.length ? <div className="table-scroll" tabIndex={0} aria-label={ar ? "جدول الحملات، قابل للتمرير أفقياً على الشاشات الصغيرة" : "Campaign table, horizontally scrollable on small screens"}><table><thead><tr><th>{ar ? "الحملة" : "Campaign"}</th><th>{ar ? "الحالة" : "Status"}</th><th>{ar ? "المرحلة" : "Stage"}</th><th>{ar ? "المحتوى" : "Content"}</th><th>{ar ? "الاعتمادات" : "Approvals"}</th><th>{ar ? "العملاء المحتملون" : "Leads"}</th></tr></thead><tbody>{data.campaigns.map((campaign) => <tr key={campaign.id}><td><Link href="/campaigns">{campaign.name}</Link></td><td><StatusPill tone={campaignTone(campaign.status)}>{campaignStage(campaign, ar)}</StatusPill></td><td>{campaignStage(campaign, ar)}</td><td>{campaign.content_total}</td><td>{campaign.content_pending}</td><td>{campaign.leads_total}</td></tr>)}</tbody></table></div> : <DomainEmpty title={ar ? "لا حملات بعد" : "No campaigns yet"} description={ar ? "محفظة الحملات الحالية فارغة." : "The live campaign portfolio is empty."} detail={ar ? "موجز الحملة هو أول سجل تشغيلي." : "A campaign brief is the first operational record."} />}
       </section>
 
       <div className="overview-footer-grid">

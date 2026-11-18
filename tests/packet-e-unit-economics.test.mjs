@@ -28,7 +28,7 @@ test("Packet E defines per-tier token ceilings and the per-campaign retry cap", 
 
 test("campaign quota counts active or delivered work, never a zero-deliverable failure", () => {
   const quota = read("apps/dashboard/lib/server/workspace-quotas.ts");
-  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved'\)/);
+  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved', 'paused', 'rejected'\)/);
   assert.match(quota, /workspace\.status = 'failed' AND EXISTS \(/);
   assert.match(quota, /task\.status = 'succeeded'/);
   assert.doesNotMatch(quota, /workspace\.status <> 'draft'/);
@@ -47,6 +47,8 @@ test("unit economics uses one shared four-decimal AI cost estimator", () => {
   assert.match(superAdmin, /unit_economics: unitEconomics/);
   assert.match(superAdmin, /monthly_revenue_usd/);
   assert.match(superAdmin, /month_campaigns_used/);
+  assert.match(superAdmin, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved', 'paused', 'rejected'\)/);
+  assert.doesNotMatch(superAdmin, /workspace\.status <> 'draft'/);
   assert.match(superAdmin, /month_total_tokens/);
   assert.match(superAdmin, /net_margin_usd/);
   assert.match(superAdmin, /gross_margin_pct/);
