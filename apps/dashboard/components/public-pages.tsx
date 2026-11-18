@@ -155,7 +155,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <div className="public-advantages-grid">
           <article className="public-advantage">
             <h3>{ar ? "لا يُنشر شيء حتى تقول نعم." : "Nothing publishes until you say yes."}</h3>
-            <p>{ar ? <>لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — <bdi dir="ltr">Sprout Social</bdi> من <bdi dir="ltr">$299</bdi> للمقعد، و<bdi dir="ltr">Hootsuite</bdi> من <bdi dir="ltr">$399</bdi> للمستخدم شهرياً، و<bdi dir="ltr">HubSpot Enterprise</bdi> بعرض سعر — الاعتماد مشمول في كل خطط تناغم.</> : <>Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every Tanaghom plan.</>}</p>
+            <p>{ar ? <>لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — <bdi dir="ltr">Sprout Social</bdi> من <bdi dir="rtl">299 دولارًا</bdi> للمقعد، و<bdi dir="ltr">Hootsuite</bdi> من <bdi dir="rtl">399 دولارًا</bdi> للمستخدم شهريًا، و<bdi dir="ltr">HubSpot Enterprise</bdi> بعرض سعر — الاعتماد مشمول في كل خطط تناغم.</> : <>Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every Tanaghom plan.</>}</p>
           </article>
           <article className="public-advantage">
             <h3>{ar ? "مبني بالعربية. وليس مترجمًا إليها." : "Built in Arabic. Not translated into it."}</h3>

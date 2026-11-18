@@ -12,15 +12,26 @@ import {
   TriangleAlert,
   X,
 } from "lucide-react";
+import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { formatArabicCount } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
+import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
+import { dialectLabel, normalizeDialect } from "@/lib/i18n/dialects";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
+interface WorkspaceDeliverable {
+  sequence: number;
+  profile: string;
+  status: string;
+  excerpt: string;
+}
+
 interface ApprovalItem {
   id: string;
+  source: "content" | "ai_workspace";
   campaign_id: string;
   campaign_name: string;
   channel: string;
@@ -31,11 +42,35 @@ interface ApprovalItem {
   generation: number;
   strategy_version: number;
   created_at: string;
+  title: string | null;
+  language: "en" | "ar" | null;
+  dialect: string | null;
+  result_hash: string | null;
+  deliverables: WorkspaceDeliverable[];
 }
 
 type LoadState = "loading" | "ready" | "error";
 
+const profileNames: Record<string, string> = {
+  social_media_strategist: "Social Media Strategist",
+  content_creator: "Content Creator",
+  brand_guardian: "Brand Guardian",
+  discovery_coach: "Discovery Coach",
+  support_responder: "Support Responder",
+  executive_summary: "Executive Summary",
+};
+
+const profileDeliverables: Record<string, string> = {
+  social_media_strategist: "Social media plan",
+  content_creator: "Campaign copy",
+  brand_guardian: "Brand review",
+  discovery_coach: "Discovery questions",
+  support_responder: "Support replies",
+  executive_summary: "Delivery summary",
+};
+
 function itemTitle(item: ApprovalItem) {
+  if (item.source === "ai_workspace") return item.title || item.campaign_name;
   const firstLine = item.draft_copy.split(/[.!?\n]/)[0]?.trim();
   return firstLine && firstLine.length <= 68
     ? firstLine
@@ -120,17 +155,28 @@ export function ApprovalWorkspace() {
     setSubmitting(true);
     setFeedback("");
     try {
-      const response = await authenticatedFetch(`/api/approvals/${active.id}/decision`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Idempotency-Key": crypto.randomUUID(),
+      const workspaceItem = active.source === "ai_workspace";
+      const response = await authenticatedFetch(
+        workspaceItem ? "/api/workspace" : `/api/approvals/${active.id}/decision`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Idempotency-Key": crypto.randomUUID(),
+          },
+          body: workspaceItem
+            ? JSON.stringify({
+              action: decision === "approved" ? "approve" : "reject",
+              id: active.id,
+              result_hash: active.result_hash,
+              feedback: reason.trim(),
+            })
+            : JSON.stringify({
+              decision,
+              rejection_reason: decision === "rejected" ? reason.trim() : null,
+            }),
         },
-        body: JSON.stringify({
-          decision,
-          rejection_reason: decision === "rejected" ? reason.trim() : null,
-        }),
-      });
+      );
       if (response.status === 401) return;
       if (!response.ok) throw new Error("decision failed");
       const nextItems = items.filter((item) => item.id !== active.id);
@@ -172,8 +218,8 @@ export function ApprovalWorkspace() {
             <div className="review-list">
               {items.map((item) => (
                 <button key={item.id} type="button" className={`review-list-item ${active.id === item.id ? "review-list-item-active" : ""}`} onClick={() => select(item.id)}>
-                  <span className="channel-tile" aria-hidden="true">{item.channel.slice(0, 2).toUpperCase()}</span>
-                  <span><strong>{itemTitle(item)}</strong><small>{item.channel} · {formatCreatedAt(item.created_at)}</small></span>
+                  <span className="channel-tile" aria-hidden="true">{item.source === "ai_workspace" ? "AI" : item.channel.slice(0, 2).toUpperCase()}</span>
+                  <span><strong>{itemTitle(item)}</strong><small>{item.source === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : item.channel} · {formatCreatedAt(item.created_at)}</small></span>
                   <ChevronRight size={17} />
                 </button>
               ))}
@@ -182,21 +228,36 @@ export function ApprovalWorkspace() {
 
           <article className="review-canvas" aria-labelledby="review-title">
             <header className="review-header">
-              <div><StatusPill tone="attention">{ar ? "بحاجة إلى مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.content_type.replaceAll("_", " ")} · {active.campaign_name}</p></div>
+              <div><StatusPill tone="attention">{ar ? "بحاجة إلى مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack") : active.content_type.replaceAll("_", " ")} · {active.campaign_name}</p></div>
               <div className="review-position"><button className="icon-button" type="button" aria-label={ar ? "العنصر السابق" : "Previous item"} onClick={() => move(-1)}><ChevronLeft size={19} /></button><span>{activeIndex + 1} {ar ? "من" : "of"} {items.length}</span><button className="icon-button" type="button" aria-label={ar ? "العنصر التالي" : "Next item"} onClick={() => move(1)}><ChevronRight size={19} /></button></div>
             </header>
 
             <dl className="review-metadata">
-              <div><dt>{ar ? "القناة" : "Channel"}</dt><dd>{active.channel}</dd></div>
+              <div><dt>{ar ? "القناة" : "Channel"}</dt><dd>{active.source === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : active.channel}</dd></div>
               <div><dt>{ar ? "أُنشئ" : "Created"}</dt><dd>{formatCreatedAt(active.created_at)}</dd></div>
-              <div><dt>{ar ? "أعدّه" : "Prepared by"}</dt><dd>{ar ? "كاتب المحتوى" : "Content Producer"}</dd></div>
+              <div><dt>{ar ? "أعدّه" : "Prepared by"}</dt><dd>{active.source === "ai_workspace" ? (ar ? "فريق المختصين" : "Specialist team") : (ar ? "كاتب المحتوى" : "Content Producer")}</dd></div>
               <div><dt>{ar ? "سياسة الاعتماد" : "Approval policy"}</dt><dd>{ar ? "مراجعة بشرية مطلوبة" : "Human required"}</dd></div>
+              {active.source === "ai_workspace" ? <div><dt>{ar ? "اللغة واللهجة" : "Language & dialect"}</dt><dd>{active.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")}{normalizeDialect(active.dialect) ? ` · ${dialectLabel(normalizeDialect(active.dialect)!, locale)}` : ""}</dd></div> : null}
             </dl>
 
-            <section className="content-preview" aria-labelledby="draft-copy-title">
-              <div className="content-preview-heading"><h3 id="draft-copy-title">{ar ? "نص المسودة" : "Draft copy"}</h3><span>{ar ? "النسخة" : "Version"} {active.generation}</span></div>
-              <p dir="auto">{active.draft_copy}</p>
-            </section>
+            {active.source === "ai_workspace" ? (
+              <section className="content-preview" aria-labelledby="draft-copy-title">
+                <div className="content-preview-heading"><h3 id="draft-copy-title">{ar ? "المخرجات الستة" : "Six deliverables"}</h3><span>{ar ? "مسودات غير معتمدة" : "Unapproved drafts"}</span></div>
+                {active.deliverables.length ? <ul className="approval-deliverables">{active.deliverables.map((deliverable) => (
+                  <li key={`${deliverable.sequence}-${deliverable.profile}`}>
+                    <strong>{agentDisplayName(profileNames[deliverable.profile] || deliverable.profile, ar)}</strong>
+                    <small dir="auto">{agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)} · {deliverable.status}</small>
+                    <p dir="auto">{deliverable.excerpt ? `${deliverable.excerpt}${deliverable.excerpt.length >= 320 ? "…" : ""}` : (ar ? "لا مسودة محفوظة بعد." : "No stored draft yet.")}</p>
+                  </li>
+                ))}</ul> : <p>{ar ? "لم يُسلَّم أي مخرج بعد." : "No deliverable has been stored yet."}</p>}
+                <Link className="text-link" href={`/workspace?id=${active.id}`}>{ar ? "فتح حزمة العمل كاملة في مساحة الذكاء الاصطناعي" : "Open the full work pack in the AI workspace"} <ChevronRight size={16} /></Link>
+              </section>
+            ) : (
+              <section className="content-preview" aria-labelledby="draft-copy-title">
+                <div className="content-preview-heading"><h3 id="draft-copy-title">{ar ? "نص المسودة" : "Draft copy"}</h3><span>{ar ? "النسخة" : "Version"} {active.generation}</span></div>
+                <p dir="auto">{active.draft_copy}</p>
+              </section>
+            )}
 
             <section className="media-brief" aria-labelledby="media-brief-title">
               <MessageSquareText size={19} />
@@ -205,20 +266,22 @@ export function ApprovalWorkspace() {
 
             <section className="decision-history" aria-labelledby="decision-history-title">
               <h3 id="decision-history-title">{ar ? "سياق القرار" : "Decision context"}</h3>
-              <p><Clock3 size={16} /> {ar ? `نسخة الاستراتيجية ${active.strategy_version}. لم يُسجَّل أي قرار لهذا التوليد.` : `Strategy version ${active.strategy_version}. No decision has been recorded for this generation.`}</p>
+              {active.source === "ai_workspace"
+                ? <p><Clock3 size={16} /> {ar ? "الاعتماد يقبل هذه الحزمة تحديداً. لا ينشر محتوى ولا يرسل رسائل ولا يعتمد حقائق أعمال ناقصة." : "Approval records acceptance of this exact pack only. It does not publish content, send messages, or approve missing business facts."}</p>
+                : <p><Clock3 size={16} /> {ar ? `نسخة الاستراتيجية ${active.strategy_version}. لم يُسجَّل أي قرار لهذا التوليد.` : `Strategy version ${active.strategy_version}. No decision has been recorded for this generation.`}</p>}
             </section>
 
             {rejecting ? (
               <div className="rejection-panel" role="region" aria-labelledby="rejection-title">
-                <div><h3 id="rejection-title">{ar ? "ما الذي يجب تغييره؟" : "What should change?"}</h3><p>{ar ? "يصبح سببك سياقاً للنسخة التالية." : "Your reason becomes context for the next generated version."}</p></div>
+                <div><h3 id="rejection-title">{ar ? "ما الذي يجب تغييره؟" : "What should change?"}</h3><p>{active.source === "ai_workspace" ? (ar ? "تُحفظ ملاحظاتك مع الحزمة، وأنشئ مهمة منقّحة لإنتاج نسخة جديدة." : "Your feedback is saved with the pack; create a revised assignment to produce a new version.") : (ar ? "يصبح سببك سياقاً للنسخة التالية." : "Your reason becomes context for the next generated version.")}</p></div>
                 <label htmlFor="rejection-reason">{ar ? "سبب الرفض" : "Rejection reason"}</label>
                 <textarea id="rejection-reason" value={reason} onChange={(event) => setReason(event.target.value)} placeholder={ar ? "كن محدداً بشأن النبرة أو الادعاءات أو الجمهور أو تعديلات الوسائط المطلوبة." : "Be specific about tone, claims, audience, or required media changes."} />
-                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(false)} disabled={submitting}>{ar ? "متابعة المراجعة" : "Keep reviewing"}</button><button className="danger-button" type="button" disabled={!reason.trim() || submitting} onClick={() => void decide("rejected")}><RotateCcw size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "ارفض وأعد التوليد" : "Reject and regenerate")}</button></div>
+                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(false)} disabled={submitting}>{ar ? "متابعة المراجعة" : "Keep reviewing"}</button><button className="danger-button" type="button" disabled={!reason.trim() || submitting} onClick={() => void decide("rejected")}><RotateCcw size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "طلب تعديلات" : "Request changes") : (ar ? "ارفض وأعد التوليد" : "Reject and regenerate")}</button></div>
               </div>
             ) : (
               <footer className="review-footer">
                 <p>{ar ? "يبقى النشر محظوراً حتى تعتمد هذه النسخة." : "Publishing remains blocked until you approve this version."}</p>
-                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(true)} disabled={submitting}><X size={17} /> {ar ? "طلب تعديلات" : "Request changes"}</button><button className="primary-button" type="button" onClick={() => void decide("approved")} disabled={submitting}><Check size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "اعتماد المحتوى" : "Approve content")}</button></div>
+                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(true)} disabled={submitting}><X size={17} /> {ar ? "طلب تعديلات" : "Request changes"}</button><button className="primary-button" type="button" onClick={() => void decide("approved")} disabled={submitting}><Check size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "اعتماد حزمة العمل" : "Approve work pack") : (ar ? "اعتماد المحتوى" : "Approve content")}</button></div>
               </footer>
             )}
           </article>

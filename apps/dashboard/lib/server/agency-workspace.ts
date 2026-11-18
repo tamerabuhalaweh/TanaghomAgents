@@ -10,7 +10,7 @@ import { parseOrganizationAgentDraft, agentValidationReport } from "@/lib/server
 import { assertWorkspaceStartAllowed,loadWorkspaceQuota,loadWorkspaceUsage,WorkspaceQuotaError } from "@/lib/server/workspace-quotas";
 import { mapWorkspaceStateError } from "@/lib/server/workspace-state-error";
 const requireRuntime=process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`);
-const { workspaceManifest, workspaceRequest, workspaceArtifact, WorkspaceOutputError }: typeof import("@tanaghom/agent-runtime/workspace")
+const { workspaceManifest, workspaceRequest, workspaceArtifact, WorkspaceOutputError, bilingualRequested }: typeof import("@tanaghom/agent-runtime/workspace")
  = requireRuntime("@tanaghom/agent-runtime/workspace");
 const { createGeminiWorkspaceClient, GeminiWorkspaceError }: typeof import("@tanaghom/agent-runtime/gemini-workspace")
  = requireRuntime("@tanaghom/agent-runtime/gemini-workspace");
@@ -98,7 +98,17 @@ export async function workspaceRead(request:NextRequest){
   database().query(`SELECT id,event_type,actor_kind,actor_ref,evidence,occurred_at FROM tanaghom.agency_workspace_events
     WHERE workspace_id=$1 AND organization_id=$2 ORDER BY id LIMIT 100`,[selected.id,actor.organizationId]),
  ]):[{rows:[]},{rows:[]}];
- const [quota,usage]=await Promise.all([loadWorkspaceQuota(database(),actor.organizationId),loadWorkspaceUsage(database(),actor.organizationId)]);
+ const [quota,usage,brandKit,retries]=await Promise.all([
+  loadWorkspaceQuota(database(),actor.organizationId),
+  loadWorkspaceUsage(database(),actor.organizationId),
+  database().query(`SELECT kit.name,version.colors,version.arabic_font,version.latin_font,version.cta,version.tone,
+    (SELECT organization.name FROM tanaghom.organizations organization WHERE organization.id=$1) AS brand_name
+    FROM tanaghom.brand_kits kit JOIN tanaghom.brand_kit_versions version ON version.kit_id=kit.id AND version.version=kit.current_version
+    WHERE kit.organization_id=$1 ORDER BY kit.created_at DESC,kit.id DESC LIMIT 1`,[actor.organizationId]),
+  selected?database().query(`SELECT count(*)::int AS used FROM tanaghom.agency_workspace_events
+    WHERE organization_id=$1 AND workspace_id=$2 AND event_type='resumed'
+      AND coalesce((evidence->>'retried_from_failed')::boolean,false) = true`,[actor.organizationId,selected.id]):Promise.resolve({rows:[]}),
+ ]);
  const c=control.rows[0];const isConfigured=configured();
  // Never leak internal latch/reason strings to the customer. A failed model
  // task latches the control row; the UI receives calm, actionable copy instead.
@@ -110,7 +120,11 @@ export async function workspaceRead(request:NextRequest){
     ?"AI specialist generation is paused by the platform while operations are reviewed. Your briefs can still be saved."
     :"AI specialists are ready. Generated work stays as a reviewable proposal until a person approves it.";
  return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
-  assignments,selected:selected?{...selected,steps:steps.rows,events:events.rows}:null,
+  // Brand kit colours and fonts drive the zero-cost social post cards.
+  brand_kit:brandKit.rows[0]?({name:brandKit.rows[0].name,brand_name:brandKit.rows[0].brand_name,
+   colors:brandKit.rows[0].colors||{},arabic_font:brandKit.rows[0].arabic_font,
+   latin_font:brandKit.rows[0].latin_font,cta:brandKit.rows[0].cta,tone:brandKit.rows[0].tone}):null,
+  assignments,selected:selected?{...selected,retries_used:Number(retries.rows[0]?.used)||0,steps:steps.rows,events:events.rows}:null,
   default_dialect:dialectDefault.dialect,default_dialect_source:dialectDefault.source,
   can_manage:actor.role==="owner",can_review:["owner","reviewer"].includes(actor.role),
   quota,usage,
@@ -260,6 +274,24 @@ export async function workspaceTick(request:NextRequest){
     JOIN tanaghom.organizations o ON o.id=w.organization_id WHERE s.task_id=$1`,[task.task_id])).rows[0];
    task={...task,dialect:resolveArabicDialect({campaignDialect:context?.brief_dialect,brandKitDialect:context?.brand_dialect,location:context?.location})};
   }catch{task={...task,dialect:"msa"};}
+ }
+ // The deterministic executive summary carries recorded per-step usage and
+ // elapsed time; read them from the succeeded step artifacts (no schema change).
+ if(task.profile==="executive_summary"){
+  try{
+   const recorded=await database().query(`SELECT step.task_id,
+     coalesce((artifact.result->>'elapsed_ms')::int, NULL) AS elapsed_ms,
+     coalesce((artifact.result->'usage'->>'total_tokens')::int, NULL) AS total_tokens
+    FROM tanaghom.agency_workspace_steps step
+    JOIN tanaghom.agency_pilot_tasks artifact ON artifact.id=step.task_id
+    WHERE step.workspace_id=(SELECT workspace_id FROM tanaghom.agency_workspace_steps WHERE task_id=$1)
+      AND artifact.status='succeeded'`,[task.task_id]);
+   const usageByTask=new Map(recorded.rows.map((row:{task_id:string;elapsed_ms:number|null;total_tokens:number|null})=>[row.task_id,row]));
+   task={...task,bilingual:bilingualRequested(task),shared_context:task.shared_context.map((entry:Record<string,unknown>)=>{
+    const usage=usageByTask.get(String(entry.task_id));
+    return usage?{...entry,usage:{total_tokens:usage.total_tokens},elapsed_ms:usage.elapsed_ms}:entry;
+   })};
+  }catch{/* the summary stays deterministic from the stored shared context */}
  }
  let artifact=null,errorCode:string|null=null,errorDetail:Record<string,unknown>|null=null;const started=Date.now();
  try{

@@ -50,13 +50,40 @@ function superAdminEmails() {
   );
 }
 
+// Customer acceptance and demo identities must never reach the platform cockpit,
+// even if one is pasted into SUPER_ADMIN_EMAILS by mistake.
+export const CUSTOMER_TEST_EMAIL_DOMAINS = ["example.com", "tanaghom.test"] as const;
+
+export function isCustomerTestEmail(email: string) {
+  const normalized = email.trim().toLowerCase();
+  if (!normalized.includes("@")) return false;
+  return CUSTOMER_TEST_EMAIL_DOMAINS.some((domain) => normalized.endsWith(`@${domain}`) || normalized.endsWith(`.${domain}`));
+}
+
+interface SuperAdminGuardOptions {
+  /** Overridable so unit tests can exercise production and non-production rules. */
+  environment?: string;
+  /** Explicit unit-test override that keeps a seeded test identity usable. */
+  allowTestIdentities?: boolean;
+}
+
 export function isPlatformSuperAdmin(
   user: Pick<ApplicationUser, "organizationId" | "role">,
   email: string,
   allowedEmails = superAdminEmails(),
+  options: SuperAdminGuardOptions = {},
 ) {
+  const environment = options.environment ?? process.env.NODE_ENV ?? "development";
+  const production = environment === "production";
   const normalized = email.trim().toLowerCase();
-  if (allowedEmails.size > 0) return Boolean(normalized && allowedEmails.has(normalized));
+  // Fail closed: a production deployment without an explicit allowlist has no
+  // platform owner, so the organization-owner fallback stays local/CI only.
+  if (production && allowedEmails.size === 0) return false;
+  if (allowedEmails.size > 0) {
+    if (!normalized || !allowedEmails.has(normalized)) return false;
+    if (production && !options.allowTestIdentities && isCustomerTestEmail(normalized)) return false;
+    return true;
+  }
   return user.organizationId === PLATFORM_ORGANIZATION_ID && user.role === "owner";
 }
 
