@@ -129,6 +129,81 @@ function labelledCard(section: string, fallbackCta: string): SocialPostCard | nu
   return { headline: headlineText, body: bodyText, cta: completeText(ctaField?.text || fallbackCta, 44) };
 }
 
+// Some drafts label a whole paragraph by language instead of labelling each
+// part: "**English:** …" then "**Levantine Arabic (اللهجة الشامية):** …".
+const LANGUAGE_LABEL = /^\s*[*\-•]?\s*\*{0,2}\s*((?:modern standard |levantine |gulf |khaleeji |saudi |egyptian )?arabic(?:\s*\([^)]*\))?|english(?:\s*\([^)]*\))?)\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.*)$/iu;
+const CTA_HEADING = /call to action|نداء الإجراء|دعوة للتفاعل/iu;
+const COPY_HEADING = /^#{3,6}\s*(?:post copy|copy|نص المنشور|النص)\b/iu;
+const SKIP_SECTION = /^#{1,6}\s*(?:visual brief|visual direction|format|توصيف بصري|التنسيق)/iu;
+
+function plain(line: string) {
+  return clean(line.replace(/^#{1,6}\s*/, ""));
+}
+
+function postSections(source: string): string[][] {
+  const sections: string[][] = [];
+  let current: string[] | null = null;
+  for (const line of source.split("\n")) {
+    const heading = /^##\s+(.+)$/u.exec(line);
+    if (heading) {
+      current = /post|draft|منشور|مسودة/iu.test(heading[1]) ? [] : null;
+      if (current) sections.push(current);
+      continue;
+    }
+    if (current) current.push(line);
+  }
+  return sections;
+}
+
+function splitHeadline(text: string) {
+  const sentence = /^(.{20,140}?[.!?؟])\s+([\s\S]+)$/u.exec(text);
+  if (sentence) return { headline: sentence[1], body: sentence[2] };
+  const words = text.split(/\s+/u);
+  if (words.length < 14) return null;
+  return { headline: words.slice(0, 12).join(" "), body: words.slice(12).join(" ") };
+}
+
+function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | null {
+  const copyStart = body.findIndex((line) => COPY_HEADING.test(line));
+  let lines = copyStart >= 0 ? body.slice(copyStart + 1) : body;
+  const ctaIndex = lines.findIndex((line) => CTA_HEADING.test(plain(line)) && plain(line).length < 90);
+  const ctaLines = ctaIndex >= 0 ? lines.slice(ctaIndex + 1) : [];
+  if (ctaIndex >= 0) lines = lines.slice(0, ctaIndex);
+
+  const segments = new Map<string, string>();
+  let language = "";
+  for (const line of lines) {
+    if (SKIP_SECTION.test(line)) continue;
+    const label = LANGUAGE_LABEL.exec(line);
+    if (label) {
+      language = label[1].toLowerCase();
+      const inline = clean(label[2] || "");
+      if (inline) segments.set(language, `${segments.get(language) || ""} ${inline}`.trim());
+      continue;
+    }
+    if (/^\s*\|/.test(line) || /^\s*[-=]{3,}\s*$/.test(line)) continue;
+    const text = plain(line);
+    if (!text || /^hashtags?\b/iu.test(text) || /^#/.test(text)) continue;
+    segments.set(language, `${segments.get(language) || ""} ${text}`.trim());
+  }
+
+  const english = [...segments.entries()].find(([key]) => /english/u.test(key))?.[1];
+  const text = (english || [...segments.values()].join(" ")).replace(/\s+/g, " ").trim();
+  if (!text) return null;
+  const split = splitHeadline(text);
+  if (!split) return null;
+
+  let cta = "";
+  for (const line of ctaLines) {
+    if (SKIP_SECTION.test(line)) continue;
+    const label = LANGUAGE_LABEL.exec(line);
+    const candidate = clean((label ? label[2] : plain(line).replace(CTA_HEADING, "")).replace(/^[*\-•]\s*/, ""));
+    if (candidate && /english/iu.test(label ? label[1] : "") === true) { cta = candidate; break; }
+    if (candidate && !label) { cta = candidate; break; }
+  }
+  return { headline: completeText(split.headline, 96), body: completeText(split.body, 240), cta: completeText(cta || fallbackCta, 44) };
+}
+
 /** Extracts up to two brand-consistent post cards from a generated draft. */
 export function socialPostCards(document: string, kit: WorkspaceBrandKit | null): SocialPostCard[] {
   if (!document) return [];
@@ -138,6 +213,14 @@ export function socialPostCards(document: string, kit: WorkspaceBrandKit | null)
   const sections = source.split(/\n(?=#{1,4}\s)/u).filter((section) => POST_SECTION.test(section.split("\n")[0] || ""));
   for (const section of sections.length ? sections : [source]) {
     const card = labelledCard(section, fallbackCta);
+    if (card) cards.push(card);
+    if (cards.length === 2) break;
+  }
+  if (cards.length) return cards;
+
+  // Paragraphs labelled only by language, inside a post section.
+  for (const section of postSections(source)) {
+    const card = segmentedCard(section, fallbackCta);
     if (card) cards.push(card);
     if (cards.length === 2) break;
   }
