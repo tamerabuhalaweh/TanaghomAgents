@@ -94,7 +94,7 @@ export function completeText(text: string, limit: number) {
 // Generated drafts label their own parts ("**Hook (English):**", "**Body
 // (Levantine Arabic):**"). Reading those labels produces an accurate card
 // instead of guessing at the first long line.
-const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(opening|headline|hook|body|caption|text|cta|cta button|call to action|hashtags|visual direction|visual brief|format|الافتتاحية|العنوان|النص|المتن|نداء الإجراء|الهاشتاقات|هاشتاقات|توصيف بصري)\s*(?:\(([^)]*)\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.+)$/iu;
+const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(opening|headline|hook|body|caption|text|cta|cta button|call to action|hashtags|visual direction|visual brief|format|الافتتاحية|العنوان|النص|المتن|المحتوى|محتوى|نداء الإجراء|الهاشتاقات|هاشتاقات|توصيف بصري)\s*(?:\(([^)]*)\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.*)$/iu;
 const HASHTAG_LABEL = /^\s*[*\-•]?\s*\*{0,2}(?:hashtags?|الهاشتاقات|هاشتاقات)\s*\*{0,2}\s*[:：]\s*(.+)$/iu;
 const HASHTAG_HEADING = /^(?:hashtags?|الهاشتاقات|هاشتاقات)\s*[:：]/iu;
 const POST_SECTION = /^\s*#{1,4}\s*.*(?:post|منشور)/iu;
@@ -104,14 +104,23 @@ type LabelledField = { label: string; qualifier: string; text: string };
 
 function labelledFields(text: string): LabelledField[] {
   const found: LabelledField[] = [];
-  for (const line of text.replace(/\r\n/g, "\n").split("\n")) {
-    const match = FIELD_LINE.exec(line);
+  const lines = text.replace(/\r\n/g, "\n").split("\n");
+  for (let index = 0; index < lines.length; index += 1) {
+    const match = FIELD_LINE.exec(lines[index]);
     if (!match) continue;
     const label = match[1].toLowerCase();
+    let raw = match[3];
+    // Generated drafts often put the label on its own line and the copy on the
+    // next one: "**الافتتاحية (Hook):**" then the sentence.
+    if (!raw.trim()) {
+      const next = lines.slice(index + 1).find((line) => line.trim());
+      if (!next || FIELD_LINE.test(next) || /^#{1,6}\s/.test(next.trim())) continue;
+      raw = next;
+    }
     // Hashtags keep their leading "#"; every other field is markdown-cleaned.
     const value = label === "hashtags" || label === "الهاشتاقات" || label === "هاشتاقات"
-      ? match[3].replace(/\*\*/g, "").trim()
-      : clean(match[3]);
+      ? raw.replace(/\*\*/g, "").trim()
+      : clean(raw);
     if (!value) continue;
     found.push({ label, qualifier: (match[2] || "").toLowerCase(), text: value });
   }
@@ -128,7 +137,7 @@ function labelledCard(section: string, fallbackCta: string): SocialPostCard | nu
       ?? matching[0];
   };
   const headline = pick(["opening", "headline", "hook", "الافتتاحية", "العنوان"]);
-  const body = pick(["body", "caption", "text", "النص", "المتن"]);
+  const body = pick(["body", "caption", "text", "النص", "المتن", "المحتوى", "محتوى"]);
   if (!headline || !body) return null;
   const ctaField = pick(["cta", "cta button", "call to action", "نداء الإجراء"]);
   const hashtags = pick(["hashtags", "الهاشتاقات", "هاشتاقات"]);

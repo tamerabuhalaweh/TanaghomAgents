@@ -269,6 +269,29 @@ test("Packet J: three cards from the Post 1/2/3 draft, full copy and no hashtags
   }
 });
 
+test("Packet J: Arabic labels on their own line still yield clean card copy", () => {
+  const draft = [
+    "# مسودات منشورات إنستغرام",
+    "",
+    "## Post 1",
+    "**الافتتاحية (Hook):**",
+    "هل ترغبون في تجهيز منزلكم في عمّان؟",
+    "**المحتوى (Body):**",
+    "يقدّم متجرنا تشكيلة مختارة من أدوات المطبخ والديكور مع التوصيل والدفع عند الاستلام.",
+    "**نداء الإجراء (Call to Action):**",
+    "اطلبوا احتياجاتكم اليوم واحصلوا على توصيل مجاني.",
+    "**الهاشتاقات:**",
+    "#أشياء_بيتي #عمّان #أدوات_منزلية",
+  ].join("\n");
+  const { socialPostCards } = loadPostCards();
+  const [card] = socialPostCards(draft, null);
+  assert.equal(card.headline, "هل ترغبون في تجهيز منزلكم في عمّان؟");
+  assert.match(card.body, /يقدّم متجرنا/);
+  assert.equal(card.cta, "اطلبوا احتياجاتكم اليوم واحصلوا على توصيل مجاني.");
+  assert.doesNotMatch(card.headline, /الافتتاحية|\*\*/);
+  assert.match(card.hashtags, /#أشياء_بيتي/);
+});
+
  test("Packet J: one approved label, two-step change request, MSA default and Task 6 cost", () => {
   const view = read("apps/dashboard/components/agency-workspace.tsx");
   assert.match(view, /approved: "Approved"/);
