@@ -108,6 +108,11 @@ test("5: post cards skip missing-information notices, strip labels and hand off 
   assert.match(cards, /const NON_POST_BLOCK = \/missing information\|missing decisions\|open items/);
   assert.match(cards, /قرارات ناقصة\|بنود مفتوحة/);
   assert.match(cards, /english copy\|arabic copy\|english version/);
+  assert.match(cards, /const NON_POST_HEADLINE = \/\^\(\?:visual\|photo\|image\)/);
+  assert.match(cards, /const FIELD_LINE = \/\^\\s\*\[\*\\-•\]/);
+  assert.match(cards, /const POST_SECTION = \/\^\\s\*#\{1,4\}\\s\*.*\(\?:post\|منشور\)/);
+  assert.match(cards, /function labelledCard\(section: string, fallbackCta: string\)/);
+  assert.match(cards, /matching\.find\(\(field\) => \/english\|en\\b\/u\.test\(field\.qualifier\)/);
   assert.match(cards, /if \(NON_POST_BLOCK\.test\(block\)\) continue;/);
   assert.match(cards, /const STRUCTURAL_PREFIX = \/\^\(\?:opening\|headline\|hook\|body\|caption\|cta/);
   assert.match(cards, /export function stripStructuralPrefix/);

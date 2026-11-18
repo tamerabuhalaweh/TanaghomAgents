@@ -63,7 +63,10 @@ const NON_POST_BLOCK = /missing information|missing decisions|open items|معل�
 // Generated drafts label their own parts ("Opening (Arabic):", "CTA:",
 // "نداء الإجراء:"). Those labels belong to the document structure, not the
 // card typography.
-const STRUCTURAL_PREFIX = /^(?:opening|headline|hook|body|caption|cta|cta button|call to action|english copy|arabic copy|english version|arabic version|الافتتاحية|العنوان|النص|المتن|نداء الإجراء|النسخة العربية|النسخة الإنجليزية|النص العربي|النص الإنجليزي)\s*(?:\((?:english|arabic|en|ar|عربي|عربية|إنجليزي|الإنجليزية|العربية)\))?\s*[:：\-–]\s*/iu;
+const STRUCTURAL_PREFIX = /^(?:opening|headline|hook|body|caption|cta|cta button|call to action|english copy|arabic copy|english version|arabic version|الافتتاحية|العنوان|النص|المتن|نداء الإجراء|النسخة العربية|النسخة الإنجليزية|النص العربي|النص الإنجليزي)\s*(?:\((?:[^)]{0,24}arabic[^)]{0,24}|[^)]{0,24}english[^)]{0,24}|en|ar|عربي|عربية|إنجليزي|الإنجليزية|العربية|النسخة[^)]{0,24}|النص[^)]{0,24})\))?\s*[:：\-–]\s*/iu;
+
+// A visual brief or format spec describes the artwork; it is not post copy.
+const NON_POST_HEADLINE = /^(?:visual|photo|image)\s*(?:brief|direction|format)$|^(?:format|visual brief|visual direction|photo brief)$|توصيف بصري|تصور بصري|الوصف البصري|توصيف الوسائط|التنسيق/iu;
 
 export function stripStructuralPrefix(line: string) {
   let value = line;
@@ -86,18 +89,69 @@ export function completeText(text: string, limit: number) {
   return `${(word > 0 ? slice.slice(0, word) : slice).replace(/[،,؛;:.\-–]+$/, "").trim()}…`;
 }
 
+// Generated drafts label their own parts ("**Hook (English):**", "**Body
+// (Levantine Arabic):**"). Reading those labels produces an accurate card
+// instead of guessing at the first long line.
+const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(headline|hook|body|caption|text|cta|cta button|call to action|visual direction|visual brief|format|العنوان|الافتتاحية|النص|المتن|نداء الإجراء|توصيف بصري)\s*(?:\(([^)]*)\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.+)$/iu;
+const POST_SECTION = /^\s*#{1,4}\s*.*(?:post|منشور)/iu;
+const ARABIC_QUALIFIER = /arabic|عربي|عربية|شامي|خليجي|سعودي|مصري/u;
+
+type LabelledField = { label: string; qualifier: string; text: string };
+
+function labelledFields(text: string): LabelledField[] {
+  const found: LabelledField[] = [];
+  for (const line of text.replace(/\r\n/g, "\n").split("\n")) {
+    const match = FIELD_LINE.exec(line);
+    if (!match) continue;
+    const value = clean(match[3]);
+    if (!value) continue;
+    found.push({ label: match[1].toLowerCase(), qualifier: (match[2] || "").toLowerCase(), text: value });
+  }
+  return found;
+}
+
+function labelledCard(section: string, fallbackCta: string): SocialPostCard | null {
+  const list = labelledFields(section);
+  if (!list.length) return null;
+  const pick = (names: string[]) => {
+    const matching = list.filter((field) => names.includes(field.label));
+    return matching.find((field) => /english|en\b/u.test(field.qualifier) && !ARABIC_QUALIFIER.test(field.qualifier))
+      ?? matching.find((field) => !field.qualifier || !ARABIC_QUALIFIER.test(field.qualifier))
+      ?? matching[0];
+  };
+  const headline = pick(["headline", "hook"]);
+  const body = pick(["body", "caption", "text"]);
+  if (!headline || !body) return null;
+  const ctaField = pick(["cta", "cta button", "call to action"]);
+  const headlineText = completeText(headline.text, 96);
+  const bodyText = completeText(body.text, 240);
+  if (!headlineText || !bodyText) return null;
+  return { headline: headlineText, body: bodyText, cta: completeText(ctaField?.text || fallbackCta, 44) };
+}
+
 /** Extracts up to two brand-consistent post cards from a generated draft. */
 export function socialPostCards(document: string, kit: WorkspaceBrandKit | null): SocialPostCard[] {
   if (!document) return [];
-  const blocks = document.replace(/\r\n/g, "\n").split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
+  const source = document.replace(/\r\n/g, "\n");
   const fallbackCta = brandCta(kit);
   const cards: SocialPostCard[] = [];
+  const sections = source.split(/\n(?=#{1,4}\s)/u).filter((section) => POST_SECTION.test(section.split("\n")[0] || ""));
+  for (const section of sections.length ? sections : [source]) {
+    const card = labelledCard(section, fallbackCta);
+    if (card) cards.push(card);
+    if (cards.length === 2) break;
+  }
+  if (cards.length) return cards;
+
+  // Older drafts have no labels: fall back to paragraph extraction.
+  const blocks = source.split(/\n\s*\n/).map((block) => block.trim()).filter(Boolean);
   for (const block of blocks) {
     if (NON_POST_BLOCK.test(block)) continue;
     const lines = block.split("\n").map(clean).map(stripStructuralPrefix).filter(Boolean);
     if (!lines.length) continue;
     const headline = completeText(lines[0], 96);
-    if (!headline || NON_POST_BLOCK.test(headline) || /^hashtags?\s*[:：]/i.test(headline)) continue;
+    if (!headline || NON_POST_BLOCK.test(headline) || NON_POST_HEADLINE.test(headline)) continue;
+    if (/^hashtags?\s*[:：]/i.test(headline)) continue;
     const rest = lines.slice(1).filter((line) => !/^hashtags?\s*[:：]/i.test(line) && !/^الهاشتاقات?\s*[:：]/.test(line));
     const bodyStart = rest.findIndex((line) => line.length >= 30);
     if (bodyStart < 0) continue;
