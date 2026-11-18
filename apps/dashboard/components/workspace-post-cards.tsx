@@ -389,7 +389,7 @@ function PostCard({
               textAnchor="middle"
               direction={rtl ? "rtl" : "ltr"}
             >
-              {card.cta.slice(0, 26)}
+              {completeText(card.cta, 24)}
             </text>
           </g>
         ) : null}
