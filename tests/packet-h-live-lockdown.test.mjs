@@ -48,6 +48,8 @@ test("overview and campaigns share AI Workspace statuses and counts", () => {
   assert.match(operations, /status IN \('approved', 'running', 'in_progress', 'waiting_review'\)\) AS campaigns_active/);
   assert.match(operations, /status = 'waiting_review'\) AS approvals_pending/);
   assert.match(operations, /agency_workspace_steps step/);
+  // Step state lives on the pilot task, not the step row.
+  assert.match(operations, /JOIN tanaghom\.agency_pilot_tasks task ON task\.id = step\.task_id[\s\S]{0,200}task\.status IN \('queued', 'in_progress'\)/);
   assert.match(operations, /AS jobs_open/);
   assert.doesNotMatch(operations, /approvedWorkspaceCampaigns/);
   const approvals = read("apps/dashboard/app/api/approvals/route.ts");

@@ -33,9 +33,10 @@ export async function GET(request: NextRequest) {
             WHERE campaign.organization_id = $1 AND job.status IN ('queued', 'running', 'waiting_approval'))
              + (SELECT count(*)::int FROM tanaghom.agency_workspace_steps step
                  JOIN tanaghom.agency_workspaces workspace ON workspace.id = step.workspace_id
+                 JOIN tanaghom.agency_pilot_tasks task ON task.id = step.task_id
                 WHERE workspace.organization_id = $1
                   AND workspace.status IN ('queued', 'running', 'in_progress', 'paused')
-                  AND step.status IN ('queued', 'in_progress')) AS jobs_open,
+                  AND task.status IN ('queued', 'in_progress')) AS jobs_open,
            (SELECT count(*)::int FROM tanaghom.leads lead
              JOIN tanaghom.campaigns campaign ON campaign.id = lead.campaign_id
             WHERE campaign.organization_id = $1) AS leads_total,
