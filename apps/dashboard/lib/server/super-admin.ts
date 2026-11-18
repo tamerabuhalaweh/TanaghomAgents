@@ -54,15 +54,9 @@ function superAdminEmails() {
 // even if one is pasted into SUPER_ADMIN_EMAILS by mistake.
 export const CUSTOMER_TEST_EMAIL_DOMAINS = ["example.com", "tanaghom.test"] as const;
 
-// The one test-domain identity sanctioned for platform operations: the
-// platform organization's owner in the demo deployment. It still has to be
-// listed explicitly in SUPER_ADMIN_EMAILS; every other test identity is refused.
-export const PLATFORM_OPS_TEST_IDENTITY = "owner@demo.tanaghom.test";
-
 export function isCustomerTestEmail(email: string) {
   const normalized = email.trim().toLowerCase();
   if (!normalized.includes("@")) return false;
-  if (normalized === PLATFORM_OPS_TEST_IDENTITY) return false;
   return CUSTOMER_TEST_EMAIL_DOMAINS.some((domain) => normalized.endsWith(`@${domain}`) || normalized.endsWith(`.${domain}`));
 }
 

@@ -8,9 +8,9 @@ test("super-admin fails closed in production and refuses customer test identitie
   const service = read("apps/dashboard/lib/server/super-admin.ts");
   assert.match(service, /CUSTOMER_TEST_EMAIL_DOMAINS = \["example\.com", "tanaghom\.test"\]/);
   assert.match(service, /export function isCustomerTestEmail/);
-  // Only the dedicated platform-ops owner may keep a test-domain identity.
-  assert.match(service, /PLATFORM_OPS_TEST_IDENTITY = "owner@demo\.tanaghom\.test"/);
-  assert.match(service, /if \(normalized === PLATFORM_OPS_TEST_IDENTITY\) return false;/);
+  // Every test domain is refused in production, including the demo platform org.
+  assert.doesNotMatch(service, /PLATFORM_OPS_TEST_IDENTITY/);
+  assert.match(service, /if \(production && !options\.allowTestIdentities && isCustomerTestEmail\(normalized\)\) return false;/);
   assert.match(service, /if \(production && allowedEmails\.size === 0\) return false;/);
   assert.match(service, /if \(production && !options\.allowTestIdentities && isCustomerTestEmail\(normalized\)\) return false;/);
   assert.match(service, /allowTestIdentities\?: boolean/);
