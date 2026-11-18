@@ -84,6 +84,13 @@ test("workspace surfaces failure reasons, retry budget, focus refresh and brand 
   assert.match(service, /retried_from_failed/);
 });
 
+test("billing reports the live cohort cap and unlimited flag", () => {
+  const launch = read("apps/dashboard/lib/server/launch-control.ts");
+  assert.match(launch, /cohort_cap: config\.cohort_cap,[\s\S]{0,80}cohort_unlimited: config\.cohort_unlimited,/);
+  const billing = read("apps/dashboard/app/api/billing/route.ts");
+  assert.match(billing, /launch_offer: launchOffer/);
+});
+
 test("deployment docs keep the platform owner out of customer test identities", () => {
   const example = read("deployment/dashboard-demo/.env.example");
   assert.match(example, /^SUPER_ADMIN_EMAILS=/m);

@@ -21,6 +21,7 @@ export interface LaunchOffer {
   redemptions_used: number;
   redemptions_remaining: number;
   cohort_cap: number;
+  cohort_unlimited: boolean;
   active_workspaces: number;
   cohort_full: boolean;
   queue_position: number | null;
@@ -274,6 +275,7 @@ export async function evaluateLaunchGate(
       redemptions_used: used,
       redemptions_remaining: remaining,
       cohort_cap: config.cohort_cap,
+      cohort_unlimited: config.cohort_unlimited,
       active_workspaces: activeWorkspaces,
       cohort_full: cohortFull,
       queue_position: queuePosition,
