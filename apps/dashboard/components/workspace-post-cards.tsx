@@ -49,6 +49,7 @@ function clean(value: string) {
     .replace(/^#{1,6}\s*/, "")
     .replace(/^[*+•-]\s*/, "")
     .replace(/\*\*/g, "")
+    .replace(/^[*_\s]+|[*_\s]+$/g, "")
     .trim();
 }
 
@@ -57,12 +58,12 @@ const CTA_PATTERN = /\b(cta|call to action|book|register|enroll|sign up|order|le
 // A Missing Information notice (or an explicit-assumptions list) is a decision
 // record, never a social post. Rendering it as a card shipped internal policy
 // text into customer-facing artwork, so these blocks are dropped outright.
-const NON_POST_BLOCK = /missing information|معلومات ناقصة|ملاحظة المعلومات|explicit decisions|assumptions|الافتراضات/i;
+const NON_POST_BLOCK = /missing information|missing decisions|open items|معلومات ناقصة|ملاحظة المعلومات|قرارات ناقصة|بنود مفتوحة|explicit decisions|assumptions|الافتراضات/i;
 
 // Generated drafts label their own parts ("Opening (Arabic):", "CTA:",
 // "نداء الإجراء:"). Those labels belong to the document structure, not the
 // card typography.
-const STRUCTURAL_PREFIX = /^(?:opening|headline|hook|body|caption|cta|call to action|الافتتاحية|العنوان|النص|المتن|نداء الإجراء)\s*(?:\((?:english|arabic|en|ar|عربي|عربية|إنجليزي|الإنجليزية|العربية)\))?\s*[:：\-–]\s*/iu;
+const STRUCTURAL_PREFIX = /^(?:opening|headline|hook|body|caption|cta|cta button|call to action|english copy|arabic copy|english version|arabic version|الافتتاحية|العنوان|النص|المتن|نداء الإجراء|النسخة العربية|النسخة الإنجليزية|النص العربي|النص الإنجليزي)\s*(?:\((?:english|arabic|en|ar|عربي|عربية|إنجليزي|الإنجليزية|العربية)\))?\s*[:：\-–]\s*/iu;
 
 export function stripStructuralPrefix(line: string) {
   let value = line;

@@ -105,7 +105,9 @@ test("4 and 8: workspace state follows the command and the selected id, with liv
 
 test("5: post cards skip missing-information notices, strip labels and hand off real copy", () => {
   const cards = read("apps/dashboard/components/workspace-post-cards.tsx");
-  assert.match(cards, /const NON_POST_BLOCK = \/missing information\|معلومات ناقصة/);
+  assert.match(cards, /const NON_POST_BLOCK = \/missing information\|missing decisions\|open items/);
+  assert.match(cards, /قرارات ناقصة\|بنود مفتوحة/);
+  assert.match(cards, /english copy\|arabic copy\|english version/);
   assert.match(cards, /if \(NON_POST_BLOCK\.test\(block\)\) continue;/);
   assert.match(cards, /const STRUCTURAL_PREFIX = \/\^\(\?:opening\|headline\|hook\|body\|caption\|cta/);
   assert.match(cards, /export function stripStructuralPrefix/);
