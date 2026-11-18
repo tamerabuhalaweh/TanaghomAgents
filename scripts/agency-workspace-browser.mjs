@@ -66,7 +66,7 @@ export async function workspaceBrowser(pool, databaseUrl, workerUrl) {
   mkdirSync('tmp/workspace-qa',{recursive:true});await page.screenshot({path:'tmp/workspace-qa/desktop.png',fullPage:true});
   await page.setViewportSize({width:390,height:844});await expect(page.locator('.sidebar')).toBeHidden();await page.screenshot({path:'tmp/workspace-qa/mobile.png',fullPage:true});
   assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth),true,'no horizontal overflow at mobile width');
-  await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:'Approve work pack',exact:true}).click();await expect(page.getByText('Approved by human',{exact:true}).first()).toBeVisible();
+  await page.setViewportSize({width:1440,height:1000});await page.getByRole('button',{name:'Approve work pack',exact:true}).click();await expect(page.getByText('Approved',{exact:true}).first()).toBeVisible();
   await page.getByRole('button',{name:/Fictional ar work pack/}).click();await expect(page.locator('.aw-assignment-header h2')).toHaveText('Fictional ar work pack',{timeout:15000});await expect(page.locator('.aw-document')).toHaveAttribute('dir','rtl');
   await page.screenshot({path:'tmp/workspace-qa/arabic.png',fullPage:true});
   const csrf=await page.request.post(`${origin}/api/workspace`,{headers:{origin:'https://untrusted.test'},data:{action:'cancel',id:wid}});assert.equal(csrf.status(),401);
