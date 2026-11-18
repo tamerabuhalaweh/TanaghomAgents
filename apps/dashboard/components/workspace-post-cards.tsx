@@ -20,6 +20,8 @@ export interface SocialPostCard {
   headline: string;
   body: string;
   cta: string;
+  // Hashtags belong to the post, never to the call-to-action field.
+  hashtags?: string;
 }
 
 const COLOR = /^#[0-9a-f]{3,8}$/i;
@@ -92,7 +94,9 @@ export function completeText(text: string, limit: number) {
 // Generated drafts label their own parts ("**Hook (English):**", "**Body
 // (Levantine Arabic):**"). Reading those labels produces an accurate card
 // instead of guessing at the first long line.
-const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(headline|hook|body|caption|text|cta|cta button|call to action|visual direction|visual brief|format|العنوان|الافتتاحية|النص|المتن|نداء الإجراء|توصيف بصري)\s*(?:\(([^)]*)\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.+)$/iu;
+const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(opening|headline|hook|body|caption|text|cta|cta button|call to action|hashtags|visual direction|visual brief|format|الافتتاحية|العنوان|النص|المتن|نداء الإجراء|الهاشتاقات|هاشتاقات|توصيف بصري)\s*(?:\(([^)]*)\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.+)$/iu;
+const HASHTAG_LABEL = /^\s*[*\-•]?\s*\*{0,2}(?:hashtags?|الهاشتاقات|هاشتاقات)\s*\*{0,2}\s*[:：]\s*(.+)$/iu;
+const HASHTAG_HEADING = /^(?:hashtags?|الهاشتاقات|هاشتاقات)\s*[:：]/iu;
 const POST_SECTION = /^\s*#{1,4}\s*.*(?:post|منشور)/iu;
 const ARABIC_QUALIFIER = /arabic|عربي|عربية|شامي|خليجي|سعودي|مصري/u;
 
@@ -103,9 +107,13 @@ function labelledFields(text: string): LabelledField[] {
   for (const line of text.replace(/\r\n/g, "\n").split("\n")) {
     const match = FIELD_LINE.exec(line);
     if (!match) continue;
-    const value = clean(match[3]);
+    const label = match[1].toLowerCase();
+    // Hashtags keep their leading "#"; every other field is markdown-cleaned.
+    const value = label === "hashtags" || label === "الهاشتاقات" || label === "هاشتاقات"
+      ? match[3].replace(/\*\*/g, "").trim()
+      : clean(match[3]);
     if (!value) continue;
-    found.push({ label: match[1].toLowerCase(), qualifier: (match[2] || "").toLowerCase(), text: value });
+    found.push({ label, qualifier: (match[2] || "").toLowerCase(), text: value });
   }
   return found;
 }
@@ -119,14 +127,15 @@ function labelledCard(section: string, fallbackCta: string): SocialPostCard | nu
       ?? matching.find((field) => !field.qualifier || !ARABIC_QUALIFIER.test(field.qualifier))
       ?? matching[0];
   };
-  const headline = pick(["headline", "hook"]);
-  const body = pick(["body", "caption", "text"]);
+  const headline = pick(["opening", "headline", "hook", "الافتتاحية", "العنوان"]);
+  const body = pick(["body", "caption", "text", "النص", "المتن"]);
   if (!headline || !body) return null;
-  const ctaField = pick(["cta", "cta button", "call to action"]);
-  const headlineText = completeText(headline.text, 96);
-  const bodyText = completeText(body.text, 240);
+  const ctaField = pick(["cta", "cta button", "call to action", "نداء الإجراء"]);
+  const hashtags = pick(["hashtags", "الهاشتاقات", "هاشتاقات"]);
+  const headlineText = completeText(headline.text, 160);
+  const bodyText = completeText(body.text, 360);
   if (!headlineText || !bodyText) return null;
-  return { headline: headlineText, body: bodyText, cta: completeText(ctaField?.text || fallbackCta, 44) };
+  return { headline: headlineText, body: bodyText, cta: completeText(ctaField?.text || fallbackCta, 90), hashtags: hashtagText(hashtags?.text) };
 }
 
 // Some drafts label a whole paragraph by language instead of labelling each
@@ -163,12 +172,31 @@ function splitHeadline(text: string) {
   return { headline: words.slice(0, 12).join(" "), body: words.slice(12).join(" ") };
 }
 
+function hashtagText(value?: string) {
+  const text = (value || "").replace(/\*\*/g, "").replace(/\s+/g, " ").trim();
+  return text || undefined;
+}
+
 function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | null {
+  // Hashtags live in their own field; they are never a call to action.
+  let hashtags = "";
+  for (const line of body) {
+    const labelled = HASHTAG_LABEL.exec(line);
+    if (labelled) { hashtags = labelled[1].trim(); continue; }
+    if (!hashtags && (line.match(/#/g) || []).length >= 2 && line.trim().length < 240) hashtags = line.replace(/\*\*/g, "").trim();
+  }
   const copyStart = body.findIndex((line) => COPY_HEADING.test(line));
   let lines = copyStart >= 0 ? body.slice(copyStart + 1) : body;
-  const ctaIndex = lines.findIndex((line) => CTA_HEADING.test(plain(line)) && plain(line).length < 90);
-  const ctaLines = ctaIndex >= 0 ? lines.slice(ctaIndex + 1) : [];
-  if (ctaIndex >= 0) lines = lines.slice(0, ctaIndex);
+  const ctaIndex = lines.findIndex((line) => CTA_HEADING.test(plain(line)));
+  let inlineCta = "";
+  const ctaLines: string[] = [];
+  if (ctaIndex >= 0) {
+    // "* **Call to Action:** Order your home essentials today!" carries its copy
+    // on the heading line itself, so read it there before looking below.
+    inlineCta = clean(plain(lines[ctaIndex]).replace(CTA_HEADING, "").replace(/^[:：\s*\-–]+/, ""));
+    ctaLines.push(...lines.slice(ctaIndex + 1));
+    lines = lines.slice(0, ctaIndex);
+  }
 
   const segments = new Map<string, string>();
   let language = "";
@@ -183,7 +211,7 @@ function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | nu
     }
     if (/^\s*\|/.test(line) || /^\s*[-=]{3,}\s*$/.test(line)) continue;
     const text = plain(line);
-    if (!text || /^hashtags?\b/iu.test(text) || /^#/.test(text)) continue;
+    if (!text || HASHTAG_HEADING.test(text) || /^hashtags?\b/iu.test(text) || /^#/.test(text)) continue;
     segments.set(language, `${segments.get(language) || ""} ${text}`.trim());
   }
 
@@ -193,18 +221,22 @@ function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | nu
   const split = splitHeadline(text);
   if (!split) return null;
 
-  let cta = "";
+  let cta = inlineCta;
   for (const line of ctaLines) {
     if (SKIP_SECTION.test(line)) continue;
+    const text = plain(line);
+    // A hashtag line (or a stray tag) can never become the card CTA.
+    if (HASHTAG_HEADING.test(text) || /^#/.test(text) || /(?:^|\s)#[^\s#]+/u.test(text)) continue;
     const label = LANGUAGE_LABEL.exec(line);
-    const candidate = clean((label ? label[2] : plain(line).replace(CTA_HEADING, "")).replace(/^[*\-•]\s*/, ""));
-    if (candidate && /english/iu.test(label ? label[1] : "") === true) { cta = candidate; break; }
-    if (candidate && !label) { cta = candidate; break; }
+    const candidate = clean((label ? label[2] : text.replace(CTA_HEADING, "")).replace(/^[*\-•:：\s]+/, ""));
+    if (!candidate) continue;
+    if (label && /english/iu.test(label[1])) { cta = candidate; break; }
+    if (!label) { cta = candidate; break; }
   }
-  return { headline: completeText(split.headline, 96), body: completeText(split.body, 240), cta: completeText(cta || fallbackCta, 44) };
+  return { headline: completeText(split.headline, 160), body: completeText(split.body, 360), cta: completeText(cta || fallbackCta, 90), hashtags: hashtagText(hashtags) };
 }
 
-/** Extracts up to two brand-consistent post cards from a generated draft. */
+/** Extracts up to three brand-consistent post cards from a generated draft. */
 export function socialPostCards(document: string, kit: WorkspaceBrandKit | null): SocialPostCard[] {
   if (!document) return [];
   const source = document.replace(/\r\n/g, "\n");
@@ -214,7 +246,7 @@ export function socialPostCards(document: string, kit: WorkspaceBrandKit | null)
   for (const section of sections.length ? sections : [source]) {
     const card = labelledCard(section, fallbackCta);
     if (card) cards.push(card);
-    if (cards.length === 2) break;
+    if (cards.length === 3) break;
   }
   if (cards.length) return cards;
 
@@ -222,7 +254,7 @@ export function socialPostCards(document: string, kit: WorkspaceBrandKit | null)
   for (const section of postSections(source)) {
     const card = segmentedCard(section, fallbackCta);
     if (card) cards.push(card);
-    if (cards.length === 2) break;
+    if (cards.length === 3) break;
   }
   if (cards.length) return cards;
 
@@ -244,7 +276,7 @@ export function socialPostCards(document: string, kit: WorkspaceBrandKit | null)
     const body = completeText((ctaIndex >= 0 ? bodyLines.filter((_, index) => index !== ctaIndex) : bodyLines).join(" "), 240);
     if (!body) continue;
     cards.push({ headline, body, cta });
-    if (cards.length === 2) break;
+    if (cards.length === 3) break;
   }
   return cards;
 }
@@ -293,16 +325,21 @@ function PostCard({
   const ink = tokensOn(tones.primary) ? "#FFFFFF" : "#101828";
   const filename = `tanaghom-post-${index + 1}`;
   // Adaptive type: long Arabic or English copy shrinks instead of clipping.
-  const headlineSize = card.headline.length > 64 ? 42 : card.headline.length > 40 ? 52 : 64;
+  const headlineSize = card.headline.length > 120 ? 34 : card.headline.length > 84 ? 40 : card.headline.length > 52 ? 48 : 60;
   const headlinePerLine = Math.max(16, Math.round(880 / (headlineSize * 0.56)));
-  const headlineLines = fitLines(card.headline, headlinePerLine, 4);
+  const headlineLines = fitLines(card.headline, headlinePerLine, 5);
   const headlineLineHeight = Math.round(headlineSize * 1.2);
-  const bodyTop = 470 + headlineLines.length * headlineLineHeight + 34;
-  const bodySize = card.body.length > 150 ? 30 : card.body.length > 90 ? 34 : 38;
+  const bodyTop = 440 + headlineLines.length * headlineLineHeight + 30;
+  const bodySize = card.body.length > 220 ? 27 : card.body.length > 150 ? 30 : card.body.length > 90 ? 34 : 38;
   const bodyPerLine = Math.max(18, Math.round(880 / (bodySize * 0.54)));
   const bodyLineHeight = Math.round(bodySize * 1.32);
-  const maxBodyLines = Math.max(1, Math.min(5, Math.floor((840 - bodyTop) / bodyLineHeight)));
+  const maxBodyLines = Math.max(1, Math.min(5, Math.floor((830 - bodyTop) / bodyLineHeight)));
   const bodyLines = fitLines(card.body, bodyPerLine, maxBodyLines);
+  // The full CTA (up to 90 characters) wraps onto centred lines inside the badge.
+  const ctaSize = card.cta.length > 40 ? 27 : 30;
+  const ctaPerLine = Math.max(12, Math.round(480 / (ctaSize * 0.54)));
+  const ctaLines = card.cta ? fitLines(card.cta, ctaPerLine, 3) : [];
+  const ctaLineHeight = Math.round(ctaSize * 1.3);
   const designHref = `/creative/designs?${new URLSearchParams({ from: "workspace", title: card.headline, headline: card.headline, body: card.body, cta: card.cta, lang: language }).toString()}`;
 
   function saveSvg() {
@@ -376,20 +413,22 @@ function PostCard({
             <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : bodyLineHeight}>{line}</tspan>
           ))}
         </text>
-        {card.cta ? (
+        {ctaLines.length ? (
           <g>
-            <rect x={rtl ? 992 - 420 : 88} y="880" width="420" height="94" rx="47" fill={tones.accent} />
+            <rect x={rtl ? 992 - 560 : 88} y="852" width="560" height="140" rx="30" fill={tones.accent} />
             <text
-              x={rtl ? 992 - 210 : 88 + 210}
-              y="940"
+              x={rtl ? 992 - 280 : 88 + 280}
+              y={852 + 70}
               fill="#101828"
               fontFamily={font}
-              fontSize="34"
+              fontSize={ctaSize}
               fontWeight="700"
               textAnchor="middle"
               direction={rtl ? "rtl" : "ltr"}
             >
-              {completeText(card.cta, 24)}
+              {ctaLines.map((line, lineIndex) => (
+                <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 - 280 : 88 + 280} dy={lineIndex === 0 ? -((ctaLines.length - 1) * ctaLineHeight) / 2 : ctaLineHeight}>{line}</tspan>
+              ))}
             </text>
           </g>
         ) : null}

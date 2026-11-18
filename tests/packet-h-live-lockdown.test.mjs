@@ -72,7 +72,9 @@ test("workspace surfaces failure reasons, retry budget, focus refresh and brand 
   assert.match(view, /window\.addEventListener\("focus", refresh\)/);
   assert.match(view, /document\.addEventListener\("visibilitychange", refresh\)/);
   assert.match(view, /WorkspacePostCards/);
-  assert.match(view, /\["content_creator", "social_media_strategist"\]/);
+  // Post cards belong to the content creator only, not to the strategy step.
+  assert.match(view, /step\.profile_code === "content_creator" \? <WorkspacePostCards/);
+  assert.doesNotMatch(view, /\["content_creator", "social_media_strategist"\]/);
   const cards = read("apps/dashboard/components/workspace-post-cards.tsx");
   assert.match(cards, /Download SVG/);
   assert.match(cards, /Download PNG/);
