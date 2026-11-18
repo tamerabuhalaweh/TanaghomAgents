@@ -68,9 +68,13 @@ export async function GET(request: NextRequest) {
       [status, search, user.organizationId],
     );
     const approvedWorkspaces = await database().query(
-      `WITH documents AS (
+      `       WITH documents AS (
          SELECT step.workspace_id,
-                string_agg(task.result->>'document', E'\n\n---\n\n' ORDER BY step.sequence) AS document
+                string_agg('## ' || step.sequence || '. ' || replace(initcap(step.profile_code), '_', ' ')
+                           || E'\n\n' || (task.result->>'document'), E'\n\n---\n\n' ORDER BY step.sequence) AS document,
+                jsonb_agg(jsonb_build_object('sequence', step.sequence,
+                  'profile_code', step.profile_code,
+                  'document', task.result->>'document') ORDER BY step.sequence) AS deliverables
            FROM tanaghom.agency_workspace_steps step
            JOIN tanaghom.agency_pilot_tasks task ON task.id=step.task_id
           WHERE task.status='succeeded' AND task.result IS NOT NULL
@@ -78,7 +82,7 @@ export async function GET(request: NextRequest) {
        )
        SELECT workspace.id,workspace.id AS campaign_id,workspace.title AS campaign_name,
               'ai_workspace'::text AS channel,'work_pack'::text AS content_type,
-              left(coalesce(documents.document,workspace.brief),4000) AS draft_copy,
+              coalesce(documents.document,workspace.brief) AS draft_copy,documents.deliverables,
               'Approved AI Workspace work pack'::text AS media_brief,NULL::text AS media_url,
               'approved'::text AS status,'workspace'::text AS generation,NULL::timestamptz AS scheduled_time,
               workspace.created_at,coalesce(workspace.finished_at,workspace.created_at) AS updated_at,

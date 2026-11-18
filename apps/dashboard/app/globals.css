@@ -2519,3 +2519,10 @@ td a, td > strong { font-weight: 670; }
 .approval-deliverables strong { display:block;font-size:0.82rem; }
 .approval-deliverables small { display:block;color:var(--muted);font-size:0.7rem;margin-block-start:0.15rem; }
 .approval-deliverables p { font-size:0.8rem;margin-block-start:0.4rem;white-space:pre-wrap; }
+.content-deliverables { display: flex; flex-direction: column; gap: 1.25rem; margin-block-start: 1.25rem; }
+.content-deliverables-note { margin: 0; color: var(--muted); font-size: 0.8rem; }
+.content-deliverables section h3 { font-size: 0.95rem; }
+.content-deliverable-copy { margin-block-start: 0.5rem; color: var(--ink); font-size: 0.86rem; white-space: pre-wrap; overflow-wrap: anywhere; }
+.mobile-locale { display: flex; align-items: center; }
+.mobile-locale .creative-row { flex-wrap: nowrap; gap: 0.15rem; margin-block-start: 0; }
+.mobile-locale .creative-button { min-block-size: 36px; padding-inline: 0.45rem; font-size: 0.7rem; }

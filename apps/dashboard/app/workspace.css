@@ -112,3 +112,11 @@
 .aw-post-card-actions { display:flex;flex-wrap:wrap;gap:var(--space-xs); }
 .aw-post-card-actions .button { flex:1;justify-content:center;font-size:.75rem;min-block-size:40px; }
 @media(max-width:760px){.aw-post-cards{padding:var(--space-lg)}}
+
+/* Packet I: live step progress, review helper, facts helper, visuals disclosure */
+.aw-progress-live { flex-basis:100%;font-weight:600;color:var(--primary); }
+.aw-review-hint { flex-basis:100%;color:var(--muted);font-size:.8125rem;margin-block-end:var(--space-xs); }
+.aw-review-hint-error { color:var(--danger);font-weight:600; }
+.aw-facts-helper { display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-sm);margin-block:calc(-1 * var(--space-sm)) var(--space-xs); }
+.aw-facts-helper .aw-muted { flex:1 1 18rem;margin:0;font-size:.8125rem; }
+.aw-visuals-note { padding:var(--space-sm) var(--space-md);border-inline-start:3px solid color-mix(in srgb,var(--primary) 45%,var(--border));background:var(--surface);font-size:.8125rem; }

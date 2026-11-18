@@ -120,6 +120,7 @@ export async function loadWorkspaceQuota(
           FROM tanaghom.agency_pilot_tasks task
          WHERE task.organization_id = $1
            AND task.result->'usage' IS NOT NULL
+           AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
            AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())) AS tokens_used`,
     [organizationId, exclusion, active],
   );
@@ -198,6 +199,7 @@ export async function loadWorkspaceUsage(client: Queryable, organizationId: stri
        FROM tanaghom.agency_pilot_tasks task
       WHERE task.organization_id = $1
         AND task.result->'usage' IS NOT NULL
+        AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
         AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())`,
     [organizationId],
   );

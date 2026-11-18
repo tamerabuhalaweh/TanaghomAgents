@@ -1,11 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
+
+type ImportedCard = { title: string; headline: string; body: string; cta: string; lang: CreativeLocale };
 
 interface DesignRow {
   template_id: string;
@@ -22,16 +24,24 @@ const FORMATS = [
   { label: "9:16", width: 1080, height: 1920 },
 ];
 
-export function blankAdSpec(locale: CreativeLocale, width: number, height: number) {
+export function blankAdSpec(
+  locale: CreativeLocale,
+  width: number,
+  height: number,
+  copy?: { headline?: string; body?: string; cta?: string },
+) {
   const ar = locale === "ar";
+  const headline = copy?.headline?.trim() || (ar ? "عنوان رئيسي" : "Headline");
+  const body = copy?.body?.trim() || (ar ? "نص توضيحي قصير" : "Short supporting copy");
+  const cta = copy?.cta?.trim() || (ar ? "اطلب الآن" : "Shop now");
   return {
     locale, direction: locale === "ar" ? "rtl" : "ltr",
     canvas: { width, height },
     background: { color: "#ffffff" },
     nodes: [
-      { id: "headline-1", type: "text", role: "headline", x: 90, y: 120, width: 900, height: 220, text: ar ? "عنوان رئيسي" : "Headline", font_size: 96, font_weight: 800, align: "start", color: "#111111" },
-      { id: "body-1", type: "text", role: "body", x: 90, y: 380, width: 900, height: 160, text: ar ? "نص توضيحي قصير" : "Short supporting copy", font_size: 44, font_weight: 400, align: "start", color: "#334155" },
-      { id: "cta-1", type: "badge", role: "cta", x: 90, y: 580, width: 420, height: 110, text: ar ? "اطلب الآن" : "Shop now", font_size: 44, font_weight: 700, align: "center", color: "#ffffff", background_color: "#0f766e", corner_radius: 55 },
+      { id: "headline-1", type: "text", role: "headline", x: 90, y: 120, width: 900, height: 220, text: headline, font_size: 96, font_weight: 800, align: "start", color: "#111111" },
+      { id: "body-1", type: "text", role: "body", x: 90, y: 380, width: 900, height: 160, text: body, font_size: 44, font_weight: 400, align: "start", color: "#334155" },
+      { id: "cta-1", type: "badge", role: "cta", x: 90, y: 580, width: 420, height: 110, text: cta, font_size: 44, font_weight: 700, align: "center", color: "#ffffff", background_color: "#0f766e", corner_radius: 55 },
     ],
   };
 }
@@ -60,6 +70,7 @@ export function blankCarouselSpec(locale: CreativeLocale, width: number, height:
 export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl" | "ltr" }) {
   const role = useSessionRole();
   const designs = useCreativeFetch<{ designs: DesignRow[] }>(locale, "/api/creative/designs");
+  const [imported, setImported] = useState<ImportedCard | null>(null);
   const [name, setName] = useState("");
   const [kind, setKind] = useState("ad");
   const [designLocale, setDesignLocale] = useState<CreativeLocale>(locale);
@@ -67,6 +78,25 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
   const [notice, setNotice] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const canAdmin = role === "owner";
+  // A post card opened from AI Workspace arrives with its copy in the query
+  // string: prefill the form and show that exact card instead of a blank gallery.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("from") !== "workspace") return;
+    const headline = (params.get("headline") || "").slice(0, 300).trim();
+    if (!headline) return;
+    const card: ImportedCard = {
+      title: ((params.get("title") || headline).slice(0, 120).trim() || headline.slice(0, 120)),
+      headline,
+      body: (params.get("body") || "").slice(0, 600).trim(),
+      cta: (params.get("cta") || "").slice(0, 90).trim(),
+      lang: params.get("lang") === "ar" ? "ar" : "en",
+    };
+    setImported(card);
+    setName(card.title);
+    setDesignLocale(card.lang);
+    setKind("ad");
+  }, []);
   async function create(event: React.FormEvent) {
     event.preventDefault();
     setWorking(true);
@@ -74,7 +104,7 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
     try {
       const format = FORMATS[formatIndex];
       const spec = kind === "ad"
-        ? blankAdSpec(designLocale, format.width, format.height)
+        ? blankAdSpec(designLocale, format.width, format.height, imported ?? undefined)
         : blankCarouselSpec(designLocale, format.width, format.height);
       const body = await api<{ template_id: string }>(`/api/creative/designs`, {
         method: "POST",
@@ -94,6 +124,19 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
     <div className="creative-page" dir={dir} lang={locale}>
       <CreativeSubnav locale={locale} />
       <div className="creative-head"><h1>{t(locale, "designs.title")}</h1></div>
+      {imported && (
+        <section className="creative-import" dir={imported.lang === "ar" ? "rtl" : "ltr"} lang={imported.lang} aria-label={locale === "ar" ? "معاينة البطاقة المستوردة" : "Imported card preview"}>
+          <h2>{locale === "ar" ? "بطاقة مستوردة من مساحة عمل الذكاء الاصطناعي" : "Card imported from AI Workspace"}</h2>
+          <div className="creative-import-card">
+            <p className="creative-import-headline">{imported.headline}</p>
+            {imported.body ? <p className="creative-import-body">{imported.body}</p> : null}
+            {imported.cta ? <span className="creative-import-cta">{imported.cta}</span> : null}
+          </div>
+          <p>{locale === "ar"
+            ? "هذه معاينة حيّة لنفس العنوان والنص ونداء الإجراء. عند الحفظ يُنشأ التصميم بهذه النصوص بدلاً من نص عام."
+            : "This is a live preview of the same headline, body and call to action. Saving creates the design with this copy instead of generic placeholder text."}</p>
+        </section>
+      )}
       {canAdmin && (
         <form className="creative-form" onSubmit={create}>
           <h2>{t(locale, "designs.create")}</h2>

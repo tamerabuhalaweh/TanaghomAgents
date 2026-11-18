@@ -131,7 +131,8 @@ test("dialect selectors persist into brand kit rules and the workspace brief aud
   assert.match(brands, /brand-dialect-badge/);
   assert.match(onboarding, /arabic_dialect: dialect/);
   assert.match(onboarding, /\.\.\.rules/);
-  assert.match(workspace, /dialect: language === "ar" \? dialect : undefined/);
+  assert.match(workspace, /dialect, idempotency_key: key.current/);
+  assert.match(workspace, /Arabic content dialect \(used for Arabic or bilingual output\)/);
   assert.match(workspace, /default_dialect/);
   assert.match(server, /workspace_dialect_invalid/);
   assert.match(server, /workspace\.brief_configured/);

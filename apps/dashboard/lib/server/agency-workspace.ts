@@ -155,7 +155,10 @@ export async function workspaceWrite(request:NextRequest){
   const r=await database().query("SELECT tanaghom.create_agency_workspace($1,$2,$3,$4,$5,$6,$7) AS id",
    [actor.id,String(body.title).trim(),String(body.brief).trim(),String(body.source_facts).trim(),body.language,profiles,identifier(body.idempotency_key)]);
   const id=r.rows[0].id;
-  if(body.language==="ar"){
+  // Log the resolved dialect for Arabic briefs, explicit dialect choices and
+  // English briefs that ask for bilingual output, so every later task in the
+  // pack uses the dialect the owner actually chose.
+  if(body.language==="ar"||body.dialect!==undefined||bilingualRequested({brief:String(body.brief),source_facts:String(body.source_facts)})){
    const fallback=await defaultArabicDialect(actor.organizationId);
    const dialect=normalizeDialect(body.dialect)||fallback.dialect;
    await database().query(`INSERT INTO tanaghom.agent_actions_log
@@ -262,7 +265,7 @@ export async function workspaceTick(request:NextRequest){
  const claimed=(await pool.query("SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[]) AS task",[availableModels])).rows[0].task;
  if(!claimed)return {claimed:false};
  let task=claimed;
- if(task.language==="ar"){
+ if(task.language==="ar"||bilingualRequested(task)){
   try{
    const context=(await database().query(`SELECT o.location,
     (SELECT l.payload->>'dialect' FROM tanaghom.agent_actions_log l WHERE l.organization_id=w.organization_id
