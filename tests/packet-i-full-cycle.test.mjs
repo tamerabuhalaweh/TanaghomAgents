@@ -126,7 +126,7 @@ test("5: post cards skip missing-information notices, strip labels and hand off 
   assert.match(cards, /function labelledCard\(section: string, fallbackCta: string\)/);
   assert.match(cards, /const LANGUAGE_LABEL = \/\^\\s\*\[\*\\-•\]\?\\s\*\\\*\{0,2\}/);
   assert.match(cards, /const COPY_HEADING = \/\^#\{3,6\}\\s\*\(\?:post copy\|copy/);
-  assert.match(cards, /const CTA_HEADING = \/call to action\|نداء الإجراء\|دعوة للتفاعل\/iu;/);
+  assert.match(cards, /const CTA_HEADING = \/call to action\|نداء الإجراء\|دعوة للتفاعل\|دعوة لاتخاذ إجراء\|دعوة إلى اتخاذ إجراء\/iu;/);
   assert.match(cards, /function segmentedCard\(body: string\[\], fallbackCta: string\)/);
   assert.match(cards, /function splitHeadline\(text: string\)/);
   assert.match(cards, /matching\.find\(\(field\) => \/english\|en\\b\/u\.test\(field\.qualifier\)/);
@@ -278,7 +278,7 @@ test("Packet J: Arabic labels on their own line still yield clean card copy", ()
     "هل ترغبون في تجهيز منزلكم في عمّان؟",
     "**المحتوى (Body):**",
     "يقدّم متجرنا تشكيلة مختارة من أدوات المطبخ والديكور مع التوصيل والدفع عند الاستلام.",
-    "**نداء الإجراء (Call to Action):**",
+    "**دعوة لاتخاذ إجراء (CTA):**",
     "اطلبوا احتياجاتكم اليوم واحصلوا على توصيل مجاني.",
     "**الهاشتاقات:**",
     "#أشياء_بيتي #عمّان #أدوات_منزلية",

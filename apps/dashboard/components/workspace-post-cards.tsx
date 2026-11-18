@@ -94,7 +94,7 @@ export function completeText(text: string, limit: number) {
 // Generated drafts label their own parts ("**Hook (English):**", "**Body
 // (Levantine Arabic):**"). Reading those labels produces an accurate card
 // instead of guessing at the first long line.
-const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(opening|headline|hook|body|caption|text|cta|cta button|call to action|hashtags|visual direction|visual brief|format|الافتتاحية|العنوان|النص|المتن|المحتوى|محتوى|نداء الإجراء|الهاشتاقات|هاشتاقات|توصيف بصري)\s*(?:\(([^)]*)\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.*)$/iu;
+const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(opening|headline|hook|body|caption|text|cta|cta button|call to action|hashtags|visual direction|visual brief|format|الافتتاحية|العنوان|النص|المتن|المحتوى|محتوى|نداء الإجراء|دعوة لاتخاذ إجراء|دعوة إلى اتخاذ إجراء|الهاشتاقات|هاشتاقات|توصيف بصري)\s*(?:\(([^)]*)\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.*)$/iu;
 const HASHTAG_LABEL = /^\s*[*\-•]?\s*\*{0,2}(?:hashtags?|الهاشتاقات|هاشتاقات)\s*\*{0,2}\s*[:：]\s*(.+)$/iu;
 const HASHTAG_HEADING = /^(?:hashtags?|الهاشتاقات|هاشتاقات)\s*[:：]/iu;
 const POST_SECTION = /^\s*#{1,4}\s*.*(?:post|منشور)/iu;
@@ -139,7 +139,7 @@ function labelledCard(section: string, fallbackCta: string): SocialPostCard | nu
   const headline = pick(["opening", "headline", "hook", "الافتتاحية", "العنوان"]);
   const body = pick(["body", "caption", "text", "النص", "المتن", "المحتوى", "محتوى"]);
   if (!headline || !body) return null;
-  const ctaField = pick(["cta", "cta button", "call to action", "نداء الإجراء"]);
+  const ctaField = pick(["cta", "cta button", "call to action", "نداء الإجراء", "دعوة لاتخاذ إجراء", "دعوة إلى اتخاذ إجراء"]);
   const hashtags = pick(["hashtags", "الهاشتاقات", "هاشتاقات"]);
   const headlineText = completeText(headline.text, 160);
   const bodyText = completeText(body.text, 360);
@@ -150,7 +150,7 @@ function labelledCard(section: string, fallbackCta: string): SocialPostCard | nu
 // Some drafts label a whole paragraph by language instead of labelling each
 // part: "**English:** …" then "**Levantine Arabic (اللهجة الشامية):** …".
 const LANGUAGE_LABEL = /^\s*[*\-•]?\s*\*{0,2}\s*((?:modern standard |levantine |gulf |khaleeji |saudi |egyptian )?arabic(?:\s*\([^)]*\))?|english(?:\s*\([^)]*\))?)\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.*)$/iu;
-const CTA_HEADING = /call to action|نداء الإجراء|دعوة للتفاعل/iu;
+const CTA_HEADING = /call to action|نداء الإجراء|دعوة للتفاعل|دعوة لاتخاذ إجراء|دعوة إلى اتخاذ إجراء/iu;
 const COPY_HEADING = /^#{3,6}\s*(?:post copy|copy|نص المنشور|النص)\b/iu;
 const SKIP_SECTION = /^#{1,6}\s*(?:visual brief|visual direction|format|توصيف بصري|التنسيق)/iu;
 
