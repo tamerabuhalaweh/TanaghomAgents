@@ -105,7 +105,7 @@ export async function loadWorkspaceQuota(
            AND workspace.id <> $2::uuid
            AND (NOT $3::boolean OR workspace.started_at >= date_trunc('month', now()))
            AND (
-             workspace.status IN ('queued', 'running', 'in_progress', 'waiting_review', 'approved')
+             workspace.status IN ('queued', 'running', 'in_progress', 'waiting_review', 'approved', 'paused', 'rejected')
              OR (workspace.status = 'failed' AND EXISTS (
                SELECT 1 FROM tanaghom.agency_workspace_steps step
                  JOIN tanaghom.agency_pilot_tasks task ON task.id = step.task_id

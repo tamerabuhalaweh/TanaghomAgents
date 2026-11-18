@@ -53,8 +53,52 @@ test("Arabic super-admin maps operational circuit-breaker reasons", () => {
 test("public Arabic copy isolates Latin tokens and keeps launch copy", () => {
   const page = read("apps/dashboard/components/public-pages.tsx");
   assert.match(page, /<bdi dir="ltr">LAUNCH100<\/bdi>/);
-  assert.match(page, /<bdi dir="ltr">Tanaghom<\/bdi>/);
   assert.match(page, /لا يُنشر شيء حتى تقول نعم\./);
   assert.match(page, /مبني بالعربية\. وليس مترجمًا إليها\./);
   assert.match(page, /خطّط\. أنشئ\. وافق\. انشر\. قِس\. في مكان واحد\./);
+});
+
+test("public Arabic prices and the footer copyright read natively", () => {
+  const page = read("apps/dashboard/components/public-pages.tsx");
+  assert.match(page, /formatNumber\(launch100Active \? tier\.promo : tier\.list, "ar"\)\} دولارًا/);
+  assert.match(page, /formatNumber\(tier\.list, "ar"\)\} دولارًا/);
+  assert.match(page, /formatNumber\(15, "ar"\)\} دولارًا/);
+  assert.match(page, /© \$\{new Date\(\)\.getFullYear\(\)\} تناغم/);
+  assert.match(page, /© \$\{new Date\(\)\.getFullYear\(\)\} Tanaghom/);
+  assert.doesNotMatch(page, /2026 ?Tanaghom/);
+});
+
+test("Arabic currency spelling is standardized across every component", () => {
+  for (const file of [
+    "apps/dashboard/components/public-pages.tsx",
+    "apps/dashboard/components/billing-settings.tsx",
+    "apps/dashboard/components/campaigns-view.tsx",
+    "apps/dashboard/components/super-admin-console.tsx",
+  ]) assert.doesNotMatch(read(file), /دولاراً/, file);
+});
+
+test("overview localizes every campaign status key", () => {
+  const overview = read("apps/dashboard/components/overview-dashboard.tsx");
+  for (const [key, label] of Object.entries({
+    active: "نشطة",
+    draft: "مسودة",
+    waiting_review: "بانتظار الاعتماد",
+    approved: "معتمدة",
+    paused: "متوقفة",
+    rejected: "مرفوضة",
+  })) assert.match(overview, new RegExp(`${key}: "${label}"`), key);
+  assert.match(overview, /campaignStage\(campaign, ar\)/);
+});
+
+test("AI workspace localizes the new-assignment prompt and specialist subtitles", () => {
+  const workspace = read("apps/dashboard/components/agency-workspace.tsx");
+  const names = read("apps/dashboard/lib/i18n/agent-names.ts");
+  assert.match(workspace, /أنشئ حملة أو مهمة جديدة/);
+  assert.match(workspace, /Create a Campaign \/ Task/);
+  assert.match(workspace, /ما الذي تريد أن يجهّزه الفريق؟/);
+  assert.match(workspace, /What should the team create\?/);
+  assert.match(workspace, /agentDeliverableLabel\(p\.deliverable, ar\)/);
+  assert.match(workspace, /agentDeliverableLabel\(data\.profiles\.find/);
+  assert.match(names, /"campaign strategy": "استراتيجية الحملة"/);
+  assert.match(names, /"delivery summary": "ملخص التسليم"/);
 });

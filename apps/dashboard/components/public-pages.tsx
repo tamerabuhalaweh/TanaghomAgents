@@ -5,6 +5,7 @@ import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/creative/locale-toggle";
 import { WaitlistForm } from "@/components/waitlist-form";
 import type { CreativeLocale } from "@/lib/i18n/creative";
+import { formatNumber } from "@/lib/i18n/format";
 
 type Locale = CreativeLocale;
 
@@ -44,7 +45,7 @@ function PublicFooter({ locale }: { locale: Locale }) {
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
         <Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
       </nav>
-      <p className="public-copyright">{`© ${new Date().getFullYear()} `}<bdi dir="ltr">Tanaghom</bdi></p>
+      <p className="public-copyright">{ar ? `© ${new Date().getFullYear()} تناغم` : `© ${new Date().getFullYear()} Tanaghom`}</p>
     </footer>
   );
 }
@@ -84,8 +85,8 @@ function PricingCards({ locale, detailed = false, launch100Active = true }: { lo
             <h3>{text.name}</h3>
             <p className="public-price-lede">{text.lede}</p>
             <div className="public-price-value">
-              {launch100Active ? <s className="public-price-was" dir="ltr">${tier.list}</s> : null}
-              <strong dir="ltr">${launch100Active ? tier.promo : tier.list}</strong><span>{ar ? "شهرياً" : "per month"}</span>
+              {launch100Active ? <s className="public-price-was" dir={ar ? "rtl" : "ltr"}>{ar ? `${formatNumber(tier.list, "ar")} دولارًا` : `$${tier.list}`}</s> : null}
+              <strong dir={ar ? "rtl" : "ltr"}>{ar ? `${formatNumber(launch100Active ? tier.promo : tier.list, "ar")} دولارًا` : `$${launch100Active ? tier.promo : tier.list}`}</strong><span>{ar ? "شهرياً" : "per month"}</span>
             </div>
             <ul>{text.features.map((feature) => <li key={feature}><Check size={16} aria-hidden="true" />{feature}</li>)}</ul>
             <Link className={tier.id === "growth" ? "public-button" : "public-button public-button-outline"} href="/signup">
@@ -112,7 +113,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
             <Link className="public-button" href="/signup">{ar ? "أنشئ مساحة عملك" : "Create your workspace"}<ArrowRight size={17} /></Link>
             <Link className="public-button public-button-outline" href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
           </div>
-          <p className="public-trust"><ShieldCheck size={18} aria-hidden="true" />{ar ? <>ابدأ بحملة ذكاء اصطناعي مجانية (دون بطاقة) · موافقة بشرية في كل باقة · الترقية تبدأ من <bdi dir="ltr">$15</bdi> شهريًا برمز <bdi dir="ltr">LAUNCH100</bdi></> : <>Start with 1 free AI campaign (no card required) · Human approval on every plan · Upgrade from <bdi dir="ltr">$15/mo</bdi> with <bdi dir="ltr">LAUNCH100</bdi></>}</p>
+          <p className="public-trust"><ShieldCheck size={18} aria-hidden="true" />{ar ? <>ابدأ بحملة ذكاء اصطناعي مجانية (دون بطاقة) · موافقة بشرية في كل باقة · الترقية تبدأ من <bdi>{formatNumber(15, "ar")} دولارًا</bdi> شهريًا برمز <bdi dir="ltr">LAUNCH100</bdi></> : <>Start with 1 free AI campaign (no card required) · Human approval on every plan · Upgrade from <bdi dir="ltr">$15/mo</bdi> with <bdi dir="ltr">LAUNCH100</bdi></>}</p>
         </div>
 
         <div className="public-preview" aria-label={ar ? "معاينة حملة ثنائية اللغة مع اعتماد بشري" : "Bilingual campaign preview with human approval"}>
@@ -215,7 +216,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
       <section className="public-faq public-faq-landing">
         <h2>{ar ? "أسئلة الإطلاق" : "Launch questions"}</h2>
         <details><summary>{ar ? "هل تناغم بالدعوة فقط؟" : "Is Tanaghom invite-only?"}</summary><p>{ar ? <>نبدأ بدفعة بالدعوة فقط من 20 مساحة عمل نشطة، ثم نتوسع إلى 100 مساحة إطلاق عبر قائمة الأولوية. سعر <bdi dir="ltr">LAUNCH100</bdi> مخصص لأول 100 مساحة عمل.</> : <>We start with an invite-only cohort of 20 active workspaces, then expand to 100 launch workspaces through the priority waitlist. <bdi dir="ltr">LAUNCH100</bdi> pricing is reserved for those first 100 workspaces.</>}</p></details>
-        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولاراً للمقعد) وHootsuite (من نحو 399 دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
+        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولارًا للمقعد) وHootsuite (من نحو 399 دولارًا للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
         <details><summary>{ar ? "من يملك الحملات والبيانات التي ننشئها؟" : "Who owns the campaigns and data we create?"}</summary><p>{ar ? "أنت. يبقى موجزك ومحتواك واعتماداتك ومعرفتك بالعلامة في مساحة عملك. فصل قناة تواصل يلغي رمز OAuth ويحذفه؛ ويبقى محتواك وسجل اعتمادك ملكاً لك." : "You do. Your briefs, content, approvals and brand knowledge stay in your workspace. Disconnecting a social channel revokes and purges its OAuth token; your content and approval history remain yours."}</p></details>
         <details><summary>{ar ? "ما الذي يفعله تناغم بالضبط؟" : "What exactly does Tanaghom do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
         <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، بخطوط عربية أصيلة. ويُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
@@ -255,7 +256,7 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
         <details><summary>{ar ? "هل يمكنني تجربة المساحة قبل الدفع؟" : "Can I try the workspace before paying?"}</summary><p>{ar ? "أنشئ مساحة عملك وأكمل الإعداد. تظهر إعدادات الفوترة بوضوح، ولا تُنشر أي حملة دون اعتمادك." : "Create your workspace and complete setup. Billing readiness is shown clearly, and nothing publishes without your approval."}</p></details>
         <details><summary>{ar ? "ماذا يحدث لمحتواي إذا غيّرت الخطة؟" : "What happens to my work if I change plans?"}</summary><p>{ar ? "يبقى محتواك ومسوداتك وسجل اعتمادك في مساحة عملك. تتغير حدود الخطة والمقاعد فقط." : "Your content, drafts and approval history stay in your workspace. Only plan limits and seats change."}</p></details>
         <details><summary>{ar ? "هل تنشرون تلقائياً؟" : "Do you publish automatically?"}</summary><p>{ar ? "لا. كل مخرج يبقى مسودة حتى يعتمده إنسان. وحتى النشر يمر عبر قنواتك وإعداداتك." : "No. Every output stays a draft until a person approves it. Publishing still follows your channels and settings."}</p></details>
-        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولاراً للمقعد) وHootsuite (من نحو 399 دولاراً للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without paying for extra seats; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
+        <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولارًا للمقعد) وHootsuite (من نحو 399 دولارًا للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without paying for extra seats; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
       </section>
       <PublicFooter locale={locale} />
     </main>

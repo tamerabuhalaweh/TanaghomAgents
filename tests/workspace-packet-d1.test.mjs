@@ -52,7 +52,7 @@ test("Packet D1 enforces sandbox and paid monthly quotas under one advisory lock
   assert.match(quota, /scale: 200/);
   assert.match(quota, /SANDBOX_CAMPAIGN_LIMIT = 1/);
   assert.match(quota, /SANDBOX_RUN_LIMIT = 3/);
-  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved'\)/);
+  assert.match(quota, /workspace\.status IN \('queued', 'running', 'in_progress', 'waiting_review', 'approved', 'paused', 'rejected'\)/);
   assert.match(quota, /workspace\.status = 'failed' AND EXISTS/);
   assert.match(quota, /event_type IN \('started', 'resumed'\)/);
   assert.match(quota, /started_at >= date_trunc\('month', now\(\)\)/);

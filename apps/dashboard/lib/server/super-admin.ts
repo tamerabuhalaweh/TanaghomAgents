@@ -290,8 +290,15 @@ export async function platformSnapshot(client: Queryable, actor: SuperAdminUser)
               WHERE workspace.organization_id = organization.id) AS campaigns_count,
             (SELECT count(*)::int FROM tanaghom.agency_workspaces workspace
               WHERE workspace.organization_id = organization.id
-                AND workspace.status <> 'draft'
-                AND workspace.started_at >= date_trunc('month', now())) AS month_campaigns_used,
+                AND workspace.started_at >= date_trunc('month', now())
+                AND (
+                  workspace.status IN ('queued', 'running', 'in_progress', 'waiting_review', 'approved', 'paused', 'rejected')
+                  OR (workspace.status = 'failed' AND EXISTS (
+                    SELECT 1 FROM tanaghom.agency_workspace_steps step
+                      JOIN tanaghom.agency_pilot_tasks task ON task.id = step.task_id
+                     WHERE step.workspace_id = workspace.id AND task.status = 'succeeded'
+                  ))
+                )) AS month_campaigns_used,
             COALESCE((SELECT sum(GREATEST(0, (task.result->'usage'->>'prompt_tokens')::bigint))
                         FROM tanaghom.agency_pilot_tasks task
                        WHERE task.organization_id = organization.id
