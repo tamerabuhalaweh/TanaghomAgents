@@ -67,7 +67,7 @@ test("workspace surfaces failure reasons, retry budget, focus refresh and brand 
   const view = read("apps/dashboard/components/agency-workspace.tsx");
   assert.match(view, /e\.event_type === "failed"/);
   assert.match(view, /reason\(e\.evidence\.error \?\? e\.evidence\.reason \?\? null\)/);
-  assert.match(view, /إعادة المحاولة: \$\{formatNumber\(selected\.retries_used/);
+  assert.match(view, /إعادة المحاولة المستخدمة لهذه الحملة: \$\{formatNumber\(selected\.retries_used/);
   assert.match(view, /Failed or timed-out attempts with zero deliverables do not consume monthly campaign slots\./);
   assert.match(view, /window\.addEventListener\("focus", refresh\)/);
   assert.match(view, /document\.addEventListener\("visibilitychange", refresh\)/);

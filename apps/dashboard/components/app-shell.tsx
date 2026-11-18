@@ -118,6 +118,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </Link>
         <TenantName variant="mobile" />
         <div className="mobile-header-actions">
+          {/* At 768px and below the sidebar is hidden, so the language switch
+              has to live in the header to stay one click away. */}
+          <div className="mobile-locale"><LocaleToggle locale={locale} /></div>
           <button className="icon-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={openHelp}>
             <CircleHelp size={19} />
           </button>

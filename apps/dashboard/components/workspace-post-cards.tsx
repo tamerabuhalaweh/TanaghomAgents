@@ -54,6 +54,37 @@ function clean(value: string) {
 
 const CTA_PATTERN = /\b(cta|call to action|book|register|enroll|sign up|order|learn more|shop now)\b|نداء الإجراء|احجز|سجّل|سجل الآن|اطلب|اشترك|تعرّف|جرّب الآن|اطلب الآن/iu;
 
+// A Missing Information notice (or an explicit-assumptions list) is a decision
+// record, never a social post. Rendering it as a card shipped internal policy
+// text into customer-facing artwork, so these blocks are dropped outright.
+const NON_POST_BLOCK = /missing information|معلومات ناقصة|ملاحظة المعلومات|explicit decisions|assumptions|الافتراضات/i;
+
+// Generated drafts label their own parts ("Opening (Arabic):", "CTA:",
+// "نداء الإجراء:"). Those labels belong to the document structure, not the
+// card typography.
+const STRUCTURAL_PREFIX = /^(?:opening|headline|hook|body|caption|cta|call to action|الافتتاحية|العنوان|النص|المتن|نداء الإجراء)\s*(?:\((?:english|arabic|en|ar|عربي|عربية|إنجليزي|الإنجليزية|العربية)\))?\s*[:：\-–]\s*/iu;
+
+export function stripStructuralPrefix(line: string) {
+  let value = line;
+  for (let index = 0; index < 3; index += 1) {
+    const next = value.replace(STRUCTURAL_PREFIX, "").trim();
+    if (next === value || !next) break;
+    value = next;
+  }
+  return value;
+}
+
+/** Cuts text at a sentence or word boundary so a card never ends mid-word. */
+export function completeText(text: string, limit: number) {
+  const value = (text || "").replace(/\s+/g, " ").trim();
+  if (value.length <= limit) return value;
+  const slice = value.slice(0, limit);
+  const boundary = Math.max(...[". ", "؟ ", "! ", "… "].map((token) => slice.lastIndexOf(token)));
+  if (boundary >= Math.floor(limit * 0.4)) return slice.slice(0, boundary + 1).trim();
+  const word = slice.lastIndexOf(" ");
+  return `${(word > 0 ? slice.slice(0, word) : slice).replace(/[،,؛;:.\-–]+$/, "").trim()}…`;
+}
+
 /** Extracts up to two brand-consistent post cards from a generated draft. */
 export function socialPostCards(document: string, kit: WorkspaceBrandKit | null): SocialPostCard[] {
   if (!document) return [];
@@ -61,20 +92,34 @@ export function socialPostCards(document: string, kit: WorkspaceBrandKit | null)
   const fallbackCta = brandCta(kit);
   const cards: SocialPostCard[] = [];
   for (const block of blocks) {
-    const lines = block.split("\n").map(clean).filter(Boolean);
+    if (NON_POST_BLOCK.test(block)) continue;
+    const lines = block.split("\n").map(clean).map(stripStructuralPrefix).filter(Boolean);
     if (!lines.length) continue;
-    const bodyStart = lines.findIndex((line, index) => index > 0 && line.length >= 40);
+    const headline = completeText(lines[0], 96);
+    if (!headline || NON_POST_BLOCK.test(headline) || /^hashtags?\s*[:：]/i.test(headline)) continue;
+    const rest = lines.slice(1).filter((line) => !/^hashtags?\s*[:：]/i.test(line) && !/^الهاشتاقات?\s*[:：]/.test(line));
+    const bodyStart = rest.findIndex((line) => line.length >= 30);
     if (bodyStart < 0) continue;
-    const headline = lines[0].slice(0, 96);
-    const rest = lines.slice(bodyStart);
-    const ctaIndex = rest.findIndex((line) => CTA_PATTERN.test(line));
-    const cta = ctaIndex >= 0 ? rest[ctaIndex].slice(0, 48) : fallbackCta;
-    const bodyLines = ctaIndex >= 0 ? rest.filter((_, index) => index !== ctaIndex) : rest;
-    const body = bodyLines.join(" ").replace(/\s+/g, " ").slice(0, 240);
+    const bodyLines = rest.slice(bodyStart);
+    const ctaIndex = bodyLines.findIndex((line) => CTA_PATTERN.test(line) && line.length <= 90);
+    const cta = ctaIndex >= 0 ? completeText(bodyLines[ctaIndex], 44) : completeText(fallbackCta, 44);
+    const body = completeText((ctaIndex >= 0 ? bodyLines.filter((_, index) => index !== ctaIndex) : bodyLines).join(" "), 240);
+    if (!body) continue;
     cards.push({ headline, body, cta });
     if (cards.length === 2) break;
   }
   return cards;
+}
+
+/** Wraps to at most `maxLines` complete lines, preferring a finished sentence. */
+function fitLines(text: string, perLine: number, maxLines: number) {
+  const lines = wrap(text, perLine);
+  if (lines.length <= maxLines) return lines;
+  const kept = lines.slice(0, maxLines).join(" ");
+  const sentence = Math.max(...[". ", "؟ ", "! "].map((token) => kept.lastIndexOf(token)));
+  const candidate = sentence >= 0 ? wrap(kept.slice(0, sentence + 1), perLine) : wrap(lines.slice(0, maxLines - 1).join(" "), perLine);
+  const visible = candidate.slice(0, maxLines);
+  return visible.length ? visible : [completeText(text, perLine)];
 }
 
 function download(blob: Blob, filename: string) {
@@ -109,6 +154,18 @@ function PostCard({
   // dark palettes the brand kit validation allows.
   const ink = tokensOn(tones.primary) ? "#FFFFFF" : "#101828";
   const filename = `tanaghom-post-${index + 1}`;
+  // Adaptive type: long Arabic or English copy shrinks instead of clipping.
+  const headlineSize = card.headline.length > 64 ? 42 : card.headline.length > 40 ? 52 : 64;
+  const headlinePerLine = Math.max(16, Math.round(880 / (headlineSize * 0.56)));
+  const headlineLines = fitLines(card.headline, headlinePerLine, 4);
+  const headlineLineHeight = Math.round(headlineSize * 1.2);
+  const bodyTop = 470 + headlineLines.length * headlineLineHeight + 34;
+  const bodySize = card.body.length > 150 ? 30 : card.body.length > 90 ? 34 : 38;
+  const bodyPerLine = Math.max(18, Math.round(880 / (bodySize * 0.54)));
+  const bodyLineHeight = Math.round(bodySize * 1.32);
+  const maxBodyLines = Math.max(1, Math.min(5, Math.floor((840 - bodyTop) / bodyLineHeight)));
+  const bodyLines = fitLines(card.body, bodyPerLine, maxBodyLines);
+  const designHref = `/creative/designs?${new URLSearchParams({ from: "workspace", title: card.headline, headline: card.headline, body: card.body, cta: card.cta, lang: language }).toString()}`;
 
   function saveSvg() {
     if (!svg.current) return;
@@ -158,27 +215,27 @@ function PostCard({
           y="470"
           fill={ink}
           fontFamily={font}
-          fontSize="64"
+          fontSize={headlineSize}
           fontWeight="700"
           textAnchor={rtl ? "end" : "start"}
           direction={rtl ? "rtl" : "ltr"}
         >
-          {wrap(card.headline, 22).map((line, lineIndex) => (
-            <tspan key={line} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : 76}>{line}</tspan>
+          {headlineLines.map((line, lineIndex) => (
+            <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : headlineLineHeight}>{line}</tspan>
           ))}
         </text>
         <text
           x={rtl ? 992 : 88}
-          y="720"
+          y={bodyTop}
           fill={ink}
           opacity="0.88"
           fontFamily={font}
-          fontSize="38"
+          fontSize={bodySize}
           textAnchor={rtl ? "end" : "start"}
           direction={rtl ? "rtl" : "ltr"}
         >
-          {wrap(card.body, 40).slice(0, 4).map((line, lineIndex) => (
-            <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : 50}>{line}</tspan>
+          {bodyLines.map((line, lineIndex) => (
+            <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : bodyLineHeight}>{line}</tspan>
           ))}
         </text>
         {card.cta ? (
@@ -203,6 +260,9 @@ function PostCard({
         <button className="button button-secondary" type="button" onClick={saveSvg}><Download size={15} />{ar ? "تنزيل SVG" : "Download SVG"}</button>
         <button className="button button-secondary" type="button" onClick={savePng}><Download size={15} />{ar ? "تنزيل PNG" : "Download PNG"}</button>
       </div>
+      <Link className="text-link" href={designHref}>
+        {ar ? "افتح البطاقة في استوديو التصاميم" : "Open card in Design Studio"} <ExternalLink size={15} />
+      </Link>
     </article>
   );
 }

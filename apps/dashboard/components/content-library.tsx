@@ -15,6 +15,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
+import { agentDisplayName } from "@/lib/i18n/agent-names";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -53,6 +54,22 @@ interface ContentItem {
   handoff_updated_at: string | null;
   external_operation_status: "pending" | "in_progress" | "succeeded" | "failed" | "indeterminate" | null;
   postiz_channel_ready: boolean;
+  deliverables?: WorkspaceDeliverable[] | null;
+}
+
+type WorkspaceDeliverable = { sequence: number; profile_code: string; document: string };
+
+const specialistNames: Record<string, string> = {
+  social_media_strategist: "Social Media Strategist",
+  content_creator: "Content Creator",
+  brand_guardian: "Brand Guardian",
+  discovery_coach: "Discovery Coach",
+  support_responder: "Support Responder",
+  executive_summary: "Executive Summary",
+};
+
+function specialistName(code: string, ar: boolean) {
+  return agentDisplayName(specialistNames[code] || code.replaceAll("_", " "), ar);
 }
 
 interface Integration {
@@ -249,6 +266,8 @@ export function ContentLibrary() {
       <section className="content-records" aria-label="Content records">
         {visible.map((item) => {
           const isExpanded = expanded === item.id;
+          const deliverables = item.deliverables ?? [];
+          const preview = item.draft_copy.length > 280 ? `${item.draft_copy.slice(0, 280).trimEnd()}…` : item.draft_copy;
           const canHandoff = item.status === "approved" && item.content_type !== "work_pack";
           const hasHandoff = Boolean(item.handoff_job_id);
           const isReady = Boolean(integration?.postiz_ready && integration.can_request_draft && item.postiz_channel_ready);
@@ -266,7 +285,18 @@ export function ContentLibrary() {
               </div>
               <StatusPill tone={statusTone[item.status]}>{ar ? statusLabelAr[item.status] : statusLabel[item.status]}</StatusPill>
             </header>
-            <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto">{item.draft_copy}</p>
+            {isExpanded && deliverables.length ? <div className="content-deliverables">
+              <p className="content-deliverables-note">{ar
+                ? `الحزمة الكاملة: ${deliverables.length} من المخرجات، بلا اختصار.`
+                : `Complete work pack: ${deliverables.length} deliverable${deliverables.length === 1 ? "" : "s"}, untruncated.`}</p>
+              {deliverables.map((deliverable) => <section key={deliverable.sequence}>
+                <h3>{ar ? `المهمة ${deliverable.sequence}` : `Task ${deliverable.sequence}`} · {specialistName(deliverable.profile_code, ar)}</h3>
+                <p className="content-deliverable-copy" dir="auto">{deliverable.document}</p>
+              </section>)}
+              <Link className="primary-button compact-button" href={`/workspace?id=${item.id}`}>
+                {ar ? "افتح الحزمة في مساحة العمل" : "Open work pack in AI Workspace"} <ExternalLink size={14} />
+              </Link>
+            </div> : <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto">{isExpanded ? item.draft_copy : preview}</p>}
             <div className="content-record-meta">
               <span>Generation {item.generation}</span>
               {item.strategy_version ? <span>Strategy v{item.strategy_version}</span> : null}

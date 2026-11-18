@@ -247,14 +247,17 @@ export async function platformSnapshot(client: Queryable, actor: SuperAdminUser)
        (SELECT COALESCE(sum(GREATEST(0, (task.result->'usage'->>'total_tokens')::bigint)), 0)::bigint
           FROM tanaghom.agency_pilot_tasks task
          WHERE task.result->'usage' IS NOT NULL
+           AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
            AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())) AS month_total_tokens,
        (SELECT COALESCE(sum(GREATEST(0, (task.result->'usage'->>'prompt_tokens')::bigint)), 0)::bigint
           FROM tanaghom.agency_pilot_tasks task
          WHERE task.result->'usage' IS NOT NULL
+           AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
            AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())) AS month_prompt_tokens,
        (SELECT COALESCE(sum(GREATEST(0, (task.result->'usage'->>'completion_tokens')::bigint)), 0)::bigint
           FROM tanaghom.agency_pilot_tasks task
          WHERE task.result->'usage' IS NOT NULL
+           AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
            AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())) AS month_completion_tokens`,
   );
   const aiRow = ai.rows[0];
@@ -330,16 +333,19 @@ export async function platformSnapshot(client: Queryable, actor: SuperAdminUser)
                         FROM tanaghom.agency_pilot_tasks task
                        WHERE task.organization_id = organization.id
                          AND task.result->'usage' IS NOT NULL
+                           AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
                          AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())), 0)::bigint AS month_prompt_tokens,
             COALESCE((SELECT sum(GREATEST(0, (task.result->'usage'->>'completion_tokens')::bigint))
                         FROM tanaghom.agency_pilot_tasks task
                        WHERE task.organization_id = organization.id
                          AND task.result->'usage' IS NOT NULL
+                           AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
                          AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())), 0)::bigint AS month_completion_tokens,
             COALESCE((SELECT sum(GREATEST(0, (task.result->'usage'->>'total_tokens')::bigint))
                         FROM tanaghom.agency_pilot_tasks task
                        WHERE task.organization_id = organization.id
                          AND task.result->'usage' IS NOT NULL
+                           AND COALESCE(task.result->>'kind','') <> 'deterministic_summary'
                          AND COALESCE(task.finished_at, task.created_at) >= date_trunc('month', now())), 0)::bigint AS month_total_tokens
        FROM tanaghom.organizations organization
        LEFT JOIN LATERAL (

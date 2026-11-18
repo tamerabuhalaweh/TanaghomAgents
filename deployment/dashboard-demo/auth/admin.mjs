@@ -13,8 +13,12 @@ function usage() {
   console.error(`usage: admin.mjs <list|upsert|reset|disable|enable> [options]
 
   list
-  upsert --email <address> [--sub <uuid>] [--name <display name>] (--stdin-password|--generate)
-  reset  --email <address> [--sub <uuid>] [--name <display name>] (--stdin-password|--generate)
+  upsert --email <address> [--sub <uuid>] [--name <display name>] [--no-must-change] (--stdin-password|--generate)
+  reset  --email <address> [--sub <uuid>] [--name <display name>] [--no-must-change] (--stdin-password|--generate)
+
+  --no-must-change clears must_change_password so the next sign-in lands on the
+  overview. Use it for shared test or demo accounts; leave it off for people.
+
   disable --email <address>
   enable  --email <address>
 
@@ -29,6 +33,7 @@ function parse(argv) {
     const token = rest[index];
     if (token === "--generate") options.generate = true;
     else if (token === "--stdin-password") options.stdinPassword = true;
+    else if (token === "--no-must-change") options.noMustChange = true;
     else if (token.startsWith("--")) {
       const key = token.slice(2);
       const value = rest[index + 1];
@@ -117,8 +122,9 @@ async function main() {
   if (options.sub && !UUID_RE.test(options.sub)) throw new Error("--sub must be a UUID");
   const password = await passwordFrom(options, email);
   const existing = await store.findByEmail(email);
+  const mustChangePassword = options.noMustChange !== true;
   if (options.command === "upsert" && existing) {
-    const user = await store.changePassword(email, password, { mustChangePassword: true });
+    const user = await store.changePassword(email, password, { mustChangePassword });
     summarize(user);
     return;
   }
@@ -127,7 +133,7 @@ async function main() {
     sub: options.sub ?? existing?.sub ?? randomUUID(),
     displayName: options.name ?? existing?.displayName ?? null,
     password,
-    mustChangePassword: true,
+    mustChangePassword,
   });
   summarize(user);
 }
