@@ -113,7 +113,7 @@
 .aw-post-cards header p { color:var(--muted);font-size:.8125rem;margin-block-start:var(--space-xs); }
 .aw-post-card-strip { display:grid;grid-template-columns:repeat(auto-fit,minmax(13rem,1fr));gap:var(--space-md); }
 .aw-post-card { display:flex;flex-direction:column;gap:var(--space-sm);background:var(--background);border:1px solid var(--border);border-radius:var(--radius-md);padding:var(--space-sm); }
-.aw-post-card svg { inline-size:100%;block-size:auto;border-radius:var(--radius-sm);display:block; }
+.aw-post-card > svg { inline-size:100%;block-size:auto;border-radius:var(--radius-sm);display:block; }
 .aw-post-card-actions { display:flex;flex-wrap:wrap;gap:var(--space-xs); }
 .aw-post-card-actions .button { flex:1;justify-content:center;font-size:.75rem;min-block-size:40px; }
 @media(max-width:760px){.aw-post-cards{padding:var(--space-lg)}}
@@ -125,3 +125,8 @@
 .aw-facts-helper { display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-sm);margin-block:calc(-1 * var(--space-sm)) var(--space-xs); }
 .aw-facts-helper .aw-muted { flex:1 1 18rem;margin:0;font-size:.8125rem; }
 .aw-visuals-note { padding:var(--space-sm) var(--space-md);border-inline-start:3px solid color-mix(in srgb,var(--primary) 45%,var(--border));background:var(--surface);font-size:.8125rem; }
+.aw-corrections-applied { margin:var(--space-lg) var(--space-xl) 0;padding:var(--space-md) var(--space-lg);border-inline-start:3px solid var(--success);background:var(--success-soft);border-radius:var(--radius-sm);font-size:.8125rem;display:flex;flex-direction:column;gap:var(--space-xs); }
+.aw-corrections-applied details summary { min-block-size:0;padding-block:var(--space-xs);font-size:.8125rem; }
+.aw-corrections-applied ul,.aw-corrections-blocked ul { margin:var(--space-xs) 0 0;padding-inline-start:1.25rem;display:flex;flex-direction:column;gap:var(--space-xs); }
+.aw-corrections-blocked { padding:var(--space-md) var(--space-lg);border-inline-start:3px solid var(--danger);background:var(--danger-soft);border-radius:var(--radius-sm);font-size:.875rem;display:flex;flex-direction:column;gap:var(--space-xs); }
+.aw-corrections-blocked p { margin:0;font-size:.8125rem; }

@@ -9,6 +9,7 @@ import { database } from "@/lib/server/database";
 import { parseOrganizationAgentDraft, agentValidationReport } from "@/lib/server/agent-studio-validation";
 import { assertWorkspaceStartAllowed,loadWorkspaceQuota,loadWorkspaceUsage,WorkspaceQuotaError } from "@/lib/server/workspace-quotas";
 import { mapWorkspaceStateError } from "@/lib/server/workspace-state-error";
+import { applyWorkspaceReviewCorrections } from "@/lib/workspace-review-corrections";
 const requireRuntime=process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`);
 const { workspaceManifest, workspaceRequest, workspaceArtifact, WorkspaceOutputError, bilingualRequested }: typeof import("@tanaghom/agent-runtime/workspace")
  = requireRuntime("@tanaghom/agent-runtime/workspace");
@@ -119,12 +120,13 @@ export async function workspaceRead(request:NextRequest){
    :c.platform_stop
     ?"AI specialist generation is paused by the platform while operations are reviewed. Your briefs can still be saved."
     :"AI specialists are ready. Generated work stays as a reviewable proposal until a person approves it.";
- return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
+  const reviewed=selected?applyWorkspaceReviewCorrections(steps.rows):null;
+  return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
   // Brand kit colours and fonts drive the zero-cost social post cards.
   brand_kit:brandKit.rows[0]?({name:brandKit.rows[0].name,brand_name:brandKit.rows[0].brand_name,
    colors:brandKit.rows[0].colors||{},arabic_font:brandKit.rows[0].arabic_font,
    latin_font:brandKit.rows[0].latin_font,cta:brandKit.rows[0].cta,tone:brandKit.rows[0].tone}):null,
-  assignments,selected:selected?{...selected,retries_used:Number(retries.rows[0]?.used)||0,steps:steps.rows,events:events.rows}:null,
+  assignments,selected:selected?{...selected,retries_used:Number(retries.rows[0]?.used)||0,steps:reviewed!.steps,events:events.rows,review_corrections:reviewed!.summary}:null,
   default_dialect:dialectDefault.dialect,default_dialect_source:dialectDefault.source,
   can_manage:actor.role==="owner",can_review:["owner","reviewer"].includes(actor.role),
   quota,usage,
@@ -221,6 +223,19 @@ export async function workspaceWrite(request:NextRequest){
  closed(body,["action","id","result_hash","feedback"]);
  if(!["approve","reject","pause","resume","cancel"].includes(String(body.action)))throw new WorkspaceError("workspace_action_invalid",400);
  if(body.feedback!==undefined&&typeof body.feedback!=="string")throw new WorkspaceError("workspace_feedback_invalid",400);
+ if(body.action==="approve"){
+  const reviewSteps=await database().query(
+   `SELECT s.sequence,s.profile_code,t.status,t.result
+      FROM tanaghom.agency_workspace_steps s
+      JOIN tanaghom.agency_pilot_tasks t ON t.id=s.task_id
+     WHERE s.workspace_id=$1 AND t.organization_id=$2
+     ORDER BY s.sequence`,
+   [id,actor.organizationId],
+  );
+  if(applyWorkspaceReviewCorrections(reviewSteps.rows).summary.needs_changes){
+   throw new WorkspaceError("workspace_review_corrections_unapplied",409);
+  }
+ }
  try{
   const r=await database().query("SELECT tanaghom.decide_agency_workspace($1,$2,$3,$4,$5) AS status",[actor.id,id,body.action,body.result_hash||null,body.feedback||""]);
   return {id,...r.rows[0]};
@@ -290,10 +305,12 @@ export async function workspaceTick(request:NextRequest){
     WHERE step.workspace_id=(SELECT workspace_id FROM tanaghom.agency_workspace_steps WHERE task_id=$1)
       AND artifact.status='succeeded'`,[task.task_id]);
    const usageByTask=new Map(recorded.rows.map((row:{task_id:string;elapsed_ms:number|null;total_tokens:number|null})=>[row.task_id,row]));
-   task={...task,bilingual:bilingualRequested(task),shared_context:task.shared_context.map((entry:Record<string,unknown>)=>{
+   const enrichedContext=task.shared_context.map((entry:Record<string,unknown>,index:number)=>{
     const usage=usageByTask.get(String(entry.task_id));
-    return usage?{...entry,usage:{total_tokens:usage.total_tokens},elapsed_ms:usage.elapsed_ms}:entry;
-   })};
+    return usage?{...entry,sequence:index+1,profile_code:String(entry.profile||""),usage:{total_tokens:usage.total_tokens},elapsed_ms:usage.elapsed_ms}:{...entry,sequence:index+1,profile_code:String(entry.profile||"")};
+   });
+   const correctedContext=applyWorkspaceReviewCorrections(enrichedContext).steps.map(({sequence:_,profile_code:__,applied_corrections:___,...entry})=>entry);
+   task={...task,bilingual:bilingualRequested(task),shared_context:correctedContext};
   }catch{/* the summary stays deterministic from the stored shared context */}
  }
  let artifact=null,errorCode:string|null=null,errorDetail:Record<string,unknown>|null=null;const started=Date.now();
