@@ -160,7 +160,7 @@ export async function workspaceWrite(request:NextRequest){
   // Log the resolved dialect for Arabic briefs, explicit dialect choices and
   // English briefs that ask for bilingual output, so every later task in the
   // pack uses the dialect the owner actually chose.
-  if(body.language==="ar"||body.dialect!==undefined||bilingualRequested({brief:String(body.brief),source_facts:String(body.source_facts)})){
+  const logBriefDialect=async()=>{
    const fallback=await defaultArabicDialect(actor.organizationId);
    const dialect=normalizeDialect(body.dialect)||fallback.dialect;
    await database().query(`INSERT INTO tanaghom.agent_actions_log
@@ -169,6 +169,11 @@ export async function workspaceWrite(request:NextRequest){
     WHERE NOT EXISTS (SELECT 1 FROM tanaghom.agent_actions_log WHERE organization_id=$4
       AND action_type='workspace.brief_configured' AND entity_id=$3)`,
     [randomUUID(),actor.id,id,actor.organizationId,JSON.stringify({dialect})]);
+  };
+  if(body.language==="ar"||body.dialect!==undefined||bilingualRequested({brief:String(body.brief),source_facts:String(body.source_facts)})){
+   await logBriefDialect();
+  }else if(bilingualRequested({title:String(body.title)})){
+   await logBriefDialect();
   }
   return r.rows[0];
  }

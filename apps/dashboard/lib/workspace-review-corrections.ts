@@ -257,22 +257,51 @@ function cleanupSpacing(text: string): string {
     .replace(/[ \t]+\n/g, "\n");
 }
 
-function overlapAwareReplaceOnce(document: string, coreExact: string, coreProposed: string): { next: string; applied: boolean; replacement: string } {
-  // Try exact match first; fall back to match without trailing period if quoted with one.
-  let target = coreExact;
-  let matchIndex = document.indexOf(target);
-  if (matchIndex < 0 && target.endsWith(".")) {
-    const trimmed = target.slice(0, -1).trim();
-    const altIndex = document.indexOf(trimmed);
-    if (altIndex >= 0) {
-      target = trimmed;
-      matchIndex = altIndex;
+function escapeRegexToken(token: string): string {
+  return token
+    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
+    .replace(/["“”]/gu, '["“”]')
+    .replace(/['’]/gu, "['’]");
+}
+
+function findMatchSpan(document: string, coreTarget: string): { index: number; length: number; matched: string } | null {
+  const candidates = [coreTarget];
+  if (coreTarget.endsWith(".")) {
+    const trimmed = coreTarget.slice(0, -1).trim();
+    if (trimmed) candidates.push(trimmed);
+  }
+  for (const candidate of candidates) {
+    const exactIndex = document.indexOf(candidate);
+    if (exactIndex >= 0) {
+      return { index: exactIndex, length: candidate.length, matched: candidate };
     }
   }
-  if (matchIndex < 0) return { next: document, applied: false, replacement: coreProposed };
+  // Fallback: match across collapsed newlines / repeated spaces (e.g. a
+  // multi-paragraph passage quoted on one line by Brand Guardian), smart vs.
+  // straight quotes, and optional inline markdown emphasis, while refusing to
+  // span across section headings or horizontal dividers.
+  for (const candidate of candidates) {
+    const tokens = candidate.split(/\s+/u).filter(Boolean);
+    if (!tokens.length) continue;
+    const pattern = tokens.map((token) => `(?:\\*{1,2})?${escapeRegexToken(token)}(?:\\*{1,2})?`).join("\\s+");
+    const regex = new RegExp(pattern, "gu");
+    let match: RegExpExecArray | null;
+    while ((match = regex.exec(document)) !== null) {
+      const matched = match[0];
+      if (/\n\s*(?:#{1,6}\s|[-=_]{3,}\s*(?:\n|$))/u.test(matched)) continue;
+      return { index: match.index, length: matched.length, matched };
+    }
+  }
+  return null;
+}
 
-  let replaceStart = matchIndex;
-  let replaceEnd = matchIndex + target.length;
+function overlapAwareReplaceOnce(document: string, coreExact: string, coreProposed: string): { next: string; applied: boolean; replacement: string } {
+  const span = findMatchSpan(document, coreExact);
+  if (!span) return { next: document, applied: false, replacement: coreProposed };
+
+  let replaceStart = span.index;
+  let replaceEnd = span.index + span.length;
+  const target = span.matched;
   let effectiveProposed = coreProposed;
 
   // Case A: proposed revision includes preceding words that already sit immediately before the match
@@ -331,7 +360,7 @@ function overlapAwareReplace(document: string, exactRaw: string, proposedRaw: st
     working = step.next;
     appliedAny = true;
     lastReplacement = step.replacement;
-    if (coreProposed.includes(coreExact)) break;
+    if (coreProposed.includes(coreExact) || findMatchSpan(coreProposed, coreExact) !== null) break;
   }
   return { next: working, applied: appliedAny, replacement: lastReplacement };
 }
@@ -345,6 +374,16 @@ function removePassage(document: string, item: ReviewCorrectionItem, isSummary =
     if (next === document && coreExact.endsWith(".")) {
       const noDot = coreExact.slice(0, -1).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
       next = next.replace(new RegExp(`\\s*${noDot}\\.?`, "gu"), "");
+    }
+    if (next === document) {
+      for (let pass = 0; pass < 10; pass += 1) {
+        const span = findMatchSpan(next, coreExact);
+        if (!span) break;
+        const start = span.index > 0 && /[ \t]/.test(next[span.index - 1]) ? span.index - 1 : span.index;
+        const updated = `${next.slice(0, start)}${next.slice(span.index + span.length)}`;
+        if (updated === next) break;
+        next = updated;
+      }
     }
   }
   if (item.remove_meta_notes) {
