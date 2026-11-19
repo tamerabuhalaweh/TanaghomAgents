@@ -13,7 +13,10 @@
     "./adapters/segmentation": "./adapters/segmentation.mjs",
     "./adapters/http-image": "./adapters/http-image.mjs",
     "./adapters/local-sharp": "./adapters/local-sharp.mjs",
-    "./storage/keys": "./storage/keys.mjs",
+    "./storage/keys": {
+    "types": "./storage/keys.d.ts",
+    "default": "./storage/keys.mjs"
+  },
     "./storage/test-adapter": "./storage/test-adapter.mjs",
     "./storage/local-fs": "./storage/local-fs.mjs",
     "./storage/s3": "./storage/s3.mjs",

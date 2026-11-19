@@ -8,7 +8,16 @@ import { completeText, stripStructuralPrefix } from "@/components/workspace-post
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
 
-type ImportedCard = { title: string; headline: string; body: string; cta: string; lang: CreativeLocale };
+type ImportedCard = { title: string; headline: string; body: string; cta: string; lang: CreativeLocale; image?: string };
+
+// Only this application's own tenant-scoped image route may be imported, so the
+// query string can never point the preview at an external or redirecting URL.
+const WORKSPACE_IMAGE_PATH = /^\/api\/workspace\/[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}\/images\/[1-3]$/i;
+
+function cleanImportedImage(value: string | null) {
+  const raw = (value || "").trim();
+  return raw.length <= 200 && WORKSPACE_IMAGE_PATH.test(raw) ? raw : "";
+}
 
 const INVALID_IMPORT_CTA = /^(?:visual|photo|image)\s*(?:brief|direction|format)\b|^(?:channel|platform|format)\s*[:：]|توصيف بصري|تصور بصري|الوصف البصري|^(?:hashtags?|الهاشتاقات|هاشتاقات)\b|(?:^|\s)#[^\s#]+/iu;
 
@@ -105,6 +114,7 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
       body: cleanImportedField(params.get("body"), 600),
       cta: cleanImportedCta(params.get("cta")),
       lang: params.get("lang") === "ar" ? "ar" : "en",
+      image: cleanImportedImage(params.get("image")) || undefined,
     };
     setImported(card);
     setName(card.title);
@@ -142,13 +152,14 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
         <section className="creative-import" aria-label={locale === "ar" ? "معاينة البطاقة المستوردة" : "Imported card preview"}>
           <h2>{locale === "ar" ? "بطاقة مستوردة من مساحة عمل الذكاء الاصطناعي" : "Card imported from AI Workspace"}</h2>
           <div className="creative-import-card" dir={imported.lang === "ar" ? "rtl" : "ltr"} lang={imported.lang}>
+            {imported.image ? <img className="creative-import-image" src={imported.image} alt="" /> : null}
             <p className="creative-import-headline">{imported.headline}</p>
             {imported.body ? <p className="creative-import-body">{imported.body}</p> : null}
             {imported.cta ? <span className="creative-import-cta">{imported.cta}</span> : null}
           </div>
           <p>{locale === "ar"
-            ? "هذه معاينة حيّة لنفس العنوان والنص ونداء الإجراء. عند الحفظ يُنشأ التصميم بهذه النصوص بدلاً من نص عام."
-            : "This is a live preview of the same headline, body and call to action. Saving creates the design with this copy instead of generic placeholder text."}</p>
+            ? "هذه معاينة حيّة لنفس العنوان والنص ونداء الإجراء، مع صورة المنشور المولّدة عند توفرها. عند الحفظ يُنشأ التصميم بهذه النصوص بدلاً من نص عام."
+            : "This is a live preview of the same headline, body and call to action, plus the post's generated photo when one exists. Saving creates the design with this copy instead of generic placeholder text."}</p>
         </section>
       )}
       {canAdmin && (

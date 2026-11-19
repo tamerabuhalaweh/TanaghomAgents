@@ -365,7 +365,7 @@ test("Packet K Item 2 + 3: server approval gate, tightened proofreading prompts,
 
   // Zero new SQL migrations added.
   const migrations = readdirSync(new URL("../packages/database/migrations", import.meta.url)).filter((name) => name.endsWith(".up.sql"));
-  assert.equal(migrations.filter((name) => /^005[4-9]_/.test(name)).length, 0);
+  assert.equal(migrations.filter((name) => /^005[5-9]_/.test(name)).length, 0);
 });
 
 test("Packet K follow-up: verbatim 8064d6c4 multi-paragraph Draft 3 correction applies cleanly across blank lines", () => {

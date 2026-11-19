@@ -46,8 +46,8 @@ test("fresh-install role configuration delegates workspace functions to 0053", a
   }
   assert.match(configure, /CREATE OR REPLACE FUNCTION tanaghom\.claim_agency_workspace_task_for_models/);
   assert.match(configure, /lease_expires_at=now\(\)\+interval '300 seconds'/);
-  assert.match(configure, /<> 50/);
-  assert.match(configure, /0053_workspace_step_retry/);
+  assert.match(configure, /<> 51/);
+  assert.match(configure, /0054_workspace_image_quotas/);
   assert.match(configure, /set_agency_workspace_circuit_breaker/);
 });
 

@@ -10,6 +10,7 @@ import { DIALECTS, dialectLabel, type DialectId } from "@/lib/i18n/dialects";
 import { formatArabicCount, formatDateTime, formatNumber } from "@/lib/i18n/format";
 import type { AppliedReviewCorrection, WorkspaceReviewCorrectionsSummary } from "@/lib/workspace-review-corrections";
 import { WorkspacePostCards, type WorkspaceBrandKit } from "./workspace-post-cards";
+import { WorkspaceImageQuota, postImageSlots, type WorkspaceImageQuotaStatus } from "./workspace-ai-images";
 
 type Profile = { code: string; name: string; role: string; deliverable: string };
 type Assignment = { id: string; title: string; language: "en" | "ar"; profile_codes: string[]; status: string; error_code: string | null; created_at: string; dialect?: DialectId | null };
@@ -19,7 +20,8 @@ type Event = { id: number; event_type: string; actor_kind: string; actor_ref: st
 type Detail = Assignment & { brief: string; source_facts: string; result_hash: string; retries_used?: number; steps: Step[]; events: Event[]; review_corrections?: WorkspaceReviewCorrectionsSummary };
 type Quota = { subscription_status: string; plan_tier: "starter" | "growth" | "scale" | null; is_sandbox: boolean; campaigns_used: number; campaigns_limit: number; runs_used: number; runs_limit: number | null; tokens_used: number; tokens_limit: number; max_retries_per_campaign: number; upgrade_required: boolean; upgrade_url: string };
 type Usage = { month_prompt_tokens: number; month_completion_tokens: number; month_total_tokens: number; estimated_cost_usd: number };
-type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; quota: Quota; usage: Usage; brand_kit: WorkspaceBrandKit | null; default_dialect: DialectId; default_dialect_source: "brand_kit" | "location" | "default"; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
+type PostImage = { post_index: number; status: string; url: string | null; prompt_summary?: string | null };
+type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail | null; can_manage: boolean; can_review: boolean; quota: Quota; usage: Usage; brand_kit: WorkspaceBrandKit | null; default_dialect: DialectId; default_dialect_source: "brand_kit" | "location" | "default"; image_quota?: WorkspaceImageQuotaStatus | null; post_images?: PostImage[] | null; runtime: { ready: boolean; reason: string; provider: string; model: string; quality_certified: boolean } };
 
 // One status vocabulary everywhere (Overview, /campaigns, /content, /workspace).
 const labels: Record<string, string> = { draft: "Brief saved", queued: "Queued", running: "Working", paused: "Paused", waiting_review: "Ready for your review", approved: "Approved", rejected: "Changes requested", failed: "Needs attention", cancelled: "Cancelled", in_progress: "Working", succeeded: "Draft ready" };
@@ -274,6 +276,7 @@ export function AgencyWorkspace() {
     </div>
     {quota ? <div className={`aw-quota ${quota.upgrade_required ? "aw-quota-limit" : ""}`}>
       <span className="aw-quota-badge">{quotaLabel}</span>
+      <WorkspaceImageQuota quota={data?.image_quota} ar={ar} />
       <span className="aw-quota-usage">{ar ? `${formatNumber(quota.tokens_used, locale)} من ${formatNumber(quota.tokens_limit, locale)} وحدة ذكاء اصطناعي هذا الشهر — كل وحدة تمثل كمية صغيرة من النص المولَّد` : `${formatNumber(quota.tokens_used, locale)} of ${formatNumber(quota.tokens_limit, locale)} AI units this month — one unit is a small amount of generated text`}</span>
       {selected ? <span className="aw-quota-retries">{ar ? `إعادة المحاولة المستخدمة لهذه الحملة: ${formatNumber(selected.retries_used ?? 0, locale)} من ${formatNumber(quota.max_retries_per_campaign, locale)}` : `Retries used for this campaign: ${selected.retries_used ?? 0} of ${quota.max_retries_per_campaign}`}</span> : null}
       <span className="aw-quota-note">{ar ? "المحاولات الفاشلة أو التي انتهت مهلتها دون أي مخرج لا تستهلك رصيد الحملات الشهري." : "Failed or timed-out attempts with zero deliverables do not consume monthly campaign slots."}</span>
@@ -325,7 +328,7 @@ export function AgencyWorkspace() {
               <p className="aw-muted">{ar ? "مثال على الحقائق: «السعر 180 ديناراً عند التسجيل قبل 20 يناير، وتشمل الدورة 8 جلسات وورشة عملية، وتبدأ في 3 فبراير في عمّان، ولا يوجد ضمان توظيف». أضف فقط ما هو مؤكد." : "Fact example: “The price is 180 JOD before 20 January, the course includes 8 sessions and a hands-on workshop, it starts on 3 February in Amman, and there is no job guarantee.” Add only confirmed facts."}</p>
               <button type="button" className="button button-secondary" onClick={insertFactsTemplate}>{ar ? "إدراج قالب حقائق سريعة" : "Insert quick facts template"}</button>
             </div>
-            <p className="aw-muted aw-visuals-note">{ar ? "ملاحظة حول المرئيات: ينشئ الفريق مسودات المنشورات وتوصيفات الصور وبطاقات تصميم جاهزة بهويتك البصرية (SVG/PNG)، ولا يولّد صوراً فوتوغرافية بالذكاء الاصطناعي حالياً." : "Visuals note: Your team produces post copy, photo briefs, and brand-styled social cards (SVG/PNG); AI photo generation is not enabled."}</p>
+            <p className="aw-muted aw-visuals-note">{ar ? "ملاحظة حول المرئيات: ينشئ الفريق مسودات المنشورات وتوصيفات الصور وبطاقات تصميم جاهزة بهويتك البصرية (SVG/PNG). باقات النمو والتوسع تضيف صورة ذكاء اصطناعي واحدة لكل منشور ضمن الحصة الشهرية، وعند نفاد الحصة تُعرض البطاقة النصية كما هي." : "Visuals note: Your team produces post copy, photo briefs, and brand-styled social cards (SVG/PNG). Growth and Scale also generate one AI photo per post within the monthly image quota; when the quota is used up, posts keep the brand-styled text card."}</p>
             <p className="aw-muted">{ar ? "يُحفظ الموجز والحقائق كنسخة غير قابلة للتغيير. تُشارك مخرجات المختصين السابقة كمقترحات غير معتمدة، لا كحقائق جديدة. لا نشر ولا رسائل ولا مشتريات ولا تحديثات CRM." : "Source facts and the brief are saved as an immutable version. Earlier specialist outputs are shared as unapproved proposals—not new facts. No publishing, messaging, purchases or CRM updates."}</p>
             <div className="aw-actions">
               <button type="submit" className="button button-primary" disabled={busy} onClick={() => { startAfterSave.current = data.runtime.ready; }} title={data.runtime.ready ? undefined : data.runtime.reason}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : data.runtime.ready ? (ar ? "احفظ وابدأ الآن" : "Save & start now") : (ar ? "حفظ موجز المهمة" : "Save assignment brief")}<ChevronRight size={17} /></button>
@@ -373,7 +376,7 @@ export function AgencyWorkspace() {
                           </details>
                         </aside> : null}
                         <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}>{step.result.document}</article>
-                        {step.profile_code === "content_creator" ? <WorkspacePostCards document={step.result.document} kit={data.brand_kit} language={selected.language} /> : null}
+                        {step.profile_code === "content_creator" ? <WorkspacePostCards document={step.result.document} kit={data.brand_kit} language={selected.language} images={postImageSlots(data.post_images)} /> : null}
                         <footer className="aw-artifact-meta">
                           <span>{step.result.kind === "deterministic_summary" ? (ar ? "ملخص تسليم حتمي" : "Deterministic delivery summary") : `${ar ? "توليد" : "Generated by"} ${step.result.provider} · ${step.result.model}`}</span>
                           <span>{step.result.kind === "deterministic_summary"

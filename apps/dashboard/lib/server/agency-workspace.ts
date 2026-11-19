@@ -8,6 +8,7 @@ import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
 import { database } from "@/lib/server/database";
 import { parseOrganizationAgentDraft, agentValidationReport } from "@/lib/server/agent-studio-validation";
 import { assertWorkspaceStartAllowed,loadWorkspaceQuota,loadWorkspaceUsage,WorkspaceQuotaError } from "@/lib/server/workspace-quotas";
+import { ensureWorkspacePostImages,listWorkspacePostImages,loadWorkspaceImageUsage,utcMonthStart,workspaceImageLimit } from "@/lib/server/workspace-image-quotas";
 import { mapWorkspaceStateError } from "@/lib/server/workspace-state-error";
 import { applyWorkspaceReviewCorrections } from "@/lib/workspace-review-corrections";
 const requireRuntime=process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`);
@@ -17,6 +18,8 @@ const { createGeminiWorkspaceClient, GeminiWorkspaceError }: typeof import("@tan
  = requireRuntime("@tanaghom/agent-runtime/gemini-workspace");
 const { inferDialectFromLocation, normalizeDialect, resolveArabicDialect }: typeof import("@tanaghom/agent-runtime/dialects")
  = requireRuntime("@tanaghom/agent-runtime/dialects");
+const { postImageBriefs }: typeof import("@tanaghom/agent-runtime/google-images")
+ = requireRuntime("@tanaghom/agent-runtime/google-images");
 const legacy:typeof import("@tanaghom/agent-runtime/workspace-gemma") = requireRuntime("@tanaghom/agent-runtime/workspace-gemma");
 
 export class WorkspaceError extends Error { constructor(public code:string,public status=409) { super(code); } }
@@ -99,7 +102,7 @@ export async function workspaceRead(request:NextRequest){
   database().query(`SELECT id,event_type,actor_kind,actor_ref,evidence,occurred_at FROM tanaghom.agency_workspace_events
     WHERE workspace_id=$1 AND organization_id=$2 ORDER BY id LIMIT 100`,[selected.id,actor.organizationId]),
  ]):[{rows:[]},{rows:[]}];
- const [quota,usage,brandKit,retries]=await Promise.all([
+ const [quota,usage,brandKit,retries,postImages]=await Promise.all([
   loadWorkspaceQuota(database(),actor.organizationId),
   loadWorkspaceUsage(database(),actor.organizationId),
   database().query(`SELECT kit.name,version.colors,version.arabic_font,version.latin_font,version.cta,version.tone,
@@ -109,7 +112,12 @@ export async function workspaceRead(request:NextRequest){
   selected?database().query(`SELECT count(*)::int AS used FROM tanaghom.agency_workspace_events
     WHERE organization_id=$1 AND workspace_id=$2 AND event_type='resumed'
       AND coalesce((evidence->>'retried_from_failed')::boolean,false) = true`,[actor.organizationId,selected.id]):Promise.resolve({rows:[]}),
+  selected?listWorkspacePostImages(database(),actor.organizationId,selected.id):Promise.resolve([]),
  ]);
+ const imageMonth=utcMonthStart();
+ const imagesLimit=workspaceImageLimit(quota,actor.organizationId);
+ let imagesUsed=await loadWorkspaceImageUsage(database(),actor.organizationId,imageMonth);
+ let resolvedPostImages=postImages;
  const c=control.rows[0];const isConfigured=configured();
  // Never leak internal latch/reason strings to the customer. A failed model
  // task latches the control row; the UI receives calm, actionable copy instead.
@@ -121,6 +129,19 @@ export async function workspaceRead(request:NextRequest){
     ?"AI specialist generation is paused by the platform while operations are reviewed. Your briefs can still be saved."
     :"AI specialists are ready. Generated work stays as a reviewable proposal until a person approves it.";
   const reviewed=selected?applyWorkspaceReviewCorrections(steps.rows):null;
+  const creatorDoc=reviewed?.steps.find((s)=>s.profile_code==="content_creator")?.result?.document;
+  if(selected&&creatorDoc&&imagesLimit>imagesUsed&&resolvedPostImages.some((img)=>img.status==="fallback"&&img.fallback_reason==="provider_error")){
+   try{
+    resolvedPostImages=await ensureWorkspacePostImages(database(),{
+     organizationId:actor.organizationId,workspaceId:selected.id,
+     posts:postImageBriefs(creatorDoc,3),brandKit:brandKit.rows[0]||null,
+     campaign:{title:selected.title,brief:selected.brief},
+    });
+    imagesUsed=await loadWorkspaceImageUsage(database(),actor.organizationId,imageMonth);
+   }catch{/* transient retry stays fail-open */}
+  }
+  const imageQuota={plan_tier:quota.plan_tier,is_sandbox:quota.is_sandbox,images_limit:imagesLimit,
+   images_used:imagesUsed,month:imageMonth};
   return {contract_version:workspaceManifest.contract_version,profiles:workspaceManifest.profiles.map(({instruction:_,...p})=>p),
   // Brand kit colours and fonts drive the zero-cost social post cards.
   brand_kit:brandKit.rows[0]?({name:brandKit.rows[0].name,brand_name:brandKit.rows[0].brand_name,
@@ -129,7 +150,7 @@ export async function workspaceRead(request:NextRequest){
   assignments,selected:selected?{...selected,retries_used:Number(retries.rows[0]?.used)||0,steps:reviewed!.steps,events:events.rows,review_corrections:reviewed!.summary}:null,
   default_dialect:dialectDefault.dialect,default_dialect_source:dialectDefault.source,
   can_manage:actor.role==="owner",can_review:["owner","reviewer"].includes(actor.role),
-  quota,usage,
+  quota,usage,image_quota:imageQuota,post_images:resolvedPostImages,
   runtime:{ready:isConfigured&&c?.enabled&&!c.emergency_stop&&!c.platform_stop,
    reason:runtimeReason,
    provider:selectedProvider()==="gemini"?workspaceManifest.provider.name:"Gemma",model:selectedProvider()==="gemini"?workspaceManifest.provider.model:"gemma4-26b-a4b-canary",external_actions:false,quality_certified:false}};
@@ -365,5 +386,21 @@ export async function workspaceTick(request:NextRequest){
     elapsed_ms:Date.now()-started,external_actions:0}),errorCode?"failed":"success"]);
   }
  }catch{/* completion is durable; audit transport must not redeliver it */}
+ // Task 2 is already complete and durable at this point. Generating its post
+ // images is additive: any quota, provider or storage problem records a
+ // fallback and cannot fail the pack or block Tasks 3-6.
+ if(!errorCode&&task.profile==="content_creator"&&artifact?.document){
+  try{
+   const meta=(await database().query(`SELECT w.organization_id,w.title,w.brief,
+    (SELECT jsonb_build_object('name',kit.name,'brand_name',org.name,'colors',version.colors,'tone',version.tone)
+       FROM tanaghom.brand_kits kit
+       JOIN tanaghom.brand_kit_versions version ON version.kit_id=kit.id AND version.version=kit.current_version
+      WHERE kit.organization_id=w.organization_id ORDER BY kit.created_at DESC,kit.id DESC LIMIT 1) AS brand
+    FROM tanaghom.agency_workspaces w JOIN tanaghom.organizations org ON org.id=w.organization_id
+    WHERE w.id=$1`,[task.workspace_id])).rows[0];
+   if(meta)await ensureWorkspacePostImages(database(),{organizationId:meta.organization_id,workspaceId:task.workspace_id,
+    posts:postImageBriefs(artifact.document,3),brandKit:meta.brand||null,campaign:{title:meta.title,brief:meta.brief}});
+  }catch{/* the work pack stays succeeded with brand-styled cards */}
+ }
  return {claimed:true,task_id:task.task_id,...completed};
 }
