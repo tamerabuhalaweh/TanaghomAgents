@@ -4,6 +4,7 @@ import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { postizHandoffEnabled } from "@/lib/server/postiz-handoff";
 import { apiFailure, noStore } from "@/lib/server/responses";
+import { applyWorkspaceReviewCorrections } from "@/lib/workspace-review-corrections";
 
 export const runtime = "nodejs";
 
@@ -108,7 +109,19 @@ export async function GET(request: NextRequest) {
         ORDER BY coalesce(workspace.finished_at,workspace.created_at) DESC LIMIT 250`,
       [status, search, user.organizationId],
     );
-    const items = [...result.rows, ...approvedWorkspaces.rows]
+    const workspaceItems = approvedWorkspaces.rows.map((row) => {
+      if (!Array.isArray(row.deliverables) || !row.deliverables.length) return row;
+      const corrected = applyWorkspaceReviewCorrections(
+        row.deliverables as { sequence: number; profile_code: string; document: string }[],
+      );
+      const deliverables = corrected.steps.map(({ sequence, profile_code, document }) => ({ sequence, profile_code, document }));
+      const heading = (code: string) => code.split("_").map((part) => (part ? `${part[0].toUpperCase()}${part.slice(1)}` : "")).join(" ");
+      const draft_copy = deliverables
+        .map((deliverable) => `## ${deliverable.sequence}. ${heading(deliverable.profile_code)}\n\n${deliverable.document}`)
+        .join("\n\n---\n\n");
+      return { ...row, draft_copy, deliverables };
+    });
+    const items = [...result.rows, ...workspaceItems]
       .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())
       .slice(0, 250);
     return noStore({

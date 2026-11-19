@@ -47,6 +47,8 @@ interface ApprovalItem {
   dialect: string | null;
   result_hash: string | null;
   deliverables: WorkspaceDeliverable[];
+  review_needs_changes?: boolean;
+  review_unresolved_count?: number;
 }
 
 type LoadState = "loading" | "ready" | "error";
@@ -280,8 +282,10 @@ export function ApprovalWorkspace() {
               </div>
             ) : (
               <footer className="review-footer">
-                <p>{ar ? "يبقى النشر محظوراً حتى تعتمد هذه النسخة." : "Publishing remains blocked until you approve this version."}</p>
-                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(true)} disabled={submitting}><X size={17} /> {ar ? "طلب تعديلات" : "Request changes"}</button><button className="primary-button" type="button" onClick={() => void decide("approved")} disabled={submitting}><Check size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "اعتماد حزمة العمل" : "Approve work pack") : (ar ? "اعتماد المحتوى" : "Approve content")}</button></div>
+                <p>{active.review_needs_changes
+                  ? (ar ? "يحتاج إلى تعديل — أدرج مدقّق الهوية تعديلات غير مطبّقة؛ اطلب تعديلات قبل الاعتماد." : "Needs changes — Brand Guardian listed unapplied corrections; request changes before approving.")
+                  : (ar ? "يبقى النشر محظوراً حتى تعتمد هذه النسخة." : "Publishing remains blocked until you approve this version.")}</p>
+                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(true)} disabled={submitting}><X size={17} /> {ar ? "طلب تعديلات" : "Request changes"}</button><button className="primary-button" type="button" onClick={() => void decide("approved")} disabled={submitting || Boolean(active.review_needs_changes)}><Check size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "اعتماد حزمة العمل" : "Approve work pack") : (ar ? "اعتماد المحتوى" : "Approve content")}</button></div>
               </footer>
             )}
           </article>

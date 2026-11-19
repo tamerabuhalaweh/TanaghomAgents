@@ -4,10 +4,24 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
+import { completeText, stripStructuralPrefix } from "@/components/workspace-post-cards";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
 
 type ImportedCard = { title: string; headline: string; body: string; cta: string; lang: CreativeLocale };
+
+const INVALID_IMPORT_CTA = /^(?:visual|photo|image)\s*(?:brief|direction|format)\b|^(?:channel|platform|format)\s*[:：]|توصيف بصري|تصور بصري|الوصف البصري|^(?:hashtags?|الهاشتاقات|هاشتاقات)\b|(?:^|\s)#[^\s#]+/iu;
+
+function cleanImportedField(value: string | null, limit: number) {
+  return completeText(stripStructuralPrefix((value || "").trim()), limit);
+}
+
+function cleanImportedCta(value: string | null) {
+  const raw = (value || "").trim();
+  if (!raw || INVALID_IMPORT_CTA.test(raw)) return "";
+  const cleaned = cleanImportedField(raw, 90);
+  return INVALID_IMPORT_CTA.test(cleaned) ? "" : cleaned;
+}
 
 interface DesignRow {
   template_id: string;
@@ -83,13 +97,13 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get("from") !== "workspace") return;
-    const headline = (params.get("headline") || "").slice(0, 300).trim();
+    const headline = cleanImportedField(params.get("headline"), 300);
     if (!headline) return;
     const card: ImportedCard = {
-      title: ((params.get("title") || headline).slice(0, 120).trim() || headline.slice(0, 120)),
+      title: cleanImportedField(params.get("title") || headline, 120) || completeText(headline, 120),
       headline,
-      body: (params.get("body") || "").slice(0, 600).trim(),
-      cta: (params.get("cta") || "").slice(0, 90).trim(),
+      body: cleanImportedField(params.get("body"), 600),
+      cta: cleanImportedCta(params.get("cta")),
       lang: params.get("lang") === "ar" ? "ar" : "en",
     };
     setImported(card);
@@ -125,9 +139,9 @@ export function DesignsView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
       <CreativeSubnav locale={locale} />
       <div className="creative-head"><h1>{t(locale, "designs.title")}</h1></div>
       {imported && (
-        <section className="creative-import" dir={imported.lang === "ar" ? "rtl" : "ltr"} lang={imported.lang} aria-label={locale === "ar" ? "معاينة البطاقة المستوردة" : "Imported card preview"}>
+        <section className="creative-import" aria-label={locale === "ar" ? "معاينة البطاقة المستوردة" : "Imported card preview"}>
           <h2>{locale === "ar" ? "بطاقة مستوردة من مساحة عمل الذكاء الاصطناعي" : "Card imported from AI Workspace"}</h2>
-          <div className="creative-import-card">
+          <div className="creative-import-card" dir={imported.lang === "ar" ? "rtl" : "ltr"} lang={imported.lang}>
             <p className="creative-import-headline">{imported.headline}</p>
             {imported.body ? <p className="creative-import-body">{imported.body}</p> : null}
             {imported.cta ? <span className="creative-import-cta">{imported.cta}</span> : null}

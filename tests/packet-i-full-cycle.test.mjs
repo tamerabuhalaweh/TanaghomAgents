@@ -309,8 +309,8 @@ test("Packet J: Arabic labels on their own line still yield clean card copy", ()
   assert.match(view, /Confirm change request/);
   assert.match(view, /لإجراء تعديلات بعد قرار نهائي، اضغط «موجز حملة جديد»/);
   assert.match(view, /To make further edits after a final decision, click “New campaign brief”/);
-  assert.match(view, /0 units for this step \(Pack total: /);
-  assert.match(view, /0 وحدة لهذه الخطوة \(إجمالي الحزمة: /);
+  assert.match(view, /0 units · 0\.0s for this step · Pack total \(Tasks 1–5\): /);
+  assert.match(view, /0 وحدة · 0\.0 ثانية لهذه الخطوة · إجمالي الحزمة \(المهام 1–5\): /);
   assert.match(view, /setDialect\(nextLanguage === "en" \? "msa" : data\?\.default_dialect \?\? "msa"\)/);
   assert.match(view, /setDialect\(kind === "en" \? "msa" : data\?\.default_dialect \?\? "msa"\)/);
   assert.match(view, /Modern Standard Arabic \(White Arabic\) is the default for English and bilingual briefs/);

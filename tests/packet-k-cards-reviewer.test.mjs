@@ -1,0 +1,369 @@
+import assert from "node:assert/strict";
+import { readdirSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
+import test from "node:test";
+import { workspaceRequest } from "../packages/agent-runtime/workspace.mjs";
+
+const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
+
+function loadTsModule(path, stubResolver) {
+  const requireCjs = createRequire(import.meta.url);
+  const ts = requireCjs("typescript");
+  const source = read(path);
+  const js = ts.transpileModule(source, {
+    fileName: path.split("/").pop(),
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+      jsx: ts.JsxEmit.ReactJSX,
+      esModuleInterop: true,
+    },
+  }).outputText;
+  const mod = { exports: {} };
+  new Function("require", "module", "exports", js)(stubResolver, mod, mod.exports);
+  return mod.exports;
+}
+
+function loadPostCards() {
+  return loadTsModule("apps/dashboard/components/workspace-post-cards.tsx", (id) => {
+    if (id === "react/jsx-runtime") return { jsx: () => null, jsxs: () => null, Fragment: "Fragment" };
+    if (id === "react") return { useRef: () => ({ current: null }), useState: () => [null, () => {}] };
+    if (id === "lucide-react") return { Download: () => null, ExternalLink: () => null, Sparkles: () => null };
+    if (id === "next/link") return { default: () => null };
+    if (id === "@/lib/client/use-locale") return { useLocale: () => ({ locale: "en" }) };
+    throw new Error(`unexpected import: ${id}`);
+  });
+}
+
+function loadReviewCorrections() {
+  return loadTsModule("apps/dashboard/lib/workspace-review-corrections.ts", (id) => {
+    throw new Error(`unexpected import: ${id}`);
+  });
+}
+
+// Verbatim Task 2 and Task 3 deliverables from live reference pack eb96f916-eb12-4687-9171-2b0fc41e6a93.
+const EB96_TASK2 = [
+  "## Post 1: Launch Announcement",
+  "",
+  "**Channel:** Instagram & Facebook",
+  "",
+  "### English Copy",
+  "* **Opening:** Looking to refresh your home without breaking the bank? Meet HomeStff (أشياء بيتي)!",
+  "* **Body:** Discover our online collection of kitchen tools, bedding, home decor, and smart home gadgets designed for modern living. We deliver fast right to your doorstep across Jordan, with convenient cash on delivery available. (Note: Specific prices and exact delivery timeframes are currently unconfirmed.)",
+  "* **Call to Action:** Shop now at HomeStff!",
+  "* **Visual Brief:** A vibrant carousel showing a stylish Amman living room, a cozy bedroom, and a modern kitchen featuring our product categories.",
+  "",
+  "### Arabic Copy (MSA)",
+  "* **Opening:** هل تبحثون عن تجديد منازلكم بطريقة ذكية وبأسعار مناسبة؟ تعرّفوا على متجر \"أشياء بيتي\" (HomeStff)!",
+  "* **Body:** اكتشفوا تشكيلتنا المميزة عبر الإنترنت من أدوات المطبخ، والمفارش، وديكورات المنازل، والأجهزة الذكية المصممة لتلبي احتياجاتكم اليومية. يوفّر متجرنا خدمة التوصيل السريع إلى جميع أنحاء الأردن، مع توفر خيار الدفع عند الاستلام. (ملاحظة: الأسعار المحددة ومواعيد التوصيل الدقيقة غير متوفرة حالياً).",
+  "* **Call to Action:** تسوّقوا الآن عبر متجر \"أشياء بيتي\"!",
+  "* **Hashtags:** #أشياء_بيتي #HomeStff #تجديد_المنزل #ديكور_منزلي #الأردن",
+  "",
+  "---",
+  "",
+  "## Post 2: Smart & Practical Living",
+  "",
+  "**Channel:** Instagram & Facebook",
+  "",
+  "### English Copy",
+  "* **Opening:** Upgrade your daily routine with smart gadgets from HomeStff.",
+  "* **Body:** Make cooking and managing your home effortless with our practical kitchen tools and smart home gadgets. We offer affordable prices and fast delivery across Jordan. (Note: Specific product pricing is currently unconfirmed.)",
+  "* **Call to Action:** Order your smart gadgets today!",
+  "* **Visual Brief:** A short video or reel demonstrating a smart home gadget and a time-saving kitchen tool in an Amman apartment setting.",
+  "",
+  "### Arabic Copy (MSA)",
+  "* **Opening:** طوّروا روتينكم اليومي باستخدام الأجهزة الذكية والأدوات العملية من متجر \"أشياء بيتي\".",
+  "* **Body:** اجعلوا الطبخ وإدارة منازلكم أكثر سهولة مع أدوات المطبخ والأجهزة الذكية المتوفرة لديكم. تضمن الأسعار المعقولة والتوصيل السريع إلى جميع أنحاء الأردن حصولكم على الأفضل دائماً. (ملاحظة: أسعار المنتجات المحددة غير متوفرة حالياً).",
+  "* **Call to Action:** اطلبوا أجهزتكم الذكية اليوم!",
+  "* **Hashtags:** #أجهزة_ذكية #أدوات_مطبخ #HomeStff #أشياء_بيتي #المنزل_الذكي",
+  "",
+  "---",
+  "",
+  "## Post 3: Comfort & Aesthetics",
+  "",
+  "**Channel:** Instagram & Facebook",
+  "",
+  "### English Copy",
+  "* **Opening:** Create the home of your dreams in Amman with HomeStff.",
+  "* **Body:** From elegant home decor to cozy bedding, we bring comfort and style straight to your doorstep. Enjoy fast delivery across Jordan and convenient cash on delivery. (Note: Specific catalog items and exact delivery schedules are currently unconfirmed.)",
+  "* **Call to Action:** Explore our collection now!",
+  "* **Visual Brief:** Aesthetic, warm-toned photos showcasing cozy bedding sets and elegant home decor pieces arranged in a living space.",
+  "",
+  "### Arabic Copy (MSA)",
+  "* **Opening:** أنشئوا منزل أحلامكم في عمّان بكل سهولة مع منتجات \"أشياء بيتي\".",
+  "* **Body:** من الديكورات الأنيقة إلى المفارش المريحة، نضع الراحة والجمال بين أيديكم. استمتعوا بالتوصيل السريع في جميع أنحاء الأردن مع إمكانية الدفع عند الاستلام. (ملاحظة: تفاصيل المنتجات المحددة ومواعيد التوصيل غير متوفرة حالياً).",
+  "* **Call to Action:** استكشفوا تشكيلتنا الآن!",
+  "* **Hashtags:** #مفارش #ديكور #أشياء_بيتي #HomeStff #راحة_المنزل",
+].join("\n");
+
+const EB96_TASK3 = [
+  "As the Brand Guardian in Tanaghom's bounded specialist team, I have reviewed the draft pack against the original source facts and brand guidance.",
+  "",
+  "## Grammatical & Register Corrections / تصحيحات نحوية وأسلوبية",
+  "",
+  "1. **Pronoun Register / صيغة المخاطب:**",
+  "   - **Exact Passage in Draft 1 (Smart & Practical Living, Arabic Body):** `«المتوفرة لديكم»`",
+  "   - **Explanation:** The draft used a second-person possessive pronoun (`لديكم`).",
+  "   - **Proposed Revision:** `«...والأجهزة الذكية المتوفرة في متجرنا.»` / `«...and smart home gadgets available at our store.»`",
+  "",
+  "2. **Parenthetical Meta-Notes in Customer Copy:**",
+  "   - **Exact Passage in Draft 2 (Post 1, Arabic Body):** `«(ملاحظة: الأسعار المحددة ومواعيد التوصيل الدقيقة غير متوفرة حالياً).»`",
+  "   - **Explanation:** Internal meta-commentary should never appear in customer-facing copy.",
+  "   - **Proposed Revision:** Remove the parenthetical note entirely from the customer-facing body text.",
+  "",
+  "---",
+  "",
+  "Review Status: Ready for Human Review after applying the corrections above / حالة المراجعة: جاهز للمراجعة البشرية بعد تطبيق التعديلات أعلاه",
+].join("\n");
+
+const EB96_TASK6 = [
+  "Executive delivery summary — HomeStff",
+  "2. Content Creator",
+  "**Body:** Discover our online collection of kitchen tools. We deliver fast right to your doorstep across Jordan, with convenient cash on delivery available. (Note: Specific pric…",
+  "",
+  "3. Brand Guardian",
+  "- **Exact Passage in Draft 1:** `«المتوفرة لديكم»`",
+].join("\n");
+
+test("Packet K Item 1 + 2: eb96f916 applies Brand Guardian corrections and builds 3 clean cards with real CTAs", () => {
+  const { applyWorkspaceReviewCorrections } = loadReviewCorrections();
+  const { socialPostCards } = loadPostCards();
+
+  const reviewed = applyWorkspaceReviewCorrections([
+    { sequence: 2, profile_code: "content_creator", result: { document: EB96_TASK2 } },
+    { sequence: 3, profile_code: "brand_guardian", result: { document: EB96_TASK3 } },
+    { sequence: 6, profile_code: "executive_summary", result: { document: EB96_TASK6 } },
+  ]);
+
+  assert.equal(reviewed.summary.has_review, true);
+  assert.equal(reviewed.summary.requires_corrections, true);
+  assert.equal(reviewed.summary.unresolved.length, 0);
+  assert.equal(reviewed.summary.needs_changes, false);
+  assert.ok(reviewed.summary.applied_count >= 2);
+
+  const correctedTask2 = reviewed.steps[0].result.document;
+  const correctedTask6 = reviewed.steps[2].result.document;
+
+  // Task 3 corrections were applied cleanly with zero duplicated words or meta-notes.
+  assert.match(correctedTask2, /الأجهزة الذكية المتوفرة في متجرنا\./);
+  assert.doesNotMatch(correctedTask2, /المتوفرة لديكم/);
+  assert.doesNotMatch(correctedTask2, /والأجهزة الذكية\s+والأجهزة الذكية/);
+  assert.doesNotMatch(correctedTask2, /\(Note:/i);
+  assert.doesNotMatch(correctedTask2, /\(ملاحظة:/);
+  assert.doesNotMatch(correctedTask6, /\(Note:/i);
+  // Section 3 (Brand Guardian's own quoted finding) in Task 6 must remain verbatim.
+  assert.match(correctedTask6, /3\. Brand Guardian[\s\S]*«المتوفرة لديكم»/);
+
+  // All 3 visual post cards map headline, body, and real CTA cleanly.
+  const cards = socialPostCards(correctedTask2, null, "en");
+  assert.equal(cards.length, 3);
+  assert.equal(cards[0].headline, "Looking to refresh your home without breaking the bank? Meet HomeStff (أشياء بيتي)!");
+  assert.equal(cards[0].cta, "Shop now at HomeStff!");
+  assert.equal(cards[1].headline, "Upgrade your daily routine with smart gadgets from HomeStff.");
+  assert.equal(cards[1].cta, "Order your smart gadgets today!");
+  assert.equal(cards[2].headline, "Create the home of your dreams in Amman with HomeStff.");
+  assert.equal(cards[2].cta, "Explore our collection now!");
+
+  for (const card of cards) {
+    for (const field of [card.headline, card.body, card.cta]) {
+      assert.doesNotMatch(field, /Channel:|English Copy|Arabic Copy|Opening:|Body:|Call to Action:|Visual Brief:/i);
+      assert.doesNotMatch(field, /\(Note:|\(ملاحظة:/i);
+    }
+    assert.doesNotMatch(card.cta, /#|carousel|video|photo|reel/i);
+  }
+
+  // Arabic preference selects the Arabic copy (already corrected by Brand Guardian!).
+  const arabicCards = socialPostCards(correctedTask2, null, "ar");
+  assert.equal(arabicCards.length, 3);
+  assert.equal(arabicCards[0].cta, 'تسوّقوا الآن عبر متجر "أشياء بيتي"!');
+  assert.match(arabicCards[1].body, /الأجهزة الذكية المتوفرة في متجرنا/);
+  assert.doesNotMatch(arabicCards[1].body, /المتوفرة لديكم|\(ملاحظة:/);
+});
+
+test("Packet K Item 1: bold language blocks (bd2ee4e0), inline qualifiers (93f9e2c3) and nested bullets (a16011f8) all yield 3 clean cards", () => {
+  const { socialPostCards } = loadPostCards();
+
+  const boldBlocksDraft = [
+    "## Missing Information Notice",
+    "*No website URL provided.*",
+    "",
+    "## Post 1: Trust & Convenience",
+    "**English Copy**",
+    "* **Opening:** Welcome to HomeStff (أشياء بيتي), your new online destination for home goods in Jordan!",
+    "* **Body:** Discover our collection of kitchen tools, bedding, home decor, and smart home gadgets at affordable prices.",
+    "* **Call to Action:** Order your home essentials today and pay when they arrive at your door!",
+    "* **Hashtags:** #HomeStff #أشياء_بيتي",
+    "**Arabic Copy (White Arabic)**",
+    "* **Opening:** مرحباً بكم في «أشياء بيتي»!",
+    "* **Body:** اكتشفوا تشكيلتنا المتنوعة.",
+    "* **Call to Action:** اطلبوا مستلزمات منزلكم اليوم!",
+    "* **Visual Brief:** A clean carousel graphic featuring a modern living room.",
+  ].join("\n");
+
+  const nestedBulletsDraft = [
+    "## Post Draft 1: Craft & Transparency (Launch Reel)",
+    "* **Visual Brief:** Close-up shot of green coffee beans pouring into a roaster.",
+    "* **Opening (Hook):**",
+    "  * **English:** Stop scrolling if you think all coffee tastes the same.",
+    "  * **Arabic (MSA):** توقفوا عن التمرير إذا كنتم تعتقدون أن طعم كل القهوة متشابه.",
+    "* **Body:**",
+    "  * **English:** We are a family-owned roastery right here in Amman roasting single-origin coffee in small batches.",
+    "  * **Arabic (MSA):** نحن محمصة عائلية هنا في عمّان نحمّص حبوب القهوة أحادية المنشأ على دفعات صغيرة.",
+    "* **Call to Action:**",
+    "  * **English:** Send us a message to place your order for delivery across Amman.",
+    "  * **Arabic (MSA):** أرسلوا لنا رسالة لطلب قهوتكم مع التوصيل إلى جميع مناطق عمّان.",
+  ].join("\n");
+
+  const [boldCard] = socialPostCards(boldBlocksDraft, null, "en");
+  assert.equal(boldCard.headline, "Welcome to HomeStff (أشياء بيتي), your new online destination for home goods in Jordan!");
+  assert.equal(boldCard.cta, "Order your home essentials today and pay when they arrive at your door!");
+  assert.doesNotMatch(boldCard.cta, /carousel|Visual Brief|#/i);
+
+  const [nestedEn] = socialPostCards(nestedBulletsDraft, null, "en");
+  assert.equal(nestedEn.headline, "Stop scrolling if you think all coffee tastes the same.");
+  assert.equal(nestedEn.cta, "Send us a message to place your order for delivery across Amman.");
+  assert.doesNotMatch(nestedEn.headline, /^English:/i);
+  assert.doesNotMatch(nestedEn.body, /^English:|Visual Brief:/i);
+
+  const [nestedAr] = socialPostCards(nestedBulletsDraft, null, "ar");
+  assert.equal(nestedAr.headline, "توقفوا عن التمرير إذا كنتم تعتقدون أن طعم كل القهوة متشابه.");
+  assert.equal(nestedAr.cta, "أرسلوا لنا رسالة لطلب قهوتكم مع التوصيل إلى جميع مناطق عمّان.");
+});
+
+test("Packet K Item 2: bd2ee4e0 and a16011f8 Brand Guardian corrections apply cleanly and unapplied corrections gate approval", () => {
+  const { applyWorkspaceReviewCorrections } = loadReviewCorrections();
+
+  // Reference pack bd2ee4e0: Task 1 masculine verb agreement fix.
+  const bd2 = applyWorkspaceReviewCorrections([
+    {
+      sequence: 1,
+      profile_code: "social_media_strategist",
+      result: { document: "* **Arabic:** نعم، توفر متجرنا خدمة التوصيل السريع إلى كافة مناطق الأردن، بما في ذلك عمان وجميع المحافظات الأخرى." },
+    },
+    {
+      sequence: 3,
+      profile_code: "brand_guardian",
+      result: {
+        document: [
+          "* **Exact passage needing correction (Task 1, Q&A, Question 1, Arabic response):**",
+          "  > «نعم، توفر متجرنا خدمة التوصيل السريع إلى كافة مناطق الأردن، بما في ذلك عمان وجميع المحافظات الأخرى.»",
+          "* **Proposed Revised Wording:**",
+          "  * **English:** Yes, we offer fast delivery across Jordan, including Amman and all other governorates.",
+          "  * **Arabic:** نعم، يوفر متجرنا خدمة التوصيل السريع إلى كافة مناطق الأردن، بما في ذلك عمان وجميع المحافظات الأخرى.",
+          "Review Status: Ready for Human Review after applying the corrections above / حالة المراجعة: جاهز للمراجعة البشرية بعد تطبيق التعديلات أعلاه",
+        ].join("\n"),
+      },
+    },
+  ]);
+  assert.equal(bd2.summary.needs_changes, false);
+  assert.equal(bd2.summary.applied_count, 1);
+  assert.match(bd2.steps[0].result.document, /نعم، يوفر متجرنا خدمة التوصيل السريع/);
+  assert.doesNotMatch(bd2.steps[0].result.document, /توفر متجرنا/);
+
+  // Reference pack a16011f8: Coffee Roastery typo (محبتنا -> محمصتنا) without duplicating للانضمام إلى.
+  const coffee = applyWorkspaceReviewCorrections([
+    {
+      sequence: 2,
+      profile_code: "content_creator",
+      result: { document: "ندعوك للانضمام إلى جلسات التذوق في محبتنا في عمان لتجربة هذه الفروق بنفسك." },
+    },
+    {
+      sequence: 3,
+      profile_code: "brand_guardian",
+      result: {
+        document: [
+          "* **Exact Passage (Draft 2 - Content Creator Proposal):**",
+          '  > "...جلسات التذوق في محبتنا في عمان..."',
+          "* **Proposed Revised Wording:**",
+          '  * *English:* "...join our tasting sessions at our Amman roastery..."',
+          '  * *Arabic (MSA):* "...الانضمام إلى جلسات التذوق في محمصتنا في عمان..."',
+        ].join("\n"),
+      },
+    },
+  ]);
+  assert.equal(coffee.summary.needs_changes, false);
+  assert.equal(coffee.steps[0].result.document, "ندعوك للانضمام إلى جلسات التذوق في محمصتنا في عمان لتجربة هذه الفروق بنفسك.");
+
+  // Unmatchable Brand Guardian correction -> fail-closed needs_changes gate.
+  const blocked = applyWorkspaceReviewCorrections([
+    { sequence: 2, profile_code: "content_creator", result: { document: "Clean text that does not contain the quoted snippet." } },
+    {
+      sequence: 3,
+      profile_code: "brand_guardian",
+      result: {
+        document: [
+          "- **Exact Passage:** `«عبارة غير موجودة في المسودة»`",
+          "- **Proposed Revision:** `«عبارة بديلة»`",
+          "Review Status: Ready for Human Review after applying the corrections above / حالة المراجعة: جاهز للمراجعة البشرية بعد تطبيق التعديلات أعلاه",
+        ].join("\n"),
+      },
+    },
+  ]);
+  assert.equal(blocked.summary.needs_changes, true);
+  assert.equal(blocked.summary.unresolved.length, 1);
+
+  // Clean Brand Guardian verdict -> no gate, no corrections applied.
+  const clean = applyWorkspaceReviewCorrections([
+    { sequence: 2, profile_code: "content_creator", result: { document: "Clean post." } },
+    {
+      sequence: 3,
+      profile_code: "brand_guardian",
+      result: { document: "Review Status: No corrections needed — Ready for Human Review / حالة المراجعة: لا توجد تعديلات مطلوبة — جاهز للمراجعة البشرية" },
+    },
+  ]);
+  assert.equal(clean.summary.needs_changes, false);
+  assert.equal(clean.summary.applied_count, 0);
+});
+
+test("Packet K Item 2 + 3: server approval gate, tightened proofreading prompts, Design Studio guard and Task 6 badge wording", () => {
+  const server = read("apps/dashboard/lib/server/agency-workspace.ts");
+  assert.match(server, /applyWorkspaceReviewCorrections/);
+  assert.match(server, /workspace_review_corrections_unapplied/);
+
+  const contentRoute = read("apps/dashboard/app/api/content/route.ts");
+  assert.match(contentRoute, /applyWorkspaceReviewCorrections/);
+
+  const approvalsRoute = read("apps/dashboard/app/api/approvals/route.ts");
+  assert.match(approvalsRoute, /applyWorkspaceReviewCorrections/);
+  assert.match(approvalsRoute, /review_needs_changes/);
+
+  const studio = read("apps/dashboard/components/creative/designs-view.tsx");
+  assert.match(studio, /cleanImportedCta/);
+  assert.match(studio, /INVALID_IMPORT_CTA/);
+
+  const workspaceView = read("apps/dashboard/components/agency-workspace.tsx");
+  assert.match(workspaceView, /0 وحدة · 0\.0 ثانية لهذه الخطوة · إجمالي الحزمة \(المهام 1–5\):/);
+  assert.match(workspaceView, /0 units · 0\.0s for this step · Pack total \(Tasks 1–5\):/);
+  assert.match(workspaceView, /workspace_review_corrections_unapplied/);
+  assert.match(workspaceView, /Boolean\(selected\.review_corrections\?\.needs_changes\)/);
+
+  // Prompts: ban parenthetical meta-notes on content_creator and tighten Arabic verb/typo proofreading.
+  const baseTask = {
+    profile: "content_creator",
+    language: "en",
+    dialect: "msa",
+    model: "gemini-3.5-flash-lite",
+    title: "HomeStff launch",
+    brief: "Bilingual English and Arabic campaign for HomeStff.",
+    source_facts: "Online home goods store in Amman with fast delivery across Jordan.",
+    shared_context: [],
+    context_hash: `sha256:${"2".repeat(64)}`,
+  };
+  const creatorPrompt = workspaceRequest(baseTask, 32768).systemInstruction.parts[0].text;
+  assert.match(creatorPrompt, /Never insert parenthetical disclaimers or internal meta-notes/);
+  assert.match(creatorPrompt, /نترتيب/);
+  assert.match(creatorPrompt, /نتوفر/);
+  assert.match(creatorPrompt, /لا تو لدينا/);
+  assert.match(creatorPrompt, /نتحول استفساركم/);
+  assert.match(creatorPrompt, /المتوفرة في متجرنا/);
+
+  const guardianPrompt = workspaceRequest({ ...baseTask, profile: "brand_guardian" }, 32768).systemInstruction.parts[0].text;
+  assert.match(guardianPrompt, /word by word/);
+  assert.match(guardianPrompt, /Exact Passage:/);
+  assert.match(guardianPrompt, /Proposed Revision:/);
+  assert.match(guardianPrompt, /لا تو لدينا/);
+
+  // Zero new SQL migrations added.
+  const migrations = readdirSync(new URL("../packages/database/migrations", import.meta.url)).filter((name) => name.endsWith(".up.sql"));
+  assert.equal(migrations.filter((name) => /^005[4-9]_/.test(name)).length, 0);
+});

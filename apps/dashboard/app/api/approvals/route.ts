@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { apiFailure, noStore } from "@/lib/server/responses";
+import { applyWorkspaceReviewCorrections } from "@/lib/workspace-review-corrections";
 
 export const runtime = "nodejs";
 
@@ -73,7 +74,8 @@ export async function GET(request: NextRequest) {
                         'sequence', step.sequence,
                         'profile', step.profile_code,
                         'status', task.status,
-                        'excerpt', left(coalesce(task.result->>'document', ''), 320)
+                        'excerpt', left(coalesce(task.result->>'document', ''), 320),
+                        'document', coalesce(task.result->>'document', '')
                       ) ORDER BY step.sequence)
                  FROM tanaghom.agency_workspace_steps step
                  JOIN tanaghom.agency_pilot_tasks task ON task.id = step.task_id
@@ -86,7 +88,32 @@ export async function GET(request: NextRequest) {
       [user.organizationId],
     );
 
-    const items = [...result.rows, ...workspaces.rows]
+    const workspaceRows = workspaces.rows.map((row) => {
+      const raw = Array.isArray(row.deliverables)
+        ? (row.deliverables as (WorkspaceDeliverable & { document?: string })[])
+        : [];
+      const corrected = applyWorkspaceReviewCorrections(
+        raw.map((entry) => ({
+          sequence: entry.sequence,
+          profile_code: entry.profile,
+          status: entry.status,
+          document: entry.document || entry.excerpt || "",
+        })),
+      );
+      return {
+        ...row,
+        review_needs_changes: corrected.summary.needs_changes,
+        review_unresolved_count: corrected.summary.unresolved.length,
+        deliverables: corrected.steps.map((entry) => ({
+          sequence: entry.sequence,
+          profile: entry.profile_code,
+          status: entry.status || "",
+          excerpt: (entry.document || "").slice(0, 320),
+        })),
+      };
+    });
+
+    const items = [...result.rows, ...workspaceRows]
       .map((row) => ({
         ...row,
         deliverables: Array.isArray(row.deliverables)
