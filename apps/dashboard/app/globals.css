@@ -2526,3 +2526,5 @@ td a, td > strong { font-weight: 670; }
 .mobile-locale { display: flex; align-items: center; }
 .mobile-locale .creative-row { flex-wrap: nowrap; gap: 0.15rem; margin-block-start: 0; }
 .mobile-locale .creative-button { min-block-size: 36px; padding-inline: 0.45rem; font-size: 0.7rem; }
+.email-verify-banner { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: var(--space-sm) var(--space-lg); padding: var(--space-sm) var(--space-xl); background: var(--warning-soft); border-block-end: 1px solid var(--border); font-size: 0.85rem; color: var(--ink); }
+.email-verify-actions { display: inline-flex; align-items: center; gap: var(--space-md); flex-wrap: wrap; }

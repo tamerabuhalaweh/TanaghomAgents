@@ -3,6 +3,7 @@
 import { useState, type FormEvent } from "react";
 import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 
+import { TurnstileWidget } from "@/components/turnstile-widget";
 import type { CreativeLocale } from "@/lib/i18n/creative";
 
 export function LoginForm({ locale }: { locale: CreativeLocale }) {
@@ -10,6 +11,8 @@ export function LoginForm({ locale }: { locale: CreativeLocale }) {
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [captchaRequired, setCaptchaRequired] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState("");
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -19,7 +22,11 @@ export function LoginForm({ locale }: { locale: CreativeLocale }) {
     const response = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email: form.get("email"), password: form.get("password") }),
+      body: JSON.stringify({
+        email: form.get("email"),
+        password: form.get("password"),
+        ...(turnstileToken ? { turnstile_token: turnstileToken } : {}),
+      }),
     });
 
     if (response.ok) {
@@ -28,15 +35,24 @@ export function LoginForm({ locale }: { locale: CreativeLocale }) {
       return;
     }
 
+    const body = await response.json().catch(() => ({})) as { error?: string; captcha_required?: boolean };
+    if (body.captcha_required || body.error === "captcha_required" || body.error === "captcha_verification_failed") {
+      setCaptchaRequired(true);
+      setTurnstileToken("");
+    }
     const retryAfter = response.status === 429
       ? Number(response.headers.get("retry-after")) || 0
       : 0;
     const minutes = Math.max(1, Math.ceil(retryAfter / 60));
-    setError(response.status === 401
-      ? (ar ? "البريد الإلكتروني أو كلمة المرور غير مطابقين لحساب تناغم نشط." : "That email and password do not match an active Tanaghom account.")
-      : response.status === 429
-        ? (ar ? `محاولات دخول كثيرة. أعد المحاولة خلال ${minutes} ${minutes === 1 ? "دقيقة" : "دقائق"}.` : `Too many sign-in attempts. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`)
-        : (ar ? "تعذّر على تناغم تسجيل دخولك. أعد المحاولة بعد قليل." : "Tanaghom could not sign you in. Please try again in a moment."));
+    setError(body.error === "email_not_verified"
+      ? (ar ? "يرجى تأكيد بريدك الإلكتروني أولاً عبر رابط التحقق المرسل إليك، أو افتح صفحة التحقق من البريد." : "Please verify your email address first using the verification link sent to you.")
+      : body.error === "captcha_required" || body.error === "captcha_verification_failed"
+        ? (ar ? "أكمل التحقق الأمني أدناه ثم أعد محاولة تسجيل الدخول." : "Complete the security check below and try signing in again.")
+        : response.status === 401
+          ? (ar ? "البريد الإلكتروني أو كلمة المرور غير مطابقين لحساب تناغم نشط." : "That email and password do not match an active Tanaghom account.")
+          : response.status === 429
+            ? (ar ? `محاولات دخول كثيرة. أعد المحاولة خلال ${minutes} ${minutes === 1 ? "دقيقة" : "دقائق"}.` : `Too many sign-in attempts. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`)
+            : (ar ? "تعذّر على تناغم تسجيل دخولك. أعد المحاولة بعد قليل." : "Tanaghom could not sign you in. Please try again in a moment."));
     setSubmitting(false);
   }
 
@@ -59,6 +75,7 @@ export function LoginForm({ locale }: { locale: CreativeLocale }) {
           </button>
         </div>
       </div>
+      {captchaRequired ? <TurnstileWidget locale={locale} onToken={setTurnstileToken} /> : null}
       <p className="login-error" role="alert" aria-live="polite">{error}</p>
       <button className="login-submit" type="submit" disabled={submitting}>
         <span>{submitting ? (ar ? "جارٍ تسجيل الدخول…" : "Signing in…") : (ar ? "تسجيل الدخول" : "Enter workspace")}</span>

@@ -38,6 +38,8 @@ const LIMITS = {
   pair: positiveInt("AUTH_LOGIN_PAIR_LIMIT", 8),
 };
 const SIGNUP_LIMIT = positiveInt("AUTH_SIGNUP_IP_LIMIT", 5);
+const SIGNUP_PAIR_LIMIT = positiveInt("AUTH_SIGNUP_PAIR_LIMIT", 3);
+const REQUIRE_VERIFIED_EMAIL = process.env.AUTH_REQUIRE_VERIFIED_EMAIL === "true";
 const MAX_FAILURE_KEYS = positiveInt("AUTH_RATE_LIMIT_MAX_KEYS", 10_000);
 const FIFTEEN_MINUTES_MS = 15 * 60 * 1000;
 const ONE_HOUR_MS = 60 * 60 * 1000;
@@ -213,18 +215,15 @@ function loginBlock(address, email) {
   return retryAfter;
 }
 
-function signupBlock(address) {
-  const entry = currentFailure(`signup|${address}`);
-  return entry && entry.count >= SIGNUP_LIMIT
-    ? Math.ceil((entry.resetAt - Date.now()) / 1000)
-    : 0;
+function signupBlock(address, normalizedEmail = "") {
+  const keys = [[`signup|${address}`, SIGNUP_LIMIT]];
+  if (normalizedEmail) keys.push([`signup-pair|${address}|${normalizedEmail}`, SIGNUP_PAIR_LIMIT]);
+  return rateLimitRetry(keys);
 }
 
-function noteSignup(address) {
-  const key = `signup|${address}`;
-  const entry = currentFailure(key);
-  if (!entry) storeFailure(key, { count: 1, resetAt: Date.now() + LOGIN_WINDOW_MS });
-  else entry.count += 1;
+function noteSignup(address, normalizedEmail = "") {
+  noteRateLimit(`signup|${address}`, LOGIN_WINDOW_MS);
+  if (normalizedEmail) noteRateLimit(`signup-pair|${address}|${normalizedEmail}`, LOGIN_WINDOW_MS);
 }
 
 function noteLoginFailure(address, email) {
@@ -399,6 +398,10 @@ async function handleToken(request, response) {
     if (!user || user.disabled || !passwordMatches) {
       noteLoginFailure(address, email);
       send(response, 401, { error: "invalid_grant", error_description: "Invalid login credentials" });
+      return;
+    }
+    if (REQUIRE_VERIFIED_EMAIL && !user.emailVerifiedAt) {
+      send(response, 403, { error: "email_not_verified", error_description: "Email verification required" });
       return;
     }
     clearLoginFailures(address, email);
@@ -677,13 +680,14 @@ async function handleAcceptInvite(request, response) {
 
 async function handleSignup(request, response) {
   const address = addressOf(request);
-  const retryAfter = signupBlock(address);
+  const body = await readJson(request);
+  const normalizedEmail = typeof body.email === "string" ? body.email.trim().toLowerCase().slice(0, 320) : "";
+  const retryAfter = signupBlock(address, normalizedEmail);
   if (retryAfter > 0) {
     send(response, 429, { error: "too_many_attempts", retry_after: retryAfter }, { "Retry-After": String(retryAfter) });
     return;
   }
-  noteSignup(address);
-  const body = await readJson(request);
+  noteSignup(address, normalizedEmail);
   try {
     const result = await store.signup({
       email: body.email,

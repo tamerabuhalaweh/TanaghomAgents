@@ -1,9 +1,15 @@
 import type { NextRequest } from "next/server";
 
 import { hasValidSameOrigin } from "@/lib/server/auth";
+import {
+  checkAndRecordSignupAttempt,
+  clearAuthFailures,
+  recordAuthFailure,
+  requiresTurnstileChallenge,
+} from "@/lib/server/auth-rate-limit";
 import { noStore } from "@/lib/server/responses";
 import { setSessionCookies } from "@/lib/server/session-cookies";
-import { isDisposableEmail, rightmostForwardedIp, verifyTurnstileToken } from "@/lib/server/turnstile";
+import { isDisposableEmail, isTurnstileConfigured, rightmostForwardedIp, verifyTurnstileToken } from "@/lib/server/turnstile";
 
 export const runtime = "nodejs";
 
@@ -46,18 +52,31 @@ export async function POST(request: NextRequest) {
     organization_name: typeof body.organization_name === "string" ? body.organization_name.trim() : "",
     locale: body.locale === "ar" ? "ar" : "en",
   };
+  const clientIp = rightmostForwardedIp(request.headers.get("x-forwarded-for"));
   if (!payload.email || !payload.password || !payload.full_name || !payload.organization_name) {
+    recordAuthFailure("signup", clientIp, payload.email);
     return noStore({ error: "invalid_request" }, { status: 400 });
   }
+  const rateLimit = checkAndRecordSignupAttempt(clientIp, payload.email);
+  if (!rateLimit.allowed) {
+    return noStore(
+      { error: "too_many_attempts", retry_after: rateLimit.retryAfter },
+      { status: 429, headers: { "Retry-After": String(rateLimit.retryAfter) } },
+    );
+  }
   if (isDisposableEmail(payload.email)) {
+    recordAuthFailure("signup", clientIp, payload.email);
     return noStore({ error: "disposable_email_not_allowed" }, { status: 400 });
   }
-  const captcha = await verifyTurnstileToken(
-    body.turnstile_token ?? body.cf_turnstile_token,
-    rightmostForwardedIp(request.headers.get("x-forwarded-for")),
-  );
+  const captchaToken = body.turnstile_token ?? body.cf_turnstile_token;
+  const challengeRequired = requiresTurnstileChallenge("signup", clientIp, payload.email);
+  if (isTurnstileConfigured() && challengeRequired && (typeof captchaToken !== "string" || !captchaToken.trim())) {
+    return noStore({ error: "captcha_required", captcha_required: true }, { status: 400 });
+  }
+  const captcha = await verifyTurnstileToken(captchaToken, clientIp);
   if (!captcha.ok) {
-    return noStore({ error: "captcha_verification_failed" }, { status: 400 });
+    recordAuthFailure("signup", clientIp, payload.email);
+    return noStore({ error: "captcha_verification_failed", captcha_required: true }, { status: 400 });
   }
 
   let upstream: Response;
@@ -80,13 +99,29 @@ export async function POST(request: NextRequest) {
   }
 
   if (!upstream.ok) {
+    if (upstream.status === 429) {
+      const retryAfter = Number(upstream.headers.get("retry-after")) || 0;
+      return noStore(
+        { error: "too_many_attempts", retry_after: retryAfter },
+        { status: 429, headers: retryAfter > 0 ? { "Retry-After": String(retryAfter) } : undefined },
+      );
+    }
     const failure = await upstream.json().catch(() => ({})) as { error?: string };
     const status = ERROR_STATUS[failure.error ?? ""] ?? 503;
+    if (status === 400 || status === 409) {
+      recordAuthFailure("signup", clientIp, payload.email);
+    }
     return noStore(
-      { error: status === 400 || status === 409 ? failure.error : "signup_failed" },
+      {
+        error: status === 400 || status === 409 ? failure.error : "signup_failed",
+        ...(isTurnstileConfigured() && requiresTurnstileChallenge("signup", clientIp, payload.email)
+          ? { captcha_required: true }
+          : {}),
+      },
       { status },
     );
   }
+  clearAuthFailures("signup", clientIp, payload.email);
 
   const session = await upstream.json() as {
     access_token: string;
