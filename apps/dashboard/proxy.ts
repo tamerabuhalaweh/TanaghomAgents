@@ -1,5 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 
+import { buildGlobalCspHeader } from "@/lib/server/csp";
+
 // Public entry points. Everything else is gated here optimistically (cookie
 // presence); the API and server components still verify the session row and the
 // tenant membership through `authorize`/`requireTenant`.
@@ -17,6 +19,12 @@ const PUBLIC_PAGES = new Set([
   "/super-admin",
 ]);
 
+function applyGlobalCsp(response: NextResponse) {
+  const policy = buildGlobalCspHeader();
+  if (policy) response.headers.set(policy.header, policy.value);
+  return response;
+}
+
 export function proxy(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
   const authenticated = request.cookies.has("tanaghom_access_token");
@@ -25,10 +33,10 @@ export function proxy(request: NextRequest) {
   if (!authenticated && !publicPage) {
     const login = new URL("/login", request.url);
     login.searchParams.set("next", `${pathname}${request.nextUrl.search}`);
-    return NextResponse.redirect(login);
+    return applyGlobalCsp(NextResponse.redirect(login));
   }
 
-  return NextResponse.next();
+  return applyGlobalCsp(NextResponse.next());
 }
 
 export const config = {

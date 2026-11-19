@@ -38,10 +38,14 @@ function turnstileSecret() {
   if (direct) return direct;
   const file = process.env.TURNSTILE_SECRET_KEY_FILE?.trim() || "/run/secrets/turnstile_secret_key";
   try {
-    return readFileSync(file, "utf8").trim();
+    return readFileSync(/*turbopackIgnore: true*/ file, "utf8").trim();
   } catch {
     return "";
   }
+}
+
+export function isTurnstileConfigured() {
+  return Boolean(turnstileSecret());
 }
 
 export type TurnstileVerification = { ok: true; skipped: true } | { ok: boolean; skipped?: false };

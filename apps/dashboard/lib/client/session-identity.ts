@@ -4,7 +4,7 @@ import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import type { TenantNames } from "@/lib/tenant-name";
 
 export interface SessionIdentity {
-  user: { displayName: string; role: string };
+  user: { displayName: string; role: string; email_verified?: boolean };
   organization: (TenantNames & { name: string }) | null;
 }
 

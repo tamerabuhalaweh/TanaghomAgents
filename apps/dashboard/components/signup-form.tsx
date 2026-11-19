@@ -52,13 +52,19 @@ export function SignupForm({ copy, locale }: { copy: AuthCopy; locale: CreativeL
       return;
     }
 
-    const body = await response.json().catch(() => ({})) as { error?: string };
+    const body = await response.json().catch(() => ({})) as { error?: string; retry_after?: number };
     const code = body.error ?? "";
+    const retryAfter = response.status === 429
+      ? Number(response.headers.get("retry-after")) || Number(body.retry_after) || 0
+      : 0;
+    const minutes = Math.max(1, Math.ceil(retryAfter / 60));
     setSubmitting(false);
-    if (code === "email_taken") setError(copy.emailTaken);
+    if (response.status === 429 || code === "too_many_attempts") {
+      setError(ar ? `محاولات تسجيل كثيرة. أعد المحاولة خلال ${minutes} ${minutes === 1 ? "دقيقة" : "دقائق"}.` : `Too many signup attempts. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`);
+    } else if (code === "email_taken") setError(copy.emailTaken);
     else if (PASSWORD_ERRORS.has(code)) setError(copy.passwordTooShort);
     else if (code === "disposable_email_not_allowed") setError(ar ? "لا نقبل عناوين البريد المؤقتة. استخدم بريد عمل دائمًا." : "Temporary email addresses are not accepted. Use a permanent work email.");
-    else if (code === "captcha_verification_failed") setError(ar ? "تعذر إكمال التحقق الأمني. أكمله مرة أخرى ثم أعد المحاولة." : "The security check could not be completed. Complete it again and retry.");
+    else if (code === "captcha_required" || code === "captcha_verification_failed") setError(ar ? "تعذر إكمال التحقق الأمني. أكمله مرة أخرى ثم أعد المحاولة." : "The security check could not be completed. Complete it again and retry.");
     else setError(copy.signupError);
   }
 

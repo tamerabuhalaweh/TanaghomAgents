@@ -26,7 +26,12 @@ export async function GET(request: NextRequest) {
          FROM tanaghom.agent_actions_log AS log
          LEFT JOIN tanaghom.agents AS agent ON agent.id = log.agent_id
          LEFT JOIN tanaghom.app_users AS actor ON actor.id = log.actor_user_id
+         LEFT JOIN tanaghom.agent_jobs AS job ON job.id = log.job_id
+         LEFT JOIN tanaghom.campaigns AS job_campaign ON job_campaign.id = job.campaign_id
+         LEFT JOIN tanaghom.agency_workspaces AS workspace
+           ON log.entity_type = 'agency_workspace' AND workspace.id = log.entity_id
         WHERE log.organization_id = $1::uuid
+           OR (log.organization_id IS NULL AND COALESCE(job_campaign.organization_id, workspace.organization_id) = $1::uuid)
         ORDER BY log.created_at DESC
         LIMIT $2`,
       [user.organizationId, limit],

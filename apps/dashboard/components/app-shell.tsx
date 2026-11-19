@@ -29,6 +29,8 @@ import { BrandMark } from "./brand-mark";
 import { LocaleToggle } from "./creative/locale-toggle";
 import { SessionProfile } from "./session-profile";
 import { TenantName } from "./tenant-name";
+import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { loadSessionIdentity } from "@/lib/client/session-identity";
 import { useLocale } from "@/lib/client/use-locale";
 
 type NavItem = { href: string; label: string; arabic: string; icon: typeof LayoutDashboard };
@@ -70,9 +72,33 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const { locale } = useLocale();
   const ar = locale === "ar";
   const [menuOpen, setMenuOpen] = useState(false);
+  const [emailUnverified, setEmailUnverified] = useState(false);
+  const [resendState, setResendState] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const helpDialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    void loadSessionIdentity().then((identity) => {
+      if (active && identity) setEmailUnverified(identity.user.email_verified === false);
+    });
+    return () => { active = false; };
+  }, []);
+
+  async function resendVerification() {
+    setResendState("sending");
+    try {
+      const response = await authenticatedFetch("/api/auth/verify-email/resend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: "{}",
+      });
+      setResendState(response.ok ? "sent" : "error");
+    } catch {
+      setResendState("error");
+    }
+  }
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -195,6 +221,23 @@ export function AppShell({ children }: { children: React.ReactNode }) {
             </button>
           </div>
         </header>
+        {emailUnverified ? (
+          <div className="email-verify-banner" role="status">
+            <span>{ar ? "بريدك الإلكتروني غير مؤكد بعد. أكّده لتأمين استعادة الحساب والدعوات." : "Your email address is not verified yet. Verify it to secure account recovery and invites."}</span>
+            <div className="email-verify-actions">
+              <button type="button" className="text-button" onClick={() => void resendVerification()} disabled={resendState === "sending" || resendState === "sent"}>
+                {resendState === "sending"
+                  ? (ar ? "جارٍ الإرسال…" : "Sending…")
+                  : resendState === "sent"
+                    ? (ar ? "تم إرسال رابط التحقق" : "Verification link sent")
+                    : resendState === "error"
+                      ? (ar ? "أعد المحاولة" : "Retry send")
+                      : (ar ? "إعادة إرسال رابط التحقق" : "Resend verification email")}
+              </button>
+              <Link className="text-link" href="/verify-email">{ar ? "صفحة التحقق" : "Verify page"}</Link>
+            </div>
+          </div>
+        ) : null}
         <main id="main-content" className="main-content">{children}</main>
       </div>
 
