@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { readdirSync, readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import test from "node:test";
-import { workspaceRequest } from "../packages/agent-runtime/workspace.mjs";
+import { bilingualRequested, workspaceRequest } from "../packages/agent-runtime/workspace.mjs";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
 
@@ -366,4 +366,161 @@ test("Packet K Item 2 + 3: server approval gate, tightened proofreading prompts,
   // Zero new SQL migrations added.
   const migrations = readdirSync(new URL("../packages/database/migrations", import.meta.url)).filter((name) => name.endsWith(".up.sql"));
   assert.equal(migrations.filter((name) => /^005[4-9]_/.test(name)).length, 0);
+});
+
+test("Packet K follow-up: verbatim 8064d6c4 multi-paragraph Draft 3 correction applies cleanly across blank lines", () => {
+  const { applyWorkspaceReviewCorrections } = loadReviewCorrections();
+  const { socialPostCards } = loadPostCards();
+
+  const task2_8064 = [
+    "# Social Post Drafts: HomeStff (أشياء بيتي)",
+    "",
+    "## Draft 1: Launch Announcement & Brand Introduction (Instagram & Facebook)",
+    "**Channel:** Instagram / Facebook",
+    "### Copy",
+    "Welcome to HomeStff | أشياء بيتي!",
+    "",
+    "Your new online destination for everything your home needs in Amman and across Jordan. From practical kitchen tools and cozy bedding to stylish home decor and smart gadgets, we bring comfort and style straight to your doorstep.",
+    "",
+    "Explore our collection today and upgrade your living space without the hassle! Send us a direct message to order.",
+    "",
+    "**Call to Action**  ",
+    "Send us a message to shop our collection and place your order with Cash on Delivery today!",
+    "",
+    "---",
+    "",
+    "## Draft 2: Smart Kitchen & Utility Spotlight (Instagram Reels / TikTok)",
+    "**Channel:** Instagram Reels / TikTok",
+    "### Copy",
+    "Make cooking and daily routines effortless! 🍳✨",
+    "",
+    "Upgrade your kitchen without overspending. Our smart kitchen tools and gadgets are designed to save you time and bring practical convenience to every meal preparation in your Amman home.",
+    "",
+    "**Call to Action**  ",
+    "Tap the link in our bio or send us a message to discover our full range of kitchen tools today!",
+    "",
+    "---",
+    "",
+    "## Draft 3: Cozy Bedroom & Aesthetic Refresh (Facebook & Instagram)",
+    "**Channel:** Facebook / Instagram",
+    "### Copy",
+    "Transform your bedroom into a cozy sanctuary for less. 🛏️🏡 ",
+    "",
+    "Give your space a fresh, relaxing update with our affordable bedding collections and home decor items. Designed for young families and homeowners looking to elevate their everyday living spaces right here in Amman. ",
+    "",
+    "Ordering is simple: choose your favorite pieces online, and we will deliver them quickly across Jordan with Cash on Delivery available.",
+    "",
+    "**Call to Action**  ",
+    "Message us today to view our latest bedding and home decor arrivals!",
+  ].join("\n");
+
+  const task3_8064 = [
+    "### Audit Findings & Corrections",
+    "",
+    "* **Task 3 / Draft 1 Opening:**",
+    "  * **Exact Passage:** `Welcome to HomeStff | أشياء بيتي!`",
+    "  * **Proposed Revision:** `مرحباً بكم في HomeStff | أشياء بيتي!`",
+    "* **Task 3 / Draft 1 Body:**",
+    "  * **Exact Passage:** `Your new online destination for everything your home needs in Amman and across Jordan.`",
+    "  * **Proposed Revision:** `وجهتكم الرقمية الجديدة لكل ما تحتاجه منازلكم في عمان وجميع أنحاء الأردن.`",
+    "* **Task 3 / Draft 1 Body:**",
+    "  * **Exact Passage:** `Explore our collection today and upgrade your living space without the hassle!`",
+    "  * **Proposed Revision:** `تسوّقوا تشكيلتنا اليوم وطوّروا مساحات معيشَتكم بكل سهولة!`",
+    "* **Task 3 / Draft 1 Call to Action:**",
+    "  * **Exact Passage:** `Send us a message to shop our collection and place your order with Cash on Delivery today!`",
+    "  * **Proposed Revision:** `أرسلوا لنا رسالة لتسوق تشكيلتنا وتقديم طلبياتكم مع خدمة الدفع عند الاستلام اليوم!`",
+    "* **Task 3 / Draft 2 Body:**",
+    "  * **Exact Passage:** `Upgrade your kitchen without overspending. Our smart kitchen tools and gadgets are designed to save you time and bring practical convenience to every meal preparation in your Amman home.`",
+    "  * **Proposed Revision:** `طوّروا مطابخكم دون إنفاق الكثير. أدواتنا وأجهزتنا المطبخية الذكية مصممة لتوفير وقتكم وجلب الراحة العملية لكل تحضير وجبة في منازلكم بعمان.`",
+    "* **Task 3 / Draft 2 Call to Action:**",
+    "  * **Exact Passage:** `Tap the link in our bio or send us a message to discover our full range of kitchen tools today!`",
+    "  * **Proposed Revision:** `اضغطوا على الرابط في البايو أو أرسلوا لنا رسالة لاستكشاف تشكيلتنا الكاملة من أدوات المطبخ اليوم!`",
+    "* **Task 3 / Draft 3 Body:**",
+    "  * **Exact Passage:** `Transform your bedroom into a cozy sanctuary for less. 🛏️🏡 Give your space a fresh, relaxing update with our affordable bedding collections and home decor items. Designed for young families and homeowners looking to elevate their everyday living spaces right here in Amman.`",
+    "  * **Proposed Revision:** `حولوا غرفة نومكم إلى ملاذ دافئ بتكلفة مناسبة. 🛏️🏡 امنحوا مساحتكم تجديداً منعشاً ومريحاً مع تشكيلات المفروشات وبنود ديكور المنزل بأسعارنا المعقولة. مصممة للعائلات الشابة وأصحاب المنازل الراغبين في الارتقاء بمساحات معيشَتهم اليومية هنا في عمان.`",
+    "* **Task 3 / Draft 3 Call to Action:**",
+    "  * **Exact Passage:** `Message us today to view our latest bedding and home decor arrivals!`",
+    "  * **Proposed Revision:** `راسلونا اليوم للاطلاع على أحدث وصولات المفروشات وديكور المنزل!`",
+    "",
+    "Review Status: Ready for Human Review after applying the corrections above / حالة المراجعة: جاهز للمراجعة البشرية بعد تطبيق التعديلات أعلاه",
+  ].join("\n");
+
+  const reviewed = applyWorkspaceReviewCorrections([
+    { sequence: 2, profile_code: "content_creator", result: { document: task2_8064 } },
+    { sequence: 3, profile_code: "brand_guardian", result: { document: task3_8064 } },
+  ]);
+
+  assert.equal(reviewed.summary.parsed_count, 8);
+  assert.equal(reviewed.summary.applied_count, 8);
+  assert.equal(reviewed.summary.unresolved.length, 0);
+  assert.equal(reviewed.summary.needs_changes, false);
+
+  const corrected = reviewed.steps[0].result.document;
+  assert.doesNotMatch(corrected, /Transform your bedroom into a cozy sanctuary/);
+  assert.match(corrected, /حولوا غرفة نومكم إلى ملاذ دافئ بتكلفة مناسبة/);
+
+  const cards = socialPostCards(corrected, null, "en");
+  assert.equal(cards.length, 3);
+  assert.match(cards[2].headline, /حولوا غرفة نومكم إلى ملاذ دافئ/);
+  assert.equal(cards[2].cta, "راسلونا اليوم للاطلاع على أحدث وصولات المفروشات وديكور المنزل!");
+  assert.doesNotMatch(cards[2].body, /Transform your bedroom|Give your space/);
+
+  // Whitespace-flexible matching must never bridge across markdown section headings.
+  const crossSection = applyWorkspaceReviewCorrections([
+    { sequence: 2, profile_code: "content_creator", result: { document: "## Post 1\nFirst sentence.\n\n## Post 2\nSecond sentence." } },
+    {
+      sequence: 3,
+      profile_code: "brand_guardian",
+      result: {
+        document: [
+          "* **Exact Passage:** `First sentence. ## Post 2 Second sentence.`",
+          "* **Proposed Revision:** `Merged text.`",
+          "Review Status: Ready for Human Review after applying the corrections above",
+        ].join("\n"),
+      },
+    },
+  ]);
+  assert.equal(crossSection.summary.needs_changes, true);
+  assert.equal(crossSection.summary.unresolved.length, 1);
+});
+
+test("Packet K follow-up: bilingual detection reads task.title and brand_guardian never translates English into Arabic", () => {
+  const titleOnlyBilingual = {
+    profile: "content_creator",
+    language: "en",
+    dialect: "msa",
+    model: "gemini-3.5-flash-lite",
+    title: "HomeStff bilingual launch — Packet K verification 2026-11-19",
+    brief: "Launch campaign for HomeStff (أشياء بيتي), an online store selling home goods across Jordan.",
+    source_facts: "Brand: HomeStff (أشياء بيتي). Fast delivery across Jordan. Cash on delivery.",
+    shared_context: [],
+    context_hash: `sha256:${"3".repeat(64)}`,
+  };
+  assert.equal(bilingualRequested(titleOnlyBilingual), true);
+  const bilingualCreatorReq = workspaceRequest(titleOnlyBilingual, 32768);
+  assert.equal(JSON.parse(bilingualCreatorReq.contents[0].parts[0].text).bilingual_output, true);
+  assert.match(bilingualCreatorReq.systemInstruction.parts[0].text, /### English Copy/);
+  assert.match(bilingualCreatorReq.systemInstruction.parts[0].text, /### Arabic Copy/);
+
+  const bilingualGuardian = workspaceRequest({ ...titleOnlyBilingual, profile: "brand_guardian" }, 32768).systemInstruction.parts[0].text;
+  assert.match(bilingualGuardian, /Never translate an English passage into Arabic or an Arabic passage into English/);
+  assert.match(bilingualGuardian, /never merge separate paragraphs across blank lines/);
+
+  // Pure English-only pack: content_creator still gets Post 1/2/3 + Hashtags + no Missing Info Notice,
+  // while brand_guardian stays strictly English-only with zero Arabic register rules.
+  const englishOnly = {
+    ...titleOnlyBilingual,
+    title: "Amman home goods launch",
+    brief: "Launch campaign for an online store selling home goods across Jordan.",
+    source_facts: "Online home goods store. Fast delivery across Jordan. Cash on delivery.",
+  };
+  assert.equal(bilingualRequested(englishOnly), false);
+  const enCreator = workspaceRequest(englishOnly, 32768).systemInstruction.parts[0].text;
+  assert.match(enCreator, /start directly with ## Post 1, ## Post 2 and ## Post 3/);
+  assert.match(enCreator, /3 to 5 relevant hashtags/);
+  assert.doesNotMatch(enCreator, /White Arabic|مرحباً بكم/);
+
+  const enGuardian = workspaceRequest({ ...englishOnly, profile: "brand_guardian" }, 32768).systemInstruction.parts[0].text;
+  assert.match(enGuardian, /Never translate English copy into Arabic/);
+  assert.doesNotMatch(enGuardian, /White Arabic|مرحباً بكم|اللهجة|تصحيحات نحوية/);
 });

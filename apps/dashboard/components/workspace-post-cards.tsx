@@ -126,6 +126,8 @@ const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(opening|headline|hook|body|caption|t
 const HASHTAG_LABEL = /^\s*[*\-•]?\s*\*{0,2}(?:hashtags?|الهاشتاقات|هاشتاقات)\s*\*{0,2}\s*[:：]\s*(.+)$/iu;
 const HASHTAG_HEADING = /^(?:hashtags?|الهاشتاقات|هاشتاقات)\s*[:：]/iu;
 const POST_SECTION = /^\s*#{1,4}\s*.*(?:post|منشور)/iu;
+const DRAFT_SECTION = /^\s*#{2,4}\s*(?:(?:post\s+)?draft|مسودة)\s*(?:\d+|[\u0660-\u0669]+|one|two|three|الأول|الثاني|الثالث)\b/iu;
+const BOLD_FIELD_HEADER = /^\s*\*{2}(opening|headline|hook|body|caption|text|cta|cta button|call to action|hashtags|الافتتاحية|العنوان|النص|المتن|المحتوى|محتوى|نداء الإجراء|دعوة لاتخاذ إجراء|دعوة إلى اتخاذ إجراء|الهاشتاقات|هاشتاقات)\s*(?:\(([^)]*)\))?\*{2}\s*$/iu;
 const ARABIC_QUALIFIER = /arabic|عربي|عربية|شامي|خليجي|سعودي|مصري|msa|فصحى/u;
 const IGNORED_FIELD_LABELS = new Set(["visual direction", "visual brief", "photo brief", "image brief", "channel", "platform", "format", "توصيف بصري", "القناة", "المنصة"]);
 
@@ -142,11 +144,11 @@ function labelledFields(text: string): LabelledField[] {
       sectionLang = langHeading[1] ? "english" : "arabic";
       continue;
     }
-    const match = FIELD_LINE.exec(line);
+    const match = FIELD_LINE.exec(line) ?? BOLD_FIELD_HEADER.exec(line);
     if (!match) continue;
     const label = match[1].toLowerCase();
     if (IGNORED_FIELD_LABELS.has(label)) continue;
-    const raw = match[3];
+    const raw = match[3] || "";
     const explicitQualifier = (match[2] || "").toLowerCase();
     const baseQualifier = [sectionLang, explicitQualifier].filter(Boolean).join(" ").trim();
     const isHashtag = label === "hashtags" || label === "الهاشتاقات" || label === "هاشتاقات";
@@ -161,7 +163,7 @@ function labelledFields(text: string): LabelledField[] {
         const candidate = lines[cursor];
         const trimmed = candidate.trim();
         if (!trimmed) { cursor += 1; continue; }
-        if (FIELD_LINE.test(candidate) || SECTION_LANGUAGE.test(candidate) || /^#{1,6}\s/.test(trimmed) || /^[-=_]{3,}$/.test(trimmed)) break;
+        if (FIELD_LINE.test(candidate) || BOLD_FIELD_HEADER.test(candidate) || SECTION_LANGUAGE.test(candidate) || /^#{1,6}\s/.test(trimmed) || /^[-=_]{3,}$/.test(trimmed)) break;
         const langBullet = LANGUAGE_LABEL.exec(candidate);
         if (langBullet) {
           consumedSubLanguage = true;
@@ -265,7 +267,7 @@ function hashtagText(value?: string) {
 }
 
 // Keeps sub-headings like "### English Copy" and "### Arabic Copy (MSA)"
-// inside their parent "## Post N" section instead of splitting them away.
+// inside their parent "## Post N" or "## Draft N" section instead of splitting them away.
 function extractPostSections(source: string): string[] {
   const sections: string[][] = [];
   let current: string[] | null = null;
@@ -274,7 +276,8 @@ function extractPostSections(source: string): string[] {
     const heading = /^(\s*)(#{1,4})\s+(.+)$/u.exec(line);
     if (heading) {
       const level = heading[2].length;
-      if (POST_SECTION.test(line)) {
+      const isPluralTitle = level === 1 && /\b(?:posts|drafts)\b|مسودات|منشورات/iu.test(heading[3]);
+      if ((!isPluralTitle && POST_SECTION.test(line)) || DRAFT_SECTION.test(line)) {
         current = [line];
         postLevel = level;
         sections.push(current);
@@ -291,7 +294,7 @@ function extractPostSections(source: string): string[] {
   return sections.map((entry) => entry.join("\n"));
 }
 
-function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | null {
+function selectSegmentedCard(body: string[], fallbackCta: string, preferredLanguage: "en" | "ar"): SocialPostCard | null {
   // Hashtags live in their own field; they are never a call to action.
   let hashtags = "";
   for (const line of body) {
@@ -334,8 +337,10 @@ function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | nu
     segments.set(language, `${segments.get(language) || ""} ${text}`.trim());
   }
 
-  const english = [...segments.entries()].find(([key]) => /english/u.test(key))?.[1];
-  const text = (english || [...segments.values()].join(" ")).replace(/\s+/g, " ").trim();
+  const preferredSegment = preferredLanguage === "ar"
+    ? [...segments.entries()].find(([key]) => ARABIC_QUALIFIER.test(key))?.[1]
+    : [...segments.entries()].find(([key]) => /english/u.test(key))?.[1];
+  const text = (preferredSegment || [...segments.values()].join(" ")).replace(/\s+/g, " ").trim();
   if (!text) return null;
   const split = splitHeadline(text);
   if (!split) return null;
@@ -350,7 +355,8 @@ function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | nu
       const label = LANGUAGE_LABEL.exec(line);
       const candidate = sanitizeCta((label ? label[2] : text.replace(CTA_HEADING, "")).replace(/^[*\-•:：\s]+/, ""), "");
       if (!candidate) continue;
-      if (label && /english/iu.test(label[1])) { cta = candidate; break; }
+      if (label && preferredLanguage === "ar" && ARABIC_QUALIFIER.test(label[1].toLowerCase())) { cta = candidate; break; }
+      if (label && preferredLanguage === "en" && /english/iu.test(label[1])) { cta = candidate; break; }
       if (!label) { cta = candidate; break; }
     }
   }
@@ -360,6 +366,10 @@ function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | nu
     cta: completeText(sanitizeCta(cta, fallbackCta), 90),
     hashtags: hashtagText(hashtags),
   };
+}
+
+function segmentedCard(body: string[], fallbackCta: string): SocialPostCard | null {
+  return selectSegmentedCard(body, fallbackCta, "en");
 }
 
 /** Extracts up to three brand-consistent post cards from a generated draft. */
@@ -380,7 +390,9 @@ export function socialPostCards(document: string, kit: WorkspaceBrandKit | null,
 
   // Paragraphs labelled only by language, inside a post section.
   for (const section of postSections(source)) {
-    const card = segmentedCard(section, fallbackCta);
+    const card = preferredLanguage === "en"
+      ? segmentedCard(section, fallbackCta)
+      : selectSegmentedCard(section, fallbackCta, preferredLanguage);
     if (card) cards.push(card);
     if (cards.length === 3) break;
   }
