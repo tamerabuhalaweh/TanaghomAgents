@@ -39,8 +39,8 @@ test("Packet M Item 10 (#281): /api/audit scopes null-actor rows via organizatio
 
   // 0051 + 0052 already added organization_id and the trigger; Packet M adds 0 migrations (leaving 0054 for Packet L).
   const migrations = readdirSync(new URL("../packages/database/migrations", import.meta.url)).filter((name) => name.endsWith(".up.sql"));
-  assert.equal(migrations.length, 50);
-  assert.equal(migrations.at(-1), "0053_workspace_step_retry.up.sql");
+  assert.equal(migrations.length, 51);
+  assert.equal(migrations.at(-1), "0054_workspace_image_quotas.up.sql");
 });
 
 test("Packet M Item 12: signup enforces per-IP and per-account limits, login challenges with Turnstile after 3 failures", () => {

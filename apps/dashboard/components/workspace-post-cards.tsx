@@ -25,6 +25,8 @@ export interface SocialPostCard {
 }
 
 const COLOR = /^#[0-9a-f]{3,8}$/i;
+// Height of the generated photo band in an exported PNG.
+const PHOTO_BAND = 700;
 
 function color(value: unknown, fallback: string) {
   return typeof value === "string" && COLOR.test(value.trim()) ? value.trim() : fallback;
@@ -451,12 +453,14 @@ function PostCard({
   kit,
   language,
   brandName,
+  imageUrl,
 }: {
   card: SocialPostCard;
   index: number;
   kit: WorkspaceBrandKit | null;
   language: "en" | "ar";
   brandName: string;
+  imageUrl?: string | null;
 }) {
   const { locale } = useLocale();
   const ar = locale === "ar";
@@ -485,7 +489,9 @@ function PostCard({
   const ctaPerLine = Math.max(12, Math.round(480 / (ctaSize * 0.54)));
   const ctaLines = card.cta ? fitLines(card.cta, ctaPerLine, 3) : [];
   const ctaLineHeight = Math.round(ctaSize * 1.3);
-  const designHref = `/creative/designs?${new URLSearchParams({ from: "workspace", title: card.headline, headline: card.headline, body: card.body, cta: card.cta, lang: language }).toString()}`;
+  const designParams = new URLSearchParams({ from: "workspace", title: card.headline, headline: card.headline, body: card.body, cta: card.cta, lang: language });
+  if (imageUrl) designParams.set("image", imageUrl);
+  const designHref = `/creative/designs?${designParams.toString()}`;
 
   function saveSvg() {
     if (!svg.current) return;
@@ -503,13 +509,48 @@ function PostCard({
       canvas.width = 1080;
       canvas.height = 1080;
       const context = canvas.getContext("2d");
-      if (context) {
-        context.drawImage(image, 0, 0, 1080, 1080);
+      if (!context) { URL.revokeObjectURL(url); return; }
+      const finish = () => {
         canvas.toBlob((blob) => {
           if (blob) download(blob, `${filename}.png`);
         }, "image/png");
-      }
-      URL.revokeObjectURL(url);
+        URL.revokeObjectURL(url);
+      };
+      const paintCard = () => { context.drawImage(image, 0, 0, 1080, 1080); finish(); };
+      if (!imageUrl) { paintCard(); return; }
+      // A generated photo leads the download; the headline and CTA stay crisp on
+      // the brand band beneath it.
+      const photo = new Image();
+      photo.onload = () => {
+        const ratio = Math.max(1080 / photo.width, PHOTO_BAND / photo.height);
+        const width = photo.width * ratio;
+        const height = photo.height * ratio;
+        context.drawImage(photo, (1080 - width) / 2, (PHOTO_BAND - height) / 2, width, height);
+        context.fillStyle = tones.primary;
+        context.fillRect(0, PHOTO_BAND, 1080, 1080 - PHOTO_BAND);
+        context.fillStyle = tones.accent;
+        context.fillRect(0, PHOTO_BAND, 1080, 12);
+        context.direction = rtl ? "rtl" : "ltr";
+        context.textAlign = rtl ? "right" : "left";
+        context.fillStyle = ink;
+        context.font = `700 ${headlineSize > 48 ? 40 : 34}px ${font}`;
+        let baseline = PHOTO_BAND + 78;
+        for (const line of headlineLines.slice(0, 2)) {
+          context.fillText(line, rtl ? 1000 : 80, baseline);
+          baseline += 46;
+        }
+        if (ctaLines.length) {
+          context.fillStyle = tones.accent;
+          context.fillRect(rtl ? 440 : 80, 906, 560, 120);
+          context.fillStyle = "#101828";
+          context.font = `700 28px ${font}`;
+          context.textAlign = "center";
+          context.fillText(ctaLines.join(" "), rtl ? 720 : 360, 976, 520);
+        }
+        finish();
+      };
+      photo.onerror = paintCard;
+      photo.src = imageUrl;
     };
     image.onerror = () => URL.revokeObjectURL(url);
     image.src = url;
@@ -517,6 +558,7 @@ function PostCard({
 
   return (
     <article className="aw-post-card">
+      {imageUrl ? <img className="aw-post-image" src={imageUrl} alt={ar ? `صورة مولّدة للمنشور ${index + 1}` : `Generated image for post ${index + 1}`} loading="lazy" /> : null}
       <svg
         ref={svg}
         viewBox="0 0 1080 1080"
@@ -617,10 +659,12 @@ export function WorkspacePostCards({
   document,
   kit,
   language,
+  images,
 }: {
   document: string;
   kit: WorkspaceBrandKit | null;
   language: "en" | "ar";
+  images?: Record<number, { url: string }>;
 }) {
   const { locale } = useLocale();
   const ar = locale === "ar";
@@ -632,12 +676,12 @@ export function WorkspacePostCards({
       <header>
         <h4 id="aw-post-cards-title"><Sparkles size={16} aria-hidden="true" />{ar ? "بطاقات المنشورات البصرية" : "Visual post cards"}</h4>
         <p>{ar
-          ? `مبنية من هويتك البصرية النشطة (${brandName}) دون أي خدمة صور خارجية أو تكلفة إضافية.`
-          : `Built from your active brand kit (${brandName}) with no external image service or extra cost.`}</p>
+          ? `مبنية من هويتك البصرية النشطة (${brandName}). الصور المولّدة تظهر أعلى بطاقات منشوراتها ضمن حصة باقتك الشهرية.`
+          : `Built from your active brand kit (${brandName}). Generated photos appear above their post cards within your plan's monthly image quota.`}</p>
       </header>
       <div className="aw-post-card-strip">
         {cards.map((card, index) => (
-          <PostCard key={`${card.headline}-${index}`} card={card} index={index} kit={kit} language={language} brandName={brandName} />
+          <PostCard key={`${card.headline}-${index}`} card={card} index={index} kit={kit} language={language} brandName={brandName} imageUrl={images?.[index + 1]?.url} />
         ))}
       </div>
       <Link className="text-link" href="/creative/designs">

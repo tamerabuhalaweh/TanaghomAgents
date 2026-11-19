@@ -12,9 +12,9 @@ BEGIN
   IF current_database() <> 'tanaghom_demo' THEN
     RAISE EXCEPTION 'demo database name required';
   END IF;
-  IF (SELECT count(*) FROM public.schema_migrations) <> 50
-     OR (SELECT max(version) FROM public.schema_migrations) IS DISTINCT FROM '0053_workspace_step_retry' THEN
-    RAISE EXCEPTION 'demo database must be at exact migration 0053 ledger (50 migrations)';
+  IF (SELECT count(*) FROM public.schema_migrations) <> 51
+     OR (SELECT max(version) FROM public.schema_migrations) IS DISTINCT FROM '0054_workspace_image_quotas' THEN
+    RAISE EXCEPTION 'demo database must be at exact migration 0054 ledger (51 migrations)';
   END IF;
   IF NOT EXISTS (
     SELECT 1 FROM pg_roles
@@ -178,4 +178,9 @@ UPDATE tanaghom.agency_workspace_control
 
 REVOKE ALL ON FUNCTION tanaghom.set_agency_workspace_circuit_breaker(boolean,boolean,text) FROM PUBLIC;
 GRANT EXECUTE ON FUNCTION tanaghom.set_agency_workspace_circuit_breaker(boolean,boolean,text) TO tanaghom_api;
+
+-- Migration 0054 owns the AI image tables; the API role reads and writes its
+-- own tenant rows and nothing else.
+GRANT SELECT, INSERT, UPDATE ON tanaghom.workspace_post_images TO tanaghom_api;
+GRANT SELECT, INSERT, UPDATE ON tanaghom.workspace_monthly_image_usage TO tanaghom_api;
 COMMIT;

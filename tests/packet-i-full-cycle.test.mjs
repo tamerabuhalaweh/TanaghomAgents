@@ -149,7 +149,7 @@ test("5: post cards skip missing-information notices, strip labels and hand off 
   assert.match(studio, /copy\?\.headline\?\.trim\(\) \|\|/);
   const workspace = read("apps/dashboard/components/agency-workspace.tsx");
   assert.match(workspace, /ملاحظة حول المرئيات: ينشئ الفريق مسودات المنشورات/);
-  assert.match(workspace, /AI photo generation is not enabled\./);
+  assert.match(workspace, /Growth and Scale also generate one AI photo per post within the monthly image quota/);
 });
 
 test("6 and 10: the language switch is in the mobile header, dialect is always offered, facts have a template", () => {
@@ -318,5 +318,5 @@ test("Packet J: Arabic labels on their own line still yield clean card copy", ()
 
 test("no new SQL migration was added for Packet I", () => {
   const migrations = readdirSync(new URL("../packages/database/migrations", import.meta.url)).filter((name) => name.endsWith(".up.sql"));
-  assert.equal(migrations.filter((name) => /^005[4-9]_/.test(name)).length, 0);
+  assert.equal(migrations.filter((name) => /^005[5-9]_/.test(name)).length, 0);
 });

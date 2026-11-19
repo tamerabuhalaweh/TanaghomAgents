@@ -476,3 +476,4 @@
 .creative-import-headline { margin: 0; font-size: 1.5rem; font-weight: 700; line-height: 1.3; }
 .creative-import-body { margin: 0; opacity: 0.9; }
 .creative-import-cta { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 999px; background: #c6a15b; color: #101828; font-weight: 700; }
+.creative-import-image { display: block; width: 100%; height: auto; max-height: 22rem; object-fit: cover; border-radius: 0.75rem; margin-block-end: 0.75rem; }

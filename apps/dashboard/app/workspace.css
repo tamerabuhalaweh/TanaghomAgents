@@ -130,3 +130,8 @@
 .aw-corrections-applied ul,.aw-corrections-blocked ul { margin:var(--space-xs) 0 0;padding-inline-start:1.25rem;display:flex;flex-direction:column;gap:var(--space-xs); }
 .aw-corrections-blocked { padding:var(--space-md) var(--space-lg);border-inline-start:3px solid var(--danger);background:var(--danger-soft);border-radius:var(--radius-sm);font-size:.875rem;display:flex;flex-direction:column;gap:var(--space-xs); }
 .aw-corrections-blocked p { margin:0;font-size:.8125rem; }
+
+/* Packet L: generated AI post photos and the monthly image quota pill */
+.aw-quota-images { padding:var(--space-xs) var(--space-sm);border-radius:var(--radius-sm);background:var(--surface);color:var(--primary);font-weight:650; }
+.aw-post-card > .aw-post-image { display:block;inline-size:100%;block-size:auto;aspect-ratio:4/3;object-fit:cover;border-radius:var(--radius-sm);background:var(--surface); }
+

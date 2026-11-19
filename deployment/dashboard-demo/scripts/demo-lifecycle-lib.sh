@@ -71,12 +71,14 @@ verify_ledger_advanced() {
   printf '%s\n' "$after_count"
 }
 
-# The only row-count change a schema upgrade may cause is the ledger itself.
+# The only row-count change a schema upgrade may cause is the ledger itself
+# (plus any newly created tables that start with zero rows).
 verify_no_row_drift() {
   local before="$1" after="$2" report unexpected
   report="$(count_delta_report "$before" "$after")"
   unexpected="$(printf '%s\n' "$report" |
     grep -vE '^public\.schema_migrations [0-9]+->[0-9]+$' |
+    grep -vE '^(public|tanaghom)\.[a-z0-9_]+ new=0$' |
     grep -v '^$' || true)"
   if [ -n "$unexpected" ]; then
     echo "ROW_COUNT_DRIFT:" >&2
