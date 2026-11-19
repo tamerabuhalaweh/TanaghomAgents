@@ -130,7 +130,13 @@ export async function workspaceRead(request:NextRequest){
     :"AI specialists are ready. Generated work stays as a reviewable proposal until a person approves it.";
   const reviewed=selected?applyWorkspaceReviewCorrections(steps.rows):null;
   const creatorDoc=reviewed?.steps.find((s)=>s.profile_code==="content_creator")?.result?.document;
-  if(selected&&creatorDoc&&imagesLimit>imagesUsed&&resolvedPostImages.some((img)=>img.status==="fallback"&&img.fallback_reason==="provider_error")){
+  const shouldEnsureImages=Boolean(
+   selected&&creatorDoc&&imagesLimit>imagesUsed&&(
+    resolvedPostImages.some((img)=>img.status==="fallback"&&img.fallback_reason==="provider_error")||
+    (resolvedPostImages.length===0&&new Date(selected.created_at).getTime()>=Date.parse("2026-11-19T12:40:00Z"))
+   )
+  );
+  if(shouldEnsureImages){
    try{
     resolvedPostImages=await ensureWorkspacePostImages(database(),{
      organizationId:actor.organizationId,workspaceId:selected.id,
@@ -391,14 +397,16 @@ export async function workspaceTick(request:NextRequest){
  // fallback and cannot fail the pack or block Tasks 3-6.
  if(!errorCode&&task.profile==="content_creator"&&artifact?.document){
   try{
-   const meta=(await database().query(`SELECT w.organization_id,w.title,w.brief,
+   const meta=(await database().query(`SELECT w.id AS workspace_id,w.organization_id,w.title,w.brief,
     (SELECT jsonb_build_object('name',kit.name,'brand_name',org.name,'colors',version.colors,'tone',version.tone)
        FROM tanaghom.brand_kits kit
        JOIN tanaghom.brand_kit_versions version ON version.kit_id=kit.id AND version.version=kit.current_version
       WHERE kit.organization_id=w.organization_id ORDER BY kit.created_at DESC,kit.id DESC LIMIT 1) AS brand
-    FROM tanaghom.agency_workspaces w JOIN tanaghom.organizations org ON org.id=w.organization_id
-    WHERE w.id=$1`,[task.workspace_id])).rows[0];
-   if(meta)await ensureWorkspacePostImages(database(),{organizationId:meta.organization_id,workspaceId:task.workspace_id,
+    FROM tanaghom.agency_workspace_steps s
+    JOIN tanaghom.agency_workspaces w ON w.id=s.workspace_id
+    JOIN tanaghom.organizations org ON org.id=w.organization_id
+    WHERE s.task_id=$1`,[task.task_id])).rows[0];
+   if(meta)await ensureWorkspacePostImages(database(),{organizationId:meta.organization_id,workspaceId:meta.workspace_id,
     posts:postImageBriefs(artifact.document,3),brandKit:meta.brand||null,campaign:{title:meta.title,brief:meta.brief}});
   }catch{/* the work pack stays succeeded with brand-styled cards */}
  }

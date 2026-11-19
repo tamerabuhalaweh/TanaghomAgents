@@ -323,4 +323,9 @@ test("Packet L migration 0054 carries the exact ledger guard, image tables and l
   const role = read("deployment/dashboard-demo/sql/configure-api-role.sql");
   assert.match(role, /0054_workspace_image_quotas/);
   assert.match(role, /51 migrations/);
+
+  const server = read("apps/dashboard/lib/server/agency-workspace.ts");
+  assert.match(server, /SELECT w\.id AS workspace_id,w\.organization_id,w\.title,w\.brief[\s\S]{0,600}WHERE s\.task_id=\$1`,\[task\.task_id\]/);
+  assert.match(server, /workspaceId:meta\.workspace_id/);
+  assert.doesNotMatch(server, /workspaceId:task\.workspace_id/);
 });

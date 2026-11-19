@@ -524,3 +524,69 @@ test("Packet K follow-up: bilingual detection reads task.title and brand_guardia
   assert.match(enGuardian, /Never translate English copy into Arabic/);
   assert.doesNotMatch(enGuardian, /White Arabic|مرحباً بكم|اللهجة|تصحيحات نحوية/);
 });
+
+test("Packet K/L follow-up: verbatim 0acbf31c Brand Guardian corrections strip trailing annotations, match Arabic diacritics/hamzas, absorb definite article, and resolve duplicate items", () => {
+  const { applyWorkspaceReviewCorrections } = loadReviewCorrections();
+
+  const step1_0acbf31c = [
+    "### Pillar 1: Bedding Collection Launch Post (Instagram & Facebook)",
+    "* **Script / Body:**",
+    "  * *AR:* أيها العائلات الشابة وأصحاب المنازل في عمّان، ارتقوا بتجربة نومكم من خلال مفروشاتنا الفاخرة وعالية الجودة.",
+    "### Pillar 2: Kitchen Tools & Smart Gadgets Launch Post (Instagram & Facebook)",
+    "* **Hook:**",
+    "  * *AR:* اجعلوا الطهي سهلاً وعملياً مع أدوات المطبخ والأساليب الذكية المتوفرة لدينَا!",
+  ].join("\n");
+
+  const step2_0acbf31c = [
+    "## Post 1: Bedding Collection Launch",
+    "### Arabic Copy (Modern Standard Arabic (White Arabic))",
+    "**الافتتاحية:** حوّلوا غرف نومكم إلى ملاذٍ هادئ مع تشكيلات المفروشات الجديدة من متجرنا!",
+    "**النص:** أيها العائلات الشابة وأصحاب المنازل في عمّان، ارتقوا بتجربة نومكم من خلال مفروشاتنا الفاخرة وعالية الجودة.",
+    "## Post 2: Kitchen Tools & Smart Gadgets Launch",
+    "### Arabic Copy (Modern Standard Arabic (White Arabic))",
+    "**الافتتاحية:** اجعلوا الطهي سهلاً وعملياً مع أدوات المطبخ والأساليب الذكية المتوفرة لديَنَا!",
+    "## Post 3: Home Decor Launch",
+    "### Arabic Copy (Modern Standard Arabic (White Arabic))",
+    "**الافتتاحية:** أضفوا لمسة جمالية أنيقة على منازلكم مع ديكورات متجرنا المميزة!",
+  ].join("\n");
+
+  const step3_0acbf31c = [
+    "## Brand Guardian Review",
+    "### 2. Grammatical & Register Corrections / تصحيحات نحوية وأسلوبية",
+    "",
+    "* **Exact Passage:** `أيها العائلات الشابة وأصحاب المنازل في عمّان`",
+    "* **Proposed Revision:** `أيتها العائلات الشابة وأصحاب المنازل في عمّان` *(Note: Correcting vocative and adjective agreement for feminine plural sound/broken nouns).*",
+    "",
+    "* **Exact Passage:** `متوفرة لديَنَا`",
+    "* **Proposed Revision:** `المتوفرة لدينا`",
+    "",
+    "* **Exact Passage:** `أضفوا لمسة جمالية أنيقة على منازلكم مع ديكورات متجرنا المميزة!`",
+    "* **Proposed Revision:** `أضيفوا لمسة جمالية أنيقة على منازلكم مع ديكورات متجرنا المميزة!` *(Note: Correcting the imperative form of the weak verb to the proper plural-polite form).*",
+    "",
+    "* **Exact Passage:** `ايها العائلات` (found in strategy text)",
+    "* **Proposed Revision:** `أيتها العائلات`",
+    "",
+    "Review Status: Ready for Human Review after applying the corrections above / حالة المراجعة: جاهز للمراجعة البشرية بعد تطبيق التعديلات أعلاه",
+  ].join("\n");
+
+  const reviewed = applyWorkspaceReviewCorrections([
+    { sequence: 1, profile_code: "social_media_strategist", result: { document: step1_0acbf31c } },
+    { sequence: 2, profile_code: "content_creator", result: { document: step2_0acbf31c } },
+    { sequence: 3, profile_code: "brand_guardian", result: { document: step3_0acbf31c } },
+  ]);
+
+  assert.equal(reviewed.summary.parsed_count, 4);
+  assert.equal(reviewed.summary.unresolved.length, 0);
+  assert.equal(reviewed.summary.needs_changes, false);
+
+  const correctedStep1 = reviewed.steps[0].result.document;
+  const correctedStep2 = reviewed.steps[1].result.document;
+  assert.match(correctedStep1, /أيتها العائلات الشابة/);
+  assert.match(correctedStep1, /المتوفرة لدينا!/);
+  assert.doesNotMatch(correctedStep1, /الالمتوفرة|Note:|found in strategy/i);
+
+  assert.match(correctedStep2, /أيتها العائلات الشابة/);
+  assert.match(correctedStep2, /المتوفرة لدينا!/);
+  assert.match(correctedStep2, /أضيفوا لمسة جمالية/);
+  assert.doesNotMatch(correctedStep2, /الالمتوفرة|Note:|found in strategy/i);
+});
