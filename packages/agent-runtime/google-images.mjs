@@ -133,8 +133,10 @@ export function buildPostImagePrompt({ post = {}, brandKit = null, campaign = nu
   ].filter(Boolean).join(' ');
 }
 
-const HEADING = /^\s{0,3}#{1,4}\s+(.+)$/u;
+const HEADING = /^\s{0,3}(#{1,4})\s+(.+)$/u;
 const POST_HEADING = /(?:post|draft|منشور|مسودة)/iu;
+const PLURAL_PACK_TITLE = /\b(?:posts|drafts)\b|مسودات|منشورات/iu;
+const VISUAL_HEADING = /^\s{0,3}#{3,6}\s*(?:visual\s*(?:brief|direction)|(?:photo|image)\s*brief|توصيف\s*بصري|تصور\s*بصري|الوصف\s*البصري)\b/iu;
 const VISUAL_LINE = /^\s*[*\-•]?\s*\*{0,2}(visual brief|visual direction|photo brief|image brief|توصيف بصري|تصور بصري|الوصف البصري)\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.+)$/iu;
 const FIELD_LINE = /^\s*[*\-•]?\s*\*{0,2}(opening|headline|hook|body|caption|text|الافتتاحية|العنوان|النص|المتن|المحتوى|محتوى)\s*(?:\([^)]*\))?\s*\*{0,2}\s*[:：]\s*\*{0,2}\s*(.*)$/iu;
 const META_LINE = /^\s*[*\-•]?\s*\*{0,2}(channel|platform|format|hashtags?|cta|cta button|call to action|نداء الإجراء|دعوة لاتخاذ إجراء|دعوة إلى اتخاذ إجراء|القناة|المنصة|الهاشتاقات|هاشتاقات)\s*\*{0,2}\s*[:：]/iu;
@@ -142,15 +144,24 @@ const META_LINE = /^\s*[*\-•]?\s*\*{0,2}(channel|platform|format|hashtags?|cta
 function imageSectionLines(document) {
   const sections = [];
   let current = null;
+  let postLevel = 0;
   for (const line of String(document || '').replace(/\r\n/g, '\n').split('\n')) {
     const heading = HEADING.exec(line);
     if (heading) {
-      if (POST_HEADING.test(heading[1])) {
+      const level = heading[1].length;
+      const title = heading[2];
+      const isPluralTitle = level === 1 && PLURAL_PACK_TITLE.test(title);
+      if (!isPluralTitle && POST_HEADING.test(title)) {
         current = [];
+        postLevel = level;
         sections.push(current);
         continue;
       }
-      if (current) { current = null; continue; }
+      if (current && level <= postLevel) {
+        current = null;
+        postLevel = 0;
+        continue;
+      }
     }
     if (current) current.push(line);
   }
@@ -165,10 +176,20 @@ export function postImageBriefs(document, limit = 3) {
     let visualBrief = '';
     let headline = '';
     let body = '';
+    let inVisualHeading = false;
     const spare = [];
     for (const line of lines) {
       const trimmed = line.trim();
-      if (!trimmed || /^#{1,6}\s/.test(trimmed) || /^[-=_]{3,}$/.test(trimmed) || /^\s*\|/.test(line)) continue;
+      if (!trimmed || /^[-=_]{3,}$/.test(trimmed) || /^\s*\|/.test(line)) continue;
+      if (/^#{1,6}\s/.test(trimmed)) {
+        inVisualHeading = VISUAL_HEADING.test(line);
+        continue;
+      }
+      if (inVisualHeading) {
+        visualBrief = visualBrief || usableText(trimmed.replace(/^[*\-•]\s*/, ''), 640);
+        inVisualHeading = false;
+        continue;
+      }
       const visual = VISUAL_LINE.exec(line);
       if (visual) { visualBrief = visualBrief || usableText(visual[2], 640); continue; }
       if (META_LINE.test(line)) continue;

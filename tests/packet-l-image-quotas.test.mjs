@@ -259,6 +259,47 @@ test("Packet L prompt: each post's own visual brief drives its scene and every p
     assert.match(prompt, /#0F3D3E and #C6A15B/);
     assert.match(prompt, /HomeStff/);
   }
+
+  // Bilingual drafts using ### English Copy / ### Arabic Copy / ### Visual Brief
+  // sub-headings under ## Post 1..3 (exact 0acbf31c shape) must keep their
+  // sub-headings inside the parent post section instead of closing it early.
+  const bilingualDoc = [
+    "# Social Post Drafts: HomeStff",
+    "",
+    "## Post 1: Bedding Collection Launch",
+    "",
+    "### English Copy",
+    "**Opening:** Transform your bedroom into a peaceful sanctuary with HomeStff's new bedding collections!",
+    "**Body:** Upgrade your sleep experience with our breathable bedding.",
+    "**Call to Action:** Shop the new collection now!",
+    "",
+    "### Arabic Copy (Modern Standard Arabic (White Arabic))",
+    "**الافتتاحية:** حوّلوا غرف نومكم إلى ملاذٍ هادئ!",
+    "",
+    "---",
+    "",
+    "## Post 2: Kitchen Tools & Smart Gadgets Launch",
+    "",
+    "### English Copy",
+    "**Opening:** Make cooking effortless and smart with HomeStff's kitchen tools!",
+    "**Body:** From innovative gadgets to daily essentials, our kitchen collection helps you save time.",
+    "",
+    "### Visual Brief",
+    "A bright kitchen counter in an Amman home with modern stainless kitchen tools.",
+    "",
+    "---",
+    "",
+    "## Post 3: Home Decor Launch",
+    "",
+    "### English Copy",
+    "**Opening:** Give your living spaces a fresh touch of style with HomeStff decor!",
+    "**Body:** Create a warm, welcoming atmosphere in your Amman home with our curated decor pieces.",
+  ].join("\n");
+  const bilingualBriefs = postImageBriefs(bilingualDoc, 3);
+  assert.equal(bilingualBriefs.length, 3, "bilingual ### sub-headings must yield all 3 post briefs");
+  assert.match(bilingualBriefs[0].headline, /Transform your bedroom/);
+  assert.match(bilingualBriefs[1].visual_brief, /bright kitchen counter/);
+  assert.match(bilingualBriefs[2].headline, /Give your living spaces/);
 });
 
 test("Packet L UI: generated photos render on the card, the quota pill is localised, and Design Studio imports same-origin images only", () => {
