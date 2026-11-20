@@ -121,7 +121,10 @@
 /* Packet I: live step progress, review helper, facts helper, visuals disclosure */
 .aw-progress-live { flex-basis:100%;font-weight:600;color:var(--primary); }
 .aw-review-hint { flex-basis:100%;color:var(--muted);font-size:.8125rem;margin-block-end:var(--space-xs); }
-.aw-review-hint-error { color:var(--danger);font-weight:600; }
+.aw-review-hint-error { color: var(--danger); font-weight: 600; }
+/* The click still explains what is missing, so the control stays focusable but
+   reads as unavailable until feedback is long enough. */
+.agency-workspace .button-unavailable { border-style: dashed; border-color: var(--border); color: var(--muted); background: var(--surface); box-shadow: none; }
 .aw-facts-helper { display:flex;flex-wrap:wrap;align-items:center;gap:var(--space-sm);margin-block:calc(-1 * var(--space-sm)) var(--space-xs); }
 .aw-facts-helper .aw-muted { flex:1 1 18rem;margin:0;font-size:.8125rem; }
 .aw-visuals-note { padding:var(--space-sm) var(--space-md);border-inline-start:3px solid color-mix(in srgb,var(--primary) 45%,var(--border));background:var(--surface);font-size:.8125rem; }

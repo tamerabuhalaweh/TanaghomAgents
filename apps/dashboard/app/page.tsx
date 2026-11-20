@@ -22,7 +22,7 @@ export async function generateMetadata(): Promise<Metadata> {
     const host = headerList.get("x-forwarded-host") || headerList.get("host");
     if (isAppHost(host)) {
       return {
-        title: "Overview",
+        title: locale === "ar" ? "لوحة التحكم" : "Overview",
         robots: { index: false, follow: false },
       };
     }

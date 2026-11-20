@@ -8,6 +8,7 @@ import { apiFailure, noStore } from "@/lib/server/responses";
 import { requireCreativeStudio, CreativeDisabledError } from "@/lib/server/creative/feature-control";
 import { creativeStorage, MAX_OBJECT_READ_BYTES } from "@/lib/server/creative/storage";
 import { DESIGN_FORMATS } from "@/lib/server/creative/designs";
+import { localizeStarterSpec } from "@/lib/server/creative/localize-starter-spec";
 
 export const runtime = "nodejs";
 
@@ -21,9 +22,11 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
     const versionParam = request.nextUrl.searchParams.get("version");
     const formatParam = request.nextUrl.searchParams.get("format");
+    const localeParam = request.nextUrl.searchParams.get("locale");
+    const locale = localeParam === "en" || localeParam === "ar" ? localeParam : null;
     if (formatParam !== null && !DESIGN_FORMATS[formatParam]) return noStore({ error: "invalid_format" }, { status: 400 });
-    const head = await database().query<{ spec: unknown; kind: string; version: number; organization_id: string | null }>(
-      `SELECT spec, kind, version, organization_id FROM tanaghom.creative_templates WHERE id = $1`,
+    const head = await database().query<{ spec: unknown; kind: string; name: string; version: number; organization_id: string | null }>(
+      `SELECT spec, kind, name, version, organization_id FROM tanaghom.creative_templates WHERE id = $1`,
       [id],
     );
     const row = head.rows[0];
@@ -47,6 +50,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       version = pinned.rows[0].version as number;
     }
     void version;
+    // The platform starters are seeded in a single language, so their placeholder
+    // copy is localised here. Tenant-owned designs are never altered.
+    spec = localizeStarterSpec(row.name, row.organization_id, spec, locale);
     const canvas = (spec.canvas ?? {}) as { width?: number; height?: number };
     // An explicit ?format= must match the saved canvas. When it is omitted the
     // design renders at its own aspect ratio, so 4:5 and 9:16 gallery

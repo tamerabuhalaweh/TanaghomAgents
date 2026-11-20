@@ -77,6 +77,9 @@ interface UiCopy {
   notConfigured: string;
   cooldown: string;
   notVerified: string;
+  noBlockingSignal: string;
+  connectedNoTest: string;
+  modelEvidence: string;
   liveHealth: string;
   configSignal: string;
   blockedUntil: string;
@@ -152,6 +155,9 @@ const copy: Record<Lang, UiCopy> = {
     notConfigured: "Not configured",
     cooldown: "Cooldown",
     notVerified: "Not independently verified",
+    noBlockingSignal: "No blocking signal",
+    connectedNoTest: "Connected · no connection test recorded",
+    modelEvidence: "No cooldown recorded · completed output is stored in your workspace",
     liveHealth: "Live health endpoint",
     configSignal: "Configuration signal",
     blockedUntil: "Blocked until",
@@ -232,6 +238,9 @@ const copy: Record<Lang, UiCopy> = {
     notConfigured: "غير مهيّأ",
     cooldown: "فترة تهدئة",
     notVerified: "غير مُتحقَّق منه بشكل مستقل",
+    noBlockingSignal: "لا توجد إشارة عائق",
+    connectedNoTest: "متصل · لا يوجد سجل لاختبار الاتصال",
+    modelEvidence: "لا توجد فترة تهدئة مسجلة · المخرجات المكتملة محفوظة في مساحة عملك",
     liveHealth: "فحص الصحة المباشر",
     configSignal: "إشارة التهيئة",
     blockedUntil: "محظور حتى",
@@ -354,9 +363,9 @@ function DependenciesPanel({ health, monitoring, text, lang }: { health: Health;
     [text.applicationApi, health.components.api === "ready" ? text.ready : text.unavailable, health.components.api === "ready" ? "success" : "danger", text.liveHealth],
     [text.postgres, health.components.database === "connected" ? text.connected : text.unavailable, health.components.database === "connected" ? "success" : "danger", text.liveHealth],
     [text.authentication, health.components.authentication === "configured" ? text.configured : text.notConfigured, health.components.authentication === "configured" ? "success" : "attention", text.configSignal],
-    [text.modelWorker, modelBlocked ? text.cooldown : text.notVerified, modelBlocked ? "attention" : "neutral", modelBlocked ? `${text.blockedUntil} ${date(monitoring.capacity.gemma_blocked_until, lang, text.notObserved)}` : text.noCooldown],
-    [text.socialPublishing, connection("postiz")?.status || text.notConfigured, connection("postiz")?.status === "connected" ? "success" : "neutral", connection("postiz")?.last_tested_at ? `${text.lastTested} ${date(connection("postiz")?.last_tested_at || null, lang, text.notObserved)}` : text.noConnectionTest],
-    [text.crmIntegration, connection("ghl")?.status || text.notConfigured, connection("ghl")?.status === "connected" ? "success" : "neutral", connection("ghl")?.last_tested_at ? `${text.lastTested} ${date(connection("ghl")?.last_tested_at || null, lang, text.notObserved)}` : text.noConnectionTest],
+    [text.modelWorker, modelBlocked ? text.cooldown : text.noBlockingSignal, modelBlocked ? "attention" : "neutral", modelBlocked ? `${text.blockedUntil} ${date(monitoring.capacity.gemma_blocked_until, lang, text.notObserved)}` : text.modelEvidence],
+    [text.socialPublishing, connection("postiz")?.status || text.notConfigured, connection("postiz")?.status === "connected" ? "success" : "neutral", connection("postiz")?.last_tested_at ? `${text.lastTested} ${date(connection("postiz")?.last_tested_at || null, lang, text.notObserved)}` : connection("postiz")?.status === "connected" ? text.connectedNoTest : text.noConnectionTest],
+    [text.crmIntegration, connection("ghl")?.status || text.notConfigured, connection("ghl")?.status === "connected" ? "success" : "neutral", connection("ghl")?.last_tested_at ? `${text.lastTested} ${date(connection("ghl")?.last_tested_at || null, lang, text.notObserved)}` : connection("ghl")?.status === "connected" ? text.connectedNoTest : text.noConnectionTest],
   ];
   return <section className="monitoring-panel monitoring-dependencies"><header><div><Database size={18} /><h2>{text.dependencies}</h2></div></header><div>{rows.map(([name, status, tone, evidence]) => <article key={name}><span><strong>{name}</strong><small>{evidence}</small></span><StatusPill tone={tone}>{status}</StatusPill></article>)}</div></section>;
 }

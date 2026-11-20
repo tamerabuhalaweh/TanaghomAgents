@@ -27,9 +27,13 @@ function money(value: string | null, currency: string, ar: boolean) {
   if (ar) return `${formatNumber(Number(value), "ar", { maximumFractionDigits: 0 })} ${currency.toUpperCase() === "USD" ? "دولارًا" : currency.toUpperCase()}`;
   return new Intl.NumberFormat(undefined, { style: "currency", currency, maximumFractionDigits: 0 }).format(Number(value));
 }
+// Work packs share the workspace vocabulary, so /campaigns never calls a pack
+// "Rejected" while /workspace calls the same state "Changes requested".
+const statusLabels: Record<string, string> = { draft: "Brief", blocked_missing_info: "Missing information", strategy_ready: "Strategy ready", content_in_progress: "Preparing content", awaiting_approval: "Awaiting approval", active: "Active", paused: "Paused", closed: "Closed", queued: "Queued", running: "Working", in_progress: "Working", waiting_review: "Ready for your review", approved: "Approved", rejected: "Changes requested", failed: "Needs attention", cancelled: "Cancelled" };
+const statusLabelsAr: Record<string, string> = { draft: "موجز", blocked_missing_info: "ناقصة المعلومات", strategy_ready: "الاستراتيجية جاهزة", content_in_progress: "المحتوى قيد الإعداد", awaiting_approval: "بانتظار الاعتماد", active: "نشطة", paused: "متوقفة", closed: "مغلقة", queued: "في الانتظار", running: "قيد العمل", in_progress: "قيد العمل", waiting_review: "جاهز لمراجعتك", approved: "معتمدة", rejected: "طُلب التعديل", failed: "يحتاج إلى انتباه", cancelled: "أُلغي" };
 function statusLabel(value: string, ar: boolean) {
-  if (!ar) return label(value);
-  return ({ draft: "مسودة", blocked_missing_info: "ناقصة المعلومات", strategy_ready: "الاستراتيجية جاهزة", content_in_progress: "المحتوى قيد الإعداد", awaiting_approval: "بانتظار الاعتماد", active: "نشطة", paused: "متوقفة", closed: "مغلقة" } as Record<string, string>)[value] || value;
+  const table = ar ? statusLabelsAr : statusLabels;
+  return table[value] || label(value);
 }
 function stage(status: string, jobType: string | null, jobStatus: string | null, ar: boolean) {
   if (ar) {
@@ -93,11 +97,14 @@ export function CampaignsView() {
     {operations.status === "loading" ? <OperationsLoading label={ar ? "جارٍ تحميل الحملات" : "Loading campaigns"} /> : null}
     {operations.status === "error" ? <OperationsError retry={operations.retry} /> : null}
     {operations.status === "ready" && operations.data.campaigns.length === 0 ? <DomainEmpty title={ar ? "لا توجد حملات بعد" : "No campaigns yet"} description={canOperate ? (ar ? "أنشئ أول موجز حملة، ثم ابدأ الاستراتيجية من صفحة تفاصيله." : "Create the first campaign brief, then start Strategy from its detail page.") : (ar ? "يمكن للمالك أو المشغّل إنشاء أول موجز حملة." : "An owner or operator can create the first campaign brief.")} detail={ar ? "يبقى عمل الحملات داخلياً حتى يعتمد شخص كل مسودة." : "Campaign work remains internal until a human approves every draft."} action={<Link className="primary-button" href="/workspace">{ar ? "أنشئ أول موجز حملة" : "Create your first campaign brief"} <ArrowRight size={17} /></Link>} /> : null}
-    {operations.status === "ready" && operations.data.campaigns.length > 0 ? <section className="campaign-portfolio" aria-label={ar ? "محفظة الحملات" : "Campaign portfolio"}>{operations.data.campaigns.map((campaign) => <article className={`campaign-record campaign-record-${campaign.status}`} key={campaign.id}>
-      <header><div><StatusPill tone={campaignTone(campaign.status)}>{statusLabel(campaign.status, ar)}</StatusPill><h2>{campaign.name}</h2><p>{stage(campaign.status, campaign.core_job_type, campaign.core_job_status, ar)}</p></div></header>
+    {operations.status === "ready" && operations.data.campaigns.length > 0 ? <section className="campaign-portfolio" aria-label={ar ? "محفظة الحملات" : "Campaign portfolio"}>{operations.data.campaigns.map((campaign) => {
+      const statusText = statusLabel(campaign.status, ar);
+      const stageText = stage(campaign.status, campaign.core_job_type, campaign.core_job_status, ar);
+      return <article className={`campaign-record campaign-record-${campaign.status}`} key={campaign.id}>
+      <header><div><StatusPill tone={campaignTone(campaign.status)}>{statusText}</StatusPill><h2>{campaign.name}</h2>{stageText && stageText !== statusText ? <p>{stageText}</p> : null}</div></header>
       {campaign.blocked_reason ? <div className="campaign-blocked"><strong>{ar ? "الاستراتيجية تحتاج إلى مزيد من المعلومات" : "Strategy needs more information"}</strong><p>{campaign.blocked_reason}</p></div> : null}
       <dl><div><dt><FileCheck2 size={16} /> {ar ? "المحتوى" : "Content"}</dt><dd>{ar ? `الإجمالي: ${formatArabicCount(campaign.content_total, { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" })} · بانتظار الاعتماد: ${formatArabicCount(campaign.content_pending, { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" })}` : `${campaign.content_total} total · ${campaign.content_pending} waiting`}</dd></div><div><dt><CircleDollarSign size={16} /> {ar ? "هدف الإيرادات" : "Revenue target"}</dt><dd><bdi>{money(campaign.revenue_target, campaign.currency, ar)}</bdi></dd></div><div><dt><UsersRound size={16} /> {ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{campaign.leads_total}</dd></div></dl>
       <Link className="secondary-button campaign-open-link" href={campaign.source === "ai_workspace" ? `/workspace?id=${campaign.id}` : `/campaigns/${campaign.id}`}>{campaign.source === "ai_workspace" ? (ar ? "فتح حزمة العمل" : "Open work pack") : (ar ? "فتح الحملة" : "Open campaign")} <ArrowRight size={17} /></Link>
-    </article>)}</section> : null}
+    </article>; })}</section> : null}
   </div>;
 }

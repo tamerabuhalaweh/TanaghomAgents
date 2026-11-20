@@ -66,7 +66,7 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
   const ar = locale === "ar";
   const role = useSessionRole();
   const detail = useCreativeFetch<{ design: { template_id: string; kind: string; name: string; version: number; spec: DesignSpec }; versions: Array<{ template_id: string; version: number }> }>(
-    locale, `/api/creative/designs/${templateId}`,
+    locale, `/api/creative/designs/${templateId}?locale=${locale}`,
   );
   const kits = useCreativeFetch<{ kits: BrandKitRow[] }>(locale, "/api/creative/brand-kits");
   const [spec, setSpec] = useState<DesignSpec | null>(null);
@@ -222,7 +222,7 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
                 <iframe
                   className="creative-editor-frame"
                   title={t(locale, "designs.preview")}
-                  src={`/api/creative/designs/${templateId}/preview?format=${previewFormat}&v=${loaded.version}`}
+                  src={`/api/creative/designs/${templateId}/preview?format=${previewFormat}&v=${loaded.version}&locale=${locale}`}
                   sandbox=""
                 />
                 {renderJobs.length > 0 && (

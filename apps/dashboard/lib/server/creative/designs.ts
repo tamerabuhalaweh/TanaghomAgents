@@ -15,6 +15,7 @@ import {
   reserveIdempotency,
 } from "@/lib/server/creative/idempotency";
 import { CreativeJobRequestError } from "@/lib/server/creative/jobs";
+import { localizeStarterSpec } from "@/lib/server/creative/localize-starter-spec";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const ID_RE = /^[A-Za-z0-9_-]{1,80}$/;
@@ -339,6 +340,8 @@ export async function listDesigns(request: NextRequest) {
 export async function getDesign(request: NextRequest, templateId: string) {
   try {
     requireCreativeStudio();
+    const localeParam = request.nextUrl.searchParams.get("locale");
+    const locale = localeParam === "en" || localeParam === "ar" ? localeParam : null;
     if (!UUID_RE.test(templateId)) return noStore({ error: "invalid_template_id" }, { status: 400 });
     const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
     const head = await database().query(
@@ -366,7 +369,13 @@ export async function getDesign(request: NextRequest, templateId: string) {
           ORDER BY version ASC`,
         [row.kind, row.name, row.organization_id],
       );
-    return noStore({ design: row, versions: versions.rows });
+    return noStore({
+      design: {
+        ...row,
+        spec: localizeStarterSpec(String(row.name), (row.organization_id as string | null) ?? null, row.spec as Record<string, unknown>, locale),
+      },
+      versions: versions.rows,
+    });
   } catch (error) {
     if (error instanceof CreativeDisabledError) {
       return noStore({ error: "creative_studio_disabled" }, { status: 503 });

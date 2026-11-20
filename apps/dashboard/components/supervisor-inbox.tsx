@@ -122,6 +122,14 @@ export function SupervisorInbox() {
     mine: payload?.conversations.filter((item) => item.assigned_user_id === payload.current_user.id && item.state !== "resolved").length || 0,
   }), [payload]);
 
+  // A brand-new workspace starts with the supervised-conversation default
+  // reason and no conversations at all. That is not an emergency, so it must
+  // not raise the red organization-stop alarm.
+  const emergencyStopped = Boolean(payload?.policy?.conversation_emergency_stop);
+  const awaitingActivation = emergencyStopped
+    && (payload?.policy?.conversation_emergency_reason || "").trim().toLowerCase() === "awaiting supervised conversation activation"
+    && (payload?.conversations.length ?? 0) === 0;
+
   async function refreshAll() {
     setFeedback(""); await loadInbox(); if (selectedId) await loadDetail(selectedId);
   }
@@ -137,10 +145,10 @@ export function SupervisorInbox() {
     {loadState === "error" ? <SupervisorState icon={<CircleAlert />} title="Inbox unavailable" copy="E3lani could not load the protected supervisor queue." action={<button className="secondary-button" type="button" onClick={() => void loadInbox(false)}>Try again</button>} /> : null}
 
     {payload ? <>
-      <section className={`conversation-safety ${payload.policy?.conversation_emergency_stop ? "conversation-safety-stopped" : ""}`} aria-label="Conversation safety controls">
-        {payload.policy?.conversation_emergency_stop ? <AlertOctagon size={21} /> : <ShieldCheck size={21} />}
-        <div><strong>{payload.policy?.conversation_emergency_stop ? "Organization emergency stop is active" : "Reply authority is locked"}</strong><p>{payload.policy?.conversation_emergency_stop ? payload.policy.conversation_emergency_reason : "Queued AI work must revalidate its lease immediately before any future provider dispatch."}</p></div>
-        {payload.current_user.role === "owner" ? <EmergencyControl active={Boolean(payload.policy?.conversation_emergency_stop)} disabled={!online || stale} onChanged={refreshAll} /> : <StatusPill tone={payload.policy?.conversation_emergency_stop ? "danger" : "success"}>{payload.policy?.conversation_emergency_stop ? "Stopped" : "Protected"}</StatusPill>}
+      <section className={`conversation-safety ${emergencyStopped && !awaitingActivation ? "conversation-safety-stopped" : ""}`} aria-label="Conversation safety controls">
+        {emergencyStopped && !awaitingActivation ? <AlertOctagon size={21} /> : <ShieldCheck size={21} />}
+        <div><strong>{awaitingActivation ? "Supervised conversations are not activated yet" : emergencyStopped ? "Organization emergency stop is active" : "Reply authority is locked"}</strong><p>{awaitingActivation ? "No live customer conversations are routed here yet. Automated replies stay paused until supervised conversations are activated." : emergencyStopped ? payload.policy?.conversation_emergency_reason : "Queued AI work must revalidate its lease immediately before any future provider dispatch."}</p></div>
+        {payload.current_user.role === "owner" ? <EmergencyControl active={emergencyStopped} disabled={!online || stale} onChanged={refreshAll} /> : <StatusPill tone={awaitingActivation ? "neutral" : emergencyStopped ? "danger" : "success"}>{awaitingActivation ? "Not activated" : emergencyStopped ? "Stopped" : "Protected"}</StatusPill>}
       </section>
 
       <dl className="supervisor-summary" aria-label="Supervisor queue summary">

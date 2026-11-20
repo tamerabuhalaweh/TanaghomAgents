@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "./brand-mark";
+import { LocalisedDocumentTitle } from "./localised-document-title";
 import { LocaleToggle } from "./creative/locale-toggle";
 import { SessionProfile } from "./session-profile";
 import { TenantName } from "./tenant-name";
@@ -136,6 +137,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-shell">
+      {/* The tab title follows the UI language on every shell route, including
+          the signed-in Overview that mounts the shell without RootFrame. */}
+      <LocalisedDocumentTitle />
       <a className="skip-link" href="#main-content">{ar ? "تخطَّ إلى المحتوى الرئيسي" : "Skip to main content"}</a>
       <header className="mobile-header">
         <Link className="brand" href="/" aria-label={ar ? "لوحة التحكم في إعلاني" : "E3lani dashboard"}>
@@ -182,6 +186,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="sidebar-footer">
           <div className="sidebar-trust">
             <span className="environment-badge">{ar ? "موافقة بشرية قبل النشر" : "Human-Reviewed Workspace"}</span>
+            <span className="sidebar-timezone">{ar ? "كل الأوقات بتوقيت جهازك" : "All times: your device timezone"}</span>
             <button className="nav-link sidebar-help-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={() => { closeMenu(); openHelp(); }}>
               <CircleHelp size={18} />
               <span>{ar ? "المساعدة السريعة" : "Quick help"}</span>
@@ -212,7 +217,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <span className="environment-badge">{ar ? "موافقة بشرية قبل النشر" : "Human-Reviewed Workspace"}</span>
           <div className="topbar-actions">
             <LocaleToggle locale={locale} />
-            <Link className="icon-button notification-button" href="/system" aria-label={ar ? "فتح تنبيهات النظام" : "Open system alerts"}>
+            <Link className="icon-button notification-button" href="/system" aria-label={ar ? "فتح مراقبة النظام" : "Open system monitoring"}>
               <Bell size={19} />
               <span aria-hidden="true" />
             </Link>

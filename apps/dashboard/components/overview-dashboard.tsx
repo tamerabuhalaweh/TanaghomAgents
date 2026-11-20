@@ -27,10 +27,10 @@ const campaignStatusAr: Record<string, string> = {
   in_progress: "قيد العمل",
   active: "نشطة",
   awaiting_approval: "بانتظار الاعتماد",
-  waiting_review: "بانتظار الاعتماد",
+  waiting_review: "جاهز لمراجعتك",
   approved: "معتمدة",
   paused: "متوقفة",
-  rejected: "مرفوضة",
+  rejected: "طُلب التعديل",
   failed: "فاشلة",
   cancelled: "ملغاة",
   closed: "مغلقة",
@@ -39,9 +39,16 @@ const campaignStatusAr: Record<string, string> = {
   content_in_progress: "المحتوى قيد الإعداد",
 };
 
+// One vocabulary for a campaign state across Overview, /campaigns and /workspace.
+const campaignStatusEn: Record<string, string> = {
+  waiting_review: "Ready for your review",
+  approved: "Approved",
+  rejected: "Changes requested",
+};
+
 function campaignStage(campaign: OperationsCampaign, arabic: boolean) {
-  if (!arabic) return campaign.status.replaceAll("_", " ");
-  return campaignStatusAr[campaign.status] ?? campaign.status.replaceAll("_", " ");
+  const labels = arabic ? campaignStatusAr : campaignStatusEn;
+  return labels[campaign.status] ?? campaign.status.replaceAll("_", " ");
 }
 
 const quickStart = [
@@ -126,10 +133,13 @@ export function OverviewDashboard() {
   if (operations.status === "error") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "حالة المصدر المعتمد مطلوبة قبل تشغيل الوكلاء." : "Source-of-truth status is required before operating agents."} /><OperationsError retry={operations.retry} /></div>;
 
   const { data } = operations;
+  // The campaign cards exclude drafts, so the headline explains the difference
+  // instead of looking like it miscounts the portfolio.
+  const changesRequested = data.campaigns.filter((campaign) => campaign.status === "rejected").length;
   const description = data.summary.campaigns_total
     ? (ar
-      ? `${formatArabicCount(data.summary.campaigns_active, { zero: "لا حملات نشطة", one: "حملة واحدة نشطة", two: "حملتان نشطتان", few: "{count} حملات نشطة", many: "{count} حملة نشطة", other: "{count} حملة نشطة" })}، ${formatArabicCount(data.summary.jobs_open, { zero: "لا مهام مفتوحة", one: "مهمة واحدة مفتوحة", two: "مهمتان مفتوحتان", few: "{count} مهام مفتوحة", many: "{count} مهمة مفتوحة", other: "{count} مهمة مفتوحة" })}, و${formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" })}.`
-      : `${data.summary.campaigns_active} active campaigns, ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
+      ? `${formatArabicCount(data.summary.campaigns_active, { zero: "لا حملات نشطة", one: "حملة واحدة نشطة", two: "حملتان نشطتان", few: "{count} حملات نشطة", many: "{count} حملة نشطة", other: "{count} حملة نشطة" })}${changesRequested ? ` · ${formatArabicCount(changesRequested, { zero: "لا حملات طُلب تعديلها", one: "حملة طُلب تعديلها", two: "حملتان طُلب تعديلهما", few: "{count} حملات طُلب تعديلها", many: "{count} حملة طُلب تعديلها", other: "{count} حملة طُلب تعديلها" })}` : ""}، ${formatArabicCount(data.summary.jobs_open, { zero: "لا مهام مفتوحة", one: "مهمة واحدة مفتوحة", two: "مهمتان مفتوحتان", few: "{count} مهام مفتوحة", many: "{count} مهمة مفتوحة", other: "{count} مهمة مفتوحة" })}, و${formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" })}.`
+      : `${data.summary.campaigns_active} active campaigns${changesRequested ? ` · ${changesRequested} changes requested` : ""}, ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
     : (ar ? "لم تبدأ أي حملة أو مهمة وكيل بعد." : "No campaign or agent work has started yet.");
   const setupSteps = setup ? [
     { done: setup.profileDone, en: "Business profile", ar: "ملف النشاط التجاري" },
@@ -184,13 +194,13 @@ export function OverviewDashboard() {
 
       <section className="campaign-section" aria-labelledby="campaign-title">
         <div className="section-heading compact-heading"><div><h2 id="campaign-title">{ar ? "الحملات" : "Campaigns"}</h2><p>{ar ? "التقدم والمخاطر والمحتوى وإجمالي العملاء المحتملين." : "Live progress, risk, content, and lead totals."}</p></div><Link href="/campaigns" className="text-link">{ar ? "عرض الحملات" : "View campaigns"} <ArrowRight size={16} /></Link></div>
-        {data.campaigns.length ? <div className="table-scroll" tabIndex={0} aria-label={ar ? "جدول الحملات، قابل للتمرير أفقياً على الشاشات الصغيرة" : "Campaign table, horizontally scrollable on small screens"}><table><thead><tr><th>{ar ? "الحملة" : "Campaign"}</th><th>{ar ? "الحالة" : "Status"}</th><th>{ar ? "المرحلة" : "Stage"}</th><th>{ar ? "المحتوى" : "Content"}</th><th>{ar ? "الاعتمادات" : "Approvals"}</th><th>{ar ? "العملاء المحتملون" : "Leads"}</th></tr></thead><tbody>{data.campaigns.map((campaign) => <tr key={campaign.id}><td><Link href="/campaigns">{campaign.name}</Link></td><td><StatusPill tone={campaignTone(campaign.status)}>{campaignStage(campaign, ar)}</StatusPill></td><td>{campaignStage(campaign, ar)}</td><td>{campaign.content_total}</td><td>{campaign.content_pending}</td><td>{campaign.leads_total}</td></tr>)}</tbody></table></div> : <DomainEmpty title={ar ? "لا حملات بعد" : "No campaigns yet"} description={ar ? "محفظة الحملات الحالية فارغة." : "The live campaign portfolio is empty."} detail={ar ? "موجز الحملة هو أول سجل تشغيلي." : "A campaign brief is the first operational record."} />}
+        {data.campaigns.length ? <div className="table-scroll" tabIndex={0} aria-label={ar ? "جدول الحملات، قابل للتمرير أفقياً على الشاشات الصغيرة" : "Campaign table, horizontally scrollable on small screens"}><table><thead><tr><th>{ar ? "الحملة" : "Campaign"}</th><th>{ar ? "الحالة" : "Status"}</th><th>{ar ? "المحتوى" : "Content"}</th><th>{ar ? "الاعتمادات" : "Approvals"}</th><th>{ar ? "العملاء المحتملون" : "Leads"}</th></tr></thead><tbody>{data.campaigns.map((campaign) => <tr key={campaign.id}><td><Link href="/campaigns">{campaign.name}</Link></td><td><StatusPill tone={campaignTone(campaign.status)}>{campaignStage(campaign, ar)}</StatusPill></td><td>{campaign.content_total}</td><td>{campaign.content_pending}</td><td>{campaign.leads_total}</td></tr>)}</tbody></table></div> : <DomainEmpty title={ar ? "لا حملات بعد" : "No campaigns yet"} description={ar ? "محفظة الحملات الحالية فارغة." : "The live campaign portfolio is empty."} detail={ar ? "موجز الحملة هو أول سجل تشغيلي." : "A campaign brief is the first operational record."} />}
       </section>
 
       <div className="overview-footer-grid">
         <section className="performance-section" aria-labelledby="performance-title">
           <div className="section-heading compact-heading"><div><h2 id="performance-title">{ar ? "الأداء المسجّل" : "Recorded performance"}</h2><p>{ar ? "إجماليات من سجلات النشر والعملاء المحتملين الفعلية." : "Totals from live published-post and lead records."}</p></div><Link href="/reports" className="text-link">{ar ? "التقرير الكامل" : "Full report"} <ArrowRight size={16} /></Link></div>
-          <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{formatNumber(Number(data.performance.impressions), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{formatNumber(Number(data.performance.clicks), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>{ar ? `${formatNumber(Number(data.performance.spend), locale)} دولارًا` : `$${formatNumber(Number(data.performance.spend), locale)}`}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{formatNumber(data.summary.leads_total, locale)}</dd><span>{ar ? `${formatNumber(data.summary.leads_won, locale)} صفقات رابحة` : <>{formatNumber(data.summary.leads_won, locale)} won</>}</span></div></dl>
+          <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{formatNumber(Number(data.performance.impressions), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{formatNumber(Number(data.performance.clicks), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>{ar ? `${formatNumber(Number(data.performance.spend), locale)} دولارًا` : `$${formatNumber(Number(data.performance.spend), locale)}`}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{formatNumber(data.summary.leads_total, locale)}</dd><span>{ar ? `${formatNumber(data.summary.leads_won, locale)} صفقات رابحة` : `${formatNumber(data.summary.leads_won, locale)} won`}</span></div></dl>
         </section>
         <section className="alerts-section" aria-labelledby="alerts-title">
           <div className="section-heading compact-heading"><div><h2 id="alerts-title">{ar ? "التنبيهات" : "Alerts"}</h2><p>{ar ? `${formatArabicCount(data.summary.notifications_unread, { zero: "لا إشعارات تشغيلية غير مقروءة.", one: "إشعار تشغيلي واحد غير مقروء.", two: "إشعاران تشغيليان غير مقروءين.", few: "{count} إشعارات تشغيلية غير مقروءة.", many: "{count} إشعارًا تشغيليًا غير مقروءًا.", other: "{count} إشعار تشغيلي غير مقروء." })}` : `${data.summary.notifications_unread} unread operational notifications.`}</p></div></div>

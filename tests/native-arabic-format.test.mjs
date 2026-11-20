@@ -82,10 +82,10 @@ test("overview localizes every campaign status key", () => {
   for (const [key, label] of Object.entries({
     active: "نشطة",
     draft: "مسودة",
-    waiting_review: "بانتظار الاعتماد",
+    waiting_review: "جاهز لمراجعتك",
     approved: "معتمدة",
     paused: "متوقفة",
-    rejected: "مرفوضة",
+    rejected: "طُلب التعديل",
   })) assert.match(overview, new RegExp(`${key}: "${label}"`), key);
   assert.match(overview, /campaignStage\(campaign, ar\)/);
 });
