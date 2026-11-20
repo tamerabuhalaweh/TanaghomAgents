@@ -22,8 +22,11 @@ async function forward(request: NextRequest, method: "GET" | "DELETE") {
   if (!token) return noStore({ error: "authentication_required" }, { status: 401 });
 
   const id = request.nextUrl.searchParams.get("id");
+  const scope = request.nextUrl.searchParams.get("scope");
   const target = method === "DELETE"
-    ? `${configuration.url}/auth/v1/sessions?id=${encodeURIComponent(id ?? "")}`
+    ? scope === "others"
+      ? `${configuration.url}/auth/v1/sessions?scope=others`
+      : `${configuration.url}/auth/v1/sessions?id=${encodeURIComponent(id ?? "")}`
     : `${configuration.url}/auth/v1/sessions`;
 
   let upstream: Response;
@@ -54,7 +57,8 @@ export async function DELETE(request: NextRequest) {
   if (!hasValidSameOrigin(request)) {
     return noStore({ error: "invalid_origin" }, { status: 403 });
   }
-  if (!request.nextUrl.searchParams.get("id")) {
+  const scope = request.nextUrl.searchParams.get("scope");
+  if (scope !== "others" && !request.nextUrl.searchParams.get("id")) {
     return noStore({ error: "session_id_required" }, { status: 400 });
   }
   return forward(request, "DELETE");

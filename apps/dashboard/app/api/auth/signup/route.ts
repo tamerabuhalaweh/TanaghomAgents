@@ -89,6 +89,9 @@ export async function POST(request: NextRequest) {
         ...(request.headers.get("x-forwarded-for")
           ? { "x-forwarded-for": request.headers.get("x-forwarded-for")! }
           : {}),
+        ...(request.headers.get("user-agent")
+          ? { "user-agent": request.headers.get("user-agent")! }
+          : {}),
       },
       body: JSON.stringify(payload),
       cache: "no-store",

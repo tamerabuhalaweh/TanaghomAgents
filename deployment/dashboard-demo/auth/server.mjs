@@ -373,9 +373,21 @@ async function requireIdentity(request) {
   return { claims, user };
 }
 
+function sessionClientAgent(request, address) {
+  const raw = typeof request.headers["user-agent"] === "string"
+    ? request.headers["user-agent"].replace(/[\r\n|]/g, " ").trim().slice(0, 240)
+    : "";
+  const ip = typeof address === "string" ? address.trim() : "";
+  const includeIp = Boolean(ip && ip !== "unknown" && ip !== "127.0.0.1" && ip !== "::1" && ip !== "::ffff:127.0.0.1");
+  if (!raw && !includeIp) return null;
+  if (!includeIp) return raw;
+  return raw ? `${raw} | ip:${ip}` : `ip:${ip}`;
+}
+
 async function handleToken(request, response) {
   const url = new URL(request.url ?? "/", "http://demo-auth");
   const grantType = url.searchParams.get("grant_type");
+  const address = addressOf(request);
   const body = await readJson(request);
 
   if (grantType === "password") {
@@ -385,7 +397,6 @@ async function handleToken(request, response) {
       send(response, 400, { error: "invalid_grant", error_description: "Invalid login credentials" });
       return;
     }
-    const address = addressOf(request);
     const retryAfter = loginBlock(address, email);
     if (retryAfter > 0) {
       send(response, 429, { error: "too_many_attempts", retry_after: retryAfter }, { "Retry-After": String(retryAfter) });
@@ -407,7 +418,7 @@ async function handleToken(request, response) {
     clearLoginFailures(address, email);
     let session;
     try {
-      session = await issueSession(user, request.headers["user-agent"]);
+      session = await issueSession(user, sessionClientAgent(request, address));
     } catch (error) {
       send(response, error.status ?? 400, { error: error.code ?? "login_failed" });
       return;
@@ -430,7 +441,7 @@ async function handleToken(request, response) {
       send(response, 401, { error: "session_revoked", error_description: "Session revoked" });
       return;
     }
-    const token = await store.rotateSession(session, { userAgent: request.headers["user-agent"] });
+    const token = await store.rotateSession(session, { userAgent: sessionClientAgent(request, address) });
     send(response, 200, {
       access_token: mintAccessToken(user, session.id),
       token_type: "bearer",
@@ -695,7 +706,7 @@ async function handleSignup(request, response) {
       fullName: body.full_name,
       organizationName: body.organization_name,
       locale: body.locale,
-      userAgent: request.headers["user-agent"],
+      userAgent: sessionClientAgent(request, address),
     });
     let emailDelivery = queuedDelivery();
     try {
@@ -747,6 +758,12 @@ async function handleSessions(request, response) {
     return;
   }
   if (request.method === "DELETE") {
+    const scope = url.searchParams.get("scope") ?? "";
+    if (scope === "others") {
+      const revokedCount = await store.revokeOtherSessions(identity.user.sub, identity.claims.session_id);
+      send(response, 200, { ok: true, revoked_count: revokedCount, reauthenticate: false });
+      return;
+    }
     const id = url.searchParams.get("id") ?? "";
     if (!UUID_RE.test(id)) {
       send(response, 400, { error: "invalid_session" });

@@ -512,9 +512,12 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
                 o.name AS organization_name
            FROM tanaghom.sessions s
            JOIN tanaghom.organizations o ON o.id = s.organization_id
-          WHERE s.user_id = $1 AND s.expires_at > now()
-          ORDER BY s.last_seen_at DESC`,
-        [userId],
+          WHERE s.user_id = $1
+            AND s.expires_at > now()
+            AND s.last_seen_at > now() - ($2::bigint * interval '1 millisecond')
+          ORDER BY (s.id = $3::uuid) DESC, s.last_seen_at DESC
+          LIMIT 25`,
+        [userId, SESSION_IDLE_MS, currentSessionId ?? null],
       );
       return result.rows.map((row) => ({
         id: row.id,
@@ -532,6 +535,17 @@ export function createUserStore({ legacyFile, seedFile } = {}) {
         [sessionId, userId],
       );
       return Boolean(result.rows[0]);
+    },
+    async revokeOtherSessions(userId, currentSessionId) {
+      const result = await pool.query(
+        `UPDATE tanaghom.sessions
+            SET expires_at = now()
+          WHERE user_id = $1
+            AND expires_at > now()
+            AND ($2::uuid IS NULL OR id <> $2::uuid)`,
+        [userId, currentSessionId ?? null],
+      );
+      return result.rowCount ?? 0;
     },
     async revokeSessionByToken(token) {
       await pool.query("UPDATE tanaghom.sessions SET expires_at = now() WHERE token_hash = $1", [hashToken(token)]);

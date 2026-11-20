@@ -14,7 +14,7 @@ export default async function SecurityPage() {
     <div className="page-stack" dir={dir} lang={locale}>
       <SettingsNavigation />
       <SecuritySettings />
-      <SessionList copy={authCopy(locale)} />
+      <SessionList copy={authCopy(locale)} locale={locale} />
     </div>
   );
 }
