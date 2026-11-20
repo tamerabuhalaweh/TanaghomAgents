@@ -54,6 +54,17 @@ const TRUNCATED_META_NOTE = /\s*\((?:Note|ملاحظة)\s*[:：][^)\n]*…/giu;
 function stripMarkdownWrappers(raw: string): string {
   let value = raw.trim();
   value = value.replace(/^>\s*/, "").trim();
+  value = value.replace(/^\*{1,2}|\*{1,2}$/g, "").trim();
+  // Strip trailing reviewer annotations placed outside backticks/quotes on
+  // Exact Passage or Proposed Revision lines, e.g.:
+  //   `ايها العائلات` (found in strategy text)
+  //   `أيتها العائلات...` *(Note: Correcting vocative and adjective agreement).*
+  const annotatedSpan = /^(?:`([^`]+)`|«([^»]+)»|"([^"]+)"|“([^”]+)”)\s*[*_]{0,2}\((?:note|ملاحظة|found\s+in|in\s+(?:strategy|task|draft|post)|correcting|see\b)[^)\n]*\)\.?[*_.\s]*$/iu.exec(value);
+  if (annotatedSpan) {
+    value = (annotatedSpan[1] ?? annotatedSpan[2] ?? annotatedSpan[3] ?? annotatedSpan[4] ?? "").trim();
+  } else {
+    value = value.replace(/\s+[*_]{0,2}\((?:note|ملاحظة|found\s+in|in\s+(?:strategy|task|draft|post)|correcting)\b[^)\n]*\)\.?[*_.\s]*$/iu, "").trim();
+  }
   value = value.replace(/^`+|`+$/g, "").trim();
   value = value.replace(/^\*{1,2}|\*{1,2}$/g, "").trim();
   for (let pass = 0; pass < 3; pass += 1) {
@@ -257,11 +268,25 @@ function cleanupSpacing(text: string): string {
     .replace(/[ \t]+\n/g, "\n");
 }
 
+const ARABIC_DIACRITICS = /[\u064B-\u065F\u0670]/gu;
+
 function escapeRegexToken(token: string): string {
-  return token
-    .replace(/[.*+?^${}()|[\]\\]/g, "\\$&")
-    .replace(/["“”]/gu, '["“”]')
-    .replace(/['’]/gu, "['’]");
+  const base = token.replace(ARABIC_DIACRITICS, "");
+  let out = "";
+  for (const ch of base) {
+    if (/[اأإآٱ]/u.test(ch)) {
+      out += "[اأإآٱ][\\u064B-\\u065F\\u0670]*";
+    } else if (/[\u0621-\u064A\u0671-\u06D3]/u.test(ch)) {
+      out += `${ch}[\\u064B-\\u065F\\u0670]*`;
+    } else if (/["“”]/u.test(ch)) {
+      out += '["“”]';
+    } else if (/['’]/u.test(ch)) {
+      out += "['’]";
+    } else {
+      out += ch.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    }
+  }
+  return out;
 }
 
 function findMatchSpan(document: string, coreTarget: string): { index: number; length: number; matched: string } | null {
@@ -304,12 +329,14 @@ function overlapAwareReplaceOnce(document: string, coreExact: string, corePropos
   const target = span.matched;
   let effectiveProposed = coreProposed;
 
-  // Case A: proposed revision includes preceding words that already sit immediately before the match
-  // (e.g. exact: "المتوفرة لديكم", proposed: "والأجهزة الذكية المتوفرة في متجرنا.").
+  // Case A: proposed revision includes preceding words or the Arabic definite
+  // article "ال" that already sits immediately before the match
+  // (e.g. exact: "متوفرة لديَنَا", proposed: "المتوفرة لدينا").
   const before = document.slice(Math.max(0, replaceStart - 80), replaceStart);
   let bestPrefix = 0;
-  for (let len = Math.min(before.length, effectiveProposed.length - 1); len >= 3; len -= 1) {
+  for (let len = Math.min(before.length, effectiveProposed.length - 1); len >= 2; len -= 1) {
     const candidate = effectiveProposed.slice(0, len);
+    if (len === 2 && candidate !== "ال") continue;
     if (before.endsWith(candidate) && (len === before.length || /\s/u.test(before[before.length - len - 1]) || /\s/u.test(candidate[0]))) {
       bestPrefix = len;
       break;
@@ -492,6 +519,25 @@ export function applyWorkspaceReviewCorrections<T extends ReviewableStep>(steps:
     if (finalDocument !== original) {
       updatedDocs.set(step.sequence, finalDocument);
       if (stepApplied.length) perStepApplied.set(step.sequence, stepApplied);
+    }
+  }
+
+  // If a duplicate or narrower correction (e.g. "ايها العائلات" -> "أيتها العائلات")
+  // was already satisfied by an earlier broader replacement on Task 1 or Task 2,
+  // do not report it as unresolved.
+  for (const item of parsed.items) {
+    if (appliedIds.has(item.id) || item.action !== "replace" || !item.proposed) continue;
+    const coreExact = stripEllipses(item.exact);
+    const coreProposed = stripEllipses(item.proposed);
+    if (!coreExact || !coreProposed) continue;
+    for (const step of steps) {
+      if (step.profile_code !== "social_media_strategist" && step.profile_code !== "content_creator") continue;
+      const doc = updatedDocs.get(step.sequence) ?? readStepDocument(step);
+      if (!doc) continue;
+      if (findMatchSpan(doc, coreExact) === null && findMatchSpan(doc, coreProposed) !== null) {
+        appliedIds.add(item.id);
+        break;
+      }
     }
   }
 
