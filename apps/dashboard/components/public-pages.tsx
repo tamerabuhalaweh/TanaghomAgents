@@ -9,7 +9,12 @@ import { formatNumber } from "@/lib/i18n/format";
 
 type Locale = CreativeLocale;
 
-function PublicHeader({ locale }: { locale: Locale }) {
+function AppNavLink({ appOrigin, path, className, children }: { appOrigin: string; path: string; className?: string; children: React.ReactNode }) {
+  if (appOrigin) return <a className={className} href={`${appOrigin}${path}`}>{children}</a>;
+  return <Link className={className} href={path}>{children}</Link>;
+}
+
+function PublicHeader({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <header className="public-header">
@@ -24,14 +29,14 @@ function PublicHeader({ locale }: { locale: Locale }) {
       </nav>
       <div className="public-actions">
         <div className="public-locale"><LocaleToggle locale={locale} /></div>
-        <Link className="public-signin" href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
-        <Link className="public-button public-button-small" href="/signup">{ar ? "ابدأ الآن" : "Get started"}</Link>
+        <AppNavLink appOrigin={appOrigin} className="public-signin" path="/login">{ar ? "تسجيل الدخول" : "Sign in"}</AppNavLink>
+        <AppNavLink appOrigin={appOrigin} className="public-button public-button-small" path="/signup">{ar ? "ابدأ الآن" : "Get started"}</AppNavLink>
       </div>
     </header>
   );
 }
 
-function PublicFooter({ locale }: { locale: Locale }) {
+function PublicFooter({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <footer className="public-footer">
@@ -43,7 +48,7 @@ function PublicFooter({ locale }: { locale: Locale }) {
         <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
         <Link href="/privacy">{ar ? "الخصوصية" : "Privacy"}</Link>
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
-        <Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
+        <AppNavLink appOrigin={appOrigin} path="/login">{ar ? "تسجيل الدخول" : "Sign in"}</AppNavLink>
       </nav>
       <p className="public-copyright">{ar ? `© ${new Date().getFullYear()} إعلاني` : `© ${new Date().getFullYear()} E3lani`}</p>
     </footer>
@@ -72,7 +77,7 @@ const tiers = [
   },
 ] as const;
 
-function PricingCards({ locale, detailed = false, launch100Active = true }: { locale: Locale; detailed?: boolean; launch100Active?: boolean }) {
+function PricingCards({ locale, detailed = false, launch100Active = true, appOrigin = "" }: { locale: Locale; detailed?: boolean; launch100Active?: boolean; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <div className={`public-pricing-grid ${detailed ? "public-pricing-detailed" : ""}`}>
@@ -89,9 +94,9 @@ function PricingCards({ locale, detailed = false, launch100Active = true }: { lo
               <strong dir={ar ? "rtl" : "ltr"}>{ar ? `${formatNumber(launch100Active ? tier.promo : tier.list, "ar")} دولارًا` : `$${launch100Active ? tier.promo : tier.list}`}</strong><span>{ar ? "شهرياً" : "per month"}</span>
             </div>
             <ul>{text.features.map((feature) => <li key={feature}><Check size={16} aria-hidden="true" />{feature}</li>)}</ul>
-            <Link className={tier.id === "growth" ? "public-button" : "public-button public-button-outline"} href="/signup">
+            <AppNavLink appOrigin={appOrigin} className={tier.id === "growth" ? "public-button" : "public-button public-button-outline"} path="/signup">
               {ar ? "ابدأ بمساحة عملك" : "Start your workspace"}<ArrowRight size={16} />
-            </Link>
+            </AppNavLink>
           </article>
         );
       })}
@@ -99,19 +104,19 @@ function PricingCards({ locale, detailed = false, launch100Active = true }: { lo
   );
 }
 
-export function PublicLandingPage({ locale, launch100Active = true, cohortFull = false }: { locale: Locale; launch100Active?: boolean; cohortFull?: boolean }) {
+export function PublicLandingPage({ locale, launch100Active = true, cohortFull = false, appOrigin = "" }: { locale: Locale; launch100Active?: boolean; cohortFull?: boolean; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <main className="public-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
-      <PublicHeader locale={locale} />
+      <PublicHeader locale={locale} appOrigin={appOrigin} />
       <section className="public-hero">
         <div className="public-hero-copy">
           <p className="public-eyebrow"><Sparkles size={15} aria-hidden="true" />{ar ? "ذكاء اصطناعي تحت إشرافك" : "AI with your hand on the wheel"}</p>
           <h1>{ar ? "حملات أسرع. وكل قرار يبقى بيدك." : "Campaigns move faster. Every decision stays in your hands."}</h1>
           <p className="public-hero-lede">{ar ? "إعلاني هو فريقك التسويقي بالذكاء الاصطناعي. يخطط لحملاتك، ويكتب محتواك، ويجهّز كل منشور — ثم ينتظر موافقتك. لا يُنشر شيء من دونك. بالإنجليزية والعربية، في مساحة عمل واحدة، وبسعر ثابت واحد." : "E3lani is your AI marketing team. It plans your campaigns, writes your content, and prepares every post — then waits for your approval. Nothing goes live without you. In English and Arabic, in one workspace, for one flat price."}</p>
           <div className="public-hero-actions">
-            <Link className="public-button" href="/signup">{ar ? "أنشئ مساحة عملك" : "Create your workspace"}<ArrowRight size={17} /></Link>
-            <Link className="public-button public-button-outline" href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
+            <AppNavLink appOrigin={appOrigin} className="public-button" path="/signup">{ar ? "أنشئ مساحة عملك" : "Create your workspace"}<ArrowRight size={17} /></AppNavLink>
+            <AppNavLink appOrigin={appOrigin} className="public-button public-button-outline" path="/login">{ar ? "تسجيل الدخول" : "Sign in"}</AppNavLink>
           </div>
           <p className="public-trust"><ShieldCheck size={18} aria-hidden="true" />{ar ? <>ابدأ بحملة ذكاء اصطناعي مجانية (دون بطاقة) · موافقة بشرية في كل باقة · الترقية تبدأ من <bdi>{formatNumber(15, "ar")} دولارًا</bdi> شهريًا برمز <bdi dir="ltr">LAUNCH100</bdi></> : <>Start with 1 free AI campaign (no card required) · Human approval on every plan · Upgrade from <bdi dir="ltr">$15/mo</bdi> with <bdi dir="ltr">LAUNCH100</bdi></>}</p>
         </div>
@@ -204,7 +209,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
           <p className="public-eyebrow">{ar ? "أسعار واضحة" : "Simple pricing"}</p>
           <h2>{ar ? "ابدأ صغيراً، وتوسّع عندما ينمو فريقك." : "Start small. Scale when the work does."}</h2>
         </div>
-        <PricingCards locale={locale} launch100Active={launch100Active} />
+        <PricingCards locale={locale} launch100Active={launch100Active} appOrigin={appOrigin} />
         <aside className="public-sandbox-callout public-sandbox-landing">
           <ShieldCheck size={20} aria-hidden="true" />
           <div><strong>{ar ? "تجربة مجانية لحملة متكاملة" : "Start with a Free 1-Campaign Sandbox"}</strong><p>{ar ? "احصل على حزمة حملة كاملة، وثلاث عمليات توليد بالذكاء الاصطناعي، دون ربط قنوات اجتماعية حقيقية. وارتقِ عندما تكون جاهزًا." : "One complete AI Campaign Work Pack and three AI runs, without live social channels. Upgrade when you are ready."}</p></div>
@@ -225,25 +230,25 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
 
       <section className="public-cta">
         <div><h2>{ar ? "جاهز لترى فريقك يعمل بتكامل؟" : "Ready to see your team work in step?"}</h2><p>{ar ? "أنشئ مساحة عملك، وأضف هويتك، وابدأ أول موجز اليوم." : "Create your workspace, add your brand, and start your first brief today."}</p></div>
-        <Link className="public-button" href="/signup">{ar ? "ابدأ الآن" : "Get started"}<ArrowRight size={17} /></Link>
+        <AppNavLink appOrigin={appOrigin} className="public-button" path="/signup">{ar ? "ابدأ الآن" : "Get started"}<ArrowRight size={17} /></AppNavLink>
       </section>
-      <PublicFooter locale={locale} />
+      <PublicFooter locale={locale} appOrigin={appOrigin} />
     </main>
   );
 }
 
-export function PublicPricingPage({ locale, launch100Active = true, cohortFull = false }: { locale: Locale; launch100Active?: boolean; cohortFull?: boolean }) {
+export function PublicPricingPage({ locale, launch100Active = true, cohortFull = false, appOrigin = "" }: { locale: Locale; launch100Active?: boolean; cohortFull?: boolean; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <main className="public-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
-      <PublicHeader locale={locale} />
+      <PublicHeader locale={locale} appOrigin={appOrigin} />
       <section className="public-inner-hero">
         <p className="public-eyebrow">{ar ? "الأسعار" : "Pricing"}</p>
         <h1>{ar ? "مساحة عمل واحدة. خطط تنمو معك." : "One workspace. Plans that grow with you."}</h1>
         <p>{ar ? "كل خطة تشمل المحتوى العربي والإنجليزي، والاعتماد البشري، وسجل التدقيق. لا مفاجآت في الفواتير." : "Every plan includes Arabic and English content, human approval and the audit trail. No billing surprises."}</p>
       </section>
       <section className="public-section">
-        <PricingCards locale={locale} detailed launch100Active={launch100Active} />
+        <PricingCards locale={locale} detailed launch100Active={launch100Active} appOrigin={appOrigin} />
         <aside className="public-sandbox-callout">
           <ShieldCheck size={20} aria-hidden="true" />
           <div><strong>{ar ? "تجربة مجانية لحملة متكاملة" : "Free 1-Campaign Sandbox"}</strong><p>{ar ? "ابدأ بتجربة مجانية بدون التزام، ثم اختر الباقة المناسبة لك. وتتم عملية الدفع بالكامل عبر Stripe بأمان." : "Start with one free campaign, no commitment, then choose the plan that fits you. Checkout is handled securely by Stripe."}</p></div>
@@ -258,16 +263,16 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
         <details><summary>{ar ? "هل تنشرون تلقائياً؟" : "Do you publish automatically?"}</summary><p>{ar ? "لا. كل مخرج يبقى مسودة حتى يعتمده إنسان. وحتى النشر يمر عبر قنواتك وإعداداتك." : "No. Every output stays a draft until a person approves it. Publishing still follows your channels and settings."}</p></details>
         <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولارًا للمقعد) وHootsuite (من نحو 399 دولارًا للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without paying for extra seats; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
       </section>
-      <PublicFooter locale={locale} />
+      <PublicFooter locale={locale} appOrigin={appOrigin} />
     </main>
   );
 }
 
-export function PublicPrivacyPage({ locale }: { locale: Locale }) {
+export function PublicPrivacyPage({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <main className="public-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
-      <PublicHeader locale={locale} />
+      <PublicHeader locale={locale} appOrigin={appOrigin} />
       <article className="public-document">
         <p className="public-eyebrow">{ar ? "الخصوصية" : "Privacy"}</p>
         <h1>{ar ? "بياناتك، وقنواتك، وتحت سيطرتك." : "Your data, your channels, under your control."}</h1>
@@ -290,16 +295,16 @@ export function PublicPrivacyPage({ locale }: { locale: Locale }) {
         <p>{ar ? "يمكنك طلب الوصول إلى بياناتك أو تصحيحها أو حذفها، وسحب إذن أي قناة. نستجيب للطلبات ضمن المدة التي يفرضها القانون المعمول به." : "You can request access to, correction of, or deletion of your data, and withdraw consent for any channel. We respond within the period required by applicable law."}</p>
         <p className="public-document-note">{ar ? "آخر تحديث: 14 نوفمبر 2026." : "Last updated: 14 November 2026."}</p>
       </article>
-      <PublicFooter locale={locale} />
+      <PublicFooter locale={locale} appOrigin={appOrigin} />
     </main>
   );
 }
 
-export function PublicTermsPage({ locale }: { locale: Locale }) {
+export function PublicTermsPage({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <main className="public-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
-      <PublicHeader locale={locale} />
+      <PublicHeader locale={locale} appOrigin={appOrigin} />
       <article className="public-document">
         <p className="public-eyebrow">{ar ? "الشروط" : "Terms"}</p>
         <h1>{ar ? "شروط استخدام واضحة." : "Clear terms for using E3lani."}</h1>
@@ -327,7 +332,7 @@ export function PublicTermsPage({ locale }: { locale: Locale }) {
         <p>{ar ? "قد نحدّث هذه الشروط لتعكس تغييرات في المنصة أو القانون، وسنوضح تاريخ التحديث. للأسئلة، تواصل مع مشغّل إعلاني الذي أنشأ مساحتك." : "We may update these terms to reflect platform or legal changes and will show the update date. For questions, contact the E3lani operator who provisioned your workspace."}</p>
         <p className="public-document-note">{ar ? "آخر تحديث: 14 نوفمبر 2026." : "Last updated: 14 November 2026."}</p>
       </article>
-      <PublicFooter locale={locale} />
+      <PublicFooter locale={locale} appOrigin={appOrigin} />
     </main>
   );
 }

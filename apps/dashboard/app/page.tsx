@@ -1,4 +1,5 @@
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
+import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
 
 import { AppShell } from "@/components/app-shell";
@@ -7,6 +8,7 @@ import { OverviewDashboard } from "@/components/overview-dashboard";
 import { PublicLandingPage } from "@/components/public-pages";
 import { LocaleProvider } from "@/lib/client/use-locale";
 import { creativeLocale } from "@/lib/creative-locale";
+import { getAppOrigin, isAppHost, isMarketingHost, isSplitDomainMode } from "@/lib/public-urls";
 import { requireTenant } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { loadPublicLaunchOffer } from "@/lib/server/launch-control";
@@ -27,17 +29,32 @@ async function hasLiveSession() {
   }
 }
 
+async function renderLanding(locale: "en" | "ar", appOrigin: string) {
+  let launch100Active = true;
+  let cohortFull = false;
+  try {
+    const launch = await loadPublicLaunchOffer(database());
+    launch100Active = launch.launch100_active;
+    cohortFull = launch.cohort_full;
+  } catch {}
+  return <PublicLandingPage locale={locale} launch100Active={launch100Active} cohortFull={cohortFull} appOrigin={appOrigin} />;
+}
+
 export default async function OverviewPage() {
   const { locale } = await creativeLocale();
+  const split = isSplitDomainMode();
+  if (split) {
+    const headerList = await headers();
+    const host = headerList.get("x-forwarded-host") || headerList.get("host");
+    if (isMarketingHost(host)) {
+      return renderLanding(locale, getAppOrigin());
+    }
+    if (isAppHost(host) && !(await hasLiveSession())) {
+      redirect("/login");
+    }
+  }
   if (!(await hasLiveSession())) {
-    let launch100Active = true;
-    let cohortFull = false;
-    try {
-      const launch = await loadPublicLaunchOffer(database());
-      launch100Active = launch.launch100_active;
-      cohortFull = launch.cohort_full;
-    } catch {}
-    return <PublicLandingPage locale={locale} launch100Active={launch100Active} cohortFull={cohortFull} />;
+    return renderLanding(locale, split ? getAppOrigin() : "");
   }
   return (
     <LocaleProvider initialLocale={locale}>

@@ -7,6 +7,7 @@ import { LocaleToggle } from "@/components/creative/locale-toggle";
 import { SignupForm } from "@/components/signup-form";
 import { creativeLocale } from "@/lib/creative-locale";
 import { authCopy } from "@/lib/i18n/auth";
+import { getMarketingOrigin, isSplitDomainMode } from "@/lib/public-urls";
 
 export const metadata: Metadata = { title: "Create workspace" };
 
@@ -14,6 +15,7 @@ export default async function SignupPage() {
   const { locale, dir } = await creativeLocale();
   const copy = authCopy(locale);
   const ar = locale === "ar";
+  const marketingOrigin = isSplitDomainMode() ? getMarketingOrigin() : "";
   const benefits = ar
     ? ["هويات بصرية وقوالب", "المسودات والموافقات والنشر", "الحملات والعملاء المحتملون", "معرفة يثق بها فريقك"]
     : ["Visual identities and templates", "Drafts, approvals, and publishing", "Campaigns and leads", "Knowledge your team can trust"];
@@ -21,10 +23,17 @@ export default async function SignupPage() {
   return (
     <main className="login-page auth-page signup-page" dir={dir} lang={locale}>
       <section className="login-context" aria-labelledby="signup-context-title">
-        <Link className="brand login-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
-          <BrandMark />
-          <span>{ar ? "إعلاني" : "E3lani"}</span>
-        </Link>
+        {marketingOrigin ? (
+          <a className="brand login-brand" href={`${marketingOrigin}/`} aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
+            <BrandMark />
+            <span>{ar ? "إعلاني" : "E3lani"}</span>
+          </a>
+        ) : (
+          <Link className="brand login-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
+            <BrandMark />
+            <span>{ar ? "إعلاني" : "E3lani"}</span>
+          </Link>
+        )}
         <div className="login-promise">
           <p className="login-context-label">{ar ? "إعلاني لمساحات العمل" : "E3lani for teams"}</p>
           <h1 id="signup-context-title">{ar ? "أنشئ مساحة عملك الأولى" : "Create your first workspace."}</h1>
@@ -46,10 +55,17 @@ export default async function SignupPage() {
       <section className="login-access" aria-labelledby="signup-title">
         <div className="login-panel">
           <div className="auth-locale-row"><LocaleToggle locale={locale} /></div>
-          <Link className="login-mobile-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
-            <BrandMark />
-            <span>{ar ? "إعلاني" : "E3lani"}</span>
-          </Link>
+          {marketingOrigin ? (
+            <a className="login-mobile-brand" href={`${marketingOrigin}/`} aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
+              <BrandMark />
+              <span>{ar ? "إعلاني" : "E3lani"}</span>
+            </a>
+          ) : (
+            <Link className="login-mobile-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
+              <BrandMark />
+              <span>{ar ? "إعلاني" : "E3lani"}</span>
+            </Link>
+          )}
           <p className="login-access-label">{copy.signupEyebrow}</p>
           <h2 id="signup-title">{copy.signupTitle}</h2>
           <p className="login-intro">{copy.signupLede}</p>
@@ -58,9 +74,19 @@ export default async function SignupPage() {
             {copy.haveAccount} <Link href="/login">{copy.signIn}</Link>
           </p>
           <nav className="auth-legal-links" aria-label={ar ? "روابط الأسعار والقانون" : "Legal and pricing links"}>
-            <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
-            <Link href="/privacy">{ar ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
-            <Link href="/terms">{ar ? "شروط الخدمة" : "Terms of Service"}</Link>
+            {marketingOrigin ? (
+              <>
+                <a href={`${marketingOrigin}/pricing`}>{ar ? "الأسعار" : "Pricing"}</a>
+                <a href={`${marketingOrigin}/privacy`}>{ar ? "سياسة الخصوصية" : "Privacy Policy"}</a>
+                <a href={`${marketingOrigin}/terms`}>{ar ? "شروط الخدمة" : "Terms of Service"}</a>
+              </>
+            ) : (
+              <>
+                <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
+                <Link href="/privacy">{ar ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
+                <Link href="/terms">{ar ? "شروط الخدمة" : "Terms of Service"}</Link>
+              </>
+            )}
           </nav>
         </div>
       </section>
