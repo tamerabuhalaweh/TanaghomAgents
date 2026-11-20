@@ -581,8 +581,9 @@ function PostCard({
           fontWeight="700"
           textAnchor={rtl ? "end" : "start"}
           direction={rtl ? "rtl" : "ltr"}
+          xmlSpace="preserve"
         >
-          {headlineLines.map((line, lineIndex) => (
+          {svgTextRuns(headlineLines).map((line, lineIndex) => (
             <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : headlineLineHeight}>{line}</tspan>
           ))}
         </text>
@@ -595,8 +596,9 @@ function PostCard({
           fontSize={bodySize}
           textAnchor={rtl ? "end" : "start"}
           direction={rtl ? "rtl" : "ltr"}
+          xmlSpace="preserve"
         >
-          {bodyLines.map((line, lineIndex) => (
+          {svgTextRuns(bodyLines).map((line, lineIndex) => (
             <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : bodyLineHeight}>{line}</tspan>
           ))}
         </text>
@@ -613,8 +615,9 @@ function PostCard({
               textAnchor="middle"
               dominantBaseline="central"
               direction={rtl ? "rtl" : "ltr"}
+              xmlSpace="preserve"
             >
-              {ctaLines.map((line, lineIndex) => (
+              {svgTextRuns(ctaLines).map((line, lineIndex) => (
                 <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 - 280 : 88 + 280} dy={lineIndex === 0 ? -((ctaLines.length - 1) * ctaLineHeight) / 2 : ctaLineHeight}>{line}</tspan>
               ))}
             </text>
@@ -637,6 +640,19 @@ function tokensOn(hex: string) {
   const full = value.length === 3 ? value.split("").map((part) => part + part).join("") : value.slice(0, 6);
   const [r, g, b] = [0, 2, 4].map((offset) => parseInt(full.slice(offset, offset + 2), 16) || 0);
   return (r * 299 + g * 587 + b * 114) / 1000 < 140;
+}
+
+// SVG concatenates adjacent <tspan> runs with no separator, so a wrapped line
+// must keep its trailing space or copied and screen-reader text loses the word
+// boundary ("peacefulsanctuary"). The space is significant, hence
+// xmlSpace="preserve" on every card <text>.
+export function svgTextRuns(lines: string[]) {
+  return lines.map((line, index) => (index < lines.length - 1 ? `${line} ` : line));
+}
+
+/** Wrapped card lines before they become SVG text runs. */
+export function wrapCardText(text: string, size: number) {
+  return wrap(text, size);
 }
 
 function wrap(text: string, size: number) {

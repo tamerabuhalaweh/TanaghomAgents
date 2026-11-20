@@ -90,6 +90,13 @@ export interface OnboardingCopy {
   knowledgeSaving: string;
   knowledgeSaved: string;
   knowledgeExisting: string;
+  knowledgeSavedListTitle: string;
+  knowledgeStatusDraft: string;
+  knowledgeStatusReviewed: string;
+  knowledgeStatusApproved: string;
+  knowledgeStatusActive: string;
+  knowledgeStatusRevoked: string;
+  knowledgeStatusSuperseded: string;
   knowledgeError: string;
   knowledgeLoading: string;
   knowledgeOpen: string;
@@ -188,6 +195,13 @@ const en: OnboardingCopy = {
   knowledgeSaving: "Saving draft…",
   knowledgeSaved: "Draft saved. Review and activate it in Knowledge before agents can use it.",
   knowledgeExisting: "Your knowledge base already has sources. This step adds one more draft; you can continue the catalogue in Knowledge.",
+  knowledgeSavedListTitle: "Saved knowledge in your catalogue",
+  knowledgeStatusDraft: "Draft — awaiting review",
+  knowledgeStatusReviewed: "Reviewed — awaiting activation",
+  knowledgeStatusApproved: "Approved",
+  knowledgeStatusActive: "Active",
+  knowledgeStatusRevoked: "Revoked",
+  knowledgeStatusSuperseded: "Replaced by a newer version",
   knowledgeError: "The draft could not be saved. Check the source key, title, and content, then try again.",
   knowledgeLoading: "Checking your knowledge base…",
   knowledgeOpen: "Open knowledge",
@@ -307,6 +321,13 @@ const ar: OnboardingCopy = {
   knowledgeSaving: "جارٍ حفظ المسودة…",
   knowledgeSaved: "تم حفظ المسودة. راجعها وفعّلها في المعرفة قبل أن يستخدمها الوكلاء.",
   knowledgeExisting: "تحتوي قاعدة معرفتك على مصادر بالفعل. تضيف هذه الخطوة مسودة أخرى؛ يمكنك متابعة الدليل في المعرفة.",
+  knowledgeSavedListTitle: "المعرفة المحفوظة في دليلك",
+  knowledgeStatusDraft: "مسودة — بانتظار المراجعة",
+  knowledgeStatusReviewed: "تمت مراجعتها — بانتظار التفعيل",
+  knowledgeStatusApproved: "معتمدة",
+  knowledgeStatusActive: "نشطة",
+  knowledgeStatusRevoked: "ملغاة",
+  knowledgeStatusSuperseded: "استُبدلت بنسخة أحدث",
   knowledgeError: "تعذّر حفظ المسودة. تحقّق من المعرّف المرجعي والعنوان والمحتوى وحاول مرة أخرى.",
   knowledgeLoading: "جارٍ التحقق من قاعدة معرفتك…",
   knowledgeOpen: "فتح المعرفة",

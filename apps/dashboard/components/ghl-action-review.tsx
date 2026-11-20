@@ -14,6 +14,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { LiveActivity } from "./live-activity";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -61,7 +62,7 @@ interface ReviewPayload {
 }
 
 function title(item: ActionItem) {
-  return `${item.action_type.replaceAll("_", " ")} · ${item.lead_name || "GHL contact"}`;
+  return `${item.action_type.replaceAll("_", " ")} · ${item.lead_name || "CRM contact"}`;
 }
 
 function timestamp(value: string | null) {
@@ -143,12 +144,12 @@ export function GhlActionReview() {
     <PageHeading title="Agent action review" description={description} />
     {stale && state === "ready" ? <div className="action-review-stale" role="status"><Clock3 size={17} /><span>This queue snapshot may be stale. Refresh before deciding.</span><button className="ghost-button compact-button" onClick={() => void load()}><RefreshCw size={15} /> Refresh</button></div> : null}
     {feedback ? <p className="integration-feedback" role="status" aria-live="polite">{feedback}</p> : null}
-    {state === "loading" ? <div className="action-review-shell" aria-busy="true" aria-label="Loading GHL action review"><div className="action-review-queue"><div className="state-skeleton" /><div className="state-skeleton" /><div className="state-skeleton" /></div><div className="action-review-detail"><div className="state-skeleton state-skeleton-title" /><div className="state-skeleton state-skeleton-block" /></div></div> : null}
+    {state === "loading" ? <div className="action-review-shell" aria-busy="true" aria-label="Loading agent action review"><div className="action-review-queue"><div className="state-skeleton" /><div className="state-skeleton" /><div className="state-skeleton" /></div><div className="action-review-detail"><div className="state-skeleton state-skeleton-title" /><div className="state-skeleton state-skeleton-block" /></div></div> : null}
     {state === "forbidden" ? <ReviewState icon={<ShieldCheck />} title="Review access required" copy="Only accepted E3lani users can view this organization’s governed action queue." /> : null}
     {state === "error" ? <ReviewState icon={<TriangleAlert />} title="Action review is unavailable" copy="No decision was changed. Restore the protected database connection, then retry." action={<button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
-    {state === "ready" && payload && !payload.items.length ? <ReviewState icon={<CheckCircle2 />} title="Action queue is clear" copy={feedback || "No GHL action needs human approval or reconciliation. Automatic work remains bounded by organization policy."} /> : null}
+    {state === "ready" && payload && !payload.items.length ? <ReviewState icon={<CheckCircle2 />} title="Action queue is clear" copy={feedback || "No CRM action needs human approval or reconciliation. Actions prepared in GoHighLevel stay bounded by organization policy until a person decides here."} /> : null}
     {state === "ready" && payload && active ? <div className="action-review-shell">
-      <aside className="action-review-queue" aria-label="GHL actions requiring attention">
+      <aside className="action-review-queue" aria-label="CRM actions requiring attention">
         <header><div><h2>Needs attention</h2><p>{payload.items.length} governed {payload.items.length === 1 ? "action" : "actions"}</p></div><button className="icon-button" aria-label="Refresh action queue" onClick={() => void load()}><RefreshCw size={17} /></button></header>
         <div>{payload.items.map((item) => <button key={item.id} type="button" className={`action-review-row ${item.id === active.id ? "action-review-row-active" : ""}`} onClick={() => { setActiveId(item.id); setReason(""); setProviderReference(""); }}>
           <span className={item.status === "indeterminate" ? "action-risk-icon action-risk-icon-danger" : "action-risk-icon"}>{item.status === "indeterminate" ? <AlertOctagon size={17} /> : <ShieldCheck size={17} />}</span>
@@ -164,6 +165,10 @@ export function GhlActionReview() {
         {canDecide ? <section className="action-decision" aria-labelledby="action-decision-title"><div><h3 id="action-decision-title">{active.status === "indeterminate" ? "Record verified provider outcome" : "Human decision"}</h3><p>Your reason becomes immutable audit evidence.</p></div><label htmlFor="action-review-reason">Required reason<textarea id="action-review-reason" value={reason} maxLength={1000} onChange={(event) => setReason(event.target.value)} placeholder={active.status === "indeterminate" ? "How was the provider result verified?" : "Why is this action approved or rejected?"} /></label>{active.status === "indeterminate" ? <label htmlFor="action-provider-reference">Provider reference <span>Optional</span><input id="action-provider-reference" value={providerReference} maxLength={300} onChange={(event) => setProviderReference(event.target.value)} placeholder="Message, appointment, or opportunity ID" /></label> : null}<div className="action-decision-buttons">{active.status === "awaiting_approval" ? <><button className="ghost-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("rejected")}><X size={16} /> Reject action</button><button className="primary-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("approved")}><Check size={16} /> Approve action</button></> : <><button className="secondary-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("confirmed_not_applied")}><X size={16} /> Confirm not applied</button><button className="primary-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("confirmed_succeeded")}><Check size={16} /> Confirm success</button></>}</div></section> : <section className="action-readonly"><ShieldCheck size={18} /><p>Your role can inspect evidence, but only an owner or reviewer may decide or reconcile an action.</p></section>}
       </article>
     </div> : null}
+    <section className="action-history" aria-labelledby="action-history-title">
+      <div className="section-heading"><div><h2 id="action-history-title">Agent action history</h2><p>Every recorded agent and human action for your workspace, newest first. Times follow your browser’s timezone.</p></div></div>
+      <LiveActivity />
+    </section>
   </div>;
 }
 

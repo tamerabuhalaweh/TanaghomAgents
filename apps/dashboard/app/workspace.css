@@ -74,7 +74,7 @@
 .aw-tabs button[aria-selected=true] { background:var(--primary-soft);color:var(--primary);font-weight:600; }
 .aw-artifact-title { padding:var(--space-xl);border-block-end:1px solid var(--border); }
 .aw-artifact-title p { color:var(--muted);font-size:.875rem;margin-block-start:var(--space-xs); }
-.aw-document { padding:var(--space-xl);max-inline-size:70ch;white-space:pre-wrap;overflow-wrap:anywhere;font-size:1rem;line-height:1.7; }
+.aw-document { padding:var(--space-xl);max-inline-size:70ch;overflow-wrap:anywhere;font-size:1rem;line-height:1.7; }
 .aw-artifact-meta { display:flex;flex-direction:column;gap:var(--space-sm);padding:var(--space-lg) var(--space-xl);background:var(--surface);font-size:.75rem;color:var(--muted);overflow-wrap:anywhere; }
 .aw-context { display:flex;flex-direction:column;gap:var(--space-lg);padding:var(--space-xl); }
 .aw-context details { border-block-end:1px solid var(--border);padding-block-end:var(--space-md); }
