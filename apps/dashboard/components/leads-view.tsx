@@ -56,7 +56,7 @@ export function LeadsView() {
         ? text("GHL synchronization is installed but still locked by the platform activation gate.", "مزامنة GHL مثبتة لكنها ما زالت مقفلة بواسطة بوابة تفعيل المنصة.")
         : code === "ghl_contact_sync_not_ready"
           ? text("Connect and verify GoHighLevel before synchronizing this lead.", "اربط GoHighLevel وتحقق منه قبل مزامنة هذا العميل المحتمل.")
-          : text("Tanaghom could not queue this CRM contact.", "تعذر على تناغم جدولة جهة الاتصال هذه في نظام إدارة العملاء."));
+          : text("E3lani could not queue this CRM contact.", "تعذر على إعلاني جدولة جهة الاتصال هذه في نظام إدارة العملاء."));
     } finally {
       setSyncing(null);
     }

@@ -166,7 +166,7 @@ export async function listNotificationDestinations(request: NextRequest) {
     delivery,
     destinations: destinations.rows.map(publicDestination),
     channel_definitions: [
-      { channel: "email", label: "Email", target_label: "Alert email address", target_example: "operations@example.com", credential_source: "Tanaghom mail runtime" },
+      { channel: "email", label: "Email", target_label: "Alert email address", target_example: "operations@example.com", credential_source: "E3lani mail runtime" },
       { channel: "slack", label: "Slack", target_label: "Slack incoming webhook", target_example: "https://hooks.slack.com/services/…", credential_source: "Customer Slack workspace" },
       { channel: "whatsapp", label: "WhatsApp", target_label: "Escalation phone number", target_example: "+962790000000", credential_source: "Connected GoHighLevel account" },
     ],

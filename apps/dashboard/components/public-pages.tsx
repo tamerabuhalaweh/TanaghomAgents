@@ -13,9 +13,9 @@ function PublicHeader({ locale }: { locale: Locale }) {
   const ar = locale === "ar";
   return (
     <header className="public-header">
-      <Link className="public-brand" href="/" aria-label="Tanaghom">
+      <Link className="public-brand" href="/" aria-label={ar ? "إعلاني" : "E3lani"}>
         <BrandMark />
-        <span>{ar ? "تناغم" : "Tanaghom"}</span>
+        <span>{ar ? "إعلاني" : "E3lani"}</span>
       </Link>
       <nav className="public-nav" aria-label={ar ? "التنقل العام" : "Public navigation"}>
         <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
@@ -36,8 +36,8 @@ function PublicFooter({ locale }: { locale: Locale }) {
   return (
     <footer className="public-footer">
       <div>
-        <Link className="public-brand" href="/"><BrandMark /><span>{ar ? "تناغم" : "Tanaghom"}</span></Link>
-        <p>{ar ? "تناغم يمنح فرق التسويق مساحة عمل ثنائية اللغة تعمل بالذكاء الاصطناعي، مع اعتماد بشري واضح لكل ما يصل إلى العملاء." : "Tanaghom gives marketing teams a bilingual AI workspace with clear human approval for everything that reaches customers."}</p>
+        <Link className="public-brand" href="/"><BrandMark /><span>{ar ? "إعلاني" : "E3lani"}</span></Link>
+        <p>{ar ? "إعلاني يمنح فرق التسويق مساحة عمل ثنائية اللغة تعمل بالذكاء الاصطناعي، مع اعتماد بشري واضح لكل ما يصل إلى العملاء." : "E3lani gives marketing teams a bilingual AI workspace with clear human approval for everything that reaches customers."}</p>
       </div>
       <nav aria-label={ar ? "روابط التذييل" : "Footer links"}>
         <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
@@ -45,7 +45,7 @@ function PublicFooter({ locale }: { locale: Locale }) {
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
         <Link href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
       </nav>
-      <p className="public-copyright">{ar ? `© ${new Date().getFullYear()} تناغم` : `© ${new Date().getFullYear()} Tanaghom`}</p>
+      <p className="public-copyright">{ar ? `© ${new Date().getFullYear()} إعلاني` : `© ${new Date().getFullYear()} E3lani`}</p>
     </footer>
   );
 }
@@ -108,7 +108,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <div className="public-hero-copy">
           <p className="public-eyebrow"><Sparkles size={15} aria-hidden="true" />{ar ? "ذكاء اصطناعي تحت إشرافك" : "AI with your hand on the wheel"}</p>
           <h1>{ar ? "حملات أسرع. وكل قرار يبقى بيدك." : "Campaigns move faster. Every decision stays in your hands."}</h1>
-          <p className="public-hero-lede">{ar ? "تناغم هو فريقك التسويقي بالذكاء الاصطناعي. يخطط لحملاتك، ويكتب محتواك، ويجهّز كل منشور — ثم ينتظر موافقتك. لا يُنشر شيء من دونك. بالإنجليزية والعربية، في مساحة عمل واحدة، وبسعر ثابت واحد." : "Tanaghom is your AI marketing team. It plans your campaigns, writes your content, and prepares every post — then waits for your approval. Nothing goes live without you. In English and Arabic, in one workspace, for one flat price."}</p>
+          <p className="public-hero-lede">{ar ? "إعلاني هو فريقك التسويقي بالذكاء الاصطناعي. يخطط لحملاتك، ويكتب محتواك، ويجهّز كل منشور — ثم ينتظر موافقتك. لا يُنشر شيء من دونك. بالإنجليزية والعربية، في مساحة عمل واحدة، وبسعر ثابت واحد." : "E3lani is your AI marketing team. It plans your campaigns, writes your content, and prepares every post — then waits for your approval. Nothing goes live without you. In English and Arabic, in one workspace, for one flat price."}</p>
           <div className="public-hero-actions">
             <Link className="public-button" href="/signup">{ar ? "أنشئ مساحة عملك" : "Create your workspace"}<ArrowRight size={17} /></Link>
             <Link className="public-button public-button-outline" href="/login">{ar ? "تسجيل الدخول" : "Sign in"}</Link>
@@ -149,13 +149,13 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
       <section className="public-section public-advantages">
         <div className="public-section-heading">
           <p className="public-eyebrow">{ar ? "لماذا تنتقل الفرق إلينا" : "Why teams switch"}</p>
-          <h2>{ar ? "ثلاثة أسباب تجعل الفرق تنتقل إلى تناغم." : "Three reasons teams switch to Tanaghom."}</h2>
+          <h2>{ar ? "ثلاثة أسباب تجعل الفرق تنتقل إلى إعلاني." : "Three reasons teams switch to E3lani."}</h2>
           <p>{ar ? "سرعة الإطلاق لا تعني التخلي عن السيطرة — ومساحة عمل مبنية للعربية منذ البداية." : "A faster launch without giving up control — and a workspace built for Arabic from the start."}</p>
         </div>
         <div className="public-advantages-grid">
           <article className="public-advantage">
             <h3>{ar ? "لا يُنشر شيء حتى تقول نعم." : "Nothing publishes until you say yes."}</h3>
-            <p>{ar ? <>لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — <bdi dir="ltr">Sprout Social</bdi> من <bdi dir="rtl">299 دولارًا</bdi> للمقعد، و<bdi dir="ltr">Hootsuite</bdi> من <bdi dir="rtl">399 دولارًا</bdi> للمستخدم شهريًا، و<bdi dir="ltr">HubSpot Enterprise</bdi> بعرض سعر — الاعتماد مشمول في كل خطط تناغم.</> : <>Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every Tanaghom plan.</>}</p>
+            <p>{ar ? <>لا يُنشر شيء من دون إنسان. وخلافاً للأدوات القائمة على المقاعد — <bdi dir="ltr">Sprout Social</bdi> من <bdi dir="rtl">299 دولارًا</bdi> للمقعد، و<bdi dir="ltr">Hootsuite</bdi> من <bdi dir="rtl">399 دولارًا</bdi> للمستخدم شهريًا، و<bdi dir="ltr">HubSpot Enterprise</bdi> بعرض سعر — الاعتماد مشمول في كل خطط إعلاني.</> : <>Nothing publishes without a person. Unlike per-seat tools — Sprout Social from $299/seat, Hootsuite from $399/user/mo, and HubSpot Enterprise by quote — approval is included in every E3lani plan.</>}</p>
           </article>
           <article className="public-advantage">
             <h3>{ar ? "مبني بالعربية. وليس مترجمًا إليها." : "Built in Arabic. Not translated into it."}</h3>
@@ -215,16 +215,16 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
 
       <section className="public-faq public-faq-landing">
         <h2>{ar ? "أسئلة الإطلاق" : "Launch questions"}</h2>
-        <details><summary>{ar ? "هل تناغم بالدعوة فقط؟" : "Is Tanaghom invite-only?"}</summary><p>{ar ? <>نبدأ بدفعة بالدعوة فقط من 20 مساحة عمل نشطة، ثم نتوسع إلى 100 مساحة إطلاق عبر قائمة الأولوية. سعر <bdi dir="ltr">LAUNCH100</bdi> مخصص لأول 100 مساحة عمل.</> : <>We start with an invite-only cohort of 20 active workspaces, then expand to 100 launch workspaces through the priority waitlist. <bdi dir="ltr">LAUNCH100</bdi> pricing is reserved for those first 100 workspaces.</>}</p></details>
+        <details><summary>{ar ? "هل إعلاني بالدعوة فقط؟" : "Is E3lani invite-only?"}</summary><p>{ar ? <>نبدأ بدفعة بالدعوة فقط من 20 مساحة عمل نشطة، ثم نتوسع إلى 100 مساحة إطلاق عبر قائمة الأولوية. سعر <bdi dir="ltr">LAUNCH100</bdi> مخصص لأول 100 مساحة عمل.</> : <>We start with an invite-only cohort of 20 active workspaces, then expand to 100 launch workspaces through the priority waitlist. <bdi dir="ltr">LAUNCH100</bdi> pricing is reserved for those first 100 workspaces.</>}</p></details>
         <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولارًا للمقعد) وHootsuite (من نحو 399 دولارًا للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
         <details><summary>{ar ? "من يملك الحملات والبيانات التي ننشئها؟" : "Who owns the campaigns and data we create?"}</summary><p>{ar ? "أنت. يبقى موجزك ومحتواك واعتماداتك ومعرفتك بالعلامة في مساحة عملك. فصل قناة تواصل يلغي رمز OAuth ويحذفه؛ ويبقى محتواك وسجل اعتمادك ملكاً لك." : "You do. Your briefs, content, approvals and brand knowledge stay in your workspace. Disconnecting a social channel revokes and purges its OAuth token; your content and approval history remain yours."}</p></details>
-        <details><summary>{ar ? "ما الذي يفعله تناغم بالضبط؟" : "What exactly does Tanaghom do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
+        <details><summary>{ar ? "ما الذي يفعله إعلاني بالضبط؟" : "What exactly does E3lani do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
         <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، بخطوط عربية أصيلة. ويُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
         <details><summary>{ar ? "هل أحتاج بطاقة للبدء؟" : "Do I need a card to start?"}</summary><p>{ar ? "ابدأ بتجربة مجانية لحملة متكاملة: حزمة حملة كاملة وثلاث عمليات توليد بالذكاء الاصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة." : "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required."}</p></details>
       </section>
 
       <section className="public-cta">
-        <div><h2>{ar ? "جاهز لترى فريقك يعمل بتناغم؟" : "Ready to see your team work in step?"}</h2><p>{ar ? "أنشئ مساحة عملك، وأضف هويتك، وابدأ أول موجز اليوم." : "Create your workspace, add your brand, and start your first brief today."}</p></div>
+        <div><h2>{ar ? "جاهز لترى فريقك يعمل بتكامل؟" : "Ready to see your team work in step?"}</h2><p>{ar ? "أنشئ مساحة عملك، وأضف هويتك، وابدأ أول موجز اليوم." : "Create your workspace, add your brand, and start your first brief today."}</p></div>
         <Link className="public-button" href="/signup">{ar ? "ابدأ الآن" : "Get started"}<ArrowRight size={17} /></Link>
       </section>
       <PublicFooter locale={locale} />
@@ -271,7 +271,7 @@ export function PublicPrivacyPage({ locale }: { locale: Locale }) {
       <article className="public-document">
         <p className="public-eyebrow">{ar ? "الخصوصية" : "Privacy"}</p>
         <h1>{ar ? "بياناتك، وقنواتك، وتحت سيطرتك." : "Your data, your channels, under your control."}</h1>
-        <p className="public-document-lede">{ar ? "توضح هذه السياسة ما يجمعه تناغم، وكيف يستخدمه، وكيف يمكنك فصل قنوات التواصل الاجتماعي وحذف رموز الوصول في أي وقت." : "This policy explains what Tanaghom collects, how it is used, and how you can disconnect social channels and purge access tokens at any time."}</p>
+        <p className="public-document-lede">{ar ? "توضح هذه السياسة ما يجمعه إعلاني، وكيف يستخدمه، وكيف يمكنك فصل قنوات التواصل الاجتماعي وحذف رموز الوصول في أي وقت." : "This policy explains what E3lani collects, how it is used, and how you can disconnect social channels and purge access tokens at any time."}</p>
 
         <h2>{ar ? "ما نجمعه" : "What we collect"}</h2>
         <p>{ar ? "بيانات الحساب ومساحة العمل، وملف النشاط التجاري، وهويتك البصرية، والمعرفة التي تضيفها، والموجزات والمخرجات التي تنشئها. وعند ربط قناة اجتماعية، نحتفظ برموز الوصول اللازمة للنشر بالنيابة عنك." : "Account and workspace details, your business profile, brand kit, knowledge you add, and the briefs and outputs you create. When you connect a social channel, we store the access tokens needed to publish on your behalf."}</p>
@@ -281,7 +281,7 @@ export function PublicPrivacyPage({ locale }: { locale: Locale }) {
 
         <h2>{ar ? "فصل القنوات الاجتماعية وحذف رموز الوصول" : "Disconnecting social channels and purging tokens"}</h2>
         <p>{ar ? "يمكنك فصل أي قناة اجتماعية في أي وقت من صفحة القنوات في الإعدادات: افتح الإعدادات، ثم القنوات، واختر القناة، ثم افصل. يؤدي الفصل إلى إلغاء صلاحية رموز OAuth وحذفها من مساحة عملك، ولا يمس محتواك أو سجل اعتمادك." : "You can disconnect any social channel at any time from the Channels page in Settings: open Settings, choose Channels, select the channel, then disconnect. Disconnecting revokes and purges its OAuth tokens from your workspace; your content and approval history remain."}</p>
-        <p>{ar ? <>رابط مباشر: <bdi dir="ltr">/settings/channels</bdi>. إذا كنت تريد حذف مساحة العمل بالكامل أو لديك سؤال عن بياناتك، تواصل مع مشغّل تناغم الذي أنشأ مساحتك.</> : <>Direct link: <bdi dir="ltr">/settings/channels</bdi>. If you want the whole workspace removed, or have a question about your data, contact the Tanaghom operator who provisioned your workspace.</>}</p>
+        <p>{ar ? <>رابط مباشر: <bdi dir="ltr">/settings/channels</bdi>. إذا كنت تريد حذف مساحة العمل بالكامل أو لديك سؤال عن بياناتك، تواصل مع مشغّل إعلاني الذي أنشأ مساحتك.</> : <>Direct link: <bdi dir="ltr">/settings/channels</bdi>. If you want the whole workspace removed, or have a question about your data, contact the E3lani operator who provisioned your workspace.</>}</p>
 
         <h2>{ar ? "المشاركة والاحتفاظ" : "Sharing and retention"}</h2>
         <p>{ar ? "نشارك البيانات فقط مع مزوّدي الخدمات اللازمين لتشغيل المنصة، وبما يفرضه القانون. نحتفظ بالبيانات طالما بقي حسابك نشطاً أو حسب ما يقتضيه الالتزام القانوني، ثم نحذفها أو نجعلها مجهولة." : "We share data only with service providers needed to operate the platform, and where law requires it. We keep data while your account is active or as required by legal obligations, then delete or anonymise it."}</p>
@@ -302,8 +302,8 @@ export function PublicTermsPage({ locale }: { locale: Locale }) {
       <PublicHeader locale={locale} />
       <article className="public-document">
         <p className="public-eyebrow">{ar ? "الشروط" : "Terms"}</p>
-        <h1>{ar ? "شروط استخدام واضحة." : "Clear terms for using Tanaghom."}</h1>
-        <p className="public-document-lede">{ar ? "تنطبق هذه الشروط على مساحة عمل تناغم التي تستخدمها. باستخدامك المنصة، فإنك توافق عليها نيابة عن نشاطك التجاري." : "These terms apply to the Tanaghom workspace you use. By using the platform, you agree to them on behalf of your business."}</p>
+        <h1>{ar ? "شروط استخدام واضحة." : "Clear terms for using E3lani."}</h1>
+        <p className="public-document-lede">{ar ? "تنطبق هذه الشروط على مساحة عمل إعلاني التي تستخدمها. باستخدامك المنصة، فإنك توافق عليها نيابة عن نشاطك التجاري." : "These terms apply to the E3lani workspace you use. By using the platform, you agree to them on behalf of your business."}</p>
 
         <h2>{ar ? "حسابك ومسؤولياتك" : "Your account and responsibilities"}</h2>
         <p>{ar ? "أنت مسؤول عن دقة بيانات نشاطك، وعن المحتوى والمعرفة التي تضيفها، وعن الحفاظ على سرية حسابات فريقك. لا ترفع بيانات غير مصرّح لك باستخدامها." : "You are responsible for the accuracy of your business details, the content and knowledge you add, and keeping your team accounts secure. Do not upload data you are not authorised to use."}</p>
@@ -312,7 +312,7 @@ export function PublicTermsPage({ locale }: { locale: Locale }) {
         <p>{ar ? "مخرجات الذكاء الاصطناعي مقترحات، وليست حقائق أو وعوداً. يبقى كل مخرج مسودة حتى يعتمده إنسان مخوّل. أنت مسؤول عن مراجعة الادعاءات والأسعار والالتزام بالأنظمة قبل النشر." : "AI outputs are proposals, not facts or promises. Every output remains a draft until an authorised person approves it. You are responsible for reviewing claims, prices and legal compliance before publishing."}</p>
 
         <h2>{ar ? "القنوات الاجتماعية" : "Social channels"}</h2>
-        <p>{ar ? <>عند ربط قناة، فإنك تأذن لتناغم بالنشر بالنيابة عنك وفق إعداداتك. يمكنك فصل القناة وحذف رموزها في أي وقت من <bdi dir="ltr">/settings/channels</bdi> أو من صفحة القنوات في الإعدادات.</> : <>When you connect a channel, you authorise Tanaghom to publish on your behalf according to your settings. You can disconnect it and purge its tokens at any time from <bdi dir="ltr">/settings/channels</bdi> or the Channels page in Settings.</>}</p>
+        <p>{ar ? <>عند ربط قناة، فإنك تأذن لإعلاني بالنشر بالنيابة عنك وفق إعداداتك. يمكنك فصل القناة وحذف رموزها في أي وقت من <bdi dir="ltr">/settings/channels</bdi> أو من صفحة القنوات في الإعدادات.</> : <>When you connect a channel, you authorise E3lani to publish on your behalf according to your settings. You can disconnect it and purge its tokens at any time from <bdi dir="ltr">/settings/channels</bdi> or the Channels page in Settings.</>}</p>
 
         <h2>{ar ? "الاستخدام المقبول" : "Acceptable use"}</h2>
         <p>{ar ? "لا تستخدم المنصة لإرسال رسائل غير مرغوبة، أو انتهاك حقوق الآخرين، أو نشر محتوى مضلل أو غير قانوني، أو محاولة تجاوز صلاحيات مساحة العمل." : "Do not use the platform for spam, infringement, misleading or unlawful content, or attempts to bypass workspace permissions."}</p>
@@ -324,7 +324,7 @@ export function PublicTermsPage({ locale }: { locale: Locale }) {
         <p>{ar ? "نقدم المنصة كما هي ضمن الحدود التي يسمح بها القانون. لا نضمن نتائج تسويقية محددة، ولا نتحمل مسؤولية قرارات النشر التي تتخذها بعد الاعتماد." : "We provide the platform as-is to the extent permitted by law. We do not guarantee specific marketing results and are not responsible for publishing decisions you make after approval."}</p>
 
         <h2>{ar ? "التغييرات والتواصل" : "Changes and contact"}</h2>
-        <p>{ar ? "قد نحدّث هذه الشروط لتعكس تغييرات في المنصة أو القانون، وسنوضح تاريخ التحديث. للأسئلة، تواصل مع مشغّل تناغم الذي أنشأ مساحتك." : "We may update these terms to reflect platform or legal changes and will show the update date. For questions, contact the Tanaghom operator who provisioned your workspace."}</p>
+        <p>{ar ? "قد نحدّث هذه الشروط لتعكس تغييرات في المنصة أو القانون، وسنوضح تاريخ التحديث. للأسئلة، تواصل مع مشغّل إعلاني الذي أنشأ مساحتك." : "We may update these terms to reflect platform or legal changes and will show the update date. For questions, contact the E3lani operator who provisioned your workspace."}</p>
         <p className="public-document-note">{ar ? "آخر تحديث: 14 نوفمبر 2026." : "Last updated: 14 November 2026."}</p>
       </article>
       <PublicFooter locale={locale} />

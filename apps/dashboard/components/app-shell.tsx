@@ -138,9 +138,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
     <div className="app-shell">
       <a className="skip-link" href="#main-content">{ar ? "تخطَّ إلى المحتوى الرئيسي" : "Skip to main content"}</a>
       <header className="mobile-header">
-        <Link className="brand" href="/" aria-label={ar ? "لوحة التحكم في تناغم" : "Tanaghom dashboard"}>
+        <Link className="brand" href="/" aria-label={ar ? "لوحة التحكم في إعلاني" : "E3lani dashboard"}>
           <BrandMark />
-          <span>Tanaghom</span>
+          <span>{ar ? "إعلاني" : "E3lani"}</span>
         </Link>
         <TenantName variant="mobile" />
         <div className="mobile-header-actions">
@@ -157,9 +157,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
       </header>
 
       <aside className={`sidebar ${menuOpen ? "sidebar-open" : ""}`}>
-        <Link className="brand desktop-brand" href="/" aria-label={ar ? "لوحة التحكم في تناغم" : "Tanaghom dashboard"}>
+        <Link className="brand desktop-brand" href="/" aria-label={ar ? "لوحة التحكم في إعلاني" : "E3lani dashboard"}>
           <BrandMark />
-          <span>Tanaghom</span>
+          <span>{ar ? "إعلاني" : "E3lani"}</span>
         </Link>
 
         <nav id="primary-navigation" className="primary-navigation" aria-label={ar ? "التنقل الأساسي" : "Primary navigation"}>

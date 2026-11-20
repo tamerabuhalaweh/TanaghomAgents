@@ -75,7 +75,7 @@ export function CampaignForm({
         <label><span>First content batch</span><input type="number" min="1" max="12" step="1" value={value.content_item_target} onChange={(event) => field("content_item_target", event.target.value)} /><small>Between 1 and 12 human-reviewed drafts.</small></label>
       </div>
       <footer>
-        <div className="campaign-form-safety"><ShieldCheck size={18} /><p>Creates a Tanaghom draft only. Publishing, CRM actions, messaging, and spend remain unavailable.</p></div>
+        <div className="campaign-form-safety"><ShieldCheck size={18} /><p>Creates an E3lani draft only. Publishing, CRM actions, messaging, and spend remain unavailable.</p></div>
         <div className="campaign-form-submit">
           {error ? <p role="alert">{error}</p> : null}
           <button className="primary-button" type="submit" disabled={busy}>{busy ? <><LoaderCircle className="spin" size={17} /> Saving campaign…</> : submitLabel}</button>

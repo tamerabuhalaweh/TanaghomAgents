@@ -131,8 +131,8 @@ const blockerCatalog: Record<string, Omit<RegistryBlocker, "code">> = {
   },
   postiz_channel_mapping_not_ready: {
     title: "Postiz channel mapping is missing",
-    detail: "Tanaghom cannot resolve an approved content channel to an active Postiz integration.",
-    next_action: "Connect a supported business channel in Postiz, then activate its Tanaghom mapping.",
+    detail: "E3lani cannot resolve an approved content channel to an active Postiz integration.",
+    next_action: "Connect a supported business channel in Postiz, then activate its E3lani mapping.",
     severity: "blocking",
   },
   postiz_emergency_stop: {
@@ -149,7 +149,7 @@ const blockerCatalog: Record<string, Omit<RegistryBlocker, "code">> = {
   },
   postiz_operation_indeterminate: {
     title: "A Postiz outcome is indeterminate",
-    detail: "Tanaghom cannot safely determine whether a previous provider operation took effect.",
+    detail: "E3lani cannot safely determine whether a previous provider operation took effect.",
     next_action: "Reconcile the provider result before allowing any new automatic operation.",
     severity: "blocking",
   },

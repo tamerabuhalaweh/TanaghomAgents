@@ -205,7 +205,7 @@ export function ContentLibrary() {
         ...current,
         [item.id]: {
           tone: "success",
-          message: "Draft handoff queued. Tanaghom will keep this record visible while the Publisher agent processes it.",
+          message: "Draft handoff queued. E3lani will keep this record visible while the Publisher agent processes it.",
         },
       }));
     } catch (error) {
@@ -319,7 +319,7 @@ export function ContentLibrary() {
                     ? <><Clock3 size={16} /> Publisher job {item.handoff_status.replaceAll("_", " ")} · updated {date(item.handoff_updated_at)}</>
                     : (ar ? "لم يُرسل إلى النشر الاجتماعي." : "Not sent to social publishing.")}</p>
                 {item.external_operation_status === "indeterminate" ? <p className="handoff-detail-error">
-                  <TriangleAlert size={16} /> Delivery outcome is uncertain. Tanaghom will not retry automatically because that could create a duplicate draft.
+                  <TriangleAlert size={16} /> Delivery outcome is uncertain. E3lani will not retry automatically because that could create a duplicate draft.
                 </p> : null}
                 {item.handoff_error_message ? <p className="handoff-detail-error">
                   <TriangleAlert size={16} /> {item.handoff_error_message}

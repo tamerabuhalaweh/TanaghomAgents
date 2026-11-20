@@ -48,15 +48,15 @@ function linkFor(env, path, token) {
 
 const DESCRIPTIONS = {
   verify_email: {
-    subject: "Verify your Tanaghom email / تحقق من بريدك في تناغم",
+    subject: "Verify your E3lani email / تحقق من بريدك في إعلاني",
     heading: "Verify your email",
-    lede: "Confirm this address to finish securing your Tanaghom workspace.",
+    lede: "Confirm this address to finish securing your E3lani workspace.",
     action: "Verify email",
-    arabic: "أكد بريدك الإلكتروني لإكمال تأمين مساحة عملك في تناغم.",
-    ignore: "If you did not create a Tanaghom account, you can ignore this message.",
+    arabic: "أكد بريدك الإلكتروني لإكمال تأمين مساحة عملك في إعلاني.",
+    ignore: "If you did not create an E3lani account, you can ignore this message.",
   },
   reset_password: {
-    subject: "Reset your Tanaghom password / إعادة تعيين كلمة المرور",
+    subject: "Reset your E3lani password / إعادة تعيين كلمة المرور",
     heading: "Reset your password",
     lede: "Use this single-use link to choose a new password. It expires in one hour.",
     action: "Choose a new password",
@@ -64,8 +64,8 @@ const DESCRIPTIONS = {
     ignore: "If you did not request a reset, no action is required and your password stays unchanged.",
   },
   invite: {
-    subject: "You are invited to Tanaghom / دعوة للانضمام إلى تناغم",
-    heading: "Join your Tanaghom workspace",
+    subject: "You are invited to E3lani / دعوة للانضمام إلى إعلاني",
+    heading: "Join your E3lani workspace",
     lede: "Set your password to accept the invitation your workspace admin sent.",
     action: "Accept invitation",
     arabic: "عيّن كلمة المرور لقبول الدعوة التي أرسلها مسؤول مساحة العمل.",
@@ -127,7 +127,7 @@ export function renderAuthEmail({ purpose, token, env = process.env }) {
     <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="padding:32px 16px">
       <tr><td align="center">
         <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:560px;background:#ffffff;border:1px solid #dbe5e1;border-radius:14px;overflow:hidden">
-          <tr><td style="padding:26px 30px;background:#114f45;color:#ffffff;font-size:19px;font-weight:700">Tanaghom</td></tr>
+          <tr><td style="padding:26px 30px;background:#114f45;color:#ffffff;font-size:19px;font-weight:700">E3lani</td></tr>
           <tr><td style="padding:32px 30px">
             <h1 style="margin:0 0 12px;font-size:24px;line-height:1.2">${description.heading}</h1>
             <p style="margin:0 0 22px;color:#52645f;font-size:15px;line-height:1.6">${description.lede}</p>
@@ -143,7 +143,7 @@ export function renderAuthEmail({ purpose, token, env = process.env }) {
   </body>
 </html>`;
   const text = [
-    "Tanaghom",
+    "E3lani",
     "",
     description.heading,
     description.lede,

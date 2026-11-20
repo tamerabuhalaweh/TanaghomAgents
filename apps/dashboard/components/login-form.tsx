@@ -49,10 +49,10 @@ export function LoginForm({ locale }: { locale: CreativeLocale }) {
       : body.error === "captcha_required" || body.error === "captcha_verification_failed"
         ? (ar ? "أكمل التحقق الأمني أدناه ثم أعد محاولة تسجيل الدخول." : "Complete the security check below and try signing in again.")
         : response.status === 401
-          ? (ar ? "البريد الإلكتروني أو كلمة المرور غير مطابقين لحساب تناغم نشط." : "That email and password do not match an active Tanaghom account.")
+          ? (ar ? "البريد الإلكتروني أو كلمة المرور غير مطابقين لحساب إعلاني نشط." : "That email and password do not match an active E3lani account.")
           : response.status === 429
             ? (ar ? `محاولات دخول كثيرة. أعد المحاولة خلال ${minutes} ${minutes === 1 ? "دقيقة" : "دقائق"}.` : `Too many sign-in attempts. Try again in about ${minutes} minute${minutes === 1 ? "" : "s"}.`)
-            : (ar ? "تعذّر على تناغم تسجيل دخولك. أعد المحاولة بعد قليل." : "Tanaghom could not sign you in. Please try again in a moment."));
+            : (ar ? "تعذّر على إعلاني تسجيل دخولك. أعد المحاولة بعد قليل." : "E3lani could not sign you in. Please try again in a moment."));
     setSubmitting(false);
   }
 

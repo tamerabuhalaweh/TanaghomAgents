@@ -64,9 +64,12 @@ test("verification, reset, and invitation templates carry bilingual copy and sin
       token,
       env: { APP_BASE_URL: "https://app.example.test" },
     });
-    assert.ok(rendered.subject.includes("Tanaghom") || rendered.subject.includes("تناغم"));
+    assert.ok(rendered.subject.includes("E3lani") || rendered.subject.includes("إعلاني"));
     assert.ok(rendered.html.includes("lang=\"ar\"") && rendered.html.includes("dir=\"rtl\""));
-    assert.ok(rendered.text.includes("Tanaghom"));
+    assert.ok(rendered.text.includes("E3lani"));
+    assert.doesNotMatch(rendered.subject, /Tanaghom|تناغم/);
+    assert.doesNotMatch(rendered.html, /Tanaghom|تناغم/);
+    assert.doesNotMatch(rendered.text, /Tanaghom|تناغم/);
     assert.ok(rendered.text.includes(token));
     assert.ok(rendered.url.startsWith("https://app.example.test/"));
     assert.ok(rendered.html.includes(rendered.url));
@@ -82,7 +85,7 @@ test("resend mode posts to Resend with an eight-second abort and configured send
     env: {
       AUTH_EMAIL_PROVIDER: "resend",
       AUTH_EMAIL_API_KEY: "re_test_key",
-      AUTH_EMAIL_FROM: "Tanaghom <noreply@example.test>",
+      AUTH_EMAIL_FROM: "E3lani <noreply@example.test>",
       APP_BASE_URL: "https://app.example.test",
     },
     logger: { log() {}, error() {} },
@@ -96,7 +99,7 @@ test("resend mode posts to Resend with an eight-second abort and configured send
   assert.equal(calls[0].url, "https://api.resend.com/emails");
   assert.equal(calls[0].init.headers.Authorization, "Bearer re_test_key");
   const body = JSON.parse(calls[0].init.body);
-  assert.equal(body.from, "Tanaghom <noreply@example.test>");
+  assert.equal(body.from, "E3lani <noreply@example.test>");
   assert.deepEqual(body.to, ["owner@example.test"]);
   assert.match(body.text, /reset-password\?token=/);
   assert.ok(calls[0].init.signal);

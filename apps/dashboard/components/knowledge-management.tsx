@@ -128,8 +128,8 @@ export function KnowledgeManagement() {
     />
 
     {state === "loading" ? <KnowledgeLoading /> : null}
-    {state === "forbidden" ? <KnowledgeState icon={<ShieldCheck />} title="Admin access required" copy="Only a Tanaghom Admin can review, approve, activate, revoke, or restore customer knowledge." /> : null}
-    {state === "error" ? <KnowledgeState icon={<CircleAlert />} title="Knowledge catalog unavailable" copy="Tanaghom could not load the protected organization catalog." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
+    {state === "forbidden" ? <KnowledgeState icon={<ShieldCheck />} title="Admin access required" copy="Only an E3lani Admin can review, approve, activate, revoke, or restore customer knowledge." /> : null}
+    {state === "error" ? <KnowledgeState icon={<CircleAlert />} title="Knowledge catalog unavailable" copy="E3lani could not load the protected organization catalog." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
 
     {state === "ready" && payload ? <>
       <section className="knowledge-safety" aria-label={ar ? "حدود أمان المعرفة" : "Knowledge safety boundary"}>

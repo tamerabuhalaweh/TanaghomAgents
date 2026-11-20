@@ -107,7 +107,7 @@ interface Snapshot {
 const COPY = {
   en: {
     title: "Platform cockpit",
-    eyebrow: "Tanaghom · owner console",
+    eyebrow: "E3lani · owner console",
     lede: "Live commercial, cohort, and operational control for the platform — no SSH required.",
     refresh: "Refresh",
     loading: "Loading live telemetry…",
@@ -197,7 +197,7 @@ const COPY = {
   },
   ar: {
     title: "لوحة المنصة",
-    eyebrow: "تناغم · وحدة تحكم المالك",
+    eyebrow: "إعلاني · وحدة تحكم المالك",
     lede: "تحكم تجاري وتشغيلي مباشر في المنصة والدفعات — دون الحاجة إلى الوصول التقني المباشر.",
     refresh: "تحديث",
     loading: "جارٍ تحميل البيانات المباشرة…",

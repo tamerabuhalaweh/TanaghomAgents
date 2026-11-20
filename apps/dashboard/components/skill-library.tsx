@@ -255,7 +255,7 @@ export function SkillLibrary() {
 
     {state === "loading" ? <SkillLoading /> : null}
     {state === "forbidden" ? <SkillState icon={<LockKeyhole />} title="Skill Library access is restricted" copy="Your accepted organization role does not include this workspace." /> : null}
-    {state === "error" ? <SkillState icon={<CircleAlert />} title="Skill Library unavailable" copy="Tanaghom could not load the protected skill catalog." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
+    {state === "error" ? <SkillState icon={<CircleAlert />} title="Skill Library unavailable" copy="E3lani could not load the protected skill catalog." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
 
     {state === "ready" && payload ? <>
       <section className="skill-safety" aria-label="Customer skill safety boundary">

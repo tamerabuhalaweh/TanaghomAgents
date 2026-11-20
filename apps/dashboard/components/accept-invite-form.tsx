@@ -59,10 +59,10 @@ export function AcceptInviteForm({ token = "" }: { token?: string }) {
     } catch (reason) {
       const code = reason instanceof Error ? reason.message : "";
       setError(code === "expired"
-        ? "This invitation is invalid or has expired. Ask your Tanaghom admin to send a new invitation."
+        ? "This invitation is invalid or has expired. Ask your E3lani admin to send a new invitation."
         : code === "password"
           ? "Use at least 10 characters with upper and lower case letters and a number."
-          : "This invitation could not be completed. Ask your Tanaghom admin to send a new invitation.");
+          : "This invitation could not be completed. Ask your E3lani admin to send a new invitation.");
       setSubmitting(false);
     }
   }
@@ -73,7 +73,7 @@ export function AcceptInviteForm({ token = "" }: { token?: string }) {
       <div className="invite-state invite-state-error">
         <TriangleAlert size={24} />
         <h1>Invitation unavailable</h1>
-        <p>This link is invalid or expired. Ask your Tanaghom admin to send a new invitation.</p>
+        <p>This link is invalid or expired. Ask your E3lani admin to send a new invitation.</p>
         <a className="secondary-button" href="/login">Return to sign in</a>
       </div>
     );
@@ -84,7 +84,7 @@ export function AcceptInviteForm({ token = "" }: { token?: string }) {
       <section className="invite-panel" aria-labelledby="invite-title">
         <span className="invite-icon"><ShieldCheck size={24} /></span>
         <p className="login-access-label">INVITED ACCESS</p>
-        <h1 id="invite-title">Join Tanaghom</h1>
+        <h1 id="invite-title">Join E3lani</h1>
         <p className="login-intro">Set a private password to activate the role your admin assigned.</p>
         <form className="login-form" method="post" onSubmit={submit}>
           {tokenMode ? <div className="form-field"><label htmlFor="invite-name">Display name</label><input id="invite-name" type="text" autoComplete="name" minLength={2} maxLength={120} value={displayName} onChange={(event) => setDisplayName(event.target.value)} placeholder="Keep the name your admin used" /><span className="field-help">Leave blank to keep the invited name.</span></div> : null}

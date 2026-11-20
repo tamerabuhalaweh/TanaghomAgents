@@ -47,7 +47,7 @@ export function LiveActivity() {
       {actions.map((action) => (
         <li key={action.id}>
           <span className="activity-marker" />
-          <div><strong>{action.agent_name || action.actor_name || "Tanaghom"}</strong><p>{actionLabel(action.action_type)}</p></div>
+          <div><strong>{action.agent_name || action.actor_name || "E3lani"}</strong><p>{actionLabel(action.action_type)}</p></div>
           <time dateTime={action.created_at}><Clock3 size={14} />{actionTime(action.created_at)}</time>
         </li>
       ))}

@@ -311,7 +311,7 @@ test("campaign lifecycle exposes real tenant-bound actions and no provider hando
   for (const state of ["Core agent work is", "Agent work needs a controlled retry", "Campaign is paused", "Start campaign strategy", "Strategy is ready", "need a human decision", "Human review is complete", "Ready for controlled handoff"]) {
     assert.match(detail, new RegExp(state));
   }
-  assert.match(form, /Creates a Tanaghom draft only/);
+  assert.match(form, /Creates an E3lani draft only/);
   assert.match(service, /authorize\(request, \["owner", "operator"\]\)/);
   assert.match(service, /campaign\.organization_id=\$1/);
   assert.match(service, /api_idempotency_keys/);
@@ -515,7 +515,7 @@ test("Packet B auth has show-hide password controls, legal links, and home-linke
     assert.match(page, /<LocaleToggle locale=\{locale\} \/>/);
     for (const href of ["/pricing", "/privacy", "/terms"]) assert.match(page, new RegExp(`href="${href}"`));
   }
-  assert.match(loginPage, /سجّل الدخول إلى تناغم/);
+  assert.match(loginPage, /سجّل الدخول إلى إعلاني/);
   assert.match(loginPage, /أهلًا بعودتك/);
   assert.match(loginPage, /سجّل الدخول للمتابعة إلى مساحة عملك/);
   assert.match(login, /البريد الإلكتروني/);

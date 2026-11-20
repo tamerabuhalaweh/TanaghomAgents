@@ -18,12 +18,13 @@ export function AuthShell({
   lede: string;
   children: React.ReactNode;
 }) {
+  const ar = locale === "ar";
   return (
     <main className="login-page" dir={dir} lang={locale}>
       <section className="login-context" aria-labelledby="auth-context-title">
-        <a className="brand login-brand" href="/login" aria-label="Tanaghom">
+        <a className="brand login-brand" href="/login" aria-label={ar ? "إعلاني" : "E3lani"}>
           <BrandMark />
-          <span>Tanaghom</span>
+          <span>{ar ? "إعلاني" : "E3lani"}</span>
         </a>
         <div className="login-promise">
           <p className="login-context-label">Agent operations, under human control</p>
@@ -39,7 +40,7 @@ export function AuthShell({
         <div className="login-panel">
           <div className="login-mobile-brand" aria-hidden="true">
             <BrandMark />
-            <span>Tanaghom</span>
+            <span>{ar ? "إعلاني" : "E3lani"}</span>
           </div>
           <p className="login-access-label">{eyebrow}</p>
           <h2 id="auth-title">{title}</h2>
