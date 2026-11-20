@@ -16,7 +16,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDisplayName } from "@/lib/i18n/agent-names";
-import { truncateAtWord } from "@/lib/truncate";
+import { truncateMarkdownAtWord } from "@/lib/truncate";
 import { FormattedText } from "./formatted-text";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
@@ -269,7 +269,7 @@ export function ContentLibrary() {
         {visible.map((item) => {
           const isExpanded = expanded === item.id;
           const deliverables = item.deliverables ?? [];
-          const preview = item.draft_copy.length > 280 ? `${truncateAtWord(item.draft_copy, 280)}…` : item.draft_copy;
+          const preview = item.draft_copy.length > 280 ? `${truncateMarkdownAtWord(item.draft_copy, 280)}…` : item.draft_copy;
           const canHandoff = item.status === "approved" && item.content_type !== "work_pack";
           const hasHandoff = Boolean(item.handoff_job_id);
           const isReady = Boolean(integration?.postiz_ready && integration.can_request_draft && item.postiz_channel_ready);

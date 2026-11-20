@@ -133,9 +133,45 @@ test("excerpts are cut at a word boundary and never mid-word", () => {
 
   const route = read("apps/dashboard/app/api/approvals/route.ts");
   const content = read("apps/dashboard/components/content-library.tsx");
-  assert.match(route, /truncateAtWord\(entry\.document \|\| "", 320\)/);
+  assert.match(route, /truncateMarkdownAtWord\(entry\.document \|\| "", 320\)/);
   assert.match(route, /document: entry\.document \|\| ""/);
-  assert.match(content, /truncateAtWord\(item\.draft_copy, 280\)/);
+  assert.match(content, /truncateMarkdownAtWord\(item\.draft_copy, 280\)/);
+});
+
+test("a truncated excerpt never leaves a dangling inline markdown marker", () => {
+  const { truncateMarkdownAtWord, balanceInlineMarkdown } = loadTruncate();
+  const { parseMarkdown } = loadMarkdown();
+
+  // Every inline node the excerpt renders, as one string.
+  function renderedText(source) {
+    const nodes = [];
+    for (const block of parseMarkdown(source)) {
+      if (block.inline) nodes.push(...block.inline);
+      if (block.items) for (const item of block.items) nodes.push(...item);
+    }
+    return nodes.map((node) => node.value).join(" ");
+  }
+
+  const english = "**Missing Information (Unconfirmed pricing):** we cannot confirm the bundle price today, so please send the current price list before launch.";
+  const arabic = "**الحقائق المؤكدة للمشروع:** تفاصيل الحملة لم تُعتمد بعد، لذلك لا يمكن نشر أي رقم قبل مراجعة المالك.";
+
+  for (const [source, limit] of [[english, 40], [arabic, 20]]) {
+    const excerpt = truncateMarkdownAtWord(source, limit);
+    assert.ok(excerpt.length <= limit, "excerpt stays within the limit");
+    // The cut really happened inside the bold span, which is the live failure.
+    assert.ok(source.indexOf("**", 2) > excerpt.length, "the sample cuts inside the opening span");
+    assert.doesNotMatch(excerpt, /[*`]|__/u, `dangling marker survived: ${excerpt}`);
+    const rendered = renderedText(`${excerpt}…`);
+    assert.doesNotMatch(rendered, /[*`]|__/u, `raw markdown leaked into the excerpt: ${rendered}`);
+    assert.ok(rendered.startsWith(excerpt), "only the ellipsis is added after the cut");
+  }
+
+  // Closed spans are untouched, and every marker kind is cleaned when open.
+  assert.equal(truncateMarkdownAtWord("**Verified pricing:** confirmed locally", 200), "**Verified pricing:** confirmed locally");
+  assert.equal(balanceInlineMarkdown("text __open"), "text open");
+  assert.equal(balanceInlineMarkdown("text `open"), "text open");
+  assert.equal(balanceInlineMarkdown("text *open"), "text open");
+  assert.equal(balanceInlineMarkdown("***Day 6 (Thursday): launch"), "Day 6 (Thursday): launch");
 });
 
 test("SVG card text keeps the word boundary when read or copied", () => {
