@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { IBM_Plex_Sans_Arabic, Inter } from "next/font/google";
 import { RootFrame } from "@/components/root-frame";
 import { creativeLocale } from "@/lib/creative-locale";
+import { CANONICAL_SITE_URL } from "@/lib/seo";
 import "./globals.css";
 import "./workspace.css";
 import "./creative.css";
@@ -16,6 +17,7 @@ const arabic = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(CANONICAL_SITE_URL),
   title: { default: "E3lani", template: "%s · E3lani" },
   description: "Human control for coordinated business agents.",
 };

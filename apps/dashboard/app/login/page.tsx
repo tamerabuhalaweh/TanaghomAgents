@@ -8,7 +8,7 @@ import { LoginForm } from "@/components/login-form";
 import { creativeLocale } from "@/lib/creative-locale";
 import { getMarketingOrigin, isSplitDomainMode } from "@/lib/public-urls";
 
-export const metadata: Metadata = { title: "Sign in" };
+export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: false } };
 
 export default async function LoginPage({
   searchParams,

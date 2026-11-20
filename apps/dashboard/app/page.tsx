@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { NextRequest } from "next/server";
@@ -9,9 +10,25 @@ import { PublicLandingPage } from "@/components/public-pages";
 import { LocaleProvider } from "@/lib/client/use-locale";
 import { creativeLocale } from "@/lib/creative-locale";
 import { getAppOrigin, isAppHost, isMarketingHost, isSplitDomainMode } from "@/lib/public-urls";
+import { buildPublicPageMetadata, landingJsonLd, serializeJsonLd } from "@/lib/seo";
 import { requireTenant } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { loadPublicLaunchOffer } from "@/lib/server/launch-control";
+
+export async function generateMetadata(): Promise<Metadata> {
+  const { locale } = await creativeLocale();
+  if (isSplitDomainMode()) {
+    const headerList = await headers();
+    const host = headerList.get("x-forwarded-host") || headerList.get("host");
+    if (isAppHost(host)) {
+      return {
+        title: "Overview",
+        robots: { index: false, follow: false },
+      };
+    }
+  }
+  return buildPublicPageMetadata("home", locale);
+}
 
 async function hasLiveSession() {
   const token = (await cookies()).get("tanaghom_access_token")?.value;
@@ -37,7 +54,15 @@ async function renderLanding(locale: "en" | "ar", appOrigin: string) {
     launch100Active = launch.launch100_active;
     cohortFull = launch.cohort_full;
   } catch {}
-  return <PublicLandingPage locale={locale} launch100Active={launch100Active} cohortFull={cohortFull} appOrigin={appOrigin} />;
+  return (
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: serializeJsonLd(landingJsonLd(locale)) }}
+      />
+      <PublicLandingPage locale={locale} launch100Active={launch100Active} cohortFull={cohortFull} appOrigin={appOrigin} />
+    </>
+  );
 }
 
 export default async function OverviewPage() {
