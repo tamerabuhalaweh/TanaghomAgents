@@ -147,3 +147,10 @@ test("auth pages carry noindex and proxy permits /opengraph-image", () => {
   assert.match(publicPages, /E3lani is the AI marketing team for small businesses/);
   assert.match(publicPages, /E3lani gives small businesses and marketing teams flat-rate plans from \$15\/month/);
 });
+
+test("Google Search Console HTML verification route and Caddy allowlist are wired", () => {
+  const route = readFileSync(path.join(root, "apps/dashboard/app/google0248b443482441b0.html/route.ts"), "utf8");
+  const caddyEntry = readFileSync(path.join(root, "deployment/dashboard-demo/caddy/entrypoint.sh"), "utf8");
+  assert.match(route, /google-site-verification: google0248b443482441b0\.html/);
+  assert.match(caddyEntry, /\/google\*\.html/);
+});
