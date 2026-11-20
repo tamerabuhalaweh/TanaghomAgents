@@ -102,8 +102,8 @@ test("the three deliverable render sites use the safe formatter and never inject
   const content = read("apps/dashboard/components/content-library.tsx");
   const formatter = read("apps/dashboard/components/formatted-text.tsx");
 
+  assert.match(workspace, /className="aw-document" dir=\{selected\.language === "ar" \? "rtl" : "ltr"\}/);
   assert.match(workspace, /<FormattedText text=\{step\.result\.document\}/);
-  assert.match(workspace, /dir=\{selected\.language === "ar" \? "rtl" : "ltr"\}/);
   assert.match(approvals, /<FormattedText text=\{`\$\{deliverable\.excerpt\}/);
   assert.match(approvals, /Read the full deliverable/);
   assert.match(approvals, /اقرأ المخرج كاملاً/);
