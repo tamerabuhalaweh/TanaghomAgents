@@ -45,13 +45,13 @@ function stage(status: string, jobType: string | null, jobStatus: string | null,
     if (status === "active") return "جاهزة للتسليم";
     return statusLabel(status, true);
   }
-  if (jobType === "campaign.strategy.generate") return `Strategy · ${label(jobStatus || "queued")}`;
-  if (jobType === "campaign.content.generate" && status !== "awaiting_approval") return `Content · ${label(jobStatus || "queued")}`;
+  if (jobType === "campaign.strategy.generate") return `Strategy · ${statusLabel(jobStatus || "queued", false)}`;
+  if (jobType === "campaign.content.generate" && status !== "awaiting_approval") return `Content · ${statusLabel(jobStatus || "queued", false)}`;
   if (status === "draft" || status === "blocked_missing_info") return "Brief";
   if (status === "strategy_ready") return "Strategy";
   if (status === "content_in_progress" || status === "awaiting_approval") return "Content review";
   if (status === "active") return "Ready for handoff";
-  return label(status);
+  return statusLabel(status, false);
 }
 
 const errorMessages: Record<string, string> = {

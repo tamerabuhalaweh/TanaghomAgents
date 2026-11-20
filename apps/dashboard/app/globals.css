@@ -2506,7 +2506,7 @@ td a, td > strong { font-weight: 670; }
 .brand-version-swatches li > span { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .brand-version-swatches li.is-unset i { background: repeating-linear-gradient(135deg, var(--surface) 0 0.22rem, var(--border) 0.22rem 0.44rem); border-style: dashed; }
 .brand-version-swatches li.is-unset code { color: var(--muted); font-style: italic; }
-.sidebar-timezone { color: var(--muted); font-size: 0.66rem; line-height: 1.4; }
+.sidebar-timezone { display: block; color: var(--muted); font-size: 0.66rem; line-height: 1.4; padding: 0.25rem 0.65rem 0.45rem; }
 @media (max-width: 900px) {
   .sidebar-locale { display: block; }
 .sidebar-trust { display: flex; flex-direction: column; gap: 0.3rem; margin-block-end: 0.4rem; padding: 0.35rem 0.4rem 0.55rem; border-block-end: 1px solid var(--border); }

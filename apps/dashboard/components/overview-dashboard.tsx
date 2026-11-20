@@ -136,10 +136,13 @@ export function OverviewDashboard() {
   // The campaign cards exclude drafts, so the headline explains the difference
   // instead of looking like it miscounts the portfolio.
   const changesRequested = data.campaigns.filter((campaign) => campaign.status === "rejected").length;
-  const description = data.summary.campaigns_total
+  // The headline counts the same campaigns the table lists, so the total never
+  // looks like it disagrees with the rows underneath it.
+  const totalCampaigns = data.campaigns.length || data.summary.campaigns_total;
+  const description = totalCampaigns
     ? (ar
-      ? `${formatArabicCount(data.summary.campaigns_active, { zero: "لا حملات نشطة", one: "حملة واحدة نشطة", two: "حملتان نشطتان", few: "{count} حملات نشطة", many: "{count} حملة نشطة", other: "{count} حملة نشطة" })}${changesRequested ? ` · ${formatArabicCount(changesRequested, { zero: "لا حملات طُلب تعديلها", one: "حملة طُلب تعديلها", two: "حملتان طُلب تعديلهما", few: "{count} حملات طُلب تعديلها", many: "{count} حملة طُلب تعديلها", other: "{count} حملة طُلب تعديلها" })}` : ""}، ${formatArabicCount(data.summary.jobs_open, { zero: "لا مهام مفتوحة", one: "مهمة واحدة مفتوحة", two: "مهمتان مفتوحتان", few: "{count} مهام مفتوحة", many: "{count} مهمة مفتوحة", other: "{count} مهمة مفتوحة" })}, و${formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" })}.`
-      : `${data.summary.campaigns_active} active campaigns${changesRequested ? ` · ${changesRequested} changes requested` : ""}, ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
+      ? `${formatArabicCount(totalCampaigns, { zero: "لا حملات", one: "حملة واحدة", two: "حملتان", few: "{count} حملات", many: "{count} حملة", other: "{count} حملة" })} (${formatArabicCount(data.summary.campaigns_active, { zero: "لا حملات نشطة", one: "حملة واحدة نشطة", two: "حملتان نشطتان", few: "{count} حملات نشطة", many: "{count} حملة نشطة", other: "{count} حملة نشطة" })}${changesRequested ? ` · ${formatArabicCount(changesRequested, { zero: "لا حملات طُلب تعديلها", one: "حملة طُلب تعديلها", two: "حملتان طُلب تعديلهما", few: "{count} حملات طُلب تعديلها", many: "{count} حملة طُلب تعديلها", other: "{count} حملة طُلب تعديلها" })}` : ""})، ${formatArabicCount(data.summary.jobs_open, { zero: "لا مهام مفتوحة", one: "مهمة واحدة مفتوحة", two: "مهمتان مفتوحتان", few: "{count} مهام مفتوحة", many: "{count} مهمة مفتوحة", other: "{count} مهمة مفتوحة" })}, و${formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" })}.`
+      : `${totalCampaigns} ${totalCampaigns === 1 ? "campaign" : "campaigns"} (${data.summary.campaigns_active} active${changesRequested ? ` · ${changesRequested} changes requested` : ""}), ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
     : (ar ? "لم تبدأ أي حملة أو مهمة وكيل بعد." : "No campaign or agent work has started yet.");
   const setupSteps = setup ? [
     { done: setup.profileDone, en: "Business profile", ar: "ملف النشاط التجاري" },

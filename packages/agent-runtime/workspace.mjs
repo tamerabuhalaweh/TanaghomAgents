@@ -100,10 +100,16 @@ export function keyExcerpt(document, limit = 420) {
   const lines = document.replace(/\r\n/g, '\n').split('\n')
     .map(line => line.trim())
     .filter(line => line && !/^[-=_]{3,}$/.test(line) && !/^\|?\s*:?-{2,}/.test(line))
-    .map(line => line.replace(/^#{1,6}\s*/, '').replace(/^[*+•]\s*/, '').trim())
+    .map(line => line.replace(/^#{1,6}\s*/, '').replace(/^[-*+•]\s+/, '').trim())
     .filter(Boolean);
   const excerpt = lines.slice(0, 6).join('\n');
-  return excerpt.length > limit ? `${excerpt.slice(0, limit).trimEnd()}…` : excerpt;
+  if (excerpt.length <= limit) return excerpt;
+  // Cut between words, then drop an interrupted inline marker ("**Opening:") or
+  // a bare bullet so the stored summary never ends in a stray `*`.
+  const clipped = excerpt.slice(0, limit);
+  const boundary = clipped.lastIndexOf(' ');
+  const cut = (boundary > 0 ? clipped.slice(0, boundary) : clipped).replace(/[\s*_`]+$/, '');
+  return `${cut || clipped.trimEnd()}…`;
 }
 
 export function workspaceArtifact(task, response, elapsedMs) {

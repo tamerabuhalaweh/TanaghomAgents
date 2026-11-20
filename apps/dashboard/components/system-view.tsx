@@ -78,7 +78,8 @@ interface UiCopy {
   cooldown: string;
   notVerified: string;
   noBlockingSignal: string;
-  connectedNoTest: string;
+  notTested: string;
+  configuredNoTest: string;
   modelEvidence: string;
   liveHealth: string;
   configSignal: string;
@@ -156,7 +157,8 @@ const copy: Record<Lang, UiCopy> = {
     cooldown: "Cooldown",
     notVerified: "Not independently verified",
     noBlockingSignal: "No blocking signal",
-    connectedNoTest: "Connected · no connection test recorded",
+    notTested: "Not tested",
+    configuredNoTest: "Configured · no connection test recorded",
     modelEvidence: "No cooldown recorded · completed output is stored in your workspace",
     liveHealth: "Live health endpoint",
     configSignal: "Configuration signal",
@@ -239,7 +241,8 @@ const copy: Record<Lang, UiCopy> = {
     cooldown: "فترة تهدئة",
     notVerified: "غير مُتحقَّق منه بشكل مستقل",
     noBlockingSignal: "لا توجد إشارة عائق",
-    connectedNoTest: "متصل · لا يوجد سجل لاختبار الاتصال",
+    notTested: "لم يُختبر",
+    configuredNoTest: "مهيّأ · لا يوجد سجل لاختبار الاتصال",
     modelEvidence: "لا توجد فترة تهدئة مسجلة · المخرجات المكتملة محفوظة في مساحة عملك",
     liveHealth: "فحص الصحة المباشر",
     configSignal: "إشارة التهيئة",
@@ -359,13 +362,29 @@ function DeliveryPanel({ monitoring, text }: { monitoring: Monitoring; text: UiC
 function DependenciesPanel({ health, monitoring, text, lang }: { health: Health; monitoring: Monitoring; text: UiCopy; lang: Lang }) {
   const connection = (provider: string) => monitoring.connections.find((item) => item.provider === provider);
   const modelBlocked = monitoring.capacity.gemma_blocked_until && new Date(monitoring.capacity.gemma_blocked_until) > new Date();
+  // A green "connected" pill beside "no connection test recorded" contradicts itself:
+  // a connection that was never tested is configured, not verified.
+  const integration = (provider: string): [string, Tone, string] => {
+    const conn = connection(provider);
+    if (conn?.status === "connected" && conn.last_tested_at) {
+      return [text.connected, "success", `${text.lastTested} ${date(conn.last_tested_at, lang, text.notObserved)}`];
+    }
+    if (conn?.status === "connected") return [text.notTested, "neutral", text.configuredNoTest];
+    return [
+      conn?.status || text.notConfigured,
+      "neutral",
+      conn?.last_tested_at ? `${text.lastTested} ${date(conn.last_tested_at, lang, text.notObserved)}` : text.noConnectionTest,
+    ];
+  };
+  const postiz = integration("postiz");
+  const crm = integration("ghl");
   const rows: Array<[string, string, Tone, string]> = [
     [text.applicationApi, health.components.api === "ready" ? text.ready : text.unavailable, health.components.api === "ready" ? "success" : "danger", text.liveHealth],
     [text.postgres, health.components.database === "connected" ? text.connected : text.unavailable, health.components.database === "connected" ? "success" : "danger", text.liveHealth],
     [text.authentication, health.components.authentication === "configured" ? text.configured : text.notConfigured, health.components.authentication === "configured" ? "success" : "attention", text.configSignal],
     [text.modelWorker, modelBlocked ? text.cooldown : text.noBlockingSignal, modelBlocked ? "attention" : "neutral", modelBlocked ? `${text.blockedUntil} ${date(monitoring.capacity.gemma_blocked_until, lang, text.notObserved)}` : text.modelEvidence],
-    [text.socialPublishing, connection("postiz")?.status || text.notConfigured, connection("postiz")?.status === "connected" ? "success" : "neutral", connection("postiz")?.last_tested_at ? `${text.lastTested} ${date(connection("postiz")?.last_tested_at || null, lang, text.notObserved)}` : connection("postiz")?.status === "connected" ? text.connectedNoTest : text.noConnectionTest],
-    [text.crmIntegration, connection("ghl")?.status || text.notConfigured, connection("ghl")?.status === "connected" ? "success" : "neutral", connection("ghl")?.last_tested_at ? `${text.lastTested} ${date(connection("ghl")?.last_tested_at || null, lang, text.notObserved)}` : connection("ghl")?.status === "connected" ? text.connectedNoTest : text.noConnectionTest],
+    [text.socialPublishing, postiz[0], postiz[1], postiz[2]],
+    [text.crmIntegration, crm[0], crm[1], crm[2]],
   ];
   return <section className="monitoring-panel monitoring-dependencies"><header><div><Database size={18} /><h2>{text.dependencies}</h2></div></header><div>{rows.map(([name, status, tone, evidence]) => <article key={name}><span><strong>{name}</strong><small>{evidence}</small></span><StatusPill tone={tone}>{status}</StatusPill></article>)}</div></section>;
 }
