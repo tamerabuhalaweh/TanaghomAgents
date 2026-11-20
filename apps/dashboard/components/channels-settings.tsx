@@ -49,7 +49,7 @@ const copy = {
     emptyHint: "Choose a network above. The provider opens its own secure sign-in page; E3lani never receives your social password.",
     connect: "Connect",
     connecting: "Opening…",
-    disconnect: "Disconnect workspace",
+    disconnect: "Disconnect social publishing",
     disconnecting: "Disconnecting…",
     refresh: "Refresh",
     mapped: "Ready for drafts",
@@ -84,7 +84,7 @@ const copy = {
     emptyHint: "اختر شبكة أعلاه. تفتح المنصة صفحة تسجيل دخول آمنة خاصة بها؛ ولا يطّلع إعلاني على كلمة مرور حسابك أبدًا.",
     connect: "ربط",
     connecting: "جارٍ الفتح…",
-    disconnect: "إلغاء ربط القناة",
+    disconnect: "إلغاء ربط النشر الاجتماعي",
     disconnecting: "جارٍ إلغاء الربط…",
     refresh: "تحديث",
     mapped: "جاهزة للمسودات",
@@ -238,11 +238,13 @@ export function ChannelsSettings() {
             {payload.supported_platforms.map((item) => <article className="channel-card" key={item.platform}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(item.platform, ar).slice(0, 2)}</div>
               <div><h3>{platformLabel(item.platform, ar)}</h3></div>
+              <div className="channel-card-actions">
               <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect(item.platform)}>
                 {busy === item.platform ? <LoaderCircle className="spin" size={16} /> : <Link2 size={16} />} {busy === item.platform ? text.connecting : text.connect}
               </button>
               {item.platform === "instagram" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("instagram", "instagram-standalone")}>{ar ? "إنستغرام مستقل" : "Instagram standalone"}</button> : null}
               {item.platform === "linkedin" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("linkedin", "linkedin")}>{ar ? "لينكدإن شخصي" : "LinkedIn personal"}</button> : null}
+              </div>
             </article>)}
           </div>
           {payload.can_connect_live_channels && !payload.provisioning_ready ? <div className="channel-empty"><ShieldCheck size={18} /><span><strong>{text.unavailableTitle}</strong><small>{text.unavailableCopy}</small></span></div> : null}

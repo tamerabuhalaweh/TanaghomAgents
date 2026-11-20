@@ -20,7 +20,7 @@ interface TeamUser {
   invited_by_name: string | null;
 }
 
-const roleLabels: Record<Role, string> = { owner: "Admin", reviewer: "Reviewer", operator: "Operator", viewer: "Viewer" };
+const roleLabels: Record<Role, string> = { owner: "Owner", reviewer: "Reviewer", operator: "Operator", viewer: "Viewer" };
 const roleHelp: Record<Role, string> = {
   owner: "Manage people, roles, and all operations.", reviewer: "Approve or reject public-facing content.",
   operator: "Operate campaigns and investigate agent work.", viewer: "Read dashboards and reports only.",
@@ -72,7 +72,7 @@ export function TeamManagement() {
       <p className="sr-only" role="status" aria-live="polite">{feedback}</p>
       {state === "loading" ? <TeamLoading /> : null}
       {state === "error" ? <TeamState icon={<TriangleAlert />} title="Team access is unavailable" copy="No membership changes can be made until the database connection is restored." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
-      {state === "forbidden" ? <TeamState icon={<ShieldCheck />} title="Admin access required" copy="Only an E3lani Admin can invite teammates or change roles." /> : null}
+      {state === "forbidden" ? <TeamState icon={<ShieldCheck />} title="Owner access required" copy="Only the workspace owner can invite teammates or change roles." /> : null}
       {state === "ready" && inviteOpen ? <InvitePanel onCreated={async (emailDelivery) => { setInviteOpen(false); setFeedback(emailDelivery === "skipped_unconfigured" ? "Invitation created, but email delivery is not configured yet. Add the email provider key before relying on invitations." : emailDelivery === "sent" || emailDelivery === "queued" ? "Invitation sent. Access remains pending until the teammate accepts it." : "Invitation created, but the email could not be sent. Check the provider configuration."); await load(); }} onCancel={() => setInviteOpen(false)} /> : null}
       {state === "ready" && !invitationsConfigured ? <section className="system-alert"><TriangleAlert size={20} /><div><strong>Invitations need a server credential</strong><p>Existing team access can be managed now. Add the project’s Supabase secret key to enable invitation emails.</p></div><span className="system-alert-label">Setup required</span></section> : null}
       {state === "ready" ? (
@@ -96,7 +96,7 @@ export function TeamManagement() {
           {feedback ? <p className="inline-feedback"><Check size={15} /> {feedback}</p> : null}
         </section>
       ) : null}
-      {state === "ready" ? <section className="role-guide" aria-labelledby="role-guide-title"><div className="section-heading"><div><h2 id="role-guide-title">Role guide</h2><p>Admin is the interface name for the existing owner role.</p></div></div><div>{(Object.keys(roleLabels) as Role[]).map((role) => <article key={role}><strong>{roleLabels[role]}</strong><p>{roleHelp[role]}</p></article>)}</div></section> : null}
+      {state === "ready" ? <section className="role-guide" aria-labelledby="role-guide-title"><div className="section-heading"><div><h2 id="role-guide-title">Role guide</h2><p>One role vocabulary everywhere: the owner role is labelled Owner here and in the sidebar.</p></div></div><div>{(Object.keys(roleLabels) as Role[]).map((role) => <article key={role}><strong>{roleLabels[role]}</strong><p>{roleHelp[role]}</p></article>)}</div></section> : null}
     </div>
   );
 }
