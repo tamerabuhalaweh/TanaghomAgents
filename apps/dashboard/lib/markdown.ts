@@ -28,7 +28,30 @@ export function safeMarkdownHref(href: string): string | null {
   return null;
 }
 
-export function parseMarkdownInline(value: string): MarkdownInline[] {
+/**
+ * Excerpts written before the generator fix can start with one asterisk fewer
+ * than their closing pair ("*Opening:**"); restore the missing opener so the
+ * span renders as bold text instead of leaking a literal asterisk.
+ */
+function repairLegacyBold(value: string): string {
+  return value.split("\n").map((line) => line.replace(/(^|\s)\*([^*\n]+?)\*\*/g, "$1**$2**")).join("\n");
+}
+
+/** Drops a marker left without a partner, so "*…" renders as "…". */
+function stripDanglingMarkers(value: string): string {
+  let text = value;
+  for (const marker of ["**", "*"]) {
+    while ((text.split(marker).length - 1) % 2 === 1) {
+      const at = text.lastIndexOf(marker);
+      if (at < 0) break;
+      text = `${text.slice(0, at)}${text.slice(at + marker.length)}`;
+    }
+  }
+  return text;
+}
+
+export function parseMarkdownInline(source: string): MarkdownInline[] {
+  const value = repairLegacyBold(source);
   const parts = value.split(INLINE_TOKEN);
   const nodes: MarkdownInline[] = [];
   for (const part of parts) {
@@ -63,7 +86,8 @@ export function parseMarkdownInline(value: string): MarkdownInline[] {
       nodes.push({ type: "text", value: link[1] });
       continue;
     }
-    nodes.push({ type: "text", value: part });
+    const text = stripDanglingMarkers(part);
+    if (text) nodes.push({ type: "text", value: text });
   }
   return nodes;
 }
@@ -80,6 +104,12 @@ export function parseMarkdown(source: string): MarkdownBlock[] {
   while (index < lines.length) {
     const line = lines[index].trimEnd();
     if (!line.trim()) {
+      index += 1;
+      continue;
+    }
+
+    // A marker-only line ("*…", "**") is the tail of an interrupted span, not content.
+    if (/^(?:\*{1,2}|_{1,2})\s*(?:…|\.\.\.)?$/.test(line.trim())) {
       index += 1;
       continue;
     }

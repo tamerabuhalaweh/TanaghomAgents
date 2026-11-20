@@ -582,6 +582,7 @@ function PostCard({
           textAnchor={rtl ? "end" : "start"}
           direction={rtl ? "rtl" : "ltr"}
           xmlSpace="preserve"
+          style={{ whiteSpace: "pre" }}
         >
           {svgTextRuns(headlineLines).map((line, lineIndex) => (
             <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : headlineLineHeight}>{line}</tspan>
@@ -597,6 +598,7 @@ function PostCard({
           textAnchor={rtl ? "end" : "start"}
           direction={rtl ? "rtl" : "ltr"}
           xmlSpace="preserve"
+          style={{ whiteSpace: "pre" }}
         >
           {svgTextRuns(bodyLines).map((line, lineIndex) => (
             <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 : 88} dy={lineIndex === 0 ? 0 : bodyLineHeight}>{line}</tspan>
@@ -616,6 +618,7 @@ function PostCard({
               dominantBaseline="central"
               direction={rtl ? "rtl" : "ltr"}
               xmlSpace="preserve"
+              style={{ whiteSpace: "pre" }}
             >
               {svgTextRuns(ctaLines).map((line, lineIndex) => (
                 <tspan key={`${line}-${lineIndex}`} x={rtl ? 992 - 280 : 88 + 280} dy={lineIndex === 0 ? -((ctaLines.length - 1) * ctaLineHeight) / 2 : ctaLineHeight}>{line}</tspan>

@@ -186,12 +186,12 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <div className="sidebar-footer">
           <div className="sidebar-trust">
             <span className="environment-badge">{ar ? "موافقة بشرية قبل النشر" : "Human-Reviewed Workspace"}</span>
-            <span className="sidebar-timezone">{ar ? "كل الأوقات بتوقيت جهازك" : "All times: your device timezone"}</span>
             <button className="nav-link sidebar-help-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={() => { closeMenu(); openHelp(); }}>
               <CircleHelp size={18} />
               <span>{ar ? "المساعدة السريعة" : "Quick help"}</span>
             </button>
           </div>
+          <span className="sidebar-timezone">{ar ? "كل الأوقات بتوقيت جهازك" : "All times: your device timezone"}</span>
           <div className="sidebar-locale"><LocaleToggle locale={locale} /></div>
           <Link href="/team" className={`nav-link ${pathname.startsWith("/team") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/team") ? "page" : undefined} onClick={() => closeMenu()}>
             <UsersRound size={18} />
