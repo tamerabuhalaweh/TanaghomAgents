@@ -23,27 +23,44 @@ const INLINE_MARKERS = ["***", "**", "__", "`", "*"];
  * literal asterisks, so it is dropped instead of closed — closing it would put
  * the ellipsis inside the emphasis and change the meaning of the source.
  */
-export function balanceInlineMarkdown(value: string): string {
-  const text = value ?? "";
+function balanceLineInline(body: string): string {
   let output = "";
   let index = 0;
-  while (index < text.length) {
-    const marker = INLINE_MARKERS.find((candidate) => text.startsWith(candidate, index));
+  while (index < body.length) {
+    const marker = INLINE_MARKERS.find((candidate) => body.startsWith(candidate, index));
     if (!marker) {
-      output += text[index];
+      output += body[index];
       index += 1;
       continue;
     }
-    const close = text.indexOf(marker, index + marker.length);
+    const close = body.indexOf(marker, index + marker.length);
     if (close === -1) {
       // No closing partner: this is the marker the truncation cut in half.
       index += marker.length;
       continue;
     }
-    output += text.slice(index, close + marker.length);
+    output += body.slice(index, close + marker.length);
     index = close + marker.length;
   }
-  return output.trimEnd();
+  return output;
+}
+
+/**
+ * Remove inline markers that a cut left open. An excerpt can end in the middle
+ * of a **bold** span; the parser would then render that dangling opener as
+ * literal asterisks, so it is dropped instead of closed — closing it would put
+ * the ellipsis inside the emphasis and change the meaning of the source.
+ */
+export function balanceInlineMarkdown(value: string): string {
+  const lines = (value ?? "").split("\n").map((line) => {
+    const listLine = line.match(/^(\s*(?:[-*+]|\d+[.)])\s+)(.*)$/);
+    if (listLine) return `${listLine[1]}${balanceLineInline(listLine[2])}`;
+    return balanceLineInline(line);
+  });
+  while (lines.length && /^\s*(?:[-*+]|\d+[.)]|#{1,6}|>)?\s*$/u.test(lines[lines.length - 1])) {
+    lines.pop();
+  }
+  return lines.join("\n").trimEnd();
 }
 
 /** Word-boundary truncation that never leaves a dangling inline markdown marker. */

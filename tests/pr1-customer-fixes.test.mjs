@@ -172,6 +172,23 @@ test("a truncated excerpt never leaves a dangling inline markdown marker", () =>
   assert.equal(balanceInlineMarkdown("text `open"), "text open");
   assert.equal(balanceInlineMarkdown("text *open"), "text open");
   assert.equal(balanceInlineMarkdown("***Day 6 (Thursday): launch"), "Day 6 (Thursday): launch");
+
+  // Bullet markers must not pair with a dangling ** opener, and an empty
+  // trailing bullet left at the word-boundary cut is dropped cleanly.
+  const arBullet = "## 1. القسم\n\n* **الحقائق المؤكدة للمشروع:** تفاصيل إضافية";
+  const arBulletExcerpt = truncateMarkdownAtWord(arBullet, 30);
+  const arBulletRendered = renderedText(`${arBulletExcerpt}…`);
+  assert.doesNotMatch(arBulletRendered, /[*`]|__/u, `bullet + bold leaked: ${arBulletRendered}`);
+
+  const enBullet = "*   **Missing Information (Unconfirmed pricing):** details";
+  const enBulletExcerpt = truncateMarkdownAtWord(enBullet, 38);
+  const enBulletRendered = renderedText(`${enBulletExcerpt}…`);
+  assert.doesNotMatch(enBulletRendered, /[*`]|__/u, `indented bullet + bold leaked: ${enBulletRendered}`);
+
+  const bareBulletCut = "First line of copy.\n*   **Second:** body";
+  const bareBulletExcerpt = truncateMarkdownAtWord(bareBulletCut, 22);
+  assert.equal(bareBulletExcerpt, "First line of copy.");
+  assert.doesNotMatch(renderedText(`${bareBulletExcerpt}…`), /[*`]|__/u);
 });
 
 test("SVG card text keeps the word boundary when read or copied", () => {
