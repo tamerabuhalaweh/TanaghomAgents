@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import type { AuthCopy } from "@/lib/i18n/auth";
 import { formatDateTime } from "@/lib/i18n/format";
+import { describeSessionDevice } from "@/lib/session-device";
 
 interface Session {
   id: string;
@@ -65,14 +66,47 @@ export function SessionList({ copy, locale = "en" }: { copy: AuthCopy; locale?: 
     }
   }
 
+  async function revokeOthers() {
+    setRevoking("__others__");
+    setNotice("");
+    try {
+      const response = await authenticatedFetch("/api/auth/sessions?scope=others", {
+        method: "DELETE",
+      });
+      if (!response.ok) {
+        setError(copy.sessionsError);
+        return;
+      }
+      setNotice(copy.sessionsOthersRevoked);
+      await load();
+    } catch {
+      setError(copy.sessionsError);
+    } finally {
+      setRevoking("");
+    }
+  }
+
+  const otherCount = (sessions ?? []).filter((session) => !session.current).length;
+
   return (
     <section className="panel" aria-labelledby="sessions-title">
       <header className="page-heading">
         <div>
-          <p className="eyebrow">Account security</p>
+          <p className="eyebrow">{copy.sessionsEyebrow}</p>
           <h2 id="sessions-title">{copy.sessionsTitle}</h2>
           <p>{copy.sessionsLede}</p>
         </div>
+        {otherCount > 0 ? (
+          <button
+            className="secondary-button"
+            type="button"
+            disabled={revoking !== ""}
+            onClick={() => void revokeOthers()}
+          >
+            <LogOut size={15} aria-hidden="true" />
+            {revoking === "__others__" ? copy.sessionsRevokingOthers : copy.sessionsRevokeOthers}
+          </button>
+        ) : null}
       </header>
 
       {error ? <p className="login-error" role="alert">{error}</p> : null}
@@ -84,29 +118,34 @@ export function SessionList({ copy, locale = "en" }: { copy: AuthCopy; locale?: 
         <p>{copy.sessionsEmpty}</p>
       ) : (
         <ul className="session-list">
-          {sessions.map((session) => (
-            <li key={session.id} className="session-list-item">
-              <div>
-                <p>
-                  <Laptop size={16} aria-hidden="true" /> {session.organization_name}
-                  {session.current ? <strong> · {copy.sessionsCurrent}</strong> : null}
-                </p>
-                <small>
-                  {copy.sessionsLastSeen}: {formatDateTime(session.last_seen_at, locale)}
-                  {session.user_agent ? ` · ${session.user_agent.slice(0, 80)}` : ""}
-                </small>
-              </div>
-              <button
-                className="secondary-button"
-                type="button"
-                disabled={revoking === session.id}
-                onClick={() => void revoke(session.id)}
-              >
-                <LogOut size={15} aria-hidden="true" />
-                {revoking === session.id ? copy.sessionsRevoking : copy.sessionsRevoke}
-              </button>
-            </li>
-          ))}
+          {sessions.map((session) => {
+            const device = describeSessionDevice(session.user_agent, locale);
+            return (
+              <li key={session.id} className="session-list-item">
+                <div>
+                  <p>
+                    <Laptop size={16} aria-hidden="true" /> {device.label}
+                    {session.current ? <strong> · {copy.sessionsCurrent}</strong> : null}
+                  </p>
+                  <small>
+                    {session.organization_name}
+                    {device.ip ? ` · ${copy.sessionsIpLabel}: ${device.ip}` : ""}
+                    {` · ${copy.sessionsLastSeen}: ${formatDateTime(session.last_seen_at, locale)}`}
+                    {` · ${copy.sessionsSignedIn}: ${formatDateTime(session.created_at, locale)}`}
+                  </small>
+                </div>
+                <button
+                  className="secondary-button"
+                  type="button"
+                  disabled={revoking !== ""}
+                  onClick={() => void revoke(session.id)}
+                >
+                  <LogOut size={15} aria-hidden="true" />
+                  {revoking === session.id ? copy.sessionsRevoking : copy.sessionsRevoke}
+                </button>
+              </li>
+            );
+          })}
         </ul>
       )}
     </section>

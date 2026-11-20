@@ -48,9 +48,12 @@ export async function POST(request: NextRequest) {
       headers: {
         apikey: publishableKey,
         "Content-Type": "application/json",
-        // Preserve the real client address for the auth service's per-IP limit.
+        // Preserve the real client address and browser User-Agent for rate limits and session device labels.
         ...(request.headers.get("x-forwarded-for")
           ? { "x-forwarded-for": request.headers.get("x-forwarded-for")! }
+          : {}),
+        ...(request.headers.get("user-agent")
+          ? { "user-agent": request.headers.get("user-agent")! }
           : {}),
       },
       body: JSON.stringify({ email, password: body.password }),

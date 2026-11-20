@@ -27,7 +27,16 @@ export async function POST(request: NextRequest) {
   try {
     upstream = await fetch(`${supabaseUrl}/auth/v1/token?grant_type=refresh_token`, {
       method: "POST",
-      headers: { apikey: publishableKey, "Content-Type": "application/json" },
+      headers: {
+        apikey: publishableKey,
+        "Content-Type": "application/json",
+        ...(request.headers.get("x-forwarded-for")
+          ? { "x-forwarded-for": request.headers.get("x-forwarded-for")! }
+          : {}),
+        ...(request.headers.get("user-agent")
+          ? { "user-agent": request.headers.get("user-agent")! }
+          : {}),
+      },
       body: JSON.stringify({ refresh_token: refreshToken }),
       cache: "no-store",
       signal: AbortSignal.timeout(8_000),

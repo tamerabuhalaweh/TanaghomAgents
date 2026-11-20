@@ -24,11 +24,17 @@ export interface AuthCopy {
   passwordTooSimple: string;
   passwordTooCommon: string;
   sessionsTitle: string;
+  sessionsEyebrow: string;
   sessionsLede: string;
   sessionsCurrent: string;
   sessionsLastSeen: string;
+  sessionsSignedIn: string;
+  sessionsIpLabel: string;
   sessionsRevoke: string;
   sessionsRevoking: string;
+  sessionsRevokeOthers: string;
+  sessionsRevokingOthers: string;
+  sessionsOthersRevoked: string;
   sessionsEmpty: string;
   sessionsError: string;
   sessionsRevoked: string;
@@ -55,11 +61,17 @@ const en: AuthCopy = {
   passwordTooSimple: "Use a password with more distinct characters.",
   passwordTooCommon: "That password is too common. Choose a different one.",
   sessionsTitle: "Active sessions",
-  sessionsLede: "Each browser that signed in is listed here. Revoke anything you do not recognize.",
+  sessionsEyebrow: "Account security",
+  sessionsLede: "Each active browser or device signed in to your account is listed below. Revoke any session you do not recognize.",
   sessionsCurrent: "This session",
   sessionsLastSeen: "Last active",
+  sessionsSignedIn: "Signed in",
+  sessionsIpLabel: "IP",
   sessionsRevoke: "Revoke",
   sessionsRevoking: "Revoking…",
+  sessionsRevokeOthers: "Revoke all other sessions",
+  sessionsRevokingOthers: "Revoking other sessions…",
+  sessionsOthersRevoked: "All other sessions have been revoked.",
   sessionsEmpty: "No other sessions are active.",
   sessionsError: "Sessions could not be loaded. Retry in a moment.",
   sessionsRevoked: "Session revoked.",
@@ -86,11 +98,17 @@ const ar: AuthCopy = {
   passwordTooSimple: "استخدم كلمة مرور بأحرف أكثر تنوعًا.",
   passwordTooCommon: "كلمة المرور شائعة جدًا. اختر كلمة أخرى.",
   sessionsTitle: "الجلسات النشطة",
-  sessionsLede: "يظهر هنا كل متصفح سجّل الدخول. أنهِ أي جلسة لا تعرفها.",
+  sessionsEyebrow: "أمان الحساب",
+  sessionsLede: "تظهر أدناه كل جلسة متصفح أو جهاز نشطة حاليًا لحسابك. أنهِ أي جلسة لا تعرفها.",
   sessionsCurrent: "هذه الجلسة",
   sessionsLastSeen: "آخر نشاط",
+  sessionsSignedIn: "تاريخ الدخول",
+  sessionsIpLabel: "عنوان IP",
   sessionsRevoke: "إنهاء",
   sessionsRevoking: "جارٍ الإنهاء…",
+  sessionsRevokeOthers: "إنهاء جميع الجلسات الأخرى",
+  sessionsRevokingOthers: "جارٍ إنهاء الجلسات الأخرى…",
+  sessionsOthersRevoked: "تم إنهاء جميع الجلسات الأخرى.",
   sessionsEmpty: "لا توجد جلسات أخرى نشطة.",
   sessionsError: "تعذّر تحميل الجلسات. أعد المحاولة بعد قليل.",
   sessionsRevoked: "تم إنهاء الجلسة.",
