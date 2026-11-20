@@ -283,7 +283,7 @@ export function ContentLibrary() {
             <header>
               <div className="content-record-title">
                 <span className="channel-tile">{item.channel.slice(0, 2).toUpperCase()}</span>
-                <div><p>{item.campaign_name}</p><h2>{item.channel === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI work pack") : item.channel} · {item.content_type === "work_pack" ? (ar ? "حزمة عمل" : "Work pack") : item.content_type.replaceAll("_", " ")}</h2></div>
+                <div><p>{item.campaign_name}</p><h2>{item.channel === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : item.channel} · {item.content_type === "work_pack" ? (ar ? "حزمة عمل" : "Work pack") : item.content_type.replaceAll("_", " ")}</h2></div>
               </div>
               <StatusPill tone={statusTone[item.status]}>{ar ? statusLabelAr[item.status] : statusLabel[item.status]}</StatusPill>
             </header>

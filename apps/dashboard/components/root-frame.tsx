@@ -2,7 +2,6 @@
 
 import { usePathname } from "next/navigation";
 import { AppShell } from "@/components/app-shell";
-import { LocalisedDocumentTitle } from "@/components/localised-document-title";
 import { OperationsProvider } from "@/components/operations-context";
 import { LocaleProvider } from "@/lib/client/use-locale";
 import type { CreativeLocale } from "@/lib/i18n/creative";
@@ -29,7 +28,6 @@ export function RootFrame({ children, initialLocale = "en" }: Readonly<{ childre
   if (PUBLIC_ROUTES.has(pathname)) return children;
   return (
     <LocaleProvider initialLocale={initialLocale}>
-      <LocalisedDocumentTitle />
       <OperationsProvider><AppShell>{children}</AppShell></OperationsProvider>
     </LocaleProvider>
   );

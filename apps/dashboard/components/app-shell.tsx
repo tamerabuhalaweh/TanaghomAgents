@@ -26,6 +26,7 @@ import {
 } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { BrandMark } from "./brand-mark";
+import { LocalisedDocumentTitle } from "./localised-document-title";
 import { LocaleToggle } from "./creative/locale-toggle";
 import { SessionProfile } from "./session-profile";
 import { TenantName } from "./tenant-name";
@@ -136,6 +137,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="app-shell">
+      {/* The tab title follows the UI language on every shell route, including
+          the signed-in Overview that mounts the shell without RootFrame. */}
+      <LocalisedDocumentTitle />
       <a className="skip-link" href="#main-content">{ar ? "تخطَّ إلى المحتوى الرئيسي" : "Skip to main content"}</a>
       <header className="mobile-header">
         <Link className="brand" href="/" aria-label={ar ? "لوحة التحكم في إعلاني" : "E3lani dashboard"}>
