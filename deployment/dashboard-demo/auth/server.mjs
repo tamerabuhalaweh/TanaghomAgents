@@ -387,6 +387,7 @@ function sessionClientAgent(request, address) {
 async function handleToken(request, response) {
   const url = new URL(request.url ?? "/", "http://demo-auth");
   const grantType = url.searchParams.get("grant_type");
+  const address = addressOf(request);
   const body = await readJson(request);
 
   if (grantType === "password") {
@@ -396,7 +397,6 @@ async function handleToken(request, response) {
       send(response, 400, { error: "invalid_grant", error_description: "Invalid login credentials" });
       return;
     }
-    const address = addressOf(request);
     const retryAfter = loginBlock(address, email);
     if (retryAfter > 0) {
       send(response, 429, { error: "too_many_attempts", retry_after: retryAfter }, { "Retry-After": String(retryAfter) });

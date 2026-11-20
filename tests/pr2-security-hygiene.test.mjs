@@ -42,6 +42,7 @@ test("§5a auth routes forward real User-Agent, auth store filters idle sessions
 
   const server = readFileSync(path.join(root, "deployment/dashboard-demo/auth/server.mjs"), "utf8");
   assert.match(server, /function sessionClientAgent/);
+  assert.match(server, /async function handleToken[\s\S]*?const address = addressOf\(request\);[\s\S]*?grantType === "password"[\s\S]*?grantType === "refresh_token"/);
   assert.match(server, /store\.revokeOtherSessions/);
 
   const store = readFileSync(path.join(root, "deployment/dashboard-demo/auth/store.mjs"), "utf8");
