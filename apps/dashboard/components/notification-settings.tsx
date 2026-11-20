@@ -52,11 +52,11 @@ export function NotificationSettings() {
   useEffect(() => { void load(); }, [load]);
 
   return <div className="page-stack notification-settings-page">
-    <PageHeading title={ar ? "إعدادات الإشعارات" : "Notification settings"} description={ar ? "اختر أين ترسل تناغم تنبيهات التشغيل بعد اعتماد وقت التسليم المحمي." : "Choose where Tanaghom should send operational alerts after the protected delivery runtime is approved."} />
+    <PageHeading title={ar ? "إعدادات الإشعارات" : "Notification settings"} description={ar ? "اختر أين يرسل إعلاني تنبيهات التشغيل بعد اعتماد وقت التسليم المحمي." : "Choose where E3lani should send operational alerts after the protected delivery runtime is approved."} />
     <SettingsNavigation />
     {state === "loading" ? <NotificationLoading /> : null}
-    {state === "forbidden" ? <SettingsState title="Admin access required" copy="Only an active Tanaghom Admin can manage customer notification destinations." /> : null}
-    {state === "error" ? <SettingsState title="Notification settings unavailable" copy="Tanaghom could not load the protected destination records." action={<button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} />Try again</button>} /> : null}
+    {state === "forbidden" ? <SettingsState title="Admin access required" copy="Only an active E3lani Admin can manage customer notification destinations." /> : null}
+    {state === "error" ? <SettingsState title="Notification settings unavailable" copy="E3lani could not load the protected destination records." action={<button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} />Try again</button>} /> : null}
     {state === "ready" && payload ? <>
       <section className="notification-safety" aria-labelledby="notification-safety-title">
         <ShieldCheck size={20} />
@@ -103,7 +103,7 @@ function DestinationPanel({ definition, destination, events, storageReady, onCha
       const body = await response.json() as { error?: string };
       if (!response.ok) throw new Error(body.error || "save_failed");
       setTarget(""); setEditing(false); setFeedback("Destination saved securely. Delivery remains locked."); await onChanged();
-    } catch (error) { const code = error instanceof Error ? error.message : "save_failed"; setFeedback(errorCopy[code] || "Tanaghom could not save this destination."); }
+    } catch (error) { const code = error instanceof Error ? error.message : "save_failed"; setFeedback(errorCopy[code] || "E3lani could not save this destination."); }
     finally { setBusy(false); }
   }
   async function remove() {
@@ -113,7 +113,7 @@ function DestinationPanel({ definition, destination, events, storageReady, onCha
       const response = await authenticatedFetch(`/api/admin/notifications/${destination.id}`, { method: "DELETE" });
       if (!response.ok) throw new Error("delete_failed");
       setConfirmDelete(false); setEditing(false); await onChanged();
-    } catch { setFeedback("Tanaghom could not remove this destination."); }
+    } catch { setFeedback("E3lani could not remove this destination."); }
     finally { setBusy(false); }
   }
   function toggle(event: string) { setSelectedEvents((current) => current.includes(event) ? current.filter((item) => item !== event) : [...current, event]); }

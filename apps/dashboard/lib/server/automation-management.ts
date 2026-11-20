@@ -113,7 +113,7 @@ export async function getGhlActionAutomationStatus(organizationId: string) {
     },
     changed_at: row.action_policy_changed_at,
     changed_by: row.action_policy_changed_by
-      ? { id: row.action_policy_changed_by, display_name: row.changed_by_name || "Tanaghom Admin" } : null,
+      ? { id: row.action_policy_changed_by, display_name: row.changed_by_name || "E3lani Admin" } : null,
     readiness: {
       runtime_ready: runtimeBlockers.length === 0,
       connection_ready: row.connection_ready,
@@ -150,7 +150,7 @@ export async function getPostizAutomationStatus(organizationId: string) {
   return {
     mode: row.postiz_draft_mode,
     changed_at: row.changed_at,
-    changed_by: row.changed_by ? { id: row.changed_by, display_name: row.changed_by_name || "Tanaghom Admin" } : null,
+    changed_by: row.changed_by ? { id: row.changed_by, display_name: row.changed_by_name || "E3lani Admin" } : null,
     emergency_stop: row.emergency_stop,
     emergency_stop_reason: row.emergency_stop_reason,
     readiness: {

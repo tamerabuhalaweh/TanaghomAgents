@@ -134,7 +134,7 @@ export function SupervisorInbox() {
     {online && stale ? <section className="stale-data-banner" role="status"><Clock3 size={18} /><div><strong>Inbox snapshot is stale</strong><p>Refresh before taking ownership so another supervisor’s newer action is not overwritten.</p></div><button className="secondary-button compact-button" type="button" onClick={() => void refreshAll()}>Refresh now</button></section> : null}
     {loadState === "loading" && !payload ? <SupervisorLoading /> : null}
     {loadState === "forbidden" ? <SupervisorState icon={<ShieldAlert />} title="Supervisor access unavailable" copy="Your role does not allow access to organization conversations." /> : null}
-    {loadState === "error" ? <SupervisorState icon={<CircleAlert />} title="Inbox unavailable" copy="Tanaghom could not load the protected supervisor queue." action={<button className="secondary-button" type="button" onClick={() => void loadInbox(false)}>Try again</button>} /> : null}
+    {loadState === "error" ? <SupervisorState icon={<CircleAlert />} title="Inbox unavailable" copy="E3lani could not load the protected supervisor queue." action={<button className="secondary-button" type="button" onClick={() => void loadInbox(false)}>Try again</button>} /> : null}
 
     {payload ? <>
       <section className={`conversation-safety ${payload.policy?.conversation_emergency_stop ? "conversation-safety-stopped" : ""}`} aria-label="Conversation safety controls">
@@ -229,7 +229,7 @@ function ConversationDetail({ payload, detail, disabled, onChanged, feedback, se
   return <div className="conversation-detail-stack" dir={conversation.language === "ar" ? "rtl" : "ltr"}>
     <header className="conversation-detail-header">
       <div><div className="conversation-detail-title"><span className={`priority-marker priority-${conversation.priority}`} /><h2>{title(conversation)}</h2><StatusPill tone={stateTones[conversation.state]}>{stateLabels[conversation.state]}</StatusPill></div><p>{conversation.campaign_name || "No campaign linked"} · {conversation.pipeline_stage || "Pipeline stage unavailable"}</p></div>
-      <div className="conversation-owner"><UserRound size={17} /><span><small>Reply owner</small><strong>{conversation.owner_user_name || (conversation.reply_authority === "ai" ? "Tanaghom AI" : "No actor")}</strong></span></div>
+      <div className="conversation-owner"><UserRound size={17} /><span><small>Reply owner</small><strong>{conversation.owner_user_name || (conversation.reply_authority === "ai" ? "E3lani AI" : "No actor")}</strong></span></div>
     </header>
 
     <section className="handoff-brief" aria-labelledby="handoff-title"><header><div><h3 id="handoff-title">Handoff brief</h3><p>AI context for the human supervisor—not a sent response.</p></div><Languages size={18} /></header><p>{conversation.handoff_summary || "No AI handoff summary is available yet."}</p><dl><div><dt>Intent</dt><dd>{conversation.intent?.replaceAll("_", " ") || "Unknown"}</dd></div><div><dt>Priority</dt><dd>{conversation.priority}</dd></div><div><dt>Language</dt><dd>{conversation.language === "ar" ? "العربية" : "English"}</dd></div><div><dt>Risk</dt><dd>{conversation.risk_categories.filter((risk) => risk !== "none").join(", ") || "None detected"}</dd></div></dl>{conversation.suggested_response ? <blockquote><strong>Suggested response</strong><p>{conversation.suggested_response}</p></blockquote> : null}</section>

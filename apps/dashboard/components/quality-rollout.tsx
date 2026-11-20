@@ -96,7 +96,7 @@ export function QualityRollout() {
       const code = error instanceof Error ? error.message : "quality_update_failed";
       setFeedback(code === "quality_sample_gate_failed" ? "The required reviewed sample is incomplete."
         : code === "quality_threshold_gate_failed" ? "The latest evaluation does not meet every safety threshold."
-          : "Tanaghom could not record the rollout decision.");
+          : "E3lani could not record the rollout decision.");
     } finally { setBusy(false); }
   }
 
@@ -115,7 +115,7 @@ export function QualityRollout() {
       const code = error instanceof Error ? error.message : "quality_evidence_failed";
       setEvidenceFeedback(code === "quality_import_contains_pii" ? "Import refused: remove personal identifiers and attest de-identification."
         : code === "quality_metrics_required" ? "Approve the metric program before importing evidence."
-          : "Tanaghom could not complete this evidence action.");
+          : "E3lani could not complete this evidence action.");
     } finally { setBusy(false); }
   }
 
@@ -126,7 +126,7 @@ export function QualityRollout() {
   }
 
   if (state === "loading") return <QualityLoading />;
-  if (state === "error" || !data) return <div className="page-stack"><PageHeading title="Quality & rollout" description="Compare human and AI outcomes before increasing autonomy." /><section className="settings-state"><CircleAlert size={24} /><div><h2>Quality evidence is unavailable</h2><p>Tanaghom will not show sample metrics or allow a rollout decision without the source-of-truth snapshot.</p></div><button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} />Try again</button></section></div>;
+  if (state === "error" || !data) return <div className="page-stack"><PageHeading title="Quality & rollout" description="Compare human and AI outcomes before increasing autonomy." /><section className="settings-state"><CircleAlert size={24} /><div><h2>Quality evidence is unavailable</h2><p>E3lani will not show sample metrics or allow a rollout decision without the source-of-truth snapshot.</p></div><button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} />Try again</button></section></div>;
 
   const currentIndex = stages.findIndex((stage) => stage.id === data.policy.current_stage);
   const latest = data.snapshots.find((item) => item.cohort === (data.policy.current_stage === "baseline" ? "human_baseline" : data.policy.current_stage === "shadow" ? "ai_shadow" : data.policy.current_stage === "assisted" ? "assisted" : "bounded_autonomous")) || null;
@@ -144,7 +144,7 @@ export function QualityRollout() {
       <header><div><h2 id="quality-setup-title">Baseline → shadow evidence setup</h2><p>Import reviewed, de-identified conversations and compare proposal-only AI answers. Nothing in this workspace sends a message.</p></div><Database size={18} /></header>
       <div className="quality-setup-grid">
         <article><span>1</span><div><strong>Approve measurement rules</strong><p>Version the formulas and conservative gates used for every comparison.</p></div><button className="secondary-button" type="button" disabled={!data.viewer.can_promote || busy || data.evidence_setup.metric_programs.some(program => program.status === "approved")} onClick={() => void evidenceAction("approve_default_metrics")}>{data.evidence_setup.metric_programs.some(program => program.status === "approved") ? "Rules approved" : "Review & approve"}</button></article>
-        <article><span>2</span><div><strong>Import human baseline</strong><p>JSON only. Tanaghom rejects common PII patterns and requires an explicit removal attestation.</p></div><label className={`secondary-button ${!data.viewer.can_promote || busy ? "is-disabled" : ""}`}><Upload size={15} />Choose JSON<input type="file" accept="application/json,.json" disabled={!data.viewer.can_promote || busy} onChange={(event) => void importFile(event.target.files?.[0] || null)} /></label></article>
+        <article><span>2</span><div><strong>Import human baseline</strong><p>JSON only. E3lani rejects common PII patterns and requires an explicit removal attestation.</p></div><label className={`secondary-button ${!data.viewer.can_promote || busy ? "is-disabled" : ""}`}><Upload size={15} />Choose JSON<input type="file" accept="application/json,.json" disabled={!data.viewer.can_promote || busy} onChange={(event) => void importFile(event.target.files?.[0] || null)} /></label></article>
         <article><span>3</span><div><strong>Run shadow comparison</strong><p>Gemma creates offline proposals. Provider actions remain impossible in this evaluator.</p></div><StatusPill tone="neutral">Platform-controlled</StatusPill></article>
       </div>
       {data.evidence_setup.datasets.length ? <div className="quality-datasets">{data.evidence_setup.datasets.map(dataset => <article key={dataset.id}><div><strong>{dataset.name}</strong><p>{dataset.case_count.toLocaleString()} reviewed cases · {dataset.status.replaceAll("_", " ")} · imported {date(dataset.imported_at)}</p></div><div className="quality-dataset-actions">
@@ -198,9 +198,9 @@ export function QualityRollout() {
 
     <section className="quality-decisions" aria-labelledby="quality-decisions-title">
       <header><div><h2 id="quality-decisions-title">Decision history</h2><p>Immutable promotion and rollback decisions with human rationale.</p></div><Clock3 size={18} /></header>
-      {data.decisions.length ? <ol>{data.decisions.map((decision) => <li key={decision.id}><span className={`decision-icon decision-${decision.decision}`}>{decision.decision === "promote" ? <CheckCircle2 size={16} /> : <RotateCcw size={16} />}</span><div><strong>{decision.decision === "promote" ? `Promoted to ${stageName[decision.to_stage]}` : `Returned to ${stageName[decision.to_stage]}`}</strong><p>{decision.rationale}</p><small>{date(decision.decided_at)} · {decision.decided_by_name}</small></div></li>)}</ol> : <div className="quality-empty"><UsersRound size={21} /><div><strong>No rollout decision yet</strong><p>Tanaghom starts at the human baseline and preserves this empty state until real evidence is reviewed.</p></div></div>}
+      {data.decisions.length ? <ol>{data.decisions.map((decision) => <li key={decision.id}><span className={`decision-icon decision-${decision.decision}`}>{decision.decision === "promote" ? <CheckCircle2 size={16} /> : <RotateCcw size={16} />}</span><div><strong>{decision.decision === "promote" ? `Promoted to ${stageName[decision.to_stage]}` : `Returned to ${stageName[decision.to_stage]}`}</strong><p>{decision.rationale}</p><small>{date(decision.decided_at)} · {decision.decided_by_name}</small></div></li>)}</ol> : <div className="quality-empty"><UsersRound size={21} /><div><strong>No rollout decision yet</strong><p>E3lani starts at the human baseline and preserves this empty state until real evidence is reviewed.</p></div></div>}
     </section>
-    <p className="quality-observed">Snapshot observed {date(data.observed_at)}. Missing data is shown as “—”; Tanaghom never substitutes fixtures for live evidence.</p>
+    <p className="quality-observed">Snapshot observed {date(data.observed_at)}. Missing data is shown as “—”; E3lani never substitutes fixtures for live evidence.</p>
   </div>;
 }
 

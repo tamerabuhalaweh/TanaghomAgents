@@ -471,7 +471,7 @@ function PostCard({
   // Cards are drawn on the primary colour; white text keeps AA contrast on the
   // dark palettes the brand kit validation allows.
   const ink = tokensOn(tones.primary) ? "#FFFFFF" : "#101828";
-  const filename = `tanaghom-post-${index + 1}`;
+  const filename = `e3lani-post-${index + 1}`;
   // Adaptive type: long Arabic or English copy shrinks instead of clipping.
   const headlineSize = card.headline.length > 120 ? 34 : card.headline.length > 84 ? 40 : card.headline.length > 52 ? 48 : 60;
   const headlinePerLine = Math.max(16, Math.round(880 / (headlineSize * 0.56)));
@@ -563,14 +563,14 @@ function PostCard({
         ref={svg}
         viewBox="0 0 1080 1080"
         role="img"
-        aria-label={`${brandName || "Tanaghom"} · ${card.headline}`}
+        aria-label={`${brandName || "E3lani"} · ${card.headline}`}
         xmlns="http://www.w3.org/2000/svg"
       >
         <rect width="1080" height="1080" fill={tones.primary} />
         <rect x="0" y="0" width="1080" height="18" fill={tones.accent} />
         <rect x="88" y="88" width="904" height="904" rx="28" fill={tones.background} opacity="0.08" />
         <text x={rtl ? 992 : 88} y="150" fill={ink} opacity="0.78" fontFamily={font} fontSize="30" textAnchor={rtl ? "end" : "start"} direction={rtl ? "rtl" : "ltr"}>
-          {brandName || "Tanaghom"}
+          {brandName || "E3lani"}
         </text>
         <text
           x={rtl ? 992 : 88}
@@ -670,7 +670,7 @@ export function WorkspacePostCards({
   const ar = locale === "ar";
   const cards = socialPostCards(document, kit, language);
   if (!cards.length) return null;
-  const brandName = kit?.brand_name || kit?.name || "Tanaghom";
+  const brandName = kit?.brand_name || kit?.name || "E3lani";
   return (
     <section className="aw-post-cards" aria-labelledby="aw-post-cards-title">
       <header>

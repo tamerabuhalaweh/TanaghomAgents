@@ -133,7 +133,7 @@ export async function getQualityRollout(request: NextRequest) {
       maximum_complaint_percent: Number(policy.maximum_complaint_percent),
       maximum_opt_out_percent: Number(policy.maximum_opt_out_percent),
       changed_at: policy.changed_at,
-      changed_by: policy.changed_by ? { id: policy.changed_by, display_name: policy.changed_by_name || "Tanaghom Admin" } : null,
+      changed_by: policy.changed_by ? { id: policy.changed_by, display_name: policy.changed_by_name || "E3lani Admin" } : null,
     },
     promotion_gate: gate(policy, snapshots), snapshots, decisions: decisionsResult.rows,
     evidence_setup: { metric_programs: programResult.rows, datasets: datasetResult.rows },
@@ -177,7 +177,7 @@ export async function updateQualityEvidence(request: NextRequest) {
     if (body.action === "approve_default_metrics") {
       const created = await database().query<{ id: string }>(
         "SELECT tanaghom.create_quality_metric_program($1,$2::jsonb,$3::jsonb,$4) AS id",
-        [owner.id, defaultFormulas, defaultThresholds, "Tanaghom Phase 5G reviewed comparison formulas and conservative rollout thresholds."]);
+        [owner.id, defaultFormulas, defaultThresholds, "E3lani Phase 5G reviewed comparison formulas and conservative rollout thresholds."]);
       await database().query("SELECT tanaghom.approve_quality_metric_program($1,$2)", [owner.id, created.rows[0].id]);
     } else if (body.action === "import_baseline") {
       const dataset = body.dataset as Record<string, unknown> | null;
@@ -187,13 +187,13 @@ export async function updateQualityEvidence(request: NextRequest) {
         [owner.id,dataset.name,dataset.source_hash,dataset.period_start,dataset.period_end,dataset.versions,JSON.stringify(dataset.cases),dataset.pii_removed_attestation]);
     } else if (body.action === "record_baseline") {
       await database().query("SELECT tanaghom.record_quality_dataset_snapshot($1,$2::uuid,'human_baseline',$3,$4)",
-        [owner.id,body.dataset_id,"Reviewed de-identified human baseline; outcomes are observational, not causal.","Tanaghom Quality dashboard import"]);
+        [owner.id,body.dataset_id,"Reviewed de-identified human baseline; outcomes are observational, not causal.","E3lani Quality dashboard import"]);
     } else if (body.action === "queue_shadow") {
       await database().query("SELECT tanaghom.queue_quality_shadow_run($1,$2::uuid,$3::jsonb)", [owner.id,body.dataset_id,
         { model: "gemma4-26b-a4b-canary", prompt: "quality-shadow-evaluator/v1", knowledge: "approved-current", policy: "manual-v1", campaign: "evaluation-only" }]);
     } else if (body.action === "record_shadow") {
       await database().query("SELECT tanaghom.record_quality_dataset_snapshot($1,$2::uuid,'ai_shadow',$3,$4)",
-        [owner.id,body.dataset_id,"Proposal-only AI shadow results; no message was sent and no provider action occurred.","Tanaghom Quality shadow evaluator"]);
+        [owner.id,body.dataset_id,"Proposal-only AI shadow results; no message was sent and no provider action occurred.","E3lani Quality shadow evaluator"]);
     } else throw new QualityRolloutError("quality_request_invalid", 400);
   } catch (error) { if (error instanceof QualityRolloutError) throw error; throw mapDatabaseError(error); }
   return getQualityRollout(request);

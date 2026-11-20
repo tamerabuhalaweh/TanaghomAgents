@@ -117,13 +117,13 @@ const errorCopy: Record<string, string> = {
   integration_base_url_invalid: "Enter the provider API base URL without credentials, query parameters, or fragments.",
   integration_base_url_not_allowed: "This API base URL is not on the server-approved provider allowlist.",
   integration_base_url_https_required: "Provider API connections require HTTPS.",
-  integration_provider_unreachable: "Tanaghom could not reach the provider safely. Try again shortly.",
+  integration_provider_unreachable: "E3lani could not reach the provider safely. Try again shortly.",
   integration_test_failed: "The provider connection test did not pass.",
-  integration_channel_discovery_failed: "Tanaghom connected, but social channel discovery did not pass.",
+  integration_channel_discovery_failed: "E3lani connected, but social channel discovery did not pass.",
   ghl_location_id_required: "A valid GoHighLevel Location ID is required.",
-  postiz_mapping_duplicate_channel: "Choose only one social publishing account for each Tanaghom channel.",
+  postiz_mapping_duplicate_channel: "Choose only one social publishing account for each E3lani channel.",
   automation_runtime_not_ready: "The protected background worker is not ready for automatic drafts.",
-  automation_emergency_stopped: "Tanaghom operations have applied the emergency stop.",
+  automation_emergency_stopped: "E3lani operations have applied the emergency stop.",
   postiz_connection_not_ready: "Connect and test social publishing before enabling automatic drafts.",
   postiz_channel_mapping_not_ready: "Map at least one supported social channel first.",
   indeterminate_postiz_operation: "Resolve the uncertain social publishing operation before enabling automation.",
@@ -172,8 +172,8 @@ export function IntegrationsSettings() {
     />
     <SettingsNavigation />
     {state === "loading" ? <IntegrationsLoading /> : null}
-    {state === "forbidden" ? <SettingsState icon={<ShieldCheck />} title="Admin access required" copy="Only a Tanaghom Admin can add, rotate, test, or disconnect customer integrations." /> : null}
-    {state === "error" ? <SettingsState icon={<CircleAlert />} title="Integration settings unavailable" copy="Tanaghom could not load the protected settings record." action={<button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
+    {state === "forbidden" ? <SettingsState icon={<ShieldCheck />} title="Admin access required" copy="Only an E3lani Admin can add, rotate, test, or disconnect customer integrations." /> : null}
+    {state === "error" ? <SettingsState icon={<CircleAlert />} title="Integration settings unavailable" copy="E3lani could not load the protected settings record." action={<button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
     {state === "ready" && payload ? <>
       <section className={`credential-safety ${payload.secure_storage_configured ? "" : "credential-safety-warning"}`}>
         <ShieldCheck size={20} />
@@ -193,7 +193,7 @@ export function IntegrationsSettings() {
       <GhlActionAutomationControl automation={payload.ghl_action_automation} onChanged={load} />
       <section className="integration-boundary">
         <KeyRound size={19} />
-        <div><strong>Customer credentials stay outside n8n</strong><p>Agent workflows use a restricted Tanaghom gateway. Provider tokens are decrypted only for the authorized request and are excluded from execution history.</p></div>
+        <div><strong>Customer credentials stay outside n8n</strong><p>Agent workflows use a restricted E3lani gateway. Provider tokens are decrypted only for the authorized request and are excluded from execution history.</p></div>
       </section>
     </> : null}
   </div>;
@@ -260,7 +260,7 @@ function GhlActionAutomationControl({ automation, onChanged }: {
       await onChanged();
     } catch (error) {
       const code = error instanceof Error ? error.message : "ghl_action_update_failed";
-      setFeedback(errorCopy[code] || "Tanaghom could not update the GHL action policy.");
+      setFeedback(errorCopy[code] || "E3lani could not update the GHL action policy.");
     } finally { setBusy(false); }
   }
 
@@ -281,7 +281,7 @@ function GhlActionAutomationControl({ automation, onChanged }: {
       await onChanged();
     } catch (error) {
       const code = error instanceof Error ? error.message : "ghl_action_update_failed";
-      setFeedback(errorCopy[code] || "Tanaghom could not update the GHL emergency control.");
+      setFeedback(errorCopy[code] || "E3lani could not update the GHL emergency control.");
     } finally { setBusy(false); }
   }
 
@@ -321,7 +321,7 @@ function GhlActionAutomationControl({ automation, onChanged }: {
           ? <p className="readiness-blocker">{automation.emergency_stop ? automation.emergency_stop_reason : ghlBlockerCopy[automation.readiness.blockers[0]] || "GHL actions are not ready."}</p>
           : <p className="readiness-ready">All governed action gates are ready.</p>}
         <p className="automation-history">Proactive messaging: {automation.proactive_message_mode === "disabled" ? "disabled" : "approved templates only"}. Cap: {automation.policy.contact_frequency_cap_24h} per contact per 24 hours.</p>
-        <p className="automation-history">{automation.changed_at ? `Last changed ${date(automation.changed_at)} by ${automation.changed_by?.display_name || "a Tanaghom Admin"}.` : "Using Tanaghom's safe manual default."}</p>
+        <p className="automation-history">{automation.changed_at ? `Last changed ${date(automation.changed_at)} by ${automation.changed_by?.display_name || "an E3lani Admin"}.` : "Using E3lani's safe manual default."}</p>
       </aside>
     </div>
     <div className="automation-emergency-control">
@@ -387,7 +387,7 @@ function PostizAutomationControl({ automation, onChanged }: { automation: Automa
       await onChanged();
     } catch (error) {
       const code = error instanceof Error ? error.message : "automation_update_failed";
-      setFeedback(errorCopy[code] || "Tanaghom could not update the automation policy.");
+      setFeedback(errorCopy[code] || "E3lani could not update the automation policy.");
     } finally { setBusy(false); }
   }
 
@@ -429,7 +429,7 @@ function PostizAutomationControl({ automation, onChanged }: { automation: Automa
           <ReadinessItem ready={automation.readiness.operations_clear}>No uncertain operation</ReadinessItem>
         </ul>
         {automation.readiness.blockers.length ? <p className="readiness-blocker">{automation.emergency_stop ? automation.emergency_stop_reason : blockerCopy[automation.readiness.blockers[0]] || "Automatic drafts are not ready."}</p> : <p className="readiness-ready">All automatic-draft gates are ready.</p>}
-        <p className="automation-history">{automation.changed_at ? `Last changed ${date(automation.changed_at)} by ${automation.changed_by?.display_name || "a Tanaghom Admin"}.` : "Using Tanaghom’s safe manual default."}</p>
+        <p className="automation-history">{automation.changed_at ? `Last changed ${date(automation.changed_at)} by ${automation.changed_by?.display_name || "an E3lani Admin"}.` : "Using E3lani’s safe manual default."}</p>
       </aside>
     </div>
     <footer className="automation-control-footer">
@@ -479,7 +479,7 @@ function ProviderPanel({ record, storageReady, mappings, onChanged }: {
       await onChanged();
     } catch (error) {
       const code = error instanceof Error ? error.message : "request_failed";
-      setFeedback(errorCopy[code] || "Tanaghom could not complete this integration request.");
+      setFeedback(errorCopy[code] || "E3lani could not complete this integration request.");
     } finally { setBusy(null); }
   }
 
@@ -504,8 +504,8 @@ function ProviderPanel({ record, storageReady, mappings, onChanged }: {
     </div> : null}
 
     {editing ? <form className="integration-form" method="post" onSubmit={(event) => { event.preventDefault(); void request("save"); }}>
-      <div className="form-field"><label htmlFor={`${record.provider}-secret`}>{record.provider === "postiz" ? "Social publishing API key or OAuth token" : "GoHighLevel private integration token"}</label><input id={`${record.provider}-secret`} type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} minLength={8} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">Write-only: Tanaghom will never display this value again.</span></div>
-      <div className="form-field"><label htmlFor={`${record.provider}-base-url`}>Approved API base URL</label><input id={`${record.provider}-base-url`} type="url" value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">{record.provider === "postiz" ? "Use the Public API base ending in /public/v1. Tanaghom adds /is-connected and /integrations safely." : "Only explicitly approved HTTPS provider base URLs are accepted."}</span></div>
+      <div className="form-field"><label htmlFor={`${record.provider}-secret`}>{record.provider === "postiz" ? "Social publishing API key or OAuth token" : "GoHighLevel private integration token"}</label><input id={`${record.provider}-secret`} type="password" autoComplete="new-password" value={secret} onChange={(event) => setSecret(event.target.value)} minLength={8} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">Write-only: E3lani will never display this value again.</span></div>
+      <div className="form-field"><label htmlFor={`${record.provider}-base-url`}>Approved API base URL</label><input id={`${record.provider}-base-url`} type="url" value={baseUrl} onChange={(event) => setBaseUrl(event.target.value)} required disabled={!storageReady || Boolean(busy)} /><span className="field-help">{record.provider === "postiz" ? "Use the Public API base ending in /public/v1. E3lani adds /is-connected and /integrations safely." : "Only explicitly approved HTTPS provider base URLs are accepted."}</span></div>
       {record.provider === "ghl" ? <>
         <div className="form-field"><label htmlFor="ghl-location">Location ID</label><input id="ghl-location" value={locationId} onChange={(event) => setLocationId(event.target.value)} required disabled={!storageReady || Boolean(busy)} /></div>
         <div className="form-field"><label htmlFor="ghl-pipeline">Pipeline ID <span>Optional</span></label><input id="ghl-pipeline" value={pipelineId} onChange={(event) => setPipelineId(event.target.value)} disabled={!storageReady || Boolean(busy)} /></div>
@@ -540,12 +540,12 @@ function PostizMappings({ channels, current, busy, setBusy, onChanged, setFeedba
       await onChanged();
     } catch (error) {
       const code = error instanceof Error ? error.message : "mapping_failed";
-      setFeedback(errorCopy[code] || "Tanaghom could not save the channel mappings.");
+      setFeedback(errorCopy[code] || "E3lani could not save the channel mappings.");
     } finally { setBusy(null); }
   }
 
   return <div className="channel-mapping" aria-labelledby="postiz-channels-title">
-    <div><h3 id="postiz-channels-title">Channel mapping</h3><p>Choose which social publishing account receives a Tanaghom draft for each channel. This does not enable publishing.</p></div>
+    <div><h3 id="postiz-channels-title">Channel mapping</h3><p>Choose which social publishing account receives an E3lani draft for each channel. This does not enable publishing.</p></div>
     {tanaghomChannels.length ? <div className="channel-mapping-grid">{tanaghomChannels.map((channel) => <label key={channel}><span>{channel}</span><select value={selected[channel] || ""} onChange={(event) => setSelected((value) => ({ ...value, [channel]: event.target.value }))}><option value="">Not mapped</option>{eligible.filter((item) => providerToChannel[item.identifier] === channel).map((item) => <option key={item.id} value={item.id}>{item.name}{item.profile ? ` · ${item.profile}` : ""}</option>)}</select></label>)}</div> : <div className="channel-empty"><Link2 size={18} /><span><strong>No supported social channels found</strong><small>Connect social accounts in the social publishing service, then test this connection again.</small></span></div>}
     <button className="secondary-button compact-button" type="button" disabled={busy || !tanaghomChannels.length} onClick={() => void save()}>{busy ? "Saving mappings…" : "Save channel mappings"}</button>
   </div>;

@@ -8,7 +8,7 @@ export const SCRYPT = Object.freeze({ N: 32768, r: 8, p: 1, keylen: 64, maxmem: 
 export const MIN_PASSWORD_LENGTH = 12;
 export const MIN_RESET_PASSWORD_LENGTH = 10;
 export const MAX_PASSWORD_LENGTH = 128;
-const COMMON_FRAGMENTS = ["password", "tanaghom", "qwerty", "123456", "letmein", "admin123", "changeme"];
+const COMMON_FRAGMENTS = ["password", "tanaghom", "e3lani", "qwerty", "123456", "letmein", "admin123", "changeme"];
 
 export function passwordPolicyError(password, email = "") {
   if (typeof password !== "string" || password.length === 0) return "password_required";

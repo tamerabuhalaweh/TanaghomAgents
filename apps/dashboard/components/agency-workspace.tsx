@@ -239,7 +239,7 @@ export function AgencyWorkspace() {
     const contents = selected.language === "ar" ? arabic : english;
     const url = URL.createObjectURL(new Blob([contents], { type: "text/markdown;charset=utf-8" }));
     const a = document.createElement("a");
-    a.href = url; a.download = `tanaghom-workpack-${selected.id}.md`; a.click();
+    a.href = url; a.download = `e3lani-workpack-${selected.id}.md`; a.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 

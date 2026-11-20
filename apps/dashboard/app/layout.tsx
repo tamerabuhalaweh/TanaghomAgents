@@ -16,7 +16,7 @@ const arabic = IBM_Plex_Sans_Arabic({
 });
 
 export const metadata: Metadata = {
-  title: { default: "Tanaghom", template: "%s · Tanaghom" },
+  title: { default: "E3lani", template: "%s · E3lani" },
   description: "Human control for coordinated business agents.",
 };
 

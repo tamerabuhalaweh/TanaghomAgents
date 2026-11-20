@@ -54,7 +54,7 @@ const errorMessages: Record<string, string> = {
   campaign_input_invalid: "Review the brief, audience, geography, targets, and content count.",
   valid_idempotency_key_required: "We could not safely identify this request. Try again.",
   forbidden: "Only an owner or operator can create a campaign.",
-  service_unavailable: "Tanaghom could not create the campaign. Try again.",
+  service_unavailable: "E3lani could not create the campaign. Try again.",
 };
 
 export function CampaignsView() {
@@ -78,7 +78,7 @@ export function CampaignsView() {
       });
       const payload = await response.json() as { error?: string; campaign?: { campaign_id: string } };
       if (!response.ok || !payload.campaign) {
-        setError(errorMessages[payload.error || "service_unavailable"] || "Tanaghom rejected this campaign. Review the fields and try again.");
+        setError(errorMessages[payload.error || "service_unavailable"] || "E3lani rejected this campaign. Review the fields and try again.");
         return;
       }
       operations.retry();

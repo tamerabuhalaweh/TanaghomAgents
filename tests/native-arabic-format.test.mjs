@@ -63,9 +63,9 @@ test("public Arabic prices and the footer copyright read natively", () => {
   assert.match(page, /formatNumber\(launch100Active \? tier\.promo : tier\.list, "ar"\)\} دولارًا/);
   assert.match(page, /formatNumber\(tier\.list, "ar"\)\} دولارًا/);
   assert.match(page, /formatNumber\(15, "ar"\)\} دولارًا/);
-  assert.match(page, /© \$\{new Date\(\)\.getFullYear\(\)\} تناغم/);
-  assert.match(page, /© \$\{new Date\(\)\.getFullYear\(\)\} Tanaghom/);
-  assert.doesNotMatch(page, /2026 ?Tanaghom/);
+  assert.match(page, /© \$\{new Date\(\)\.getFullYear\(\)\} إعلاني/);
+  assert.match(page, /© \$\{new Date\(\)\.getFullYear\(\)\} E3lani/);
+  assert.doesNotMatch(page, /2026 ?(?:Tanaghom|E3lani)/);
 });
 
 test("Arabic currency spelling is standardized across every component", () => {

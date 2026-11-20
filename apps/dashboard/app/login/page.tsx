@@ -21,12 +21,12 @@ export default async function LoginPage({
   return (
     <main className="login-page auth-page" dir={dir} lang={locale}>
       <section className="login-context" aria-labelledby="login-context-title">
-        <Link className="brand login-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لتناغم" : "Tanaghom home"}>
+        <Link className="brand login-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
           <BrandMark />
-          <span>{ar ? "تناغم" : "Tanaghom"}</span>
+          <span>{ar ? "إعلاني" : "E3lani"}</span>
         </Link>
         <div className="login-promise">
-          <p className="login-context-label">{ar ? "سجّل الدخول إلى تناغم" : "Sign in to Tanaghom"}</p>
+          <p className="login-context-label">{ar ? "سجّل الدخول إلى إعلاني" : "Sign in to E3lani"}</p>
           <h1 id="login-context-title">{ar ? "كل ما ينشئه فريقك ويعتمده وينشره — في مكان واحد" : "Every decision stays visible."}</h1>
           <p>
             {ar
@@ -47,16 +47,16 @@ export default async function LoginPage({
       <section className="login-access" aria-labelledby="login-title">
         <div className="login-panel">
           <div className="auth-locale-row"><LocaleToggle locale={locale} /></div>
-          <Link className="login-mobile-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لتناغم" : "Tanaghom home"}>
+          <Link className="login-mobile-brand" href="/" aria-label={ar ? "الصفحة الرئيسية لإعلاني" : "E3lani home"}>
             <BrandMark />
-            <span>{ar ? "تناغم" : "Tanaghom"}</span>
+            <span>{ar ? "إعلاني" : "E3lani"}</span>
           </Link>
           <p className="login-access-label">{ar ? "مساحة عمل خاصة" : "Private workspace"}</p>
           <h2 id="login-title">{ar ? "أهلًا بعودتك" : "Welcome back"}</h2>
           <p className="login-intro">
             {ar
               ? "سجّل الدخول للمتابعة إلى مساحة عملك. أدخل بريدك الإلكتروني وكلمة المرور للمتابعة."
-              : "Sign in with the owner or reviewer account connected to Tanaghom."}
+              : "Sign in with the owner or reviewer account connected to E3lani."}
           </p>
           {params.reset ? (
             <p className="login-notice" role="status">
@@ -70,10 +70,10 @@ export default async function LoginPage({
           ) : null}
           <LoginForm locale={locale} />
           <p className="login-support">
-            {ar ? <>جديد هنا؟ <Link href="/signup">أنشئ مساحة عمل</Link></> : <>New to Tanaghom? <a href="/signup">Create a workspace</a></>}
+            {ar ? <>جديد هنا؟ <Link href="/signup">أنشئ مساحة عمل</Link></> : <>New to E3lani? <a href="/signup">Create a workspace</a></>}
           </p>
           <p className="login-support">
-            {ar ? "تتم إدارة الوصول بواسطة مسؤول تناغم." : "Access is managed by your Tanaghom administrator."}
+            {ar ? "تتم إدارة الوصول بواسطة مسؤول إعلاني." : "Access is managed by your E3lani administrator."}
           </p>
           <nav className="auth-legal-links" aria-label={ar ? "روابط الأسعار والقانون" : "Legal and pricing links"}>
             <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>

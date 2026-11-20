@@ -87,7 +87,7 @@ test("workspace prompt writes strategic Arabic and customer copy in the resolved
   assert.match(prompt, /Egyptian Arabic/);
   assert.match(prompt, /اللهجة المصرية/);
   assert.match(prompt, /hooks, posts, captions/);
-  assert.match(prompt, /تناغم/);
+  assert.match(prompt, /إعلاني/);
   assert.equal(JSON.parse(request.contents[0].parts[0].text).dialect, "egypt");
   const english = workspaceRequest({ ...task, language: "en", dialect: undefined }, 32768);
   assert.doesNotMatch(english.systemInstruction.parts[0].text, /White Arabic|اللهجة/);
