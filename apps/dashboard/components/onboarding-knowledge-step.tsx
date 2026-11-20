@@ -12,6 +12,25 @@ import {
 
 type Status = "loading" | "ready" | "load_error" | "saving" | "saved" | "error";
 
+type KnowledgeDraft = {
+  source_id: string;
+  title: string;
+  status: string;
+  language: string;
+  version_number: number;
+};
+
+function draftStatusLabel(status: string, copy: OnboardingCopy) {
+  switch (status) {
+    case "draft": return copy.knowledgeStatusDraft;
+    case "reviewed": return copy.knowledgeStatusReviewed;
+    case "active": return copy.knowledgeStatusActive;
+    case "revoked": return copy.knowledgeStatusRevoked;
+    case "superseded": return copy.knowledgeStatusSuperseded;
+    default: return copy.knowledgeStatusApproved;
+  }
+}
+
 const SOURCE_KEY = /^[a-z][a-z0-9_-]{2,79}$/;
 
 function slugify(value: string) {
@@ -31,6 +50,7 @@ function generatedKey(title: string) {
 export function OnboardingKnowledgeStep({ copy, locale }: { copy: OnboardingCopy; locale: "en" | "ar" }) {
   const [status, setStatus] = useState<Status>("loading");
   const [sources, setSources] = useState(0);
+  const [drafts, setDrafts] = useState<KnowledgeDraft[]>([]);
   const [sourceKey, setSourceKey] = useState("");
   const [keyTouched, setKeyTouched] = useState(false);
   const [title, setTitle] = useState("");
@@ -47,9 +67,29 @@ export function OnboardingKnowledgeStep({ copy, locale }: { copy: OnboardingCopy
           setStatus("load_error");
           return;
         }
-        const payload = await response.json() as { counts?: { sources?: number } };
+        const payload = await response.json() as {
+          counts?: { sources?: number };
+          versions?: Array<Record<string, unknown>>;
+        };
         if (!active) return;
-        setSources(payload.counts?.sources ?? 0);
+        // The catalogue is ordered newest version first, so the first row for a
+        // source is the draft the reviewer is looking at today.
+        const seen = new Set<string>();
+        const latest: KnowledgeDraft[] = [];
+        for (const row of Array.isArray(payload.versions) ? payload.versions : []) {
+          const sourceId = typeof row.source_id === "string" ? row.source_id : "";
+          if (!sourceId || seen.has(sourceId)) continue;
+          seen.add(sourceId);
+          latest.push({
+            source_id: sourceId,
+            title: typeof row.title === "string" ? row.title : "",
+            status: typeof row.status === "string" ? row.status : "",
+            language: typeof row.language === "string" ? row.language : "",
+            version_number: Number(row.version_number) || 1,
+          });
+        }
+        setDrafts(latest);
+        setSources(payload.counts?.sources ?? latest.length);
         setStatus("ready");
       })
       .catch(() => {
@@ -117,7 +157,19 @@ export function OnboardingKnowledgeStep({ copy, locale }: { copy: OnboardingCopy
   return (
     <form className="onboarding-form" onSubmit={submit} dir={locale === "ar" ? "rtl" : "ltr"}>
       {stepHeader}
-      {sources > 0 ? <p className="onboarding-note">{copy.knowledgeExisting}</p> : null}
+      {drafts.length ? <section className="onboarding-saved-knowledge" aria-labelledby="onboarding-saved-knowledge-title">
+        <h3 id="onboarding-saved-knowledge-title">{copy.knowledgeSavedListTitle}</h3>
+        <p className="onboarding-note">{copy.knowledgeExisting}</p>
+        <ul>
+          {drafts.map((draft) => (
+            <li key={draft.source_id}>
+              <strong dir="auto">{draft.title || draft.source_id}</strong>
+              <small>{draftStatusLabel(draft.status, copy)} · {draft.language === "ar" ? copy.languages.ar : copy.languages.en} · v{draft.version_number}</small>
+            </li>
+          ))}
+        </ul>
+        <Link className="onboarding-link" href="/knowledge">{copy.knowledgeOpen}</Link>
+      </section> : sources > 0 ? <p className="onboarding-note">{copy.knowledgeExisting}</p> : null}
 
       <div className="onboarding-grid">
         <label className="onboarding-field">

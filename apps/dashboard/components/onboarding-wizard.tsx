@@ -28,8 +28,9 @@ export function OnboardingWizard({ copy, locale }: { copy: OnboardingCopy; local
     { id: 4, label: copy.readyTabTitle },
   ];
 
+  // The same three checks drive the step-4 checklist and the step the wizard
+  // opens on, so setup progress cannot disagree with the dashboard banner.
   useEffect(() => {
-    if (step !== 4) return;
     let active = true;
     setChecklist({ loading: true, error: false, saved: [false, false, false] });
     void Promise.all([
@@ -50,11 +51,15 @@ export function OnboardingWizard({ copy, locale }: { copy: OnboardingCopy; local
         ]);
         if (!active) return;
         const profileSaved = Boolean(profile.completedAt || profile.businessNameEn || profile.businessNameAr || profile.industry || profile.location);
-        setChecklist({
-          loading: false,
-          error: false,
-          saved: [profileSaved, Boolean(kits.kits?.length), (knowledge.counts?.sources ?? 0) > 0],
-        });
+        const saved: [boolean, boolean, boolean] = [
+          profileSaved,
+          Boolean(kits.kits?.length),
+          (knowledge.counts?.sources ?? 0) > 0,
+        ];
+        setChecklist({ loading: false, error: false, saved });
+        const firstIncomplete = saved.findIndex((done) => !done);
+        const openingStep = (firstIncomplete >= 0 ? firstIncomplete + 1 : 4) as Step;
+        setStep((current) => (current === 1 ? openingStep : current));
       })
       .catch(() => {
         if (active) setChecklist({ loading: false, error: true, saved: [false, false, false] });
@@ -62,7 +67,11 @@ export function OnboardingWizard({ copy, locale }: { copy: OnboardingCopy; local
     return () => {
       active = false;
     };
-  }, [step]);
+  }, []);
+
+  function stepSaved(id: Step) {
+    return id < 4 && checklist.saved[id - 1];
+  }
 
   async function finish() {
     if (finishStatus === "saving" || finishStatus === "done") return;
@@ -91,7 +100,7 @@ export function OnboardingWizard({ copy, locale }: { copy: OnboardingCopy; local
             aria-current={step === item.id ? "step" : undefined}
             onClick={() => setStep(item.id)}
           >
-            <span className="onboarding-tab-index" aria-hidden="true">{item.id}</span>
+            <span className="onboarding-tab-index" aria-hidden="true">{stepSaved(item.id) ? <CheckCircle2 size={15} /> : item.id}</span>
             <span>{item.label}</span>
           </button>
         ))}

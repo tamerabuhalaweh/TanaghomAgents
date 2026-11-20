@@ -16,6 +16,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDisplayName } from "@/lib/i18n/agent-names";
+import { truncateAtWord } from "@/lib/truncate";
+import { FormattedText } from "./formatted-text";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -267,7 +269,7 @@ export function ContentLibrary() {
         {visible.map((item) => {
           const isExpanded = expanded === item.id;
           const deliverables = item.deliverables ?? [];
-          const preview = item.draft_copy.length > 280 ? `${item.draft_copy.slice(0, 280).trimEnd()}…` : item.draft_copy;
+          const preview = item.draft_copy.length > 280 ? `${truncateAtWord(item.draft_copy, 280)}…` : item.draft_copy;
           const canHandoff = item.status === "approved" && item.content_type !== "work_pack";
           const hasHandoff = Boolean(item.handoff_job_id);
           const isReady = Boolean(integration?.postiz_ready && integration.can_request_draft && item.postiz_channel_ready);
@@ -291,12 +293,14 @@ export function ContentLibrary() {
                 : `Complete work pack: ${deliverables.length} deliverable${deliverables.length === 1 ? "" : "s"}, untruncated.`}</p>
               {deliverables.map((deliverable) => <section key={deliverable.sequence}>
                 <h3>{ar ? `المهمة ${deliverable.sequence}` : `Task ${deliverable.sequence}`} · {specialistName(deliverable.profile_code, ar)}</h3>
-                <p className="content-deliverable-copy" dir="auto">{deliverable.document}</p>
+                <div className="content-deliverable-copy" dir="auto"><FormattedText text={deliverable.document} /></div>
               </section>)}
               <Link className="primary-button compact-button" href={`/workspace?id=${item.id}`}>
                 {ar ? "افتح الحزمة في مساحة العمل" : "Open work pack in AI Workspace"} <ExternalLink size={14} />
               </Link>
-            </div> : <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto">{isExpanded ? item.draft_copy : preview}</p>}
+            </div> : item.content_type === "work_pack"
+              ? <div className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto"><FormattedText text={isExpanded ? item.draft_copy : preview} /></div>
+              : <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto">{isExpanded ? item.draft_copy : preview}</p>}
             <div className="content-record-meta">
               <span>Generation {item.generation}</span>
               {item.strategy_version ? <span>Strategy v{item.strategy_version}</span> : null}

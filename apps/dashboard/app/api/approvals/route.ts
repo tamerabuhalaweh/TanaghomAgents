@@ -3,6 +3,7 @@ import type { NextRequest } from "next/server";
 import { authorize } from "@/lib/server/authorization";
 import { database } from "@/lib/server/database";
 import { apiFailure, noStore } from "@/lib/server/responses";
+import { truncateAtWord } from "@/lib/truncate";
 import { applyWorkspaceReviewCorrections } from "@/lib/workspace-review-corrections";
 
 export const runtime = "nodejs";
@@ -108,7 +109,8 @@ export async function GET(request: NextRequest) {
           sequence: entry.sequence,
           profile: entry.profile_code,
           status: entry.status || "",
-          excerpt: (entry.document || "").slice(0, 320),
+          excerpt: truncateAtWord(entry.document || "", 320),
+          document: entry.document || "",
         })),
       };
     });

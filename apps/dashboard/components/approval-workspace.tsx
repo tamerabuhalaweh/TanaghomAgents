@@ -19,6 +19,7 @@ import { formatArabicCount } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
 import { dialectLabel, normalizeDialect } from "@/lib/i18n/dialects";
+import { FormattedText } from "./formatted-text";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -27,6 +28,7 @@ interface WorkspaceDeliverable {
   profile: string;
   status: string;
   excerpt: string;
+  document?: string;
 }
 
 interface ApprovalItem {
@@ -249,7 +251,12 @@ export function ApprovalWorkspace() {
                   <li key={`${deliverable.sequence}-${deliverable.profile}`}>
                     <strong>{agentDisplayName(profileNames[deliverable.profile] || deliverable.profile, ar)}</strong>
                     <small dir="auto">{agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)} · {deliverable.status}</small>
-                    <p dir="auto">{deliverable.excerpt ? `${deliverable.excerpt}${deliverable.excerpt.length >= 320 ? "…" : ""}` : (ar ? "لا مسودة محفوظة بعد." : "No stored draft yet.")}</p>
+                    {deliverable.excerpt ? <div className="approval-deliverable-excerpt">
+                      <FormattedText text={`${deliverable.excerpt}${deliverable.document && deliverable.document.length > deliverable.excerpt.length ? "…" : ""}`} dir="auto" />
+                      {deliverable.document && deliverable.document.length > deliverable.excerpt.length
+                        ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={deliverable.document} dir="auto" /></details>
+                        : null}
+                    </div> : <p dir="auto">{ar ? "لا مسودة محفوظة بعد." : "No stored draft yet."}</p>}
                   </li>
                 ))}</ul> : <p>{ar ? "لم يُسلَّم أي مخرج بعد." : "No deliverable has been stored yet."}</p>}
                 <Link className="text-link" href={`/workspace?id=${active.id}`}>{ar ? "فتح حزمة العمل كاملة في مساحة الذكاء الاصطناعي" : "Open the full work pack in the AI workspace"} <ChevronRight size={16} /></Link>
