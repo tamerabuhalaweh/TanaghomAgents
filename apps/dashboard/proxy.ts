@@ -10,6 +10,8 @@ const PUBLIC_PAGES = new Set([
   "/pricing",
   "/privacy",
   "/terms",
+  "/opengraph-image",
+  "/twitter-image",
   "/login",
   "/signup",
   "/verify-email",

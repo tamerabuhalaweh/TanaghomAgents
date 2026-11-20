@@ -9,7 +9,7 @@ import { creativeLocale } from "@/lib/creative-locale";
 import { authCopy } from "@/lib/i18n/auth";
 import { getMarketingOrigin, isSplitDomainMode } from "@/lib/public-urls";
 
-export const metadata: Metadata = { title: "Create workspace" };
+export const metadata: Metadata = { title: "Create workspace", robots: { index: false, follow: false } };
 
 export default async function SignupPage() {
   const { locale, dir } = await creativeLocale();

@@ -77,8 +77,21 @@ const tiers = [
   },
 ] as const;
 
-function PricingCards({ locale, detailed = false, launch100Active = true, appOrigin = "" }: { locale: Locale; detailed?: boolean; launch100Active?: boolean; appOrigin?: string }) {
+function PricingCards({
+  locale,
+  detailed = false,
+  launch100Active = true,
+  appOrigin = "",
+  headingLevel = "h3",
+}: {
+  locale: Locale;
+  detailed?: boolean;
+  launch100Active?: boolean;
+  appOrigin?: string;
+  headingLevel?: "h2" | "h3";
+}) {
   const ar = locale === "ar";
+  const Heading = headingLevel;
   return (
     <div className={`public-pricing-grid ${detailed ? "public-pricing-detailed" : ""}`}>
       {tiers.map((tier) => {
@@ -87,7 +100,7 @@ function PricingCards({ locale, detailed = false, launch100Active = true, appOri
           <article key={tier.id} className={`public-price-card ${"featured" in tier && tier.featured ? "public-price-featured" : ""}`}>
             {launch100Active ? <span className="public-price-tag">{ar ? <><bdi dir="ltr">LAUNCH100</bdi> — عرض الإطلاق لأول 100 مساحة عمل</> : <><bdi dir="ltr">LAUNCH100</bdi> — First 100 Workspaces</>}</span> : null}
             {"featured" in tier && tier.featured ? <span className="public-price-popular">{ar ? "الأكثر شيوعًا" : "Most popular"}</span> : null}
-            <h3>{text.name}</h3>
+            <Heading>{text.name}</Heading>
             <p className="public-price-lede">{text.lede}</p>
             <div className="public-price-value">
               {launch100Active ? <s className="public-price-was" dir={ar ? "rtl" : "ltr"}>{ar ? `${formatNumber(tier.list, "ar")} دولارًا` : `$${tier.list}`}</s> : null}
@@ -113,7 +126,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <div className="public-hero-copy">
           <p className="public-eyebrow"><Sparkles size={15} aria-hidden="true" />{ar ? "ذكاء اصطناعي تحت إشرافك" : "AI with your hand on the wheel"}</p>
           <h1>{ar ? "حملات أسرع. وكل قرار يبقى بيدك." : "Campaigns move faster. Every decision stays in your hands."}</h1>
-          <p className="public-hero-lede">{ar ? "إعلاني هو فريقك التسويقي بالذكاء الاصطناعي. يخطط لحملاتك، ويكتب محتواك، ويجهّز كل منشور — ثم ينتظر موافقتك. لا يُنشر شيء من دونك. بالإنجليزية والعربية، في مساحة عمل واحدة، وبسعر ثابت واحد." : "E3lani is your AI marketing team. It plans your campaigns, writes your content, and prepares every post — then waits for your approval. Nothing goes live without you. In English and Arabic, in one workspace, for one flat price."}</p>
+          <p className="public-hero-lede">{ar ? "إعلاني هو فريق التسويق بالذكاء الاصطناعي للشركات الصغيرة. يخطط لحملاتك، ويكتب محتواك، ويجهّز كل منشور — ثم ينتظر موافقتك. لا يُنشر شيء من دونك. بالإنجليزية والعربية، في مساحة عمل واحدة، وبسعر ثابت واحد." : "E3lani is the AI marketing team for small businesses. It plans your campaigns, writes your content, and prepares every post — then waits for your approval. Nothing goes live without you. In English and Arabic, in one workspace, for one flat price."}</p>
           <div className="public-hero-actions">
             <AppNavLink appOrigin={appOrigin} className="public-button" path="/signup">{ar ? "أنشئ مساحة عملك" : "Create your workspace"}<ArrowRight size={17} /></AppNavLink>
             <AppNavLink appOrigin={appOrigin} className="public-button public-button-outline" path="/login">{ar ? "تسجيل الدخول" : "Sign in"}</AppNavLink>
@@ -130,14 +143,14 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
           <div className="public-preview-body">
             <article className="public-post-card" lang="en" dir="ltr">
               <span className="public-post-label">EN</span>
-              <h3>A quieter morning, a better cup.</h3>
+              <p className="public-post-title">A quieter morning, a better cup.</p>
               <p>Our new single-origin roast is here — bright, balanced, and ready for your first sip.</p>
               <div className="public-post-visual public-post-visual-en" />
               <small>Instagram · Draft</small>
             </article>
             <article className="public-post-card" lang="ar" dir="rtl">
               <span className="public-post-label">ع</span>
-              <h3>صباح أهدأ، وفنجان أفضل.</h3>
+              <p className="public-post-title">صباح أهدأ، وفنجان أفضل.</p>
               <p>تحميصنا الجديد من أصل واحد وصل — متوازن، منعش، وجاهز لأول رشفة.</p>
               <div className="public-post-visual public-post-visual-ar" />
               <small>إنستغرام · مسودة</small>
@@ -218,7 +231,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <p className="public-center-link"><Link href="/pricing">{ar ? "تفاصيل الخطط والمقارنة" : "Compare plans and details"}<ArrowRight size={16} /></Link></p>
       </section>
 
-      <section className="public-faq public-faq-landing">
+      <section id="faq" className="public-faq public-faq-landing">
         <h2>{ar ? "أسئلة الإطلاق" : "Launch questions"}</h2>
         <details><summary>{ar ? "هل إعلاني بالدعوة فقط؟" : "Is E3lani invite-only?"}</summary><p>{ar ? <>نبدأ بدفعة بالدعوة فقط من 20 مساحة عمل نشطة، ثم نتوسع إلى 100 مساحة إطلاق عبر قائمة الأولوية. سعر <bdi dir="ltr">LAUNCH100</bdi> مخصص لأول 100 مساحة عمل.</> : <>We start with an invite-only cohort of 20 active workspaces, then expand to 100 launch workspaces through the priority waitlist. <bdi dir="ltr">LAUNCH100</bdi> pricing is reserved for those first 100 workspaces.</>}</p></details>
         <details><summary>{ar ? "هل السعر لكل مساحة عمل أم لكل مقعد؟" : "Is pricing per workspace or per seat?"}</summary><p>{ar ? "سعر ثابت واحد لكل مساحة عمل، لا لكل مقعد. ادعُ فريقك دون دفع مقابل مقاعد إضافية؛ تختلف الخطط بحجم حملات الذكاء الاصطناعي والسعة. أما الأدوات القائمة على المقاعد مثل Sprout Social (من نحو 299 دولارًا للمقعد) وHootsuite (من نحو 399 دولارًا للمستخدم شهرياً) فتتقاضى عن كل شخص." : "One flat price per workspace, not per seat. Invite your team without extra seat fees; plans differ by AI campaign volume and capacity. Per-seat tools such as Sprout Social (from about $299/seat) and Hootsuite (from about $399/user/mo) charge for each person."}</p></details>
@@ -245,10 +258,10 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
       <section className="public-inner-hero">
         <p className="public-eyebrow">{ar ? "الأسعار" : "Pricing"}</p>
         <h1>{ar ? "مساحة عمل واحدة. خطط تنمو معك." : "One workspace. Plans that grow with you."}</h1>
-        <p>{ar ? "كل خطة تشمل المحتوى العربي والإنجليزي، والاعتماد البشري، وسجل التدقيق. لا مفاجآت في الفواتير." : "Every plan includes Arabic and English content, human approval and the audit trail. No billing surprises."}</p>
+        <p>{ar ? "يمنح إعلاني الشركات الصغيرة وفرق التسويق باقات بسعر ثابت يبدأ من 15 دولارًا شهريًا (LAUNCH100) — وتشمل كل باقة المحتوى العربي والإنجليزي والاعتماد البشري وسجل التدقيق." : "E3lani gives small businesses and marketing teams flat-rate plans from $15/month (LAUNCH100) — every plan includes Arabic and English content, human approval, and the audit trail."}</p>
       </section>
       <section className="public-section">
-        <PricingCards locale={locale} detailed launch100Active={launch100Active} appOrigin={appOrigin} />
+        <PricingCards locale={locale} detailed launch100Active={launch100Active} appOrigin={appOrigin} headingLevel="h2" />
         <aside className="public-sandbox-callout">
           <ShieldCheck size={20} aria-hidden="true" />
           <div><strong>{ar ? "تجربة مجانية لحملة متكاملة" : "Free 1-Campaign Sandbox"}</strong><p>{ar ? "ابدأ بتجربة مجانية بدون التزام، ثم اختر الباقة المناسبة لك. وتتم عملية الدفع بالكامل عبر Stripe بأمان." : "Start with one free campaign, no commitment, then choose the plan that fits you. Checkout is handled securely by Stripe."}</p></div>
@@ -256,7 +269,7 @@ export function PublicPricingPage({ locale, launch100Active = true, cohortFull =
         {cohortFull ? <div className="public-waitlist"><WaitlistForm locale={locale} /></div> : null}
         <p className="public-pricing-note">{ar ? "فوترة B2B بالدولار الأمريكي من شركتنا البريطانية المحدودة. خارج نطاق ضريبة القيمة المضافة البريطانية. هذه ليست عملية بيع بالتجزئة للمستهلكين في المملكة المتحدة، ولا تسري عليها حماية البيع عن بُعد للمستهلكين. نستلم المدفوعات عبر Stripe بالبطاقة أو بالتحويل البنكي. (مرجع HMRC Notice 741A)" : "B2B SaaS billed in USD by our UK Ltd entity. Outside the scope of UK VAT for international B2B customers under HMRC Notice 741A. This is not a UK consumer retail sale, and UK consumer distance-selling protections do not apply. Payments are collected through Stripe by card or bank transfer."}</p>
       </section>
-      <section className="public-faq">
+      <section id="faq" className="public-faq">
         <h2>{ar ? "أسئلة قبل أن تبدأ" : "Before you start"}</h2>
         <details><summary>{ar ? "هل يمكنني تجربة المساحة قبل الدفع؟" : "Can I try the workspace before paying?"}</summary><p>{ar ? "أنشئ مساحة عملك وأكمل الإعداد. تظهر إعدادات الفوترة بوضوح، ولا تُنشر أي حملة دون اعتمادك." : "Create your workspace and complete setup. Billing readiness is shown clearly, and nothing publishes without your approval."}</p></details>
         <details><summary>{ar ? "ماذا يحدث لمحتواي إذا غيّرت الخطة؟" : "What happens to my work if I change plans?"}</summary><p>{ar ? "يبقى محتواك ومسوداتك وسجل اعتمادك في مساحة عملك. تتغير حدود الخطة والمقاعد فقط." : "Your content, drafts and approval history stay in your workspace. Only plan limits and seats change."}</p></details>
