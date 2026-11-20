@@ -168,7 +168,7 @@ const templates = await json(await request("/api/creative/templates", { jar: own
 assert.ok(templates.templates.length >= 8);
 pass("creative templates");
 
-await page(ownerJar, "/", "Tanaghom");
+await page(ownerJar, "/", "E3lani");
 await page(ownerJar, "/campaigns", "Campaigns");
 await page(ownerJar, "/approvals", "Approvals");
 await page(ownerJar, "/creative", "Creative Studio");

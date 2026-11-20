@@ -57,6 +57,8 @@ if "caddy" in services:
     # Compose resolves ${TANAGHOM_PUBLIC_DOMAIN:-} to an empty string until the host
     # .env supplies it; the entrypoint refuses to start in that state.
     assert "TANAGHOM_PUBLIC_DOMAIN" in caddy["environment"], "public domain must come from the host env"
+    assert "TANAGHOM_MARKETING_DOMAIN" in caddy["environment"]
+    assert "TANAGHOM_APEX_DOMAIN" in caddy["environment"]
     assert "TANAGHOM_POSTIZ_DOMAIN" in caddy["environment"]
     assert caddy["entrypoint"] == ["/bin/sh", "/entrypoint.sh"]
 
@@ -105,12 +107,25 @@ if "caddy" in services:
     public_domain = caddy["environment"]["TANAGHOM_PUBLIC_DOMAIN"]
     assert public_domain, "caddy requires TANAGHOM_PUBLIC_DOMAIN"
     assert env["APP_BASE_URL"] == f"https://{public_domain}", "public deployment must use its HTTPS origin"
+    marketing_domain = caddy["environment"].get("TANAGHOM_MARKETING_DOMAIN") or ""
+    apex_domain = caddy["environment"].get("TANAGHOM_APEX_DOMAIN") or ""
+    if apex_domain:
+        assert marketing_domain, "TANAGHOM_APEX_DOMAIN requires TANAGHOM_MARKETING_DOMAIN"
+        assert apex_domain not in {marketing_domain, public_domain}, "TANAGHOM_APEX_DOMAIN must be distinct"
+    if marketing_domain:
+        assert marketing_domain != public_domain, "TANAGHOM_MARKETING_DOMAIN must be distinct from TANAGHOM_PUBLIC_DOMAIN"
+        if env.get("PUBLIC_MARKETING_URL"):
+            assert env["PUBLIC_MARKETING_URL"] == f"https://{marketing_domain}", \
+                "PUBLIC_MARKETING_URL must match TANAGHOM_MARKETING_DOMAIN"
 else:
     # The deploy path validates only the workspace profile, so Caddy is absent
     # from this resolved config even on a public host. Accept its HTTPS origin
     # as well as the loopback-only default.
     assert env["APP_BASE_URL"] == "http://127.0.0.1:3210" or env["APP_BASE_URL"].startswith("https://"), \
         "workspace config must use the loopback or public HTTPS origin"
+assert "PUBLIC_MARKETING_URL" in env, "PUBLIC_MARKETING_URL must be passed to the dashboard"
+assert env["PUBLIC_MARKETING_URL"] == "" or env["PUBLIC_MARKETING_URL"].startswith("https://"), \
+    "PUBLIC_MARKETING_URL must be empty or an https:// origin"
 assert env["CREATIVE_STORAGE_BACKEND"] == "s3"
 assert env["CREATIVE_STORAGE_S3_ENDPOINT"] == "http://storage:9000"
 assert env["CREATIVE_STORAGE_S3_CONDITIONAL_WRITES"] == "verified"

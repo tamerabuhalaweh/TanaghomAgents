@@ -195,6 +195,7 @@ services:
     environment:
       APP_ENV: demo
       APP_BASE_URL: ${TANAGHOM_DEMO_BASE_URL:-http://127.0.0.1:3210}
+      PUBLIC_MARKETING_URL: ${PUBLIC_MARKETING_URL:-}
       PG_POOL_MAX: ${PG_POOL_MAX:-25}
       NODE_ENV: production
       NEXT_TELEMETRY_DISABLED: "1"
@@ -310,6 +311,8 @@ services:
       dashboard: { condition: service_healthy }
     environment:
       TANAGHOM_PUBLIC_DOMAIN: ${TANAGHOM_PUBLIC_DOMAIN:-}
+      TANAGHOM_MARKETING_DOMAIN: ${TANAGHOM_MARKETING_DOMAIN:-}
+      TANAGHOM_APEX_DOMAIN: ${TANAGHOM_APEX_DOMAIN:-}
       TANAGHOM_POSTIZ_DOMAIN: ${TANAGHOM_POSTIZ_DOMAIN:-}
       TANAGHOM_ACME_EMAIL: ${TANAGHOM_ACME_EMAIL:-}
     volumes:
