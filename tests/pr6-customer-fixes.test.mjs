@@ -40,15 +40,25 @@ test("Item 9: previews scale the fixed creative canvas instead of cropping it", 
 });
 
 test("Item 10: Campaigns, Approvals and Agent actions gained search, filter and sort", () => {
+  const campaignsSource = read("apps/dashboard/components/campaigns-view.tsx");
+  assert.match(campaignsSource, /className="list-toolbar/);
+  assert.match(campaignsSource, /className="search-field"/);
+  assert.match(campaignsSource, /className="list-select"/);
+
+  // /approvals and /actions share one always-rendered filter bar (Round 3,
+  // blocker 2), so a zero-match view keeps its toolbar and Clear filters.
+  const bar = read("apps/dashboard/components/review-filter-bar.tsx");
+  assert.match(bar, /className={compact \? "list-toolbar list-toolbar-compact" : "list-toolbar"}/);
+  assert.match(bar, /className="search-field"/);
+  assert.match(bar, /className="list-select"/);
+  assert.match(bar, /"Clear filters"/);
   for (const path of [
-    "apps/dashboard/components/campaigns-view.tsx",
     "apps/dashboard/components/approval-workspace.tsx",
     "apps/dashboard/components/ghl-action-review.tsx",
   ]) {
     const source = read(path);
-    assert.match(source, /className="list-toolbar/, `${path} has no list toolbar`);
-    assert.match(source, /className="search-field"/, `${path} has no search field`);
-    assert.match(source, /className="list-select"/, `${path} has no filter/sort selects`);
+    assert.match(source, /<ReviewFilterBar/, `${path} has no review filter bar`);
+    assert.match(source, /showEmpty={!visible\.length}/, `${path} does not keep its empty state`);
   }
   const campaigns = read("apps/dashboard/components/campaigns-view.tsx");
   assert.match(campaigns, /visible\.map\(/);

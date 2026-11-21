@@ -9,7 +9,6 @@ import {
   MessageSquareText,
   RefreshCw,
   RotateCcw,
-  Search,
   TriangleAlert,
   X,
 } from "lucide-react";
@@ -20,6 +19,9 @@ import { formatArabicCount, formatDateTime } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
 import { dialectLabel, normalizeDialect } from "@/lib/i18n/dialects";
+import { redactTaskReferences } from "@/lib/redact-task-references";
+import { clearedReviewFilters, reviewFiltersActive, reviewPositionLabel } from "@/lib/review-filter";
+import { ReviewFilterBar } from "./review-filter-bar";
 import { FormattedText } from "./formatted-text";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
@@ -207,7 +209,10 @@ export function ApprovalWorkspace() {
     }
   }, [active, visible]);
 
-  const activeIndex = active ? visible.findIndex((item) => item.id === active.id) : -1;
+  // An item excluded by the current filters has no position: never show "0 of 0"
+  // beside a record the view does not contain.
+  const activeInView = Boolean(active && visible.some((item) => item.id === active.id));
+  const activeIndex = activeInView ? visible.findIndex((item) => item.id === active.id) : -1;
 
   function select(id: string) {
     setActiveId(id);
@@ -283,22 +288,26 @@ export function ApprovalWorkspace() {
       {loadState === "error" ? <ApprovalErrorState retry={load} ar={ar} /> : null}
       {loadState === "ready" && !items.length ? <ApprovalEmptyState feedback={feedback} ar={ar} /> : null}
 
-      {loadState === "ready" && active ? (
+      {loadState === "ready" && items.length ? (
         <div className="approval-workspace">
           <aside className="review-inbox" aria-label={ar ? "محتوى بانتظار المراجعة" : "Content awaiting review"}>
             <div className="inbox-heading"><h2>{ar ? "قائمة المراجعة" : "Review queue"}</h2><span>{ar ? formatArabicCount(items.length, { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" }) : `${items.length} pending`}</span>            </div>
-            <div className="list-toolbar list-toolbar-compact">
-              <label className="search-field">
-                <Search size={16} />
-                <span className="sr-only">{ar ? "ابحث في قائمة المراجعة" : "Search the review queue"}</span>
-                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "ابحث بالعنوان أو الحملة" : "Search title, campaign, or channel"} />
-              </label>
-              <div className="list-toolbar-selects">
-                <label className="list-select"><span>{ar ? "النوع" : "Type"}</span><select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as "all" | "ai_workspace" | "content")}><option value="all">{ar ? "كل الأنواع" : "All types"}</option><option value="ai_workspace">{ar ? "حزم العمل" : "AI work packs"}</option><option value="content">{ar ? "المحتوى" : "Content items"}</option></select></label>
-                <label className="list-select"><span>{ar ? "الترتيب" : "Sort"}</span><select value={sort} onChange={(event) => setSort(event.target.value as "newest" | "oldest" | "title")}><option value="newest">{ar ? "الأحدث أولاً" : "Newest first"}</option><option value="oldest">{ar ? "الأقدم أولاً" : "Oldest first"}</option><option value="title">{ar ? "العنوان أبجديًا" : "Title A–Z"}</option></select></label>
-              </div>
-            </div>
-            {!visible.length ? <p className="list-filter-empty">{ar ? "لا عناصر تطابق هذا العرض. امسح البحث أو غيّر النوع." : "No items match this view. Clear the search or change the type."}</p> : null}
+            <ReviewFilterBar
+              ar={ar}
+              query={query}
+              onQuery={setQuery}
+              searchLabel={ar ? "ابحث في قائمة المراجعة" : "Search the review queue"}
+              placeholder={ar ? "ابحث بالعنوان أو الحملة" : "Search title, campaign, or channel"}
+              compact
+              showEmpty={!visible.length}
+              emptyMessage={ar ? "لا عناصر تطابق هذا العرض. امسح البحث أو غيّر النوع." : "No items match this view. Clear the search or change the type."}
+              filtersActive={reviewFiltersActive(query, sourceFilter, "all", sort)}
+              onClear={() => { const cleared = clearedReviewFilters(); setQuery(cleared.query); setSourceFilter(cleared.filter); setSort(cleared.sort); }}
+              selects={[
+                { label: ar ? "النوع" : "Type", value: sourceFilter, onChange: (value) => setSourceFilter(value as "all" | "ai_workspace" | "content"), options: [{ value: "all", label: ar ? "كل الأنواع" : "All types" }, { value: "ai_workspace", label: ar ? "حزم العمل" : "AI work packs" }, { value: "content", label: ar ? "المحتوى" : "Content items" }] },
+                { label: ar ? "الترتيب" : "Sort", value: sort, onChange: (value) => setSort(value as "newest" | "oldest" | "title"), options: [{ value: "newest", label: ar ? "الأحدث أولاً" : "Newest first" }, { value: "oldest", label: ar ? "الأقدم أولاً" : "Oldest first" }, { value: "title", label: ar ? "العنوان أبجديًا" : "Title A–Z" }] },
+              ]}
+            />
             <div className="review-list">
               {visible.map((item) => (
                 <button key={item.id} type="button" className={`review-list-item ${active.id === item.id ? "review-list-item-active" : ""}`} onClick={() => select(item.id)}>
@@ -310,10 +319,10 @@ export function ApprovalWorkspace() {
             </div>
           </aside>
 
-          <article className="review-canvas" aria-labelledby="review-title">
+          {activeInView && active ? <article className="review-canvas" aria-labelledby="review-title">
             <header className="review-header">
               <div><StatusPill tone="attention">{ar ? "بحاجة إلى مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack") : contentTypeLabel(active.content_type, ar)} · {active.campaign_name}</p></div>
-              <div className="review-position"><button className="icon-button" type="button" aria-label={ar ? "العنصر السابق" : "Previous item"} onClick={() => move(-1)}><ChevronLeft size={19} /></button><span>{ar ? `${activeIndex + 1} من ${visible.length}` : `${activeIndex + 1} of ${visible.length}`}</span><button className="icon-button" type="button" aria-label={ar ? "العنصر التالي" : "Next item"} onClick={() => move(1)}><ChevronRight size={19} /></button></div>
+              <div className="review-position"><button className="icon-button" type="button" aria-label={ar ? "العنصر السابق" : "Previous item"} onClick={() => move(-1)}><ChevronLeft size={19} /></button>{reviewPositionLabel(activeIndex, visible.length, locale) ? <span>{reviewPositionLabel(activeIndex, visible.length, locale)}</span> : null}<button className="icon-button" type="button" aria-label={ar ? "العنصر التالي" : "Next item"} onClick={() => move(1)}><ChevronRight size={19} /></button></div>
             </header>
 
             <dl className="review-metadata">
@@ -332,9 +341,9 @@ export function ApprovalWorkspace() {
                     <strong>{agentDisplayName(profileNames[deliverable.profile] || deliverable.profile, ar)}</strong>
                     <small dir="auto">{agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)} · {deliverableStatus(deliverable.status, ar)}</small>
                     {deliverable.excerpt ? <div className="approval-deliverable-excerpt">
-                      <FormattedText text={`${deliverable.excerpt}${deliverable.document && deliverable.document.length > deliverable.excerpt.length ? "…" : ""}`} dir="auto" />
+                      <FormattedText text={redactTaskReferences(`${deliverable.excerpt}${deliverable.document && deliverable.document.length > deliverable.excerpt.length ? "…" : ""}`)} dir="auto" />
                       {deliverable.document && deliverable.document.length > deliverable.excerpt.length
-                        ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={withoutDuplicateHeading(deliverable.document, [profileNames[deliverable.profile], profileDeliverables[deliverable.profile], agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)])} dir="auto" /></details>
+                        ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={redactTaskReferences(withoutDuplicateHeading(deliverable.document, [profileNames[deliverable.profile], profileDeliverables[deliverable.profile], agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)]))} dir="auto" /></details>
                         : null}
                     </div> : <p dir="auto">{ar ? "لا مسودة محفوظة بعد." : "No stored draft yet."}</p>}
                   </li>
@@ -376,7 +385,7 @@ export function ApprovalWorkspace() {
                 <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(true)} disabled={submitting}><X size={17} /> {ar ? "طلب تعديلات" : "Request changes"}</button><button className="primary-button" type="button" onClick={() => void decide("approved")} disabled={submitting || Boolean(active.review_needs_changes)}><Check size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "اعتماد حزمة العمل" : "Approve work pack") : (ar ? "اعتماد المحتوى" : "Approve content")}</button></div>
               </footer>
             )}
-          </article>
+          </article> : <article className="review-canvas review-canvas-empty"><p>{ar ? "لا عناصر تطابق هذا العرض. امسح عوامل التصفية لعرض قائمة المراجعة." : "No items match this view. Clear the filters to see the review queue."}</p></article>}
         </div>
       ) : null}
     </div>

@@ -10,6 +10,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
 import { PageHeading } from "@/components/page-heading";
+import { formatDateTime } from "@/lib/i18n/format";
 import { StatusPill } from "@/components/status-pill";
 import type { Tone } from "@/data/fixtures";
 
@@ -65,6 +66,38 @@ const actionLabels: Record<Action, { en: string; ar: string }> = {
   resolve: { en: "Resolve", ar: "إغلاق" },
   resume_ai: { en: "Return to AI", ar: "إعادة إلى الذكاء الاصطناعي" },
 };
+
+const priorityLabels: Record<string, { en: string; ar: string }> = {
+  low: { en: "Low", ar: "منخفضة" },
+  normal: { en: "Normal", ar: "عادية" },
+  high: { en: "High", ar: "مرتفعة" },
+  urgent: { en: "Urgent", ar: "عاجلة" },
+};
+const roleLabels: Record<string, { en: string; ar: string }> = {
+  owner: { en: "Owner", ar: "المالك" },
+  reviewer: { en: "Reviewer", ar: "المراجع" },
+  operator: { en: "Operator", ar: "المشغّل" },
+  viewer: { en: "Viewer", ar: "المشاهد" },
+};
+const statusLabels: Record<string, { en: string; ar: string }> = {
+  queued: { en: "Queued", ar: "في الانتظار" },
+  pending: { en: "Pending", ar: "قيد الانتظار" },
+  in_progress: { en: "In progress", ar: "قيد التنفيذ" },
+  sent: { en: "Sent", ar: "أُرسلت" },
+  delivered: { en: "Delivered", ar: "تم التسليم" },
+  read: { en: "Read", ar: "قُرئت" },
+  succeeded: { en: "Succeeded", ar: "نجحت" },
+  failed: { en: "Failed", ar: "فشلت" },
+  cancelled: { en: "Cancelled", ar: "أُلغيت" },
+  awaiting_approval: { en: "Awaiting approval", ar: "بانتظار الاعتماد" },
+};
+
+/** Localises a known enum value and falls back to readable text for new ones. */
+function enumLabel(map: Record<string, { en: string; ar: string }>, value: string, ar: boolean): string {
+  const mapped = map[value];
+  if (mapped) return ar ? mapped.ar : mapped.en;
+  return value.replaceAll("_", " ").trim();
+}
 
 function elapsed(seconds: number, ar: boolean) {
   if (seconds < 60) return ar ? "الآن" : "now";
@@ -159,7 +192,7 @@ export function SupervisorInbox() {
         : "One reply owner at a time. Review urgent handoffs, take control, and return conversations to AI only through an explicit audited action."}
       actions={<button className="secondary-button" type="button" disabled={!online} onClick={() => void refreshAll()}><RefreshCw size={16} /> {ar ? "تحديث" : "Refresh"}</button>} />
 
-    {!online ? <SupervisorState icon={<WifiOff />} title={ar ? "أنت غير متصل" : "You are offline"} copy={ar ? "قد تكون بيانات المحادثات قديمة. تُعطَّل الإجراءات حتى تعود الاتصال." : "Conversation data may be outdated. Mutating actions are disabled until the connection returns."} tone="warning" /> : null}
+    {!online ? <SupervisorState icon={<WifiOff />} title={ar ? "أنت غير متصل" : "You are offline"} copy={ar ? "قد تكون بيانات المحادثات قديمة. تُعطَّل الإجراءات حتى يعود الاتصال." : "Conversation data may be outdated. Mutating actions are disabled until the connection returns."} tone="warning" /> : null}
     {online && stale ? <section className="stale-data-banner" role="status"><Clock3 size={18} /><div><strong>{ar ? "لقطة الصندوق قديمة" : "Inbox snapshot is stale"}</strong><p>{ar ? "حدّث قبل تولّي الملكية حتى لا يتم تجاوز إجراء أحدث لمشرف آخر." : "Refresh before taking ownership so another supervisor’s newer action is not overwritten."}</p></div><button className="secondary-button compact-button" type="button" onClick={() => void refreshAll()}>{ar ? "حدّث الآن" : "Refresh now"}</button></section> : null}
     {loadState === "loading" && !payload ? <SupervisorLoading label={ar ? "جارٍ تحميل صندوق المشرف" : "Loading supervisor inbox"} /> : null}
     {loadState === "forbidden" ? <SupervisorState icon={<ShieldAlert />} title={ar ? "الوصول إلى الإشراف غير متاح" : "Supervisor access unavailable"} copy={ar ? "دورك لا يسمح بالوصول إلى محادثات المؤسسة." : "Your role does not allow access to organization conversations."} /> : null}
@@ -187,7 +220,7 @@ export function SupervisorInbox() {
             <label><span className="sr-only">{ar ? "تصفية حسب حالة المحادثة" : "Filter conversation state"}</span><select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}><option value="open">{ar ? "مفتوحة" : "Open"}</option><option value="mine">{ar ? "مسندة إليّ" : "Assigned to me"}</option><option value="human_required">{ar ? "تحتاج تدخل بشري" : "Human required"}</option><option value="human_owned">{ar ? "يملكها إنسان" : "Human owned"}</option><option value="awaiting_approval">{ar ? "بانتظار الاعتماد" : "Awaiting approval"}</option><option value="ai_owned">{ar ? "يملكها الذكاء الاصطناعي" : "AI owned"}</option><option value="paused">{ar ? "متوقفة" : "Paused"}</option><option value="failed">{ar ? "فاشلة" : "Failed"}</option><option value="resolved">{ar ? "مغلقة" : "Resolved"}</option><option value="all">{ar ? "الكل" : "All"}</option></select></label>
           </div>
           {visible.length ? <div className="conversation-list">{visible.map((conversation) => <button key={conversation.id} type="button" className={`conversation-list-item ${selectedId === conversation.id ? "conversation-list-item-active" : ""}`} onClick={() => setSelectedId(conversation.id)}>
-            <span className={`priority-marker priority-${conversation.priority}`} aria-label={ar ? `أولوية ${conversation.priority}` : `${conversation.priority} priority`} />
+            <span className={`priority-marker priority-${conversation.priority}`} aria-label={ar ? `أولوية ${enumLabel(priorityLabels, conversation.priority, ar)}` : `${enumLabel(priorityLabels, conversation.priority, ar)} priority`} />
             <span className="conversation-list-copy"><span><strong>{title(conversation, ar)}</strong><time>{elapsed(Number(conversation.age_seconds) + Math.floor((now - new Date(payload.snapshot_at).getTime()) / 1000), ar)}</time></span><small>{conversation.intent?.replaceAll("_", " ") || (ar ? "غير مصنّفة" : "Unclassified")} · {conversation.language === "ar" ? "العربية" : ar ? "الإنجليزية" : "English"}</small><span><StatusPill tone={stateTones[conversation.state]}>{stateLabels[conversation.state][ar ? "ar" : "en"]}</StatusPill>{conversation.sla_breached ? <em>{ar ? "تجاوز المهلة" : "SLA breached"}</em> : null}</span></span>
           </button>)}</div> : <div className="conversation-list-empty"><MessageSquareText size={21} /><strong>{ar ? "لا توجد محادثات مطابقة" : "No conversations match"}</strong><p>{ar ? "عدّل عامل التصفية أو كلمة البحث." : "Adjust the state filter or search query."}</p></div>}
         </aside>
@@ -261,9 +294,9 @@ function ConversationDetail({ payload, detail, disabled, onChanged, feedback, se
       <div className="conversation-owner"><UserRound size={17} /><span><small>{ar ? "صاحب الرد" : "Reply owner"}</small><strong>{conversation.owner_user_name || (conversation.reply_authority === "ai" ? (ar ? "ذكاء إعلاني" : "E3lani AI") : (ar ? "لا جهة" : "No actor"))}</strong></span></div>
     </header>
 
-    <section className="handoff-brief" aria-labelledby="handoff-title"><header><div><h3 id="handoff-title">{ar ? "ملخص التسليم" : "Handoff brief"}</h3><p>{ar ? "سياق الذكاء الاصطناعي للمشرف البشري — ليس ردًا مرسلًا." : "AI context for the human supervisor—not a sent response."}</p></div><Languages size={18} /></header><p>{conversation.handoff_summary || (ar ? "لا يوجد ملخص تسليم متاح بعد." : "No AI handoff summary is available yet.")}</p><dl><div><dt>{ar ? "النية" : "Intent"}</dt><dd>{conversation.intent?.replaceAll("_", " ") || (ar ? "غير معروفة" : "Unknown")}</dd></div><div><dt>{ar ? "الأولوية" : "Priority"}</dt><dd>{conversation.priority}</dd></div><div><dt>{ar ? "اللغة" : "Language"}</dt><dd>{conversation.language === "ar" ? "العربية" : ar ? "الإنجليزية" : "English"}</dd></div><div><dt>{ar ? "المخاطر" : "Risk"}</dt><dd>{conversation.risk_categories.filter((risk) => risk !== "none").join(", ") || (ar ? "لم تُرصد مخاطر" : "None detected")}</dd></div></dl>{conversation.suggested_response ? <blockquote><strong>{ar ? "رد مقترح" : "Suggested response"}</strong><p>{conversation.suggested_response}</p></blockquote> : null}</section>
+    <section className="handoff-brief" aria-labelledby="handoff-title"><header><div><h3 id="handoff-title">{ar ? "ملخص التسليم" : "Handoff brief"}</h3><p>{ar ? "سياق الذكاء الاصطناعي للمشرف البشري — ليس ردًا مرسلًا." : "AI context for the human supervisor—not a sent response."}</p></div><Languages size={18} /></header><p>{conversation.handoff_summary || (ar ? "لا يوجد ملخص تسليم متاح بعد." : "No AI handoff summary is available yet.")}</p><dl><div><dt>{ar ? "النية" : "Intent"}</dt><dd>{conversation.intent?.replaceAll("_", " ") || (ar ? "غير معروفة" : "Unknown")}</dd></div><div><dt>{ar ? "الأولوية" : "Priority"}</dt><dd>{enumLabel(priorityLabels, conversation.priority, ar)}</dd></div><div><dt>{ar ? "اللغة" : "Language"}</dt><dd>{conversation.language === "ar" ? "العربية" : ar ? "الإنجليزية" : "English"}</dd></div><div><dt>{ar ? "المخاطر" : "Risk"}</dt><dd>{conversation.risk_categories.filter((risk) => risk !== "none").join(", ") || (ar ? "لم تُرصد مخاطر" : "None detected")}</dd></div></dl>{conversation.suggested_response ? <blockquote><strong>{ar ? "رد مقترح" : "Suggested response"}</strong><p>{conversation.suggested_response}</p></blockquote> : null}</section>
 
-    {actions.length ? <section className="ownership-actions" aria-label={ar ? "إجراءات ملكية المحادثة" : "Conversation ownership actions"}><div>{actions.map((item) => <button key={item.action} className={item.action === "takeover" ? "primary-button compact-button" : "secondary-button compact-button"} type="button" disabled={disabled || busy} onClick={() => { setAction(item.action); setReason(""); }}>{item.icon}{item.label}</button>)}</div>{action ? <div className="ownership-command"><label><span>{ar ? `سبب ${actionLabels[action].ar}` : `Reason for ${action.replaceAll("_", " ")}`}</span><input value={reason} onChange={(event) => setReason(event.target.value)} minLength={3} maxLength={1000} autoFocus placeholder={ar ? "سجّل سبب تغيير الملكية" : "Record why ownership is changing"} /></label>{["assign", "reassign"].includes(action) ? <label><span>{ar ? "إسناد إلى" : "Assign to"}</span><select value={assignee} onChange={(event) => setAssignee(event.target.value)}>{payload.assignees.map((user) => <option key={user.id} value={user.id}>{user.display_name} · {user.role}</option>)}</select></label> : null}<div><button className="primary-button compact-button" type="button" disabled={reason.trim().length < 3 || busy} onClick={() => void submitAction()}>{busy ? (ar ? "جارٍ التسجيل…" : "Recording…") : (ar ? "تأكيد الإجراء" : "Confirm action")}</button><button className="ghost-button compact-button" type="button" onClick={() => setAction(null)}>{ar ? "إلغاء" : "Cancel"}</button></div></div> : null}</section> : null}
+    {actions.length ? <section className="ownership-actions" aria-label={ar ? "إجراءات ملكية المحادثة" : "Conversation ownership actions"}><div>{actions.map((item) => <button key={item.action} className={item.action === "takeover" ? "primary-button compact-button" : "secondary-button compact-button"} type="button" disabled={disabled || busy} onClick={() => { setAction(item.action); setReason(""); }}>{item.icon}{item.label}</button>)}</div>{action ? <div className="ownership-command"><label><span>{ar ? `سبب ${actionLabels[action].ar}` : `Reason for ${action.replaceAll("_", " ")}`}</span><input value={reason} onChange={(event) => setReason(event.target.value)} minLength={3} maxLength={1000} autoFocus placeholder={ar ? "سجّل سبب تغيير الملكية" : "Record why ownership is changing"} /></label>{["assign", "reassign"].includes(action) ? <label><span>{ar ? "إسناد إلى" : "Assign to"}</span><select value={assignee} onChange={(event) => setAssignee(event.target.value)}>{payload.assignees.map((user) => <option key={user.id} value={user.id}>{user.display_name} · {enumLabel(roleLabels, user.role, ar)}</option>)}</select></label> : null}<div><button className="primary-button compact-button" type="button" disabled={reason.trim().length < 3 || busy} onClick={() => void submitAction()}>{busy ? (ar ? "جارٍ التسجيل…" : "Recording…") : (ar ? "تأكيد الإجراء" : "Confirm action")}</button><button className="ghost-button compact-button" type="button" onClick={() => setAction(null)}>{ar ? "إلغاء" : "Cancel"}</button></div></div> : null}</section> : null}
 
     {owns ? <section className="supervised-reply"><header><div><h3>{ar ? "رد تحت الإشراف" : "Supervised reply"}</h3><p>{ar ? `تملك سلطة الرد عن دورة الملكية ${conversation.ownership_epoch}.` : `You hold reply authority for ownership epoch ${conversation.ownership_epoch}.`}</p></div><StatusPill tone="attention">{ar ? "مسودة فقط" : "Draft only"}</StatusPill></header><label><span>{ar ? "نص الرد" : "Reply text"}</span><textarea dir={conversation.language === "ar" ? "rtl" : "ltr"} rows={5} maxLength={5000} value={reply} onChange={(event) => setReply(event.target.value)} /></label><footer><p><ShieldCheck size={15} /> {ar ? "الحفظ يسجّل مسودة فقط. يبدأ التسليم إلى العميل بعد بوابة أمان أخرى تمت مراجعتها." : "Saving records a draft only. Customer delivery begins after another reviewed safety gate."}</p><button className="primary-button" type="button" disabled={disabled || busy || !reply.trim()} onClick={() => void saveReply()}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : (ar ? "حفظ المسودة تحت الإشراف" : "Save supervised draft")}</button></footer></section> : null}
     {feedback ? <p className="integration-feedback" role="status" aria-live="polite">{feedback}</p> : null}
@@ -274,13 +307,15 @@ function ConversationDetail({ payload, detail, disabled, onChanged, feedback, se
 }
 
 function TimelineEvent({ item, language, ar, locale }: { item: TimelineItem; language: "en" | "ar"; ar: boolean; locale: "en" | "ar" }) {
-  const at = new Intl.DateTimeFormat(locale === "ar" ? "ar" : undefined, { dateStyle: "medium", timeStyle: "short" }).format(new Date(item.at));
+  // Arabic dates use the same Western-digit (ar-SA-u-nu-latn) locale as the rest
+  // of the dashboard instead of a raw Intl.DateTimeFormat("ar") call.
+  const at = formatDateTime(item.at, locale, { dateStyle: "medium", timeStyle: "short" });
   const rtl = language === "ar";
-  if (item.kind === "message") return <li><span className="timeline-icon"><MessageSquareText size={16} /></span><article><header><strong>{item.direction === "inbound" ? (ar ? "رسالة العميل" : "Customer message") : (ar ? "رسالة القناة" : "Provider message")}</strong><time>{at}</time></header><p dir={rtl ? "rtl" : "ltr"}>{String(item.body || (ar ? "نص الرسالة غير متاح" : "Message body unavailable"))}</p><small>{String(item.channel)} · {String(item.status)}{item.last_error_code ? ` · ${String(item.last_error_code)}` : ""}</small></article></li>;
+  if (item.kind === "message") return <li><span className="timeline-icon"><MessageSquareText size={16} /></span><article><header><strong>{item.direction === "inbound" ? (ar ? "رسالة العميل" : "Customer message") : (ar ? "رسالة القناة" : "Provider message")}</strong><time>{at}</time></header><p dir={rtl ? "rtl" : "ltr"}>{String(item.body || (ar ? "نص الرسالة غير متاح" : "Message body unavailable"))}</p><small>{String(item.channel)} · {enumLabel(statusLabels, String(item.status), ar)}{item.last_error_code ? ` · ${String(item.last_error_code)}` : ""}</small></article></li>;
   if (item.kind === "proposal") return <li><span className="timeline-icon"><Bot size={16} /></span><article><header><strong>{ar ? "مقترح رد من الذكاء الاصطناعي" : "AI response proposal"}</strong><time>{at}</time></header><p dir={rtl ? "rtl" : "ltr"}>{String(item.proposed_reply || (ar ? "لا يوجد رد معتمد؛ تلزم مراجعة بشرية." : "No approved answer; human review required."))}</p><small>{String(item.intent).replaceAll("_", " ")} · {Math.round(Number(item.confidence) * 100)}% {ar ? "ثقة" : "confidence"} · {Array.isArray(item.citations) ? item.citations.length : 0} {ar ? "مصادر" : "sources"}</small>{item.escalation_required ? <em>{String(item.escalation_reason || (ar ? "تلزم إحالة بشرية" : "Human escalation required"))}</em> : null}</article></li>;
-  if (item.kind === "ownership") return <li><span className="timeline-icon"><ArrowRightLeft size={16} /></span><article><header><strong>{String(item.action).replaceAll("_", " ")}</strong><time>{at}</time></header><p>{String(item.reason)}</p><small>{String(item.actor_name || item.actor_role || (ar ? "النظام" : "System"))} · {String(item.previous_state || (ar ? "لا شيء" : "none"))} → {String(item.new_state)}</small></article></li>;
+  if (item.kind === "ownership") return <li><span className="timeline-icon"><ArrowRightLeft size={16} /></span><article><header><strong>{enumLabel(actionLabels, String(item.action), ar)}</strong><time>{at}</time></header><p>{String(item.reason)}</p><small>{item.actor_name ? String(item.actor_name) : (enumLabel(roleLabels, String(item.actor_role ?? ""), ar) || (ar ? "النظام" : "System"))} · {item.previous_state ? enumLabel(stateLabels, String(item.previous_state), ar) : (ar ? "لا شيء" : "none")} → {enumLabel(stateLabels, String(item.new_state), ar)}</small></article></li>;
   if (item.kind === "human_draft") return <li><span className="timeline-icon"><UserRound size={16} /></span><article><header><strong>{ar ? "مسودة رد تحت الإشراف" : "Supervised reply draft"}</strong><time>{at}</time></header><p dir={item.language === "ar" ? "rtl" : "ltr"}>{String(item.body)}</p><small>{String(item.author_name)} · {ar ? "لم تُرسل" : "not sent"}</small></article></li>;
-  return <li><span className="timeline-icon"><FileText size={16} /></span><article><header><strong>{String(item.operation_type).replaceAll("_", " ")}</strong><time>{at}</time></header><p>{item.error_message ? String(item.error_message) : (ar ? `عملية القناة ${String(item.status)}` : `Provider operation ${String(item.status)}`)}</p><small>{String(item.provider)} · {String(item.status)}</small></article></li>;
+  return <li><span className="timeline-icon"><FileText size={16} /></span><article><header><strong>{String(item.operation_type).replaceAll("_", " ")}</strong><time>{at}</time></header><p>{item.error_message ? String(item.error_message) : (ar ? `عملية القناة: ${enumLabel(statusLabels, String(item.status), ar)}` : `Provider operation: ${enumLabel(statusLabels, String(item.status), ar)}`)}</p><small>{String(item.provider)} · {enumLabel(statusLabels, String(item.status), ar)}</small></article></li>;
 }
 
 function EmergencyControl({ active, disabled, onChanged, ar }: { active: boolean; disabled: boolean; onChanged: () => Promise<void>; ar: boolean }) {

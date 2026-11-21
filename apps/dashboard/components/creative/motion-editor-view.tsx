@@ -12,6 +12,7 @@ interface MotionSpec {
   direction: "rtl" | "ltr";
   design_template_id: string;
   fps: number;
+  canvas?: { width: number; height: number };
   scenes: Array<{ id: string; page_id: string; duration_ms: number; transition?: { preset: string; direction?: string; duration_ms?: number } }>;
   elements: Array<{ node_id: string; scene_id?: string; preset: string; direction?: string; delay_ms?: number; duration_ms?: number; easing?: string }>;
   captions?: Array<{ text: string; start_ms: number; end_ms: number }>;
@@ -116,7 +117,14 @@ export function MotionEditorView({ locale, dir, templateId }: { locale: Creative
             <p>{t(locale, "motions.renderOffline")}</p>
             <p>{t(locale, "motions.noPublish")}</p>
             <h2>{t(locale, "motions.preview")}</h2>
-            <ScaledPreview className="creative-editor-frame" title="motion-preview" src={`/api/creative/motions/${templateId}/preview`} />
+            <ScaledPreview
+              className="creative-editor-frame"
+              title="motion-preview"
+              src={`/api/creative/motions/${templateId}/preview`}
+              // The preview renders the motion's own canvas; without its height the
+              // frame reserved a 1:1 box and clipped 4:5 and 9:16 motions.
+              height={spec.canvas?.height ?? 1080}
+            />
             <h2>{t(locale, "motions.scenes")} ({spec.scenes.length})</h2>
             {spec.scenes.map((scene, sceneIndex) => (
               <section key={scene.id} aria-label={`${t(locale, "motions.scenes")} ${sceneIndex + 1}`}>

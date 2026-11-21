@@ -149,8 +149,9 @@ export function workspaceArtifact(task, response, elapsedMs) {
       const tokens = recordedTokens(m);
       const elapsed = recordedElapsed(m);
       lines.push('');
+      // No task-reference line: the stored summary must not carry internal task
+      // identifiers into customer-facing surfaces.
       lines.push(`${i + 1}. ${profiles.get(m.profile)?.name || m.profile}`);
-      lines.push(`${ar ? 'مرجع المهمة' : 'Task reference'}: ${m.task_id}`);
       lines.push(`${ar ? 'وحدات الذكاء الاصطناعي' : 'AI units'}: ${tokens === null ? (ar ? 'لم تُبلَّغ' : 'not reported') : tokens}`);
       lines.push(`${ar ? 'زمن التوليد' : 'Generation time'}: ${elapsed === null ? (ar ? 'لم يُسجَّل' : 'not recorded') : `${(elapsed / 1000).toFixed(1)}s`}`);
       lines.push(ar ? 'أبرز المقتطفات' : 'Key excerpt');

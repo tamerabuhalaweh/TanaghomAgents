@@ -2613,6 +2613,19 @@ td a, td > strong { font-weight: 670; }
   font-size: 0.75rem;
 }
 
+/* A zero-match view keeps its filter bar and offers a way out of the filters. */
+.list-filter-empty-state {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.list-filter-empty-state .list-filter-empty {
+  margin: 0;
+  padding-block: 0.5rem;
+}
+
 /* Work-pack card previews list every specialist, not only the first task. */
 .content-pack-preview {
   display: grid;
@@ -2631,6 +2644,26 @@ td a, td > strong { font-weight: 670; }
   color: var(--muted);
   font-size: 0.8rem;
   line-height: 1.5;
+}
+
+/* The preview is markdown, so it is rendered as formatted text rather than
+   showing literal #, ** and * characters from the stored document. */
+.content-pack-excerpt {
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.5;
+}
+
+.content-pack-excerpt p,
+.content-pack-excerpt h1,
+.content-pack-excerpt h2,
+.content-pack-excerpt h3,
+.content-pack-excerpt h4,
+.content-pack-excerpt ul,
+.content-pack-excerpt ol {
+  margin: 0;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 .review-feedback-hint {

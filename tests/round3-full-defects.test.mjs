@@ -33,17 +33,18 @@ test("Round 3 item 2: 'Show all' swaps one full list in, and duplicate copy coll
   assert.match(agents, /const \[showAllConditions, setShowAllConditions\] = useState\(false\)/);
   assert.match(agents, /const visibleConditions = showAllConditions \? conditions : conditions\.slice\(0, 3\)/);
   assert.match(agents, /aria-expanded=\{showAllConditions\}/);
-  // The duplicate visible condition is removed before the count is rendered.
-  assert.match(agents, /export function uniqueBlockerConditions\(blockers: AgentRegistryBlocker\[\], ar: boolean\)/);
-  assert.match(agents, /const key = `\$\{copy\.title\}\|\$\{copy\.detail\}\|\$\{copy\.nextAction\}`/);
+  // The duplicate visible condition is removed before the count is rendered;
+  // tests/round3-blockers.test.mjs executes that de-duplication directly.
+  assert.match(agents, /const conditions = uniqueBlockerConditions\(role\.blockers, ar\)/);
   assert.match(agents, /<span>\{conditions\.length\}<\/span>/);
 });
 
 test("Round 3 item 3: an authorize URL with a literal undefined client id is refused", async () => {
   const tenant = await read("apps/dashboard/lib/server/postiz-tenant.ts");
-  assert.match(tenant, /const clientValue = parsed\.searchParams\.get\(name\)\?\.trim\(\) \?\? ""/);
-  assert.match(tenant, /\(\!clientValue \|\| \/\^\(undefined\|null\)\$\/i\.test\(clientValue\)\)/);
-  assert.match(tenant, /throw new PostizTenantError\("social_provider_not_configured", 409\)/);
+  assert.match(tenant, /return validateAuthorizeUrl\(rawUrl\)/);
+  // tests/round3-blockers.test.mjs executes the guard on undefined/null/empty ids.
+  const guard = await read("apps/dashboard/lib/oauth-authorize-url.ts");
+  assert.match(guard, /throw new AuthorizeUrlError\("social_provider_not_configured", 409\)/);
   // The UI already turns that code into a clear message instead of navigating.
   const channels = await read("apps/dashboard/components/channels-settings.tsx");
   assert.match(channels, /response\.status === 409 && body\.error === "social_provider_not_configured"/);
@@ -112,10 +113,11 @@ test("Round 3 item 9: tall previews scale instead of being capped at 34rem", asy
 
 test("Round 3 item 17: stored task-reference UUIDs are redacted at render time only", async () => {
   const workspace = await read("apps/dashboard/components/agency-workspace.tsx");
-  assert.match(workspace, /export function redactTaskReferences\(document: string\): string/);
-  assert.match(workspace, /TASK_REF_LINE = new RegExp\(`\^\(\?:\[\^:/);
-  assert.match(workspace, /Task reference\|مرجع المهمة/);
-  assert.match(workspace, /const BARE_NUMBERED_LINE = \/\^\\d\+\\\.\\s\*\$\/;/);
+  assert.match(workspace, /import \{ redactTaskReferences \} from "@\/lib\/redact-task-references"/);
+  const redactor = await read("apps/dashboard/lib/redact-task-references.ts");
+  assert.match(redactor, /export function redactTaskReferences\(document: string\): string/);
+  assert.match(redactor, /Task reference\|مرجع المهمة/);
+  assert.match(redactor, /const BARE_NUMBERED_LINE = \/\^\\d\+\\\.\\s\*\$\/;/);
   assert.match(workspace, /<FormattedText text=\{redactTaskReferences\(step\.result\.document\)\}/);
   // The API payload and the footer label are deliberately untouched.
   assert.match(workspace, /"Executive delivery summary"/);

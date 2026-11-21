@@ -498,9 +498,11 @@
   transform-origin: top left;
 }
 
+/* The frame keeps the iframe anchored at its inline-start edge (right in RTL)
+   and scales it toward that same edge. Moving the anchor to inset-inline-end
+   flipped the anchor away from the transform origin, which pushed the scaled
+   1080px canvas completely outside a narrow RTL container and left it blank. */
 :dir(rtl) .creative-scaled-frame iframe {
-  inset-inline-start: auto;
-  inset-inline-end: 0;
   transform-origin: top right;
 }
 
