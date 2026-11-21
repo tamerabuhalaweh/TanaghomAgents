@@ -15,6 +15,8 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { LiveActivity } from "./live-activity";
+import { ReviewFilterBar } from "./review-filter-bar";
+import { clearedReviewFilters, reviewFiltersActive } from "@/lib/review-filter";
 import { PageHeading } from "./page-heading";
 import { StatusPill } from "./status-pill";
 
@@ -88,6 +90,9 @@ export function GhlActionReview() {
   const [providerReference, setProviderReference] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | ActionStatus>("all");
+  const [sort, setSort] = useState<"newest" | "oldest" | "title">("newest");
 
   const load = useCallback(async () => {
     setState("loading"); setFeedback(""); setStale(false);
@@ -109,7 +114,21 @@ export function GhlActionReview() {
     return () => window.clearTimeout(timer);
   }, [payload]);
 
-  const active = useMemo(() => payload?.items.find((item) => item.id === activeId) || payload?.items[0], [activeId, payload]);
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const list = payload?.items ?? [];
+    const filtered = list.filter((item) => {
+      const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+      const haystack = `${title(item)} ${item.channel} ${item.action_type}`.toLowerCase();
+      return matchesStatus && (!needle || haystack.includes(needle));
+    });
+    return [...filtered].sort((a, b) => sort === "title"
+      ? title(a).localeCompare(title(b))
+      : sort === "oldest"
+        ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [payload, query, sort, statusFilter]);
+  const active = useMemo(() => visible.find((item) => item.id === activeId) || visible[0], [activeId, visible]);
   const canDecide = payload?.current_user.role === "owner" || payload?.current_user.role === "reviewer";
 
   async function submit(kind: "approved" | "rejected" | "confirmed_succeeded" | "confirmed_not_applied") {
@@ -148,22 +167,38 @@ export function GhlActionReview() {
     {state === "forbidden" ? <ReviewState icon={<ShieldCheck />} title="Review access required" copy="Only accepted E3lani users can view this organization’s governed action queue." /> : null}
     {state === "error" ? <ReviewState icon={<TriangleAlert />} title="Action review is unavailable" copy="No decision was changed. Restore the protected database connection, then retry." action={<button className="secondary-button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
     {state === "ready" && payload && !payload.items.length ? <ReviewState icon={<CheckCircle2 />} title="Action queue is clear" copy={feedback || "No CRM action needs human approval or reconciliation. Actions prepared in your CRM stay bounded by organization policy until a person decides here."} /> : null}
-    {state === "ready" && payload && active ? <div className="action-review-shell">
+    {state === "ready" && payload && payload.items.length ? <div className="action-review-shell">
       <aside className="action-review-queue" aria-label="CRM actions requiring attention">
-        <header><div><h2>Needs attention</h2><p>{payload.items.length} governed {payload.items.length === 1 ? "action" : "actions"}</p></div><button className="icon-button" aria-label="Refresh action queue" onClick={() => void load()}><RefreshCw size={17} /></button></header>
-        <div>{payload.items.map((item) => <button key={item.id} type="button" className={`action-review-row ${item.id === active.id ? "action-review-row-active" : ""}`} onClick={() => { setActiveId(item.id); setReason(""); setProviderReference(""); }}>
+        <header><div><h2>Needs attention</h2><p>{visible.length === payload.items.length ? `${payload.items.length} governed ${payload.items.length === 1 ? "action" : "actions"}` : `${visible.length} of ${payload.items.length} governed actions`}</p></div><button className="icon-button" aria-label="Refresh action queue" onClick={() => void load()}><RefreshCw size={17} /></button></header>
+        <ReviewFilterBar
+          ar={false}
+          query={query}
+          onQuery={setQuery}
+          searchLabel="Search actions"
+          placeholder="Search lead, channel, or action"
+          compact
+          showEmpty={!visible.length}
+          emptyMessage="No actions match this view. Clear the search or change the status."
+          filtersActive={reviewFiltersActive(query, statusFilter, "all", sort)}
+          onClear={() => { const cleared = clearedReviewFilters(); setQuery(cleared.query); setStatusFilter(cleared.filter); setSort(cleared.sort); }}
+          selects={[
+            { label: "Status", value: statusFilter, onChange: (value) => setStatusFilter(value as "all" | ActionStatus), options: [{ value: "all", label: "All statuses" }, { value: "awaiting_approval", label: "Awaiting approval" }, { value: "indeterminate", label: "Uncertain" }] },
+            { label: "Sort", value: sort, onChange: (value) => setSort(value as "newest" | "oldest" | "title"), options: [{ value: "newest", label: "Newest first" }, { value: "oldest", label: "Oldest first" }, { value: "title", label: "Title A–Z" }] },
+          ]}
+        />
+        <div>{visible.map((item) => <button key={item.id} type="button" className={`action-review-row ${item.id === activeId ? "action-review-row-active" : ""}`} onClick={() => { setActiveId(item.id); setReason(""); setProviderReference(""); }}>
           <span className={item.status === "indeterminate" ? "action-risk-icon action-risk-icon-danger" : "action-risk-icon"}>{item.status === "indeterminate" ? <AlertOctagon size={17} /> : <ShieldCheck size={17} />}</span>
           <span><strong>{title(item)}</strong><small>{item.channel} · {timestamp(item.created_at)}</small></span><ChevronRight size={17} />
         </button>)}</div>
       </aside>
-      <article className="action-review-detail" aria-labelledby="action-review-title">
+      {active ? <article className="action-review-detail" aria-labelledby="action-review-title">
         <header><div><StatusPill tone={active.status === "indeterminate" ? "danger" : "attention"}>{active.status === "indeterminate" ? "Reconciliation required" : "Approval required"}</StatusPill><h2 id="action-review-title">{title(active)}</h2><p>{active.direction} · {active.channel} · requested by {active.requested_by_name || active.requested_by_agent_name || "Sales CRM Agent"}</p></div></header>
         {active.status === "indeterminate" ? <section className="action-uncertain-warning"><AlertOctagon size={21} /><div><h3>Provider outcome is unknown</h3><p>Do not retry. Verify the result in your CRM, then record exactly what happened.</p></div></section> : null}
         <dl className="action-review-metadata"><div><dt>Conversation</dt><dd>{active.conversation_state} · {active.reply_authority}</dd></div><div><dt>Ownership epoch</dt><dd>{active.ownership_epoch}</dd></div><div><dt>Created</dt><dd>{timestamp(active.created_at)}</dd></div><div><dt>Dispatch</dt><dd>{timestamp(active.dispatched_at)}</dd></div></dl>
         <section className="action-payload" aria-labelledby="action-payload-title"><div><h3 id="action-payload-title">Proposed provider action</h3><span>{active.action_type}</span></div><dl>{payloadRows(active.payload).map((row) => <div key={row.key}><dt>{row.key}</dt><dd dir={containsArabic(row.value) ? "rtl" : "ltr"}>{row.value}</dd></div>)}</dl>{active.template_key ? <p>Approved template: <strong>{active.template_key}</strong> version {active.template_version}</p> : null}</section>
         <section className="action-evidence" aria-labelledby="action-evidence-title"><h3 id="action-evidence-title">Authorization evidence</h3><dl><div><dt>Idempotency key</dt><dd>{active.idempotency_key}</dd></div><div><dt>Request fingerprint</dt><dd>{active.request_fingerprint}</dd></div><div><dt>Policy snapshot</dt><dd>{JSON.stringify(active.policy_snapshot)}</dd></div>{active.error_code ? <div><dt>Provider error</dt><dd>{active.error_code}: {active.error_message}</dd></div> : null}</dl></section>
         {canDecide ? <section className="action-decision" aria-labelledby="action-decision-title"><div><h3 id="action-decision-title">{active.status === "indeterminate" ? "Record verified provider outcome" : "Human decision"}</h3><p>Your reason becomes immutable audit evidence.</p></div><label htmlFor="action-review-reason">Required reason<textarea id="action-review-reason" value={reason} maxLength={1000} onChange={(event) => setReason(event.target.value)} placeholder={active.status === "indeterminate" ? "How was the provider result verified?" : "Why is this action approved or rejected?"} /></label>{active.status === "indeterminate" ? <label htmlFor="action-provider-reference">Provider reference <span>Optional</span><input id="action-provider-reference" value={providerReference} maxLength={300} onChange={(event) => setProviderReference(event.target.value)} placeholder="Message, appointment, or opportunity ID" /></label> : null}<div className="action-decision-buttons">{active.status === "awaiting_approval" ? <><button className="ghost-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("rejected")}><X size={16} /> Reject action</button><button className="primary-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("approved")}><Check size={16} /> Approve action</button></> : <><button className="secondary-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("confirmed_not_applied")}><X size={16} /> Confirm not applied</button><button className="primary-button" disabled={busy || reason.trim().length < 3} onClick={() => void submit("confirmed_succeeded")}><Check size={16} /> Confirm success</button></>}</div></section> : <section className="action-readonly"><ShieldCheck size={18} /><p>Your role can inspect evidence, but only an owner or reviewer may decide or reconcile an action.</p></section>}
-      </article>
+      </article> : <article className="action-review-detail action-review-empty-detail"><p>No action matches this view. Clear the filters to review the queue.</p></article>}
     </div> : null}
     <section className="action-history" aria-labelledby="action-history-title">
       <div className="section-heading"><div><h2 id="action-history-title">Agent action history</h2><p>Every recorded agent and human action for your workspace, newest first. Times follow your browser’s timezone.</p></div></div>

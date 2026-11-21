@@ -67,3 +67,13 @@ export function balanceInlineMarkdown(value: string): string {
 export function truncateMarkdownAtWord(value: string, limit: number): string {
   return balanceInlineMarkdown(truncateAtWord(value, limit));
 }
+
+/**
+ * Excerpt for a card preview. Every card renders this through <FormattedText>,
+ * which interprets the markers, so the excerpt must keep balanced markers and
+ * never end in a lone bullet or an em dash left by the cut.
+ */
+export function markdownExcerpt(value: string, limit: number): string {
+  const text = truncateMarkdownAtWord(value, limit);
+  return text.length < (value ?? "").length ? `${text}…` : text;
+}

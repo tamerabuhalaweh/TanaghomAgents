@@ -199,7 +199,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           </Link>
           <Link href="/system" className={`nav-link ${pathname.startsWith("/system") ? "nav-link-active" : ""}`} aria-current={pathname.startsWith("/system") ? "page" : undefined} onClick={() => closeMenu()}>
             <Bell size={18} />
-            <span>{ar ? "التنبيهات" : "Alerts"}</span>
+            <span>{ar ? "مراقبة النظام" : "System monitoring"}</span>
           </Link>
           <Link href="/settings/channels" className={`nav-link ${settingsActive ? "nav-link-active" : ""}`} aria-current={settingsActive ? "page" : undefined} onClick={() => closeMenu()}>
             <Settings size={18} />

@@ -434,7 +434,7 @@ test('Phase 5D supervisor ownership is atomic, tenant-bound, and dispatch-safe',
   assert.match(service, /organization_id=\$1/);
   assert.doesNotMatch(`${service}\n${component}`, /services\.leadconnectorhq\.com|\/conversations\/messages|axios/i);
   for (const state of ['loading', 'forbidden', 'error', 'offline', 'stale']) assert.match(component.toLowerCase(), new RegExp(state));
-  assert.match(component, /Nothing was sent to GHL/);
+  assert.match(component, /Nothing was sent to (?:GHL|the customer)/);
   assert.match(component, /dir=\{conversation\.language === "ar" \? "rtl" : "ltr"\}/);
   assert.match(runbook, /Production[\s\S]*unauthorized/i);
   assert.match(runbook, /assert_conversation_ai_reply_authority/);

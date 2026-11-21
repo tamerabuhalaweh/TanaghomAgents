@@ -20,6 +20,7 @@ interface TemplateRow {
   name: string;
   version: number;
   is_active: boolean;
+  spec?: Record<string, unknown> | null;
 }
 
 const KINDS: readonly TemplateKind[] = ["ad", "carousel", "motion", "landing", "caption"];
@@ -39,6 +40,45 @@ function kindCopy(locale: CreativeLocale, kind: string) {
   return { title, description };
 }
 
+function specNodes(spec: Record<string, unknown>): Array<Record<string, unknown>> {
+  const list: Array<Record<string, unknown>> = [];
+  const push = (value: unknown) => {
+    if (!Array.isArray(value)) return;
+    for (const item of value) {
+      if (item && typeof item === "object") list.push(item as Record<string, unknown>);
+    }
+  };
+  push(spec.nodes);
+  if (Array.isArray(spec.pages)) {
+    for (const page of spec.pages) {
+      if (page && typeof page === "object") push((page as Record<string, unknown>).nodes);
+    }
+  }
+  return list;
+}
+
+/** Reads one text layer out of a stored template spec so the guided form can reopen it. */
+function specText(spec: Record<string, unknown> | null | undefined, role: string): string {
+  if (!spec) return "";
+  const node = specNodes(spec).find((item) => item.role === role);
+  if (typeof node?.text === "string") return node.text;
+  const flat = spec[role];
+  return typeof flat === "string" ? flat : "";
+}
+
+function specFormat(spec: Record<string, unknown> | null | undefined): TemplateFormat {
+  const canvas = spec && typeof spec.canvas === "object" ? spec.canvas as Record<string, unknown> : null;
+  const height = typeof canvas?.height === "number" ? canvas.height : 0;
+  if (height >= 1600) return "9:16";
+  if (height >= 1200) return "4:5";
+  return "1:1";
+}
+
+function specBackground(spec: Record<string, unknown> | null | undefined): string {
+  const background = spec && typeof spec.background === "object" ? spec.background as Record<string, unknown> : null;
+  return typeof background?.color === "string" ? background.color : "#FFFFFF";
+}
+
 export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "rtl" | "ltr" }) {
   const role = useSessionRole();
   const templates = useCreativeFetch<{ templates: TemplateRow[] }>(locale, "/api/creative/templates");
@@ -53,10 +93,36 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
   const [spec, setSpec] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [viewing, setViewing] = useState<string | null>(null);
   const canAdmin = role === "owner";
   const visualLayoutKind = kind === "ad" || kind === "carousel";
   const guidedReady = kind !== "motion" && Boolean(headline.trim());
   const canSubmit = !working && Boolean(name.trim()) && (useCustomJson ? Boolean(spec.trim()) : guidedReady);
+
+  function startEditing(template: TemplateRow) {
+    setEditing(template.template_id);
+    setViewing(null);
+    setNotice(null);
+    setName(template.name);
+    setKind(template.kind as TemplateKind);
+    setFormat(specFormat(template.spec));
+    setHeadline(specText(template.spec, "headline"));
+    setBody(specText(template.spec, "body"));
+    setCta(specText(template.spec, "cta"));
+    setBackgroundColor(specBackground(template.spec));
+    setUseCustomJson(false);
+    setSpec("");
+  }
+
+  function stopEditing() {
+    setEditing(null);
+    setName("");
+    setHeadline("");
+    setBody("");
+    setCta("");
+    setNotice(null);
+  }
 
   async function create(event: React.FormEvent) {
     event.preventDefault();
@@ -99,6 +165,7 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
       setBody("");
       setCta("");
       if (useCustomJson) setSpec("");
+      setEditing(null);
       await templates.reload();
     } catch (error) {
       setNotice(error instanceof CreativeApiError ? error.code : t(locale, "common.error"));
@@ -131,7 +198,8 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
       <div className="creative-head"><h1>{t(locale, "templates.title")}</h1></div>
       {canAdmin && (
         <form className="creative-form" onSubmit={create}>
-          <h2>{t(locale, "templates.create")}</h2>
+          <h2>{editing ? t(locale, "templates.edit") : t(locale, "templates.create")}</h2>
+          {editing ? <p className="creative-helper">{t(locale, "templates.editHint")}</p> : null}
           <label>{t(locale, "templates.name")}<input type="text" value={name} maxLength={120} onChange={(event) => setName(event.target.value)} /></label>
           <label>{t(locale, "templates.kind")}
             <select value={kind} onChange={(event) => setKind(event.target.value as TemplateKind)}>
@@ -186,7 +254,10 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
               </label>
             ) : null}
           </details>
-          <button type="submit" className="creative-button" disabled={!canSubmit}>{t(locale, "common.save")}</button>
+          <div className="creative-row">
+            <button type="submit" className="creative-button" disabled={!canSubmit}>{t(locale, "common.save")}</button>
+            {editing ? <button type="button" className="creative-button creative-button-secondary" onClick={stopEditing}>{t(locale, "templates.cancelEdit")}</button> : null}
+          </div>
         </form>
       )}
       {notice && <div className="creative-notice" role="status"><p>{notice}</p></div>}
@@ -201,10 +272,36 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
                 <h2>{entry.title} · {template.name}</h2>
                 <p>{entry.description}</p>
                 <p>{t(locale, "common.version")}{template.version} · {template.organization_id ? (locale === "ar" ? "خاص بالمؤسسة" : "organization") : (locale === "ar" ? "عام" : "global")} · {template.is_active ? (locale === "ar" ? "نشط" : "active") : (locale === "ar" ? "غير نشط" : "inactive")}</p>
-                {canAdmin && (
-                  <button type="button" className="creative-button creative-button-secondary" disabled={working} onClick={() => toggle(template)}>
-                    {template.is_active ? t(locale, "templates.deactivate") : t(locale, "templates.activate")}
+                <div className="creative-card-actions">
+                  <button
+                    type="button"
+                    className="creative-button creative-button-secondary"
+                    aria-expanded={viewing === template.template_id}
+                    onClick={() => setViewing(viewing === template.template_id ? null : template.template_id)}
+                  >
+                    {viewing === template.template_id ? t(locale, "templates.close") : t(locale, "templates.view")}
                   </button>
+                  {canAdmin && (
+                    <button type="button" className="creative-button creative-button-secondary" disabled={working} onClick={() => startEditing(template)}>
+                      {t(locale, "templates.edit")}
+                    </button>
+                  )}
+                  {canAdmin && (
+                    <button type="button" className="creative-button creative-button-secondary" disabled={working} onClick={() => toggle(template)}>
+                      {template.is_active ? t(locale, "templates.deactivate") : t(locale, "templates.activate")}
+                    </button>
+                  )}
+                </div>
+                {viewing === template.template_id && (
+                  <section className="creative-card-detail" aria-label={t(locale, "templates.details")}>
+                    <h3>{t(locale, "templates.details")}</h3>
+                    <dl>
+                      <div><dt>{t(locale, "templates.name")}</dt><dd>{template.name}</dd></div>
+                      <div><dt>{t(locale, "templates.kind")}</dt><dd>{entry.title}</dd></div>
+                      <div><dt>{t(locale, "common.version")}</dt><dd>{template.version}</dd></div>
+                      <div><dt>{t(locale, "templates.specLabel")}</dt><dd><pre dir="ltr">{JSON.stringify(template.spec ?? {}, null, 2)}</pre></dd></div>
+                    </dl>
+                  </section>
                 )}
               </li>
               );

@@ -112,7 +112,10 @@ test("a pre-activation workspace is not shown the emergency-stop alarm", () => {
   assert.match(inbox, /const awaitingActivation = emergencyStopped/);
   assert.match(inbox, /\.trim\(\)\.toLowerCase\(\) === "awaiting supervised conversation activation"/);
   assert.match(inbox, /&& \(payload\?\.conversations\.length \?\? 0\) === 0;/);
-  assert.match(inbox, /awaitingActivation \? "Supervised conversations are not activated yet" : emergencyStopped \? "Organization emergency stop is active"/);
+  // Round 3 made the whole inbox bilingual: the English copy is still the default
+  // branch, and each string now has an Arabic sibling.
+  assert.match(inbox, /"Supervised conversations are not activated yet"/);
+  assert.match(inbox, /"Organization emergency stop is active"/);
   assert.match(inbox, /No live customer conversations are routed here yet\./);
   assert.match(inbox, /"Not activated"/);
   // The red state survives for a real stop.

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import test from "node:test";
 
+import { customerSafeText } from "../apps/dashboard/lib/agent-blocker-copy.ts";
 import { describeSessionDevice } from "../apps/dashboard/lib/session-device.ts";
 
 const root = path.resolve(import.meta.dirname, "..");
@@ -64,7 +65,9 @@ test("§5b /agents customer UI hides internal infrastructure names while keeping
   assert.match(agents, /Specialized workers/);
   assert.match(agents, /What blocks this role/);
   assert.match(agents, /Open Agent Studio/);
-  assert.match(agents, /export function customerSafeText/);
+  // The helper moved to a React-free module so it can be executed in tests.
+  assert.equal(customerSafeText("n8n and PostgreSQL with Gemma"), "automation runtime and workspace records with AI model");
+  assert.match(readFileSync(path.join(root, "apps/dashboard/lib/agent-blocker-copy.ts"), "utf8"), /export function customerSafeText/);
   assert.doesNotMatch(agents, /PostgreSQL is the customer-facing source of truth/);
   assert.doesNotMatch(agents, /Versioned n8n workflows/);
   assert.doesNotMatch(agents, /Release available/);

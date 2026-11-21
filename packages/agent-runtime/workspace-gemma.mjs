@@ -37,7 +37,9 @@ export function workspaceArtifact(task, response, elapsedMs) {
   if (task.profile === 'executive_summary') {
     const ar = task.language === 'ar';
     document = `${ar ? 'ملخص التسليم' : 'Delivery summary'}: ${task.title}\n\n${ar ? 'المخرجات المحفوظة' : 'Saved deliverables'}: ${task.shared_context.length}\n`;
-    document += task.shared_context.map((m,i) => `${i+1}. ${profiles.get(m.profile)?.name || m.profile}\n${ar ? 'مرجع المهمة' : 'Task reference'}: ${m.task_id}`).join('\n\n');
+    // No task-reference line: the stored summary must not carry internal task
+    // identifiers into customer-facing surfaces.
+    document += task.shared_context.map((m,i) => `${i+1}. ${profiles.get(m.profile)?.name || m.profile}`).join('\n\n');
     document += ar ? '\n\nهذه مسودات تنتظر المراجعة البشرية. لم يتم النشر أو إرسال رسائل أو تحديث نظام العملاء. لا توجد بيانات مبيعات أو تحويلات مقاسة في هذا التكليف.'
       : '\n\nThese are draft documents for human review. No publishing, messages or CRM updates occurred. This assignment contains no measured sales or conversion results.';
     kind = 'deterministic_summary';

@@ -63,7 +63,8 @@ test('workspace: deterministic report has no invented business metrics or model 
  const report={...task,profile:'executive_summary',shared_context:[{profile:'content_creator',task_id:'source1',document:'Draft',response_hash:'v1'}]};
  assert.equal(workspaceRequest(report,32768),null);
  const result=workspaceArtifact(report,null,0);assert.equal(result.kind,'deterministic_summary');assert.equal(result.model,null);assert.equal(result.provider,null);
- assert.match(result.document,/source1/);assert.match(result.document,/no measured sales/);
+ // Round 3 item 17: the summary no longer carries internal task identifiers.
+ assert.doesNotMatch(result.document,/source1/);assert.match(result.document,/Content Creator/);assert.match(result.document,/no measured sales/);
  assert.match(workspaceArtifact({...report,language:'ar'},null,0).document,/[\u0600-\u06ff]/);
 });
 test('workspace: additive Gemini migration separates simulator claims, human decisions and worker privileges',()=>{
@@ -122,7 +123,7 @@ test('workspace: executive summary reports recorded usage, timings and key excer
  const out=workspaceArtifact(report,null,0);
  assert.equal(out.kind,'deterministic_summary');assert.equal(out.provider,null);assert.equal(out.model,null);
  assert.match(out.document,/1234/);assert.match(out.document,/2\.1s/);
- assert.match(out.document,/source1/);assert.match(out.document,/source2/);
+ assert.doesNotMatch(out.document,/source1|source2/);assert.match(out.document,/Content Creator/);assert.match(out.document,/Social Media Strategist/);
  assert.match(out.document,/منشور إنستغرام عن دورة التصوير/);
  assert.match(out.document,/المراجعة البشرية/);
  assert.match(out.document,/لم تُبلَّغ/);

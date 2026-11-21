@@ -17,7 +17,7 @@ import {
   reserveIdempotency,
 } from "@/lib/server/creative/idempotency";
 import { CreativeJobRequestError } from "@/lib/server/creative/jobs";
-import { imageGenerationEnabled, productStudioEnabled } from "@/lib/server/creative/generations";
+import { productStudioEnabled } from "@/lib/server/creative/generations";
 
 const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
@@ -35,9 +35,9 @@ export async function imagePresets() {
 export async function listImagePresets(request: NextRequest) {
   try {
     requireCreativeStudio();
-    if (!imageGenerationEnabled() && !productStudioEnabled()) {
-      return noStore({ error: "image_generation_disabled" }, { status: 503 });
-    }
+    // The preset catalogue is static configuration used to render the studio
+    // shell. It must stay readable while image generation is switched off, so
+    // the page can explain the disabled state instead of failing to load.
     await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
     const { doc } = await imagePresets();
     return noStore(doc);

@@ -3,6 +3,7 @@ import { readFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import test from "node:test";
 
+import { customerBlockerCopy, customerSafeText } from "../apps/dashboard/lib/agent-blocker-copy.ts";
 import { buildTemplateSpec, TEMPLATE_FORMATS } from "../apps/dashboard/lib/creative-template-spec.ts";
 
 const read = (path) => readFileSync(new URL(`../${path}`, import.meta.url), "utf8");
@@ -57,7 +58,7 @@ test("Item 3: /agents translates all 23 blockers, all 4 roles, and all 7 workers
     if (id.startsWith("@/")) return noopProxy();
     throw new Error(`unexpected import: ${id}`);
   });
-  const { customerSafeText, customerBlockerCopy, customerRoleCopy, customerWorkerCopy } = agentsMod;
+  const { customerRoleCopy, customerWorkerCopy } = agentsMod;
 
   const registrySource = read("apps/dashboard/lib/server/agent-registry.ts");
   const catalogStart = registrySource.indexOf("const blockerCatalog");

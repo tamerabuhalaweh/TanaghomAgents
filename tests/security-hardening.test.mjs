@@ -64,6 +64,10 @@ test("creative template creation validates design and motion specs before persis
   assert.match(templates, /validateMotionSpec\(spec, design\)/);
   assert.match(templates, /design_not_found/);
 
+  // The editors render the fixed canvas through a shared scaled frame; the
+  // sandbox attribute must live on that frame's iframe for every consumer.
+  const scaledFrame = await read("apps/dashboard/components/creative/scaled-preview.tsx");
+  assert.match(scaledFrame, /<iframe[\s\S]*?sandbox=""/, "scaled preview must be sandboxed");
   for (const component of [
     "creative-overview.tsx",
     "designs-view.tsx",
@@ -71,7 +75,7 @@ test("creative template creation validates design and motion specs before persis
     "motion-editor-view.tsx",
   ]) {
     const source = await read(`apps/dashboard/components/creative/${component}`);
-    assert.match(source, /<iframe[^>]*sandbox=""/, `${component} preview must be sandboxed`);
+    assert.match(source, /<iframe[^>]*sandbox=""|<ScaledPreview/, `${component} preview must be sandboxed`);
   }
 });
 

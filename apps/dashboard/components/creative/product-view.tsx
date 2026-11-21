@@ -23,6 +23,16 @@ interface SegmentJobRow {
   status: string;
 }
 
+const GENERATION_DISABLED_CODES = new Set([
+  "image_generation_disabled",
+  "product_studio_disabled",
+  "creative_studio_disabled",
+]);
+
+function productError(code: string, locale: CreativeLocale) {
+  return GENERATION_DISABLED_CODES.has(code) ? t(locale, "product.disabledReason") : code;
+}
+
 export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl" | "ltr" }) {
   const role = useSessionRole();
   const presets = useCreativeFetch<PresetDoc>(locale, "/api/creative/product/presets");
@@ -52,7 +62,7 @@ export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
       setJobId(body.job_id);
       setNotice(t(locale, "product.submitted"));
     } catch (error) {
-      setNotice(error instanceof CreativeApiError ? error.code : t(locale, "common.error"));
+      setNotice(error instanceof CreativeApiError ? productError(error.code, locale) : t(locale, "common.error"));
     } finally {
       setWorking(false);
     }
@@ -77,7 +87,7 @@ export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
       setNotice(t(locale, "segment.submitted"));
       await pollSegmentCutout(body.job_id);
     } catch (error) {
-      setNotice(error instanceof CreativeApiError ? error.code : t(locale, "common.error"));
+      setNotice(error instanceof CreativeApiError ? productError(error.code, locale) : t(locale, "common.error"));
     } finally {
       setWorking(false);
     }
@@ -109,10 +119,10 @@ export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
     <div className="creative-page" dir={dir} lang={locale}>
       <div className="creative-head"><h1>{t(locale, "product.title")}</h1></div>
       <div className="creative-notice" role="note"><p>{t(locale, "product.segmentation")}</p></div>
-      {presets.loading || assets.loading ? <Loading locale={locale} />
-        : presets.error ? <LoadError locale={locale} error={presets.error} onRetry={presets.reload} />
-        : assets.error ? <LoadError locale={locale} error={assets.error} onRetry={assets.reload} />
-        : canOperate && (
+      {presets.loading || assets.loading ? <Loading locale={locale} /> : null}
+      {presets.error ? <LoadError locale={locale} error={presets.error} onRetry={presets.reload} /> : null}
+      {assets.error ? <LoadError locale={locale} error={assets.error} onRetry={assets.reload} /> : null}
+      {!presets.loading && !presets.error && canOperate && (
           <form className="creative-form" onSubmit={submit}>
             <label>{t(locale, "product.source")}
               <select value={source} onChange={(event) => setSource(event.target.value)}>

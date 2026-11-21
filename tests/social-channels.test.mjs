@@ -87,13 +87,17 @@ test("automatic mapping synchronizes only active supported channels for the tena
 
 test("OAuth launch handles unconfigured providers without a 500 or broken redirect", async () => {
   const tenant = await read("apps/dashboard/lib/server/postiz-tenant.ts");
+  const guard = await read("apps/dashboard/lib/oauth-authorize-url.ts");
   const connect = await read("apps/dashboard/app/api/settings/channels/connect/route.ts");
   assert.match(tenant, /response\.status === 500 \|\| !response\.ok/);
-  assert.match(tenant, /social_provider_not_configured/);
-  assert.match(tenant, /parsed\.searchParams\.has\(name\)/);
-  assert.match(tenant, /client_id/);
-  assert.match(tenant, /client_key/);
-  assert.match(tenant, /parsed\.protocol !== "https:"/);
+  assert.match(tenant, /return validateAuthorizeUrl\(rawUrl\)/);
+  assert.match(tenant, /throw new PostizTenantError\(error\.code, error\.status\)/);
+  // The guard itself is executed in tests/round3-blockers.test.mjs.
+  assert.match(guard, /social_provider_not_configured/);
+  assert.match(guard, /parsed\.searchParams\.has\(name\)/);
+  assert.match(guard, /client_id/);
+  assert.match(guard, /client_key/);
+  assert.match(guard, /parsed\.protocol !== "https:"/);
   assert.match(connect, /PostizTenantError/);
   assert.match(connect, /platform/);
   assert.match(connect, /return noStore\(\{ url \}\)/);

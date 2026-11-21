@@ -8,6 +8,7 @@ import { useLocale } from "@/lib/client/use-locale";
 import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
 import { DIALECTS, dialectLabel, type DialectId } from "@/lib/i18n/dialects";
 import { formatArabicCount, formatDateTime, formatNumber } from "@/lib/i18n/format";
+import { redactTaskReferences } from "@/lib/redact-task-references";
 import type { AppliedReviewCorrection, WorkspaceReviewCorrectionsSummary } from "@/lib/workspace-review-corrections";
 import { WorkspacePostCards, type WorkspaceBrandKit } from "./workspace-post-cards";
 import { WorkspaceImageQuota, postImageSlots, type WorkspaceImageQuotaStatus } from "./workspace-ai-images";
@@ -232,15 +233,23 @@ export function AgencyWorkspace() {
   function download() {
     if (!selected) return;
     const english = `# ${selected.title}\n\nStatus: ${labels[selected.status] || selected.status}\n\n## Brief\n${selected.brief}\n\n## Owner-supplied source facts\n${selected.source_facts}\n\n`
-      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\nTask: ${s.task_id}\nVersion: ${s.response_hash}\n\n${s.result!.document}\n`).join("\n")
+      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\n\n${redactTaskReferences(s.result!.document)}\n`).join("\n")
       + "\nDraft documents only. No external actions were performed.\n";
     const arabic = `# ${selected.title}\n\nالحالة: ${labelsAr[selected.status] || selected.status}\n\n## موجز المهمة\n${selected.brief}\n\n## الحقائق المعتمدة من المالك\n${selected.source_facts}\n\n`
-      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\nالمهمة: ${s.task_id}\nالإصدار: ${s.response_hash}\n\n${s.result!.document}\n`).join("\n")
+      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\n\n${redactTaskReferences(s.result!.document)}\n`).join("\n")
       + "\nوثائق مسودة فقط. لم يتم تنفيذ أي إجراءات خارجية.\n";
     const contents = selected.language === "ar" ? arabic : english;
     const url = URL.createObjectURL(new Blob([contents], { type: "text/markdown;charset=utf-8" }));
     const a = document.createElement("a");
-    a.href = url; a.download = `e3lani-workpack-${selected.id}.md`; a.click();
+    a.href = url;
+    a.download = `e3lani-workpack-${selected.id}.md`;
+    a.rel = "noopener";
+    // An anchor that is not in the document is ignored by some browsers, which
+    // made Export pack look inert. Attach it, click it, then remove it.
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setNotice(ar ? "جارٍ تصدير الحزمة كملف Markdown." : "Exporting the pack as a Markdown file.");
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
@@ -308,7 +317,7 @@ export function AgencyWorkspace() {
               <button type="button" className="button button-secondary" onClick={() => fillExample("en")}>{ar ? "تعبئة مثال إنجليزي" : "Fill English example"}</button>
             </div>
             <div className="aw-form-row">
-              <label>{ar ? "عنوان المهمة" : "Assignment title"}<input required minLength={3} maxLength={120} value={title} onChange={(e) => { setTitle(e.target.value); key.current = null; }} placeholder={ar ? "حزمة عمل حملة الدورة الصيفية" : "Summer course campaign work pack"} /></label>
+              <label>{ar ? "عنوان المهمة" : "Assignment title"}<input required minLength={3} maxLength={120} value={title} onChange={(e) => { setTitle(e.target.value); key.current = null; }} placeholder={ar ? "مثال: حزمة عمل حملة الدورة الصيفية" : "e.g. Summer course campaign work pack"} /></label>
               <label>{ar ? "لغة المخرجات" : "Output language"}<select value={language} onChange={(e) => { const next = e.target.value; setLanguage(next); setDialect(next === "en" ? "msa" : data?.default_dialect ?? "msa"); key.current = null; }}><option value="en">English</option><option value="ar">العربية — Arabic</option></select></label>
             </div>
             <div className="aw-dialect-field">
@@ -376,7 +385,7 @@ export function AgencyWorkspace() {
                               : (ar ? `«${item.exact}» ← «${item.replacement}»` : `“${item.exact}” → “${item.replacement}”`)}</li>)}</ul>
                           </details>
                         </aside> : null}
-                        <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}><FormattedText text={step.result.document} dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language} /></article>
+                        <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}><FormattedText text={redactTaskReferences(step.result.document)} dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language} /></article>
                         {step.profile_code === "content_creator" ? <WorkspacePostCards document={step.result.document} kit={data.brand_kit} language={selected.language} images={postImageSlots(data.post_images)} /> : null}
                         <footer className="aw-artifact-meta">
                           <span>{step.result.kind === "deterministic_summary" ? (ar ? "ملخص التسليم التنفيذي" : "Executive delivery summary") : (ar ? "أُنتج بالذكاء الاصطناعي" : "AI-generated")}</span>

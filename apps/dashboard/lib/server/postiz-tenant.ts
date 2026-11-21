@@ -10,6 +10,7 @@ import {
   encryptCredential,
   integrationEncryptionConfigured,
 } from "@/lib/server/integration-crypto";
+import { AuthorizeUrlError, validateAuthorizeUrl } from "@/lib/oauth-authorize-url";
 import { validateProviderBaseUrl } from "@/lib/server/integration-providers";
 import {
   postizDatabase,
@@ -362,24 +363,12 @@ export async function getPostizOAuthUrl(
   const rawUrl = body && typeof body === "object" && !Array.isArray(body)
     ? (body as Record<string, unknown>).url
     : undefined;
-  if (typeof rawUrl !== "string" || !rawUrl.trim()) {
-    throw new PostizTenantError("social_provider_not_configured", 409);
-  }
-  let parsed: URL;
   try {
-    parsed = new URL(rawUrl);
-  } catch {
-    throw new PostizTenantError("postiz_oauth_url_invalid", 502);
+    return validateAuthorizeUrl(rawUrl);
+  } catch (error) {
+    if (error instanceof AuthorizeUrlError) throw new PostizTenantError(error.code, error.status);
+    throw error;
   }
-  if (parsed.protocol !== "https:" || parsed.username || parsed.password) {
-    throw new PostizTenantError("postiz_oauth_url_invalid", 502);
-  }
-  for (const name of ["client_id", "client_key"]) {
-    if (parsed.searchParams.has(name) && !parsed.searchParams.get(name)?.trim()) {
-      throw new PostizTenantError("social_provider_not_configured", 409);
-    }
-  }
-  return parsed.toString();
 }
 
 export async function recordChannelOAuthStarted(

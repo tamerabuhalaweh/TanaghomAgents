@@ -103,11 +103,14 @@ test("the three deliverable render sites use the safe formatter and never inject
   const formatter = read("apps/dashboard/components/formatted-text.tsx");
 
   assert.match(workspace, /className="aw-document" dir=\{selected\.language === "ar" \? "rtl" : "ltr"\}/);
-  assert.match(workspace, /<FormattedText text=\{step\.result\.document\}/);
-  assert.match(approvals, /<FormattedText text=\{`\$\{deliverable\.excerpt\}/);
+  // Round 3 item 17 routes the stored document through the UUID redactor first;
+  // it is still the safe formatter that renders it.
+  assert.match(workspace, /<FormattedText text=\{(?:step\.result\.document|redactTaskReferences\(step\.result\.document\))\}/);
+  // Round 3 item 17 redacts stored task references before every render.
+  assert.match(approvals, /<FormattedText text=\{redactTaskReferences\(`\$\{deliverable\.excerpt\}/);
   assert.match(approvals, /Read the full deliverable/);
   assert.match(approvals, /اقرأ المخرج كاملاً/);
-  assert.match(content, /<FormattedText text=\{deliverable\.document\} \/>/);
+  assert.match(content, /<FormattedText text=\{redactTaskReferences\(deliverable\.document\)\} \/>/);
   for (const source of [workspace, approvals, content, formatter]) {
     assert.doesNotMatch(source, /dangerouslySetInnerHTML/);
   }
@@ -135,7 +138,7 @@ test("excerpts are cut at a word boundary and never mid-word", () => {
   const content = read("apps/dashboard/components/content-library.tsx");
   assert.match(route, /truncateMarkdownAtWord\(entry\.document \|\| "", 320\)/);
   assert.match(route, /document: entry\.document \|\| ""/);
-  assert.match(content, /truncateMarkdownAtWord\(item\.draft_copy, 280\)/);
+  assert.match(content, /markdownExcerpt\(item\.draft_copy, 280\)/);
 });
 
 test("a truncated excerpt never leaves a dangling inline markdown marker", () => {
