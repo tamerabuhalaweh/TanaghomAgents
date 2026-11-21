@@ -214,6 +214,10 @@ export function ChannelsSettings() {
     }
   }
 
+  const supportedPlatforms = payload?.supported_platforms.filter(
+    (item, index, list) => list.findIndex((other) => other.platform === item.platform) === index,
+  ) ?? [];
+
   return (
     <div className="page-stack channels-page" dir={ar ? "rtl" : "ltr"} lang={locale}>
       <PageHeading title={text.title} description={text.lede} />
@@ -235,7 +239,7 @@ export function ChannelsSettings() {
         <section className="channels-section" aria-labelledby="channel-connect-title">
           <div className="channels-heading"><div><h2 id="channel-connect-title">{text.supported}</h2><p>{text.emptyHint}</p></div></div>
           <div className="channel-grid">
-            {payload.supported_platforms.map((item) => <article className="channel-card" key={item.platform}>
+            {supportedPlatforms.map((item) => <article className="channel-card" key={item.platform}>
               <div className="channel-tile" aria-hidden="true">{platformLabel(item.platform, ar).slice(0, 2)}</div>
               <div><h3>{platformLabel(item.platform, ar)}</h3></div>
               <div className="channel-card-actions">
@@ -248,7 +252,7 @@ export function ChannelsSettings() {
             </article>)}
           </div>
           {payload.can_connect_live_channels && !payload.provisioning_ready ? <div className="channel-empty"><ShieldCheck size={18} /><span><strong>{text.unavailableTitle}</strong><small>{text.unavailableCopy}</small></span></div> : null}
-          {payload.provisioning_ready && payload.can_manage ? <div className="channels-heading"><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void disconnect()}><Unplug size={16} /> {busy === "disconnect" ? text.disconnecting : text.disconnect}</button></div> : null}
+          {payload.provisioning_ready && payload.can_manage && payload.channels.length > 0 ? <div className="channels-heading"><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void disconnect()}><Unplug size={16} /> {busy === "disconnect" ? text.disconnecting : text.disconnect}</button></div> : null}
         </section>
         <section className="channels-section" aria-labelledby="channel-connected-title">
           <div className="channels-heading"><div><h2 id="channel-connected-title">{text.connected}</h2></div><button type="button" className="secondary-button" disabled={busy !== null} onClick={() => void load()}><RefreshCw size={16} /> {text.refresh}</button></div>

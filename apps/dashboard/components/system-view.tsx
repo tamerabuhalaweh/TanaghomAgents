@@ -56,12 +56,11 @@ interface UiCopy {
   ready: string;
   locked: string;
   destinations: string;
-  protectedRuntime: string;
-  disabled: string;
   emergencyControl: string;
   active: string;
   clear: string;
   deliveryReady: string;
+  deliveryNotConfigured: string;
   deliveryLocked: string;
   manageDestinations: string;
   dependencies: string;
@@ -135,17 +134,16 @@ const copy: Record<Lang, UiCopy> = {
     ready: "Ready",
     locked: "Locked",
     destinations: "Customer destinations",
-    protectedRuntime: "Protected runtime",
-    disabled: "Disabled",
     emergencyControl: "Emergency control",
     active: "Active",
     clear: "Clear",
     deliveryReady: "Alerts are delivered through the protected runtime.",
+    deliveryNotConfigured: "Alert delivery is not set up yet. Add a destination in notification settings to receive alerts.",
     deliveryLocked: "Alert delivery is locked until an operator configures and enables the protected runtime.",
     manageDestinations: "Manage destinations",
     dependencies: "Dependencies",
     applicationApi: "Application API",
-    postgres: "PostgreSQL",
+    postgres: "Workspace records",
     authentication: "Authentication",
     modelWorker: "AI Model Worker",
     crmIntegration: "CRM Integration",
@@ -219,17 +217,16 @@ const copy: Record<Lang, UiCopy> = {
     ready: "جاهز",
     locked: "مقفل",
     destinations: "وجهات العملاء",
-    protectedRuntime: "التشغيل المحمي",
-    disabled: "معطّل",
     emergencyControl: "التحكم الطارئ",
     active: "نشط",
     clear: "سليم",
     deliveryReady: "تُسلَّم التنبيهات عبر التشغيل المحمي.",
+    deliveryNotConfigured: "تسليم التنبيهات غير مهيّأ بعد. أضف وجهة في إعدادات الإشعارات لتلقي التنبيهات.",
     deliveryLocked: "تسليم التنبيهات مقفل حتى يهيّئ مشغّل النظام التشغيل المحمي ويفعّله.",
     manageDestinations: "إدارة الوجهات",
     dependencies: "الاعتماديات",
     applicationApi: "واجهة التطبيق",
-    postgres: "قاعدة بيانات PostgreSQL",
+    postgres: "سجلات مساحة العمل",
     authentication: "المصادقة",
     modelWorker: "محرك الذكاء الاصطناعي",
     crmIntegration: "تكامل إدارة العملاء",
@@ -357,7 +354,12 @@ function CapacityPanel({ capacity, text, lang }: { capacity: Capacity; text: UiC
 function CapacityBar({ label, value, total, className }: { label: string; value: number; total: number; className: string }) { return <div><span><strong>{label}</strong><b>{value}</b></span><i><em className={className} style={{ width: `${Math.max(value ? 4 : 0, Math.min(100, value / total * 100))}%` }} /></i></div>; }
 function DeliveryPanel({ monitoring, text }: { monitoring: Monitoring; text: UiCopy }) {
   const delivery = monitoring.notification_delivery;
-  return <section className="monitoring-panel"><header><div><BellRing size={18} /><h2>{text.alertDelivery}</h2></div><StatusPill tone={delivery.delivery_ready ? "success" : "attention"}>{delivery.delivery_ready ? text.ready : text.locked}</StatusPill></header><p className="panel-copy">{delivery.delivery_ready ? text.deliveryReady : text.deliveryLocked}</p><ul className="compact-status-list"><li><span className={delivery.selected_destinations > 0 ? "status-dot-ready" : "status-dot-muted"} />{text.destinations} <strong>{delivery.selected_destinations}</strong></li><li><span className={delivery.runtime_ready ? "status-dot-ready" : "status-dot-muted"} />{text.protectedRuntime} <strong>{delivery.runtime_ready ? text.ready : text.disabled}</strong></li><li><span className={!delivery.emergency_stop ? "status-dot-ready" : "status-dot-warning"} />{text.emergencyControl} <strong>{delivery.emergency_stop ? text.active : text.clear}</strong></li></ul>{monitoring.viewer.can_manage_notifications ? <Link className="panel-link" href="/settings/notifications">{text.manageDestinations} <Link2 size={15} /></Link> : null}</section>;
+  const notConfigured = !delivery.delivery_ready && !delivery.runtime_ready && delivery.selected_destinations === 0;
+  const emergencyActive = delivery.emergency_stop && !notConfigured;
+  const pillTone: Tone = delivery.delivery_ready ? "success" : notConfigured ? "neutral" : "attention";
+  const pillLabel = delivery.delivery_ready ? text.ready : notConfigured ? text.notConfigured : text.locked;
+  const bodyCopy = delivery.delivery_ready ? text.deliveryReady : notConfigured ? text.deliveryNotConfigured : text.deliveryLocked;
+  return <section className="monitoring-panel"><header><div><BellRing size={18} /><h2>{text.alertDelivery}</h2></div><StatusPill tone={pillTone}>{pillLabel}</StatusPill></header><p className="panel-copy">{bodyCopy}</p><ul className="compact-status-list"><li><span className={delivery.selected_destinations > 0 ? "status-dot-ready" : "status-dot-muted"} />{text.destinations} <strong>{delivery.selected_destinations}</strong></li><li><span className={emergencyActive ? "status-dot-warning" : "status-dot-ready"} />{text.emergencyControl} <strong>{emergencyActive ? text.active : text.clear}</strong></li></ul>{monitoring.viewer.can_manage_notifications ? <Link className="panel-link" href="/settings/notifications">{text.manageDestinations} <Link2 size={15} /></Link> : null}</section>;
 }
 function DependenciesPanel({ health, monitoring, text, lang }: { health: Health; monitoring: Monitoring; text: UiCopy; lang: Lang }) {
   const connection = (provider: string) => monitoring.connections.find((item) => item.provider === provider);

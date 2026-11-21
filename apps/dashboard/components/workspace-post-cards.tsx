@@ -447,6 +447,13 @@ function download(blob: Blob, filename: string) {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
+export function accessibleCardLabel(brandName: string, card: Pick<SocialPostCard, "headline" | "body" | "cta">): string {
+  return [brandName || "E3lani", card.headline, card.body, card.cta]
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .join(" — ");
+}
+
 function PostCard({
   card,
   index,
@@ -563,16 +570,17 @@ function PostCard({
         ref={svg}
         viewBox="0 0 1080 1080"
         role="img"
-        aria-label={`${brandName || "E3lani"} · ${card.headline}`}
+        aria-label={accessibleCardLabel(brandName, card)}
         xmlns="http://www.w3.org/2000/svg"
       >
         <rect width="1080" height="1080" fill={tones.primary} />
         <rect x="0" y="0" width="1080" height="18" fill={tones.accent} />
         <rect x="88" y="88" width="904" height="904" rx="28" fill={tones.background} opacity="0.08" />
-        <text x={rtl ? 992 : 88} y="150" fill={ink} opacity="0.78" fontFamily={font} fontSize="30" textAnchor={rtl ? "end" : "start"} direction={rtl ? "rtl" : "ltr"}>
+        <text aria-hidden="true" x={rtl ? 992 : 88} y="150" fill={ink} opacity="0.78" fontFamily={font} fontSize="30" textAnchor={rtl ? "end" : "start"} direction={rtl ? "rtl" : "ltr"}>
           {brandName || "E3lani"}
         </text>
         <text
+          aria-hidden="true"
           x={rtl ? 992 : 88}
           y={headlineTop}
           fill={ink}
@@ -589,6 +597,7 @@ function PostCard({
           ))}
         </text>
         <text
+          aria-hidden="true"
           x={rtl ? 992 : 88}
           y={bodyTop}
           fill={ink}
@@ -608,6 +617,7 @@ function PostCard({
           <g>
             <rect x={rtl ? 992 - 560 : 88} y="852" width="560" height="140" rx="30" fill={tones.accent} />
             <text
+              aria-hidden="true"
               x={rtl ? 992 - 280 : 88 + 280}
               y={852 + 70}
               fill="#101828"

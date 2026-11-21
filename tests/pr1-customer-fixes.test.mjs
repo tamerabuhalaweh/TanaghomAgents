@@ -247,8 +247,8 @@ test("agent actions shows audit history and no unexplained internal acronym", ()
   assert.match(page, /import \{ LiveActivity \} from "\.\/live-activity"/);
   assert.match(page, /Agent action history/);
   assert.match(page, /<LiveActivity \/>/);
-  assert.doesNotMatch(page, /\bGHL\b/);
-  assert.match(page, /Actions prepared in GoHighLevel stay bounded by organization policy/);
+  assert.doesNotMatch(page, /\bGHL\b|GoHighLevel/);
+  assert.match(page, /Actions prepared in your CRM stay bounded by organization policy/);
   // The queue keeps its guards and never retries an uncertain action.
   assert.match(page, /Do not retry/);
   assert.match(page, /confirmed_not_applied/);
