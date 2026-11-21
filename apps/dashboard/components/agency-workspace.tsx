@@ -308,7 +308,7 @@ export function AgencyWorkspace() {
               <button type="button" className="button button-secondary" onClick={() => fillExample("en")}>{ar ? "تعبئة مثال إنجليزي" : "Fill English example"}</button>
             </div>
             <div className="aw-form-row">
-              <label>{ar ? "عنوان المهمة" : "Assignment title"}<input required minLength={3} maxLength={120} value={title} onChange={(e) => { setTitle(e.target.value); key.current = null; }} placeholder={ar ? "حزمة عمل حملة الدورة الصيفية" : "Summer course campaign work pack"} /></label>
+              <label>{ar ? "عنوان المهمة" : "Assignment title"}<input required minLength={3} maxLength={120} value={title} onChange={(e) => { setTitle(e.target.value); key.current = null; }} placeholder={ar ? "مثال: حزمة عمل حملة الدورة الصيفية" : "e.g. Summer course campaign work pack"} /></label>
               <label>{ar ? "لغة المخرجات" : "Output language"}<select value={language} onChange={(e) => { const next = e.target.value; setLanguage(next); setDialect(next === "en" ? "msa" : data?.default_dialect ?? "msa"); key.current = null; }}><option value="en">English</option><option value="ar">العربية — Arabic</option></select></label>
             </div>
             <div className="aw-dialect-field">

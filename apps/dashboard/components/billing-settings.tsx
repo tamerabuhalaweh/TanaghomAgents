@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CreditCard, ExternalLink, LoaderCircle, LockKeyhole, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
+import { Check, CreditCard, ExternalLink, FileText, LoaderCircle, LockKeyhole, RefreshCw, ShieldCheck, Sparkles } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
@@ -84,6 +84,13 @@ const copy = {
     cancels: "Cancels at the end of the current period",
     renews: "Renews automatically",
     notConfigured: "Not configured",
+    portalUnavailable: "The Billing Portal opens after your first paid subscription. Start checkout from a plan below.",
+    planLockedOwner: "Only the workspace Owner can change this plan.",
+    planLockedCurrent: "This is your current plan.",
+    planLockedUnconfigured: "Online checkout is not enabled on this environment.",
+    invoicesTitle: "Invoices & payment history",
+    invoicesHint: "Receipts and invoices are issued by Stripe, the payment processor.",
+    invoicesEmpty: "No invoices yet. After your first payment, every invoice and receipt appears here and stays available in the Billing Portal.",
     planBlurb: {
       starter: "For a single brand finding its publishing rhythm.",
       growth: "For teams running multiple campaigns and channels.",
@@ -143,6 +150,13 @@ const copy = {
     cancels: "يُلغى في نهاية الفترة الحالية",
     renews: "يتجدد تلقائيًا",
     notConfigured: "غير مهيأة",
+    portalUnavailable: "تُفتح بوابة الفوترة بعد أول اشتراك مدفوع. ابدأ الدفع من إحدى الباقات أدناه.",
+    planLockedOwner: "مالك مساحة العمل وحده يمكنه تغيير هذه الباقة.",
+    planLockedCurrent: "هذه باقتك الحالية.",
+    planLockedUnconfigured: "الدفع الإلكتروني غير مفعّل على هذه البيئة.",
+    invoicesTitle: "الفواتير وسجل المدفوعات",
+    invoicesHint: "تصدر الإيصالات والفواتير عن Stripe، معالج المدفوعات.",
+    invoicesEmpty: "لا فواتير بعد. بعد أول دفعة، ستظهر كل فاتورة وإيصال هنا وتبقى متاحة في بوابة الفوترة.",
     planBlurb: {
       starter: "لعلامة واحدة تبني إيقاع نشرها.",
       growth: "لفرق تدير حملات وقنوات متعددة.",
@@ -326,7 +340,15 @@ export function BillingSettings() {
             <div><dt>{text.tax}</dt><dd>{payload.automatic_tax ? text.taxOn : text.taxOff}</dd></div>
           </dl>
           {payload.plan_tier && periodEnd ? <p className="billing-renewal">{payload.cancel_at_period_end ? text.cancels : text.renews}</p> : null}
-          {payload.can_manage_billing && payload.has_stripe_customer ? <div className="billing-actions"><button className="primary-button" type="button" disabled={busy !== null || !payload.billing_configured} onClick={() => void openPortal()}><ExternalLink size={16} /> {busy === "portal" ? text.opening : text.manage}</button></div> : null}
+          {payload.can_manage_billing ? <div className="billing-actions">
+            <button className="primary-button" type="button" disabled={busy !== null || !payload.billing_configured || !payload.has_stripe_customer} onClick={() => void openPortal()}><ExternalLink size={16} /> {busy === "portal" ? text.opening : text.manage}</button>
+            {!payload.billing_configured || !payload.has_stripe_customer ? <small className="billing-action-hint">{!payload.billing_configured ? text.unconfigured : text.portalUnavailable}</small> : null}
+          </div> : null}
+        </section>
+
+        <section className="panel billing-invoices" aria-labelledby="billing-invoices-title">
+          <header className="billing-invoices-head"><div><h2 id="billing-invoices-title">{text.invoicesTitle}</h2><p>{text.invoicesHint}</p></div><FileText size={18} aria-hidden="true" /></header>
+          <p className="billing-invoices-empty">{text.invoicesEmpty}</p>
         </section>
 
         <section className="billing-plans-section" aria-labelledby="billing-plans-title">
@@ -336,6 +358,13 @@ export function BillingSettings() {
             {payload.plans.map((plan) => {
               const current = payload.plan_tier === plan.id;
               const disabled = !payload.can_manage_billing || !payload.billing_configured || !plan.configured || busy !== null || current;
+              const lockedReason = current
+                ? text.planLockedCurrent
+                : !payload.can_manage_billing
+                  ? text.planLockedOwner
+                  : !payload.billing_configured || !plan.configured
+                    ? (plan.configured ? text.planLockedUnconfigured : text.notConfigured)
+                    : "";
               return <article className={`billing-plan ${current ? "billing-plan-current" : ""}`} key={plan.id}>
                 <div className="billing-plan-head"><h3>{planName(plan.id, ar)}</h3>{current ? <StatusPill tone="success">{text.current}</StatusPill> : null}</div>
                 <p className="billing-price">
@@ -344,8 +373,8 @@ export function BillingSettings() {
                 </p>
                 <small className="billing-plan-quota">{ar ? formatArabicCount(plan.monthly_campaigns, { zero: "لا حملات ذكاء اصطناعي شهريًا", one: "حملة ذكاء اصطناعي واحدة شهريًا", two: "حملتا ذكاء اصطناعي شهريًا", few: "{count} حملات ذكاء اصطناعي شهريًا", many: "{count} حملة ذكاء اصطناعي شهريًا", other: "{count} حملة ذكاء اصطناعي شهريًا" }) : `${plan.monthly_campaigns} ${text.campaigns}`}</small>
                 <p className="billing-plan-copy">{text.planBlurb[plan.id]}</p>
-                {!plan.configured ? <small className="billing-plan-missing">{text.notConfigured}</small> : <small className="billing-plan-missing" aria-hidden="true" />}
-                <button className={current ? "secondary-button" : "primary-button"} type="button" disabled={disabled} onClick={() => void checkout(plan.id)}>
+                {lockedReason ? <small className="billing-plan-missing">{lockedReason}</small> : <small className="billing-plan-missing" aria-hidden="true" />}
+                <button className={current ? "secondary-button" : "primary-button"} type="button" disabled={disabled} title={lockedReason || undefined} onClick={() => void checkout(plan.id)}>
                   {busy === plan.id ? <LoaderCircle className="spin" size={16} /> : <CreditCard size={16} />}
                   {busy === plan.id ? text.checkout : current ? text.current : payload.plan_tier ? text.switchPlan : text.subscribe}
                 </button>

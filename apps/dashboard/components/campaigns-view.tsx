@@ -1,9 +1,9 @@
 "use client";
 
-import { ArrowRight, CircleDollarSign, FileCheck2, Plus, UsersRound } from "lucide-react";
+import { ArrowRight, CircleDollarSign, FileCheck2, Plus, Search, UsersRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import type { Tone } from "@/data/fixtures";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
@@ -69,8 +69,27 @@ export function CampaignsView() {
   const [creating, setCreating] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [sort, setSort] = useState<"updated" | "name" | "status">("updated");
   const canOperate = operations.status === "ready"
     && ["owner", "operator"].includes(operations.data.current_user.role);
+
+  const campaigns = operations.status === "ready" ? operations.data.campaigns : [];
+  const statuses = useMemo(() => [...new Set(campaigns.map((campaign) => campaign.status))].sort(), [campaigns]);
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const filtered = campaigns.filter((campaign) => {
+      const matchesStatus = statusFilter === "all" || campaign.status === statusFilter;
+      const haystack = `${campaign.name} ${campaign.product_type} ${campaign.status}`.toLowerCase();
+      return matchesStatus && (!needle || haystack.includes(needle));
+    });
+    return [...filtered].sort((a, b) => {
+      if (sort === "name") return a.name.localeCompare(b.name, locale);
+      if (sort === "status") return statusLabel(a.status, ar).localeCompare(statusLabel(b.status, ar), locale);
+      return new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime();
+    });
+  }, [ar, campaigns, locale, query, sort, statusFilter]);
 
   async function createCampaign(value: CampaignFormValue) {
     setBusy(true); setError(null);
@@ -97,7 +116,19 @@ export function CampaignsView() {
     {operations.status === "loading" ? <OperationsLoading label={ar ? "جارٍ تحميل الحملات" : "Loading campaigns"} /> : null}
     {operations.status === "error" ? <OperationsError retry={operations.retry} /> : null}
     {operations.status === "ready" && operations.data.campaigns.length === 0 ? <DomainEmpty title={ar ? "لا توجد حملات بعد" : "No campaigns yet"} description={canOperate ? (ar ? "أنشئ أول موجز حملة، ثم ابدأ الاستراتيجية من صفحة تفاصيله." : "Create the first campaign brief, then start Strategy from its detail page.") : (ar ? "يمكن للمالك أو المشغّل إنشاء أول موجز حملة." : "An owner or operator can create the first campaign brief.")} detail={ar ? "يبقى عمل الحملات داخلياً حتى يعتمد شخص كل مسودة." : "Campaign work remains internal until a human approves every draft."} action={<Link className="primary-button" href="/workspace">{ar ? "أنشئ أول موجز حملة" : "Create your first campaign brief"} <ArrowRight size={17} /></Link>} /> : null}
-    {operations.status === "ready" && operations.data.campaigns.length > 0 ? <section className="campaign-portfolio" aria-label={ar ? "محفظة الحملات" : "Campaign portfolio"}>{operations.data.campaigns.map((campaign) => {
+    {operations.status === "ready" && campaigns.length > 0 ? <section className="list-toolbar" aria-label={ar ? "تصفية الحملات" : "Campaign filters"}>
+      <label className="search-field">
+        <Search size={17} />
+        <span className="sr-only">{ar ? "ابحث في الحملات" : "Search campaigns"}</span>
+        <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "ابحث بالاسم أو النوع أو الحالة" : "Search name, type, or status"} />
+      </label>
+      <div className="list-toolbar-selects">
+        <label className="list-select"><span>{ar ? "الحالة" : "Status"}</span><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value)}><option value="all">{ar ? "كل الحالات" : "All statuses"}</option>{statuses.map((status) => <option key={status} value={status}>{statusLabel(status, ar)}</option>)}</select></label>
+        <label className="list-select"><span>{ar ? "الترتيب" : "Sort"}</span><select value={sort} onChange={(event) => setSort(event.target.value as "updated" | "name" | "status")}><option value="updated">{ar ? "الأحدث تحديثًا" : "Recently updated"}</option><option value="name">{ar ? "الاسم أبجديًا" : "Name A–Z"}</option><option value="status">{ar ? "حسب الحالة" : "By status"}</option></select></label>
+      </div>
+    </section> : null}
+    {operations.status === "ready" && campaigns.length > 0 && !visible.length ? <DomainEmpty title={ar ? "لا حملات تطابق هذا العرض" : "No campaigns match this view"} description={ar ? "امسح البحث أو اختر حالة أخرى لعرض الحملات المحفوظة." : "Clear the search or choose another status to see your saved campaigns."} action={<button className="secondary-button" type="button" onClick={() => { setQuery(""); setStatusFilter("all"); }}>{ar ? "امسح عوامل التصفية" : "Clear filters"}</button>} /> : null}
+    {operations.status === "ready" && visible.length > 0 ? <section className="campaign-portfolio" aria-label={ar ? "محفظة الحملات" : "Campaign portfolio"}>{visible.map((campaign) => {
       const statusText = statusLabel(campaign.status, ar);
       const stageText = stage(campaign.status, campaign.core_job_type, campaign.core_job_status, ar);
       return <article className={`campaign-record campaign-record-${campaign.status}`} key={campaign.id}>

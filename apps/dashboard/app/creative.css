@@ -477,3 +477,64 @@
 .creative-import-body { margin: 0; opacity: 0.9; }
 .creative-import-cta { display: inline-block; padding: 0.5rem 1.25rem; border-radius: 999px; background: #c6a15b; color: #101828; font-weight: 700; }
 .creative-import-image { display: block; width: 100%; height: auto; max-height: 22rem; object-fit: cover; border-radius: 0.75rem; margin-block-end: 0.75rem; }
+
+/* Scaled preview frame: creative documents are a fixed canvas (1080px wide),
+   so the frame measures itself and scales the whole document down instead of
+   showing only the cropped top-left corner. */
+.creative-scaled-frame {
+  position: relative;
+  inline-size: 100%;
+  max-block-size: 34rem;
+  overflow: hidden;
+  border: 1px solid var(--border, #e2e8f0);
+  border-radius: 0.5rem;
+  background: var(--surface, #f8fafc);
+}
+
+.creative-scaled-frame iframe {
+  position: absolute;
+  inset-block-start: 0;
+  inset-inline-start: 0;
+  border: 0;
+  transform-origin: top left;
+}
+
+:dir(rtl) .creative-scaled-frame iframe {
+  inset-inline-start: auto;
+  inset-inline-end: 0;
+  transform-origin: top right;
+}
+
+/* A disabled action must read as unavailable, not as the primary teal button. */
+.creative-button[disabled] {
+  border-color: var(--border, #cbd5e1);
+  background: var(--surface, #f1f5f9);
+  color: var(--muted-foreground, #5b6472);
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.creative-button-secondary[disabled] {
+  border-color: var(--border, #e2e8f0);
+  background: transparent;
+}
+
+/* Layer-card fields: keep the label above the field instead of letting it run
+   into the textarea border. */
+.creative-card label {
+  display: grid;
+  gap: 0.25rem;
+  font-size: 0.9rem;
+}
+
+.creative-card textarea {
+  inline-size: 100%;
+  min-block-size: 5rem;
+  font: inherit;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--border, #cbd5e1);
+  border-radius: 0.5rem;
+  background: var(--background, #fff);
+  color: inherit;
+  resize: vertical;
+}

@@ -5,6 +5,7 @@ import { useEffect, useState } from "react";
 
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
+import { ScaledPreview } from "@/components/creative/scaled-preview";
 
 interface MotionSpec {
   locale: CreativeLocale;
@@ -115,7 +116,7 @@ export function MotionEditorView({ locale, dir, templateId }: { locale: Creative
             <p>{t(locale, "motions.renderOffline")}</p>
             <p>{t(locale, "motions.noPublish")}</p>
             <h2>{t(locale, "motions.preview")}</h2>
-            <iframe title="motion-preview" src={`/api/creative/motions/${templateId}/preview`} width={360} height={360} sandbox="" />
+            <ScaledPreview className="creative-editor-frame" title="motion-preview" src={`/api/creative/motions/${templateId}/preview`} />
             <h2>{t(locale, "motions.scenes")} ({spec.scenes.length})</h2>
             {spec.scenes.map((scene, sceneIndex) => (
               <section key={scene.id} aria-label={`${t(locale, "motions.scenes")} ${sceneIndex + 1}`}>

@@ -9,13 +9,14 @@ import {
   MessageSquareText,
   RefreshCw,
   RotateCcw,
+  Search,
   TriangleAlert,
   X,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
-import { formatArabicCount } from "@/lib/i18n/format";
+import { formatArabicCount, formatDateTime } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
 import { dialectLabel, normalizeDialect } from "@/lib/i18n/dialects";
@@ -81,14 +82,55 @@ function itemTitle(item: ApprovalItem) {
     : `${item.channel} ${item.content_type.replaceAll("_", " ")}`;
 }
 
-function formatCreatedAt(value: string) {
-  return new Intl.DateTimeFormat("en", {
+function formatCreatedAt(value: string, ar: boolean) {
+  return formatDateTime(value, ar ? "ar" : "en", {
     month: "short",
     day: "numeric",
     hour: "numeric",
     minute: "2-digit",
     timeZoneName: "short",
-  }).format(new Date(value));
+  });
+}
+
+const MIN_FEEDBACK = 3;
+
+const contentTypeLabelsAr: Record<string, string> = {
+  work_pack: "حزمة عمل",
+  social_post: "منشور اجتماعي",
+  blog_post: "مقال",
+  email: "بريد إلكتروني",
+  caption: "نص منشور",
+};
+
+function contentTypeLabel(value: string, ar: boolean) {
+  const spaced = value.replaceAll("_", " ");
+  return ar ? contentTypeLabelsAr[value] || spaced : spaced;
+}
+
+const deliverableStatusesAr: Record<string, string> = {
+  draft: "مسودة",
+  pending: "قيد الانتظار",
+  approved: "معتمد",
+  rejected: "مرفوض",
+  changes_requested: "طُلب التعديل",
+  failed: "يحتاج إلى انتباه",
+};
+
+function deliverableStatus(value: string, ar: boolean) {
+  const spaced = value.replaceAll("_", " ");
+  return ar ? deliverableStatusesAr[value] || spaced : spaced;
+}
+
+/** The full document often repeats the deliverable heading already shown above
+ *  it, so drop a leading heading that only repeats the visible label. */
+function withoutDuplicateHeading(document: string, labels: Array<string | undefined>) {
+  const lines = document.split(/\r?\n/);
+  const first = lines[0]?.trim() ?? "";
+  if (!first) return document;
+  const heading = first.replace(/^#{1,6}\s*/, "").replace(/\*\*/g, "").replace(/[:：]\s*$/, "").trim().toLowerCase();
+  if (!heading) return document;
+  const duplicate = labels.some((label) => label && label.replaceAll("_", " ").trim().toLowerCase() === heading);
+  return duplicate ? lines.slice(1).join("\n").trim() || document : document;
 }
 
 function requestedId() {
@@ -112,6 +154,9 @@ export function ApprovalWorkspace() {
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [query, setQuery] = useState("");
+  const [sourceFilter, setSourceFilter] = useState<"all" | "ai_workspace" | "content">("all");
+  const [sort, setSort] = useState<"newest" | "oldest" | "title">("newest");
 
   const load = useCallback(async () => {
     setLoadState("loading");
@@ -140,7 +185,29 @@ export function ApprovalWorkspace() {
     () => items.find((item) => item.id === activeId) ?? items[0],
     [activeId, items],
   );
-  const activeIndex = active ? items.findIndex((item) => item.id === active.id) : -1;
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const filtered = items.filter((item) => {
+      const matchesSource = sourceFilter === "all" || item.source === sourceFilter;
+      const haystack = `${itemTitle(item)} ${item.campaign_name} ${item.channel} ${item.content_type}`.toLowerCase();
+      return matchesSource && (!needle || haystack.includes(needle));
+    });
+    return [...filtered].sort((a, b) => sort === "title"
+      ? itemTitle(a).localeCompare(itemTitle(b), locale)
+      : sort === "oldest"
+        ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [items, locale, query, sort, sourceFilter]);
+
+  useEffect(() => {
+    if (!visible.length) return;
+    if (!active || !visible.some((item) => item.id === active.id)) {
+      setActiveId(visible[0].id);
+      syncUrl(visible[0].id);
+    }
+  }, [active, visible]);
+
+  const activeIndex = active ? visible.findIndex((item) => item.id === active.id) : -1;
 
   function select(id: string) {
     setActiveId(id);
@@ -148,15 +215,15 @@ export function ApprovalWorkspace() {
   }
 
   function move(offset: number) {
-    if (!items.length) return;
-    const nextIndex = (activeIndex + offset + items.length) % items.length;
-    select(items[nextIndex].id);
+    if (!visible.length) return;
+    const nextIndex = (activeIndex + offset + visible.length) % visible.length;
+    select(visible[nextIndex].id);
     setRejecting(false);
     setReason("");
   }
 
   async function decide(decision: "approved" | "rejected") {
-    if (!active || (decision === "rejected" && !reason.trim())) return;
+    if (!active || (decision === "rejected" && reason.trim().length < MIN_FEEDBACK)) return;
     setSubmitting(true);
     setFeedback("");
     try {
@@ -219,12 +286,24 @@ export function ApprovalWorkspace() {
       {loadState === "ready" && active ? (
         <div className="approval-workspace">
           <aside className="review-inbox" aria-label={ar ? "محتوى بانتظار المراجعة" : "Content awaiting review"}>
-            <div className="inbox-heading"><h2>{ar ? "قائمة المراجعة" : "Review queue"}</h2><span>{ar ? formatArabicCount(items.length, { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" }) : `${items.length} pending`}</span></div>
+            <div className="inbox-heading"><h2>{ar ? "قائمة المراجعة" : "Review queue"}</h2><span>{ar ? formatArabicCount(items.length, { zero: "لا عناصر", one: "عنصر واحد", two: "عنصران", few: "{count} عناصر", many: "{count} عنصرًا", other: "{count} عنصر" }) : `${items.length} pending`}</span>            </div>
+            <div className="list-toolbar list-toolbar-compact">
+              <label className="search-field">
+                <Search size={16} />
+                <span className="sr-only">{ar ? "ابحث في قائمة المراجعة" : "Search the review queue"}</span>
+                <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={ar ? "ابحث بالعنوان أو الحملة" : "Search title, campaign, or channel"} />
+              </label>
+              <div className="list-toolbar-selects">
+                <label className="list-select"><span>{ar ? "النوع" : "Type"}</span><select value={sourceFilter} onChange={(event) => setSourceFilter(event.target.value as "all" | "ai_workspace" | "content")}><option value="all">{ar ? "كل الأنواع" : "All types"}</option><option value="ai_workspace">{ar ? "حزم العمل" : "AI work packs"}</option><option value="content">{ar ? "المحتوى" : "Content items"}</option></select></label>
+                <label className="list-select"><span>{ar ? "الترتيب" : "Sort"}</span><select value={sort} onChange={(event) => setSort(event.target.value as "newest" | "oldest" | "title")}><option value="newest">{ar ? "الأحدث أولاً" : "Newest first"}</option><option value="oldest">{ar ? "الأقدم أولاً" : "Oldest first"}</option><option value="title">{ar ? "العنوان أبجديًا" : "Title A–Z"}</option></select></label>
+              </div>
+            </div>
+            {!visible.length ? <p className="list-filter-empty">{ar ? "لا عناصر تطابق هذا العرض. امسح البحث أو غيّر النوع." : "No items match this view. Clear the search or change the type."}</p> : null}
             <div className="review-list">
-              {items.map((item) => (
+              {visible.map((item) => (
                 <button key={item.id} type="button" className={`review-list-item ${active.id === item.id ? "review-list-item-active" : ""}`} onClick={() => select(item.id)}>
                   <span className="channel-tile" aria-hidden="true">{item.source === "ai_workspace" ? "AI" : item.channel.slice(0, 2).toUpperCase()}</span>
-                  <span><strong>{itemTitle(item)}</strong><small>{item.source === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : item.channel} · {formatCreatedAt(item.created_at)}</small></span>
+                  <span><strong>{itemTitle(item)}</strong><small>{item.source === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : item.channel} · {formatCreatedAt(item.created_at, ar)}</small></span>
                   <ChevronRight size={17} />
                 </button>
               ))}
@@ -233,13 +312,13 @@ export function ApprovalWorkspace() {
 
           <article className="review-canvas" aria-labelledby="review-title">
             <header className="review-header">
-              <div><StatusPill tone="attention">{ar ? "بحاجة إلى مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack") : active.content_type.replaceAll("_", " ")} · {active.campaign_name}</p></div>
-              <div className="review-position"><button className="icon-button" type="button" aria-label={ar ? "العنصر السابق" : "Previous item"} onClick={() => move(-1)}><ChevronLeft size={19} /></button><span>{ar ? `${activeIndex + 1} من ${items.length}` : `${activeIndex + 1} of ${items.length}`}</span><button className="icon-button" type="button" aria-label={ar ? "العنصر التالي" : "Next item"} onClick={() => move(1)}><ChevronRight size={19} /></button></div>
+              <div><StatusPill tone="attention">{ar ? "بحاجة إلى مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack") : contentTypeLabel(active.content_type, ar)} · {active.campaign_name}</p></div>
+              <div className="review-position"><button className="icon-button" type="button" aria-label={ar ? "العنصر السابق" : "Previous item"} onClick={() => move(-1)}><ChevronLeft size={19} /></button><span>{ar ? `${activeIndex + 1} من ${visible.length}` : `${activeIndex + 1} of ${visible.length}`}</span><button className="icon-button" type="button" aria-label={ar ? "العنصر التالي" : "Next item"} onClick={() => move(1)}><ChevronRight size={19} /></button></div>
             </header>
 
             <dl className="review-metadata">
               <div><dt>{ar ? "القناة" : "Channel"}</dt><dd>{active.source === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : active.channel}</dd></div>
-              <div><dt>{ar ? "أُنشئ" : "Created"}</dt><dd>{formatCreatedAt(active.created_at)}</dd></div>
+              <div><dt>{ar ? "أُنشئ" : "Created"}</dt><dd>{formatCreatedAt(active.created_at, ar)}</dd></div>
               <div><dt>{ar ? "أعدّه" : "Prepared by"}</dt><dd>{active.source === "ai_workspace" ? (ar ? "فريق المختصين" : "Specialist team") : (ar ? "كاتب المحتوى" : "Content Producer")}</dd></div>
               <div><dt>{ar ? "سياسة الاعتماد" : "Approval policy"}</dt><dd>{ar ? "مراجعة بشرية مطلوبة" : "Human required"}</dd></div>
               {active.source === "ai_workspace" ? <div><dt>{ar ? "اللغة واللهجة" : "Language & dialect"}</dt><dd>{active.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")}{normalizeDialect(active.dialect) ? ` · ${dialectLabel(normalizeDialect(active.dialect)!, locale)}` : ""}</dd></div> : null}
@@ -251,11 +330,11 @@ export function ApprovalWorkspace() {
                 {active.deliverables.length ? <ul className="approval-deliverables">{active.deliverables.map((deliverable) => (
                   <li key={`${deliverable.sequence}-${deliverable.profile}`}>
                     <strong>{agentDisplayName(profileNames[deliverable.profile] || deliverable.profile, ar)}</strong>
-                    <small dir="auto">{agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)} · {deliverable.status}</small>
+                    <small dir="auto">{agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)} · {deliverableStatus(deliverable.status, ar)}</small>
                     {deliverable.excerpt ? <div className="approval-deliverable-excerpt">
                       <FormattedText text={`${deliverable.excerpt}${deliverable.document && deliverable.document.length > deliverable.excerpt.length ? "…" : ""}`} dir="auto" />
                       {deliverable.document && deliverable.document.length > deliverable.excerpt.length
-                        ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={deliverable.document} dir="auto" /></details>
+                        ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={withoutDuplicateHeading(deliverable.document, [profileNames[deliverable.profile], profileDeliverables[deliverable.profile], agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)])} dir="auto" /></details>
                         : null}
                     </div> : <p dir="auto">{ar ? "لا مسودة محفوظة بعد." : "No stored draft yet."}</p>}
                   </li>
@@ -286,7 +365,8 @@ export function ApprovalWorkspace() {
                 <div><h3 id="rejection-title">{ar ? "ما الذي يجب تغييره؟" : "What should change?"}</h3><p>{active.source === "ai_workspace" ? (ar ? "تُحفظ ملاحظاتك مع الحزمة، وأنشئ مهمة منقّحة لإنتاج نسخة جديدة." : "Your feedback is saved with the pack; create a revised assignment to produce a new version.") : (ar ? "يصبح سببك سياقاً للنسخة التالية." : "Your reason becomes context for the next generated version.")}</p></div>
                 <label htmlFor="rejection-reason">{ar ? "سبب الرفض" : "Rejection reason"}</label>
                 <textarea id="rejection-reason" value={reason} onChange={(event) => setReason(event.target.value)} placeholder={ar ? "كن محدداً بشأن النبرة أو الادعاءات أو الجمهور أو تعديلات الوسائط المطلوبة." : "Be specific about tone, claims, audience, or required media changes."} />
-                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(false)} disabled={submitting}>{ar ? "متابعة المراجعة" : "Keep reviewing"}</button><button className="danger-button" type="button" disabled={!reason.trim() || submitting} onClick={() => void decide("rejected")}><RotateCcw size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "طلب تعديلات" : "Request changes") : (ar ? "ارفض وأعد التوليد" : "Reject and regenerate")}</button></div>
+                {reason.trim().length < MIN_FEEDBACK ? <p className="review-feedback-hint" role="status">{ar ? "اكتب 3 أحرف على الأقل لتفعيل «طلب تعديلات»." : "Type at least 3 characters to enable “Request changes”."}</p> : null}
+                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(false)} disabled={submitting}>{ar ? "متابعة المراجعة" : "Keep reviewing"}</button><button className="danger-button" type="button" disabled={reason.trim().length < MIN_FEEDBACK || submitting} onClick={() => void decide("rejected")}><RotateCcw size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "طلب تعديلات" : "Request changes") : (ar ? "ارفض وأعد التوليد" : "Reject and regenerate")}</button></div>
               </div>
             ) : (
               <footer className="review-footer">

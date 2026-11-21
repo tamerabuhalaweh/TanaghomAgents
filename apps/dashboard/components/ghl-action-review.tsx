@@ -7,6 +7,7 @@ import {
   ChevronRight,
   Clock3,
   RefreshCw,
+  Search,
   ShieldCheck,
   TriangleAlert,
   X,
@@ -88,6 +89,9 @@ export function GhlActionReview() {
   const [providerReference, setProviderReference] = useState("");
   const [busy, setBusy] = useState(false);
   const [feedback, setFeedback] = useState("");
+  const [query, setQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<"all" | ActionStatus>("all");
+  const [sort, setSort] = useState<"newest" | "oldest" | "title">("newest");
 
   const load = useCallback(async () => {
     setState("loading"); setFeedback(""); setStale(false);
@@ -109,7 +113,21 @@ export function GhlActionReview() {
     return () => window.clearTimeout(timer);
   }, [payload]);
 
-  const active = useMemo(() => payload?.items.find((item) => item.id === activeId) || payload?.items[0], [activeId, payload]);
+  const visible = useMemo(() => {
+    const needle = query.trim().toLowerCase();
+    const list = payload?.items ?? [];
+    const filtered = list.filter((item) => {
+      const matchesStatus = statusFilter === "all" || item.status === statusFilter;
+      const haystack = `${title(item)} ${item.channel} ${item.action_type}`.toLowerCase();
+      return matchesStatus && (!needle || haystack.includes(needle));
+    });
+    return [...filtered].sort((a, b) => sort === "title"
+      ? title(a).localeCompare(title(b))
+      : sort === "oldest"
+        ? new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+        : new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  }, [payload, query, sort, statusFilter]);
+  const active = useMemo(() => visible.find((item) => item.id === activeId) || visible[0], [activeId, visible]);
   const canDecide = payload?.current_user.role === "owner" || payload?.current_user.role === "reviewer";
 
   async function submit(kind: "approved" | "rejected" | "confirmed_succeeded" | "confirmed_not_applied") {
@@ -150,8 +168,20 @@ export function GhlActionReview() {
     {state === "ready" && payload && !payload.items.length ? <ReviewState icon={<CheckCircle2 />} title="Action queue is clear" copy={feedback || "No CRM action needs human approval or reconciliation. Actions prepared in your CRM stay bounded by organization policy until a person decides here."} /> : null}
     {state === "ready" && payload && active ? <div className="action-review-shell">
       <aside className="action-review-queue" aria-label="CRM actions requiring attention">
-        <header><div><h2>Needs attention</h2><p>{payload.items.length} governed {payload.items.length === 1 ? "action" : "actions"}</p></div><button className="icon-button" aria-label="Refresh action queue" onClick={() => void load()}><RefreshCw size={17} /></button></header>
-        <div>{payload.items.map((item) => <button key={item.id} type="button" className={`action-review-row ${item.id === active.id ? "action-review-row-active" : ""}`} onClick={() => { setActiveId(item.id); setReason(""); setProviderReference(""); }}>
+        <header><div><h2>Needs attention</h2><p>{visible.length === payload.items.length ? `${payload.items.length} governed ${payload.items.length === 1 ? "action" : "actions"}` : `${visible.length} of ${payload.items.length} governed actions`}</p></div><button className="icon-button" aria-label="Refresh action queue" onClick={() => void load()}><RefreshCw size={17} /></button></header>
+        <div className="list-toolbar list-toolbar-compact">
+          <label className="search-field">
+            <Search size={16} />
+            <span className="sr-only">Search actions</span>
+            <input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Search lead, channel, or action" />
+          </label>
+          <div className="list-toolbar-selects">
+            <label className="list-select"><span>Status</span><select value={statusFilter} onChange={(event) => setStatusFilter(event.target.value as "all" | ActionStatus)}><option value="all">All statuses</option><option value="awaiting_approval">Awaiting approval</option><option value="indeterminate">Uncertain</option></select></label>
+            <label className="list-select"><span>Sort</span><select value={sort} onChange={(event) => setSort(event.target.value as "newest" | "oldest" | "title")}><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="title">Title A–Z</option></select></label>
+          </div>
+        </div>
+        {!visible.length ? <p className="list-filter-empty">No actions match this view. Clear the search or change the status.</p> : null}
+        <div>{visible.map((item) => <button key={item.id} type="button" className={`action-review-row ${item.id === active.id ? "action-review-row-active" : ""}`} onClick={() => { setActiveId(item.id); setReason(""); setProviderReference(""); }}>
           <span className={item.status === "indeterminate" ? "action-risk-icon action-risk-icon-danger" : "action-risk-icon"}>{item.status === "indeterminate" ? <AlertOctagon size={17} /> : <ShieldCheck size={17} />}</span>
           <span><strong>{title(item)}</strong><small>{item.channel} · {timestamp(item.created_at)}</small></span><ChevronRight size={17} />
         </button>)}</div>

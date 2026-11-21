@@ -6,6 +6,7 @@ import { useState } from "react";
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
+import { ScaledPreview } from "@/components/creative/scaled-preview";
 
 interface DesignNode {
   id: string;
@@ -219,11 +220,11 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
                     </button>
                   ))}
                 </div>
-                <iframe
+                <ScaledPreview
                   className="creative-editor-frame"
                   title={t(locale, "designs.preview")}
                   src={`/api/creative/designs/${templateId}/preview?format=${previewFormat}&v=${loaded.version}&locale=${locale}`}
-                  sandbox=""
+                  height={previewFormat === "4:5" ? 1350 : previewFormat === "9:16" ? 1920 : 1080}
                 />
                 {renderJobs.length > 0 && (
                   <ul className="creative-grid">

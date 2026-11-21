@@ -298,7 +298,13 @@ export function ContentLibrary() {
               <Link className="primary-button compact-button" href={`/workspace?id=${item.id}`}>
                 {ar ? "افتح الحزمة في مساحة العمل" : "Open work pack in AI Workspace"} <ExternalLink size={14} />
               </Link>
-            </div> : item.content_type === "work_pack"
+            </div> : item.content_type === "work_pack" && !isExpanded && deliverables.length > 1
+              ? <div className="content-pack-preview" dir="auto">
+                {deliverables.map((deliverable) => <div key={deliverable.sequence}>
+                  <strong>{ar ? `المهمة ${deliverable.sequence}` : `Task ${deliverable.sequence}`} · {specialistName(deliverable.profile_code, ar)}</strong>
+                  <p>{truncateMarkdownAtWord(deliverable.document, 160)}{deliverable.document.length > 160 ? "…" : ""}</p>
+                </div>)}
+              </div> : item.content_type === "work_pack"
               ? <div className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto"><FormattedText text={isExpanded ? item.draft_copy : preview} /></div>
               : <p className={`content-copy ${isExpanded ? "content-copy-expanded" : ""}`} dir="auto">{isExpanded ? item.draft_copy : preview}</p>}
             <div className="content-record-meta">
