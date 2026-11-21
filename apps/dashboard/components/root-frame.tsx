@@ -14,6 +14,8 @@ const PUBLIC_ROUTES = new Set([
   "/pricing",
   "/privacy",
   "/terms",
+  "/blog/ai-social-media-manager-small-business",
+  "/blog/ai-social-media-management-small-business",
   "/login",
   "/signup",
   "/verify-email",
