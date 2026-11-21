@@ -1,10 +1,17 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 
-import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 import { CreativeSubnav } from "@/components/creative/creative-subnav";
+import {
+  TEMPLATE_FORMATS,
+  buildTemplateSpec,
+  type TemplateFormat,
+  type TemplateKind,
+} from "@/lib/creative-template-spec";
+import { t, type CreativeLocale } from "@/lib/i18n/creative";
 
 interface TemplateRow {
   template_id: string;
@@ -15,7 +22,7 @@ interface TemplateRow {
   is_active: boolean;
 }
 
-const KINDS = ["ad", "carousel", "motion", "landing", "caption"] as const;
+const KINDS: readonly TemplateKind[] = ["ad", "carousel", "motion", "landing", "caption"];
 
 const KIND_COPY: Record<string, { en: [string, string]; ar: [string, string] }> = {
   ad: { en: ["Ad creative", "A single campaign visual with headline, offer, and call to action."], ar: ["إعلان إبداعي", "تصميم حملة واحد بعنوان وعرض ودعوة لاتخاذ إجراء."] },
@@ -36,24 +43,62 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
   const role = useSessionRole();
   const templates = useCreativeFetch<{ templates: TemplateRow[] }>(locale, "/api/creative/templates");
   const [name, setName] = useState("");
-  const [kind, setKind] = useState("ad");
-  const [spec, setSpec] = useState('{"headline":"Hello"}');
+  const [kind, setKind] = useState<TemplateKind>("ad");
+  const [format, setFormat] = useState<TemplateFormat>("1:1");
+  const [headline, setHeadline] = useState("");
+  const [body, setBody] = useState("");
+  const [cta, setCta] = useState("");
+  const [backgroundColor, setBackgroundColor] = useState("#FFFFFF");
+  const [useCustomJson, setUseCustomJson] = useState(false);
+  const [spec, setSpec] = useState("");
   const [notice, setNotice] = useState<string | null>(null);
   const [working, setWorking] = useState(false);
   const canAdmin = role === "owner";
+  const visualLayoutKind = kind === "ad" || kind === "carousel";
+  const guidedReady = kind !== "motion" && Boolean(headline.trim());
+  const canSubmit = !working && Boolean(name.trim()) && (useCustomJson ? Boolean(spec.trim()) : guidedReady);
+
   async function create(event: React.FormEvent) {
     event.preventDefault();
     setWorking(true);
     setNotice(null);
     try {
-      const parsed = JSON.parse(spec) as Record<string, unknown>;
-      const body = await api<{ template_id: string }>(`/api/creative/templates`, {
+      let resolvedSpec: Record<string, unknown>;
+      if (useCustomJson) {
+        try {
+          const parsed = JSON.parse(spec) as unknown;
+          if (!parsed || typeof parsed !== "object" || Array.isArray(parsed)) {
+            setNotice(t(locale, "templates.invalidJson"));
+            return;
+          }
+          resolvedSpec = parsed as Record<string, unknown>;
+        } catch {
+          setNotice(t(locale, "templates.invalidJson"));
+          return;
+        }
+      } else {
+        if (kind === "motion") return;
+        resolvedSpec = buildTemplateSpec({
+          kind,
+          locale,
+          format,
+          headline,
+          body,
+          cta,
+          backgroundColor,
+        });
+      }
+      const response = await api<{ template_id: string }>(`/api/creative/templates`, {
         method: "POST",
         headers: { "Content-Type": "application/json", "Idempotency-Key": idempotencyKey("creative-tpl") },
-        body: JSON.stringify({ kind, name: name.trim(), spec: parsed }),
+        body: JSON.stringify({ kind, name: name.trim(), spec: resolvedSpec }),
       });
-      setNotice(`${t(locale, "templates.created")} (${body.template_id})`);
+      setNotice(`${t(locale, "templates.created")} (${response.template_id})`);
       setName("");
+      setHeadline("");
+      setBody("");
+      setCta("");
+      if (useCustomJson) setSpec("");
       await templates.reload();
     } catch (error) {
       setNotice(error instanceof CreativeApiError ? error.code : t(locale, "common.error"));
@@ -61,6 +106,7 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
       setWorking(false);
     }
   }
+
   async function toggle(template: TemplateRow) {
     setWorking(true);
     setNotice(null);
@@ -78,6 +124,7 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
       setWorking(false);
     }
   }
+
   return (
     <div className="creative-page" dir={dir} lang={locale}>
       <CreativeSubnav locale={locale} />
@@ -87,12 +134,59 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
           <h2>{t(locale, "templates.create")}</h2>
           <label>{t(locale, "templates.name")}<input type="text" value={name} maxLength={120} onChange={(event) => setName(event.target.value)} /></label>
           <label>{t(locale, "templates.kind")}
-            <select value={kind} onChange={(event) => setKind(event.target.value)}>
+            <select value={kind} onChange={(event) => setKind(event.target.value as TemplateKind)}>
               {KINDS.map((value) => <option key={value} value={value}>{kindCopy(locale, value).title}</option>)}
             </select>
           </label>
-          <label>{t(locale, "templates.spec")}<textarea value={spec} onChange={(event) => setSpec(event.target.value)} dir="ltr" /></label>
-          <button type="submit" className="creative-button" disabled={working || !name.trim()}>{t(locale, "common.save")}</button>
+          {kind === "motion" && !useCustomJson ? (
+            <div className="creative-notice" role="note">
+              <p>{t(locale, "templates.motionRedirect")}</p>
+              <Link className="creative-card-action" href="/creative/motion">{t(locale, "templates.openMotionStudio")}</Link>
+            </div>
+          ) : !useCustomJson ? (
+            <>
+              {visualLayoutKind ? (
+                <>
+                  <label>{t(locale, "templates.format")}
+                    <select value={format} onChange={(event) => setFormat(event.target.value as TemplateFormat)}>
+                      {TEMPLATE_FORMATS.map((item) => <option key={item} value={item}>{item}</option>)}
+                    </select>
+                  </label>
+                  <label>{t(locale, "templates.backgroundColor")}
+                    <input type="text" value={backgroundColor} maxLength={7} onChange={(event) => setBackgroundColor(event.target.value)} dir="ltr" placeholder="#FFFFFF" />
+                  </label>
+                </>
+              ) : null}
+              <label>{t(locale, "templates.headline")}
+                <input type="text" value={headline} maxLength={240} onChange={(event) => setHeadline(event.target.value)} placeholder={t(locale, "templates.headlinePlaceholder")} />
+              </label>
+              <label>{t(locale, "templates.body")}
+                <textarea value={body} maxLength={1000} onChange={(event) => setBody(event.target.value)} placeholder={t(locale, "templates.bodyPlaceholder")} />
+              </label>
+              <label>{t(locale, "templates.cta")}
+                <input type="text" value={cta} maxLength={90} onChange={(event) => setCta(event.target.value)} placeholder={t(locale, "templates.ctaPlaceholder")} />
+              </label>
+            </>
+          ) : null}
+          <details className="creative-more">
+            <summary>{t(locale, "templates.advanced")}</summary>
+            <p className="creative-helper">{t(locale, "templates.advancedHint")}</p>
+            <label className="creative-row">
+              <input
+                type="checkbox"
+                checked={useCustomJson}
+                style={{ inlineSize: "auto" }}
+                onChange={(event) => setUseCustomJson(event.target.checked)}
+              />
+              <span>{t(locale, "templates.useCustomJson")}</span>
+            </label>
+            {useCustomJson ? (
+              <label>{t(locale, "templates.spec")}
+                <textarea value={spec} onChange={(event) => setSpec(event.target.value)} dir="ltr" />
+              </label>
+            ) : null}
+          </details>
+          <button type="submit" className="creative-button" disabled={!canSubmit}>{t(locale, "common.save")}</button>
         </form>
       )}
       {notice && <div className="creative-notice" role="status"><p>{notice}</p></div>}
@@ -101,11 +195,11 @@ export function TemplatesView({ locale, dir }: { locale: CreativeLocale; dir: "r
         : (
           <ul className="creative-grid">
             {templates.data.templates.map((template) => {
-              const kind = kindCopy(locale, template.kind);
+              const entry = kindCopy(locale, template.kind);
               return (
               <li key={template.template_id} className="creative-card">
-                <h2>{kind.title} · {template.name}</h2>
-                <p>{kind.description}</p>
+                <h2>{entry.title} · {template.name}</h2>
+                <p>{entry.description}</p>
                 <p>{t(locale, "common.version")}{template.version} · {template.organization_id ? (locale === "ar" ? "خاص بالمؤسسة" : "organization") : (locale === "ar" ? "عام" : "global")} · {template.is_active ? (locale === "ar" ? "نشط" : "active") : (locale === "ar" ? "غير نشط" : "inactive")}</p>
                 {canAdmin && (
                   <button type="button" className="creative-button creative-button-secondary" disabled={working} onClick={() => toggle(template)}>

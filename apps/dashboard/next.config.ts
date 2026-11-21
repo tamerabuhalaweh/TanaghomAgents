@@ -8,6 +8,15 @@ const nextConfig: NextConfig = {
   turbopack: {
     root: resolve(process.cwd()),
   },
+  async redirects() {
+    return [
+      {
+        source: "/content-library",
+        destination: "/content",
+        permanent: true,
+      },
+    ];
+  },
 };
 
 export default nextConfig;
