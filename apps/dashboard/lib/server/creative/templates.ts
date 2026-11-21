@@ -134,7 +134,7 @@ export async function listCreativeTemplates(request: NextRequest) {
     requireCreativeStudio();
     const user = await authorize(request, ["owner", "reviewer", "operator", "viewer"]);
     const result = await database().query(
-      `SELECT id AS template_id, organization_id, kind, name, version, is_active, created_at
+      `SELECT id AS template_id, organization_id, kind, name, version, is_active, created_at, spec
          FROM tanaghom.creative_templates
         WHERE organization_id = $1 OR organization_id IS NULL
         ORDER BY kind, name, version DESC

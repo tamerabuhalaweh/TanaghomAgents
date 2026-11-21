@@ -5,6 +5,7 @@ import {
   PackageCheck, PauseCircle, ShieldAlert, Workflow,
 } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 
 import type {
   AgentRegistryBlocker, AgentRegistryJob, AgentRegistryRole, AgentRegistryWorker,
@@ -442,14 +443,30 @@ function JobEvidence({ job, locale }: { job: AgentRegistryJob | null; locale: "e
   );
 }
 
-function BlockerList({ blockers, compact = false, ar }: { blockers: AgentRegistryBlocker[]; compact?: boolean; ar: boolean }) {
+/**
+ * Distinct runtime codes can share one customer-facing condition (every
+ * workspace-automation code renders the same copy, for example). The registry
+ * de-duplicates codes, so this de-duplicates the copy a customer actually reads:
+ * one card per condition, and a count that matches what is on screen.
+ */
+export function uniqueBlockerConditions(blockers: AgentRegistryBlocker[], ar: boolean): AgentRegistryBlocker[] {
+  const seen = new Set<string>();
+  return blockers.filter((item) => {
+    const copy = customerBlockerCopy(item, ar);
+    const key = `${copy.title}|${copy.detail}|${copy.nextAction}`;
+    if (seen.has(key)) return false;
+    seen.add(key);
+    return true;
+  });
+}
+
+function BlockerList({ blockers, ar }: { blockers: AgentRegistryBlocker[]; ar: boolean }) {
   if (!blockers.length) {
     return <p className="agent-clear-state"><CheckCircle2 size={16} /> {ar ? "لا توجد عوائق مسجّلة" : "No recorded blocker"}</p>;
   }
-  const displayed = compact ? blockers.slice(0, 3) : blockers;
   return (
     <ul className="agent-blocker-list">
-      {displayed.map((item) => {
+      {blockers.map((item) => {
         const copy = customerBlockerCopy(item, ar);
         return (
           <li key={item.code} className={`agent-blocker-${item.severity}`}>
@@ -489,6 +506,9 @@ function RoleRecord({ role, locale }: { role: AgentRegistryRole; locale: "en" | 
   const ar = locale === "ar";
   const state = roleState[role.operational_state];
   const copy = customerRoleCopy(role, ar);
+  const [showAllConditions, setShowAllConditions] = useState(false);
+  const conditions = uniqueBlockerConditions(role.blockers, ar);
+  const visibleConditions = showAllConditions ? conditions : conditions.slice(0, 3);
   return (
     <article className="agent-role-record">
       <header className="agent-role-header">
@@ -499,13 +519,20 @@ function RoleRecord({ role, locale }: { role: AgentRegistryRole; locale: "en" | 
       <div className="agent-role-evidence">
         <section aria-label={ar ? `المهمة الحالية لدور ${copy.name}` : `${copy.name} current job`}><JobEvidence job={role.current_job} locale={locale} /></section>
         <section className="agent-role-blockers" aria-labelledby={`${role.code}-blockers`}>
-          <div className="agent-subheading"><h3 id={`${role.code}-blockers`}>{ar ? "ما الذي يحتاج تجهيزًا" : "What blocks this role"}</h3><span>{role.blockers.length}</span></div>
-          <BlockerList blockers={role.blockers} compact ar={ar} />
-          {role.blockers.length > 3 ? (
-            <details>
-              <summary>{ar ? `عرض كل الشروط (${role.blockers.length})` : `Show all ${role.blockers.length} conditions`}</summary>
-              <BlockerList blockers={role.blockers} ar={ar} />
-            </details>
+          <div className="agent-subheading"><h3 id={`${role.code}-blockers`}>{ar ? "ما الذي يحتاج تجهيزًا" : "What blocks this role"}</h3><span>{conditions.length}</span></div>
+          <BlockerList blockers={visibleConditions} ar={ar} />
+          {conditions.length > 3 ? (
+            <button
+              type="button"
+              className="ghost-button compact-button agent-blocker-toggle"
+              aria-expanded={showAllConditions}
+              aria-controls={`${role.code}-blockers`}
+              onClick={() => setShowAllConditions((value) => !value)}
+            >
+              {showAllConditions
+                ? (ar ? "عرض أقل" : "Show fewer")
+                : (ar ? `عرض كل الشروط (${conditions.length})` : `Show all ${conditions.length} conditions`)}
+            </button>
           ) : null}
         </section>
       </div>

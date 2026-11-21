@@ -375,7 +375,12 @@ export async function getPostizOAuthUrl(
     throw new PostizTenantError("postiz_oauth_url_invalid", 502);
   }
   for (const name of ["client_id", "client_key"]) {
-    if (parsed.searchParams.has(name) && !parsed.searchParams.get(name)?.trim()) {
+    // Postiz builds this authorize URL from its own provider configuration. An
+    // unconfigured provider emits the literal string "undefined" (or "null") as
+    // the client id, which is non-empty and would otherwise send the browser to
+    // a dead provider page.
+    const clientValue = parsed.searchParams.get(name)?.trim() ?? "";
+    if (parsed.searchParams.has(name) && (!clientValue || /^(undefined|null)$/i.test(clientValue))) {
       throw new PostizTenantError("social_provider_not_configured", 409);
     }
   }

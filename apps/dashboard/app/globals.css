@@ -2678,3 +2678,6 @@ td a, td > strong { font-weight: 670; }
 .not-found-page h1 { font-size: clamp(1.6rem, 3vw, 2.2rem); letter-spacing: -0.03em; }
 .not-found-page > p { color: var(--muted); line-height: 1.6; }
 .not-found-actions { display: flex; flex-wrap: wrap; gap: 0.6rem; margin-block-start: 0.5rem; }
+
+/* "Show all conditions" replaces the three-item preview with one full list. */
+.agent-blocker-toggle { margin-block-start: 0.5rem; }

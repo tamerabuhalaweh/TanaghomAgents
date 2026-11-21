@@ -484,7 +484,6 @@
 .creative-scaled-frame {
   position: relative;
   inline-size: 100%;
-  max-block-size: 34rem;
   overflow: hidden;
   border: 1px solid var(--border, #e2e8f0);
   border-radius: 0.5rem;
@@ -538,3 +537,13 @@
   color: inherit;
   resize: vertical;
 }
+
+/* Template cards expose explicit View and Edit actions, plus an inline
+   read-only detail so every template can be opened from the list. */
+.creative-card-actions { display: flex; flex-wrap: wrap; gap: 0.4rem; margin-block-start: 0.6rem; }
+.creative-card-detail { margin-block-start: 0.75rem; padding-block-start: 0.75rem; border-block-start: 1px solid var(--border, #e2e8f0); }
+.creative-card-detail h3 { margin: 0 0 0.5rem; font-size: 0.9rem; }
+.creative-card-detail dl { display: grid; gap: 0.4rem; margin: 0; }
+.creative-card-detail dt { color: var(--muted, #5b6472); font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; }
+.creative-card-detail dd { margin: 0; font-size: 0.8rem; overflow-wrap: anywhere; }
+.creative-card-detail pre { max-block-size: 16rem; overflow: auto; margin: 0.25rem 0 0; padding: 0.5rem; border: 1px solid var(--border, #e2e8f0); border-radius: 0.4rem; background: var(--surface, #f8fafc); font-size: 0.72rem; }

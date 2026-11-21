@@ -34,6 +34,49 @@ const date = (value: string, locale: "ar" | "en") => formatDateTime(value, local
 // next poll returns.
 const optimisticStatus: Record<string, string> = { approve: "approved", reject: "rejected", pause: "paused", resume: "queued", cancel: "cancelled", start: "queued", retry: "queued" };
 
+const UUID_SOURCE = "[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}";
+const HAS_UUID = new RegExp(UUID_SOURCE, "i");
+const UUID_GLOBAL = new RegExp(UUID_SOURCE, "gi");
+const TASK_REF_LINE = new RegExp(`^(?:[^:\\r\\n]*\\s)?(?:Task reference|مرجع المهمة)\\s*:\\s*${UUID_SOURCE}\\s*$`, "i");
+const BARE_NUMBERED_LINE = /^\d+\.\s*$/;
+
+/**
+ * Stored executive summaries carry internal task-reference UUIDs. This strips
+ * those lines (including a numbered "3. Name" prefix line) and any bare UUID
+ * from customer-facing deliverables and exported packs, leaving every other
+ * line untouched. Nothing is written back to the API or the database.
+ */
+export function redactTaskReferences(document: string): string {
+  if (!HAS_UUID.test(document) && !/^(?:[^:\r\n]*\s)?(?:Task reference|مرجع المهمة)\s*:/im.test(document)) {
+    return document;
+  }
+  const lines = document.split(/\r?\n/);
+  const kept: string[] = [];
+  for (let i = 0; i < lines.length; i += 1) {
+    const line = lines[i];
+    if (TASK_REF_LINE.test(line)) {
+      continue;
+    }
+    if (BARE_NUMBERED_LINE.test(line) && i + 1 < lines.length && TASK_REF_LINE.test(lines[i + 1])) {
+      i += 1;
+      continue;
+    }
+    if (HAS_UUID.test(line)) {
+      const cleaned = line
+        .replace(UUID_GLOBAL, "")
+        .replace(/[ \t]{2,}/g, " ")
+        .trimEnd();
+      if (cleaned.trim()) kept.push(cleaned);
+      continue;
+    }
+    kept.push(line);
+  }
+  return kept
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .replace(/^\n+|\n+$/g, "");
+}
+
 export function AgencyWorkspace() {
   const { locale } = useLocale();
   const ar = locale === "ar";
@@ -232,15 +275,23 @@ export function AgencyWorkspace() {
   function download() {
     if (!selected) return;
     const english = `# ${selected.title}\n\nStatus: ${labels[selected.status] || selected.status}\n\n## Brief\n${selected.brief}\n\n## Owner-supplied source facts\n${selected.source_facts}\n\n`
-      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\nTask: ${s.task_id}\nVersion: ${s.response_hash}\n\n${s.result!.document}\n`).join("\n")
+      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\n\n${redactTaskReferences(s.result!.document)}\n`).join("\n")
       + "\nDraft documents only. No external actions were performed.\n";
     const arabic = `# ${selected.title}\n\nالحالة: ${labelsAr[selected.status] || selected.status}\n\n## موجز المهمة\n${selected.brief}\n\n## الحقائق المعتمدة من المالك\n${selected.source_facts}\n\n`
-      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\nالمهمة: ${s.task_id}\nالإصدار: ${s.response_hash}\n\n${s.result!.document}\n`).join("\n")
+      + selected.steps.filter((s) => s.result).map((s) => `## ${who(s.profile_code)}\n\n${redactTaskReferences(s.result!.document)}\n`).join("\n")
       + "\nوثائق مسودة فقط. لم يتم تنفيذ أي إجراءات خارجية.\n";
     const contents = selected.language === "ar" ? arabic : english;
     const url = URL.createObjectURL(new Blob([contents], { type: "text/markdown;charset=utf-8" }));
     const a = document.createElement("a");
-    a.href = url; a.download = `e3lani-workpack-${selected.id}.md`; a.click();
+    a.href = url;
+    a.download = `e3lani-workpack-${selected.id}.md`;
+    a.rel = "noopener";
+    // An anchor that is not in the document is ignored by some browsers, which
+    // made Export pack look inert. Attach it, click it, then remove it.
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setNotice(ar ? "جارٍ تصدير الحزمة كملف Markdown." : "Exporting the pack as a Markdown file.");
     setTimeout(() => URL.revokeObjectURL(url), 1000);
   }
 
@@ -376,7 +427,7 @@ export function AgencyWorkspace() {
                               : (ar ? `«${item.exact}» ← «${item.replacement}»` : `“${item.exact}” → “${item.replacement}”`)}</li>)}</ul>
                           </details>
                         </aside> : null}
-                        <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}><FormattedText text={step.result.document} dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language} /></article>
+                        <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}><FormattedText text={redactTaskReferences(step.result.document)} dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language} /></article>
                         {step.profile_code === "content_creator" ? <WorkspacePostCards document={step.result.document} kit={data.brand_kit} language={selected.language} images={postImageSlots(data.post_images)} /> : null}
                         <footer className="aw-artifact-meta">
                           <span>{step.result.kind === "deterministic_summary" ? (ar ? "ملخص التسليم التنفيذي" : "Executive delivery summary") : (ar ? "أُنتج بالذكاء الاصطناعي" : "AI-generated")}</span>

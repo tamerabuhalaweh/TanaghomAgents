@@ -103,7 +103,9 @@ test("the three deliverable render sites use the safe formatter and never inject
   const formatter = read("apps/dashboard/components/formatted-text.tsx");
 
   assert.match(workspace, /className="aw-document" dir=\{selected\.language === "ar" \? "rtl" : "ltr"\}/);
-  assert.match(workspace, /<FormattedText text=\{step\.result\.document\}/);
+  // Round 3 item 17 routes the stored document through the UUID redactor first;
+  // it is still the safe formatter that renders it.
+  assert.match(workspace, /<FormattedText text=\{(?:step\.result\.document|redactTaskReferences\(step\.result\.document\))\}/);
   assert.match(approvals, /<FormattedText text=\{`\$\{deliverable\.excerpt\}/);
   assert.match(approvals, /Read the full deliverable/);
   assert.match(approvals, /اقرأ المخرج كاملاً/);
