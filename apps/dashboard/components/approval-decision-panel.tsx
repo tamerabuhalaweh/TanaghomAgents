@@ -28,11 +28,12 @@ export function ApprovalDecisionPanel({
   onRequestChanges: () => void;
 }) {
   const feedbackReady = reason.trim().length >= MIN_FEEDBACK;
+  const actionName = source === "ai_workspace"
+    ? (ar ? "طلب تعديلات" : "Request changes")
+    : (ar ? "ارفض وأعد التوليد" : "Reject and regenerate");
   const rejectLabel = submitting
     ? (ar ? "جارٍ الحفظ…" : "Saving…")
-    : source === "ai_workspace"
-      ? (ar ? "طلب تعديلات" : "Request changes")
-      : (ar ? "ارفض وأعد التوليد" : "Reject and regenerate");
+    : actionName;
   const approveLabel = submitting
     ? (ar ? "جارٍ الحفظ…" : "Saving…")
     : source === "ai_workspace"
@@ -45,8 +46,8 @@ export function ApprovalDecisionPanel({
         <h3 id="review-feedback-title">{ar ? "قرارك يعتمد هذا العنصر" : "Your decision"}</h3>
         <p>
           {ar
-            ? "للاكتفاء بالنتيجة اضغط «اعتماد»، ولطلب تعديل اكتب ملاحظة لا تقل عن 3 أحرف لتفعيل زر طلب التعديل."
-            : "Approve to accept as-is, or type at least 3 characters of feedback above the actions to enable “Request changes”."}
+            ? `للاكتفاء بالنتيجة اضغط «اعتماد»، ولطلب تعديل اكتب ملاحظة لا تقل عن 3 أحرف لتفعيل زر «${actionName}».`
+            : `Approve to accept as-is, or type at least 3 characters of feedback above the actions to enable “${actionName}”.`}
         </p>
       </div>
 
@@ -66,8 +67,8 @@ export function ApprovalDecisionPanel({
       {!feedbackReady ? (
         <p className="review-feedback-hint" role="status">
           {ar
-            ? "اكتب 3 أحرف على الأقل في ملاحظات المراجعة لتفعيل «طلب تعديلات»."
-            : "Type at least 3 characters of feedback to enable “Request changes”."}
+            ? `اكتب 3 أحرف على الأقل في ملاحظات المراجعة لتفعيل «${actionName}».`
+            : `Type at least 3 characters of feedback to enable “${actionName}”.`}
         </p>
       ) : null}
 

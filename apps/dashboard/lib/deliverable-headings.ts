@@ -75,19 +75,23 @@ export function withoutDuplicateHeading(
       .filter(Boolean),
   );
 
-  let leadingExcerptKey: string | null = null;
+  const lines = document.split(/\r?\n/);
+  const excerptHeadingQueue: string[] = [];
   if (excerpt) {
     const excerptLines = excerpt.split(/\r?\n/);
     for (let i = 0; i < excerptLines.length; i += 1) {
       const info = headingInfo(excerptLines[i], i, labelKeys);
-      if (info) {
-        leadingExcerptKey = info.key;
-        break;
+      if (!info || labelKeys.has(info.key)) continue;
+      // Preserve a trailing heading that truncateMarkdownAtWord cut mid-title
+      // so the complete heading remains visible inside the expanded view.
+      if (i === excerptLines.length - 1 && i < lines.length) {
+        const docInfo = headingInfo(lines[i], i, labelKeys);
+        if (docInfo && docInfo.key !== info.key) continue;
       }
+      excerptHeadingQueue.push(info.key);
     }
   }
 
-  const lines = document.split(/\r?\n/);
   const seenByLevel = new Map<number, Set<string>>();
   const kept: string[] = [];
 
@@ -103,14 +107,17 @@ export function withoutDuplicateHeading(
       continue;
     }
 
-    if (leadingExcerptKey && info.key === leadingExcerptKey) {
-      leadingExcerptKey = null;
+    if (excerptHeadingQueue.length > 0 && info.key === excerptHeadingQueue[0]) {
+      excerptHeadingQueue.shift();
       let levelSet = seenByLevel.get(info.level);
       if (!levelSet) {
         levelSet = new Set<string>();
         seenByLevel.set(info.level, levelSet);
       }
       levelSet.add(info.key);
+      for (const deeper of seenByLevel.keys()) {
+        if (deeper > info.level) seenByLevel.delete(deeper);
+      }
       continue;
     }
 

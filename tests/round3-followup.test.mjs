@@ -172,14 +172,20 @@ test("Item 11: ApprovalDecisionPanel always shows the feedback textarea and gate
     assert.match(html, /<button class="danger-button" type="button" disabled=""[^>]*>[\s\S]*Request changes<\/button>/);
   }
 
+  const workspaceBlocked = renderPanel({ source: "ai_workspace", reason: "ab" });
+  assert.match(workspaceBlocked, /class="review-feedback-hint"[^>]*>Type at least 3 characters of feedback to enable “Request changes”\.</);
+
   const readyHtml = renderPanel({ reason: "Fix the price" });
   assert.match(readyHtml, /<textarea id="rejection-reason"/);
   assert.doesNotMatch(readyHtml, /review-feedback-hint/);
   assert.match(readyHtml, /<button class="danger-button" type="button">[\s\S]*Request changes<\/button>/);
 
+  const contentBlocked = renderPanel({ source: "content", reason: "ab" });
+  assert.match(contentBlocked, /class="review-feedback-hint"[^>]*>Type at least 3 characters of feedback to enable “Reject and regenerate”\.</);
+
   const arBlocked = renderPanel({ ar: true, source: "content", reason: "نص" });
   assert.match(arBlocked, /<textarea id="rejection-reason"/);
-  assert.match(arBlocked, /class="review-feedback-hint"/);
+  assert.match(arBlocked, /class="review-feedback-hint"[^>]*>اكتب 3 أحرف على الأقل في ملاحظات المراجعة لتفعيل «ارفض وأعد التوليد»\.</);
   assert.match(arBlocked, /<button class="danger-button" type="button" disabled=""[^>]*>[\s\S]*ارفض وأعد التوليد<\/button>/);
 
   const arReady = renderPanel({ ar: true, source: "content", reason: "تعديل السعر" });
@@ -238,7 +244,83 @@ test("Item 16: withoutDuplicateHeading drops excerpt-repeated and mid-document d
   assert.equal((dedupedMid.match(/تحليل الاستراتيجية وصوت العلامة التجارية/g) || []).length, 1);
   assert.match(dedupedMid, /Paragraph two\./);
 
-  // Legitimate child subsections (English Copy / Arabic Copy) under later posts stay intact.
+  // Multi-heading excerpt modeled on 0acbf31c seq=1 (# H1 + ## 1. both fit in excerpt, ## 2. falls outside).
+  const multiHeadingStrategy = [
+    "# HomeStff Organic Launch Strategy & Campaign Packet",
+    "",
+    "## 1. Audience Needs & Positioning",
+    "Young professionals, newlyweds, and growing families furnishing urban apartments in Cairo and Giza need durable, breathable cotton bedding sets, coordinated bath towels, and practical kitchen linens delivered reliably with transparent bundle pricing.",
+    "",
+    "## 2. Content Pillars & Cadence",
+    "Three weekly organic posts mixing bedroom styling tips and fabric care.",
+  ].join("\n");
+  const strategyExcerpt = truncateMarkdownAtWord(multiHeadingStrategy, 320);
+  assert.ok(multiHeadingStrategy.length > strategyExcerpt.length);
+  assert.match(strategyExcerpt, /# HomeStff Organic Launch Strategy & Campaign Packet/);
+  assert.match(strategyExcerpt, /## 1\. Audience Needs & Positioning/);
+  assert.doesNotMatch(strategyExcerpt, /Content Pillars/);
+  const dedupedStrategy = withoutDuplicateHeading(multiHeadingStrategy, ["Social Media Strategist", "Social media plan"], strategyExcerpt);
+  assert.doesNotMatch(dedupedStrategy, /HomeStff Organic Launch Strategy/);
+  assert.doesNotMatch(dedupedStrategy, /Audience Needs & Positioning/);
+  assert.match(dedupedStrategy, /Young professionals, newlyweds, and growing families/);
+  assert.match(dedupedStrategy, /## 2\. Content Pillars & Cadence/);
+
+  // Multi-heading excerpt modeled on 0acbf31c seq=2 (Post 1 + English Copy in excerpt; Post 2 & 3 keep subsections).
+  const threePostPack = [
+    "## Post 1: Bedding Collection Launch",
+    "",
+    "### English Copy",
+    "Upgrade your bedroom sanctuary with breathable long-staple Egyptian cotton bedding sets crafted for warm Cairo nights, effortless everyday comfort, and crisp hotel-inspired mornings all year round. Available now in twin, queen, and king bundles with free Cairo delivery.",
+    "",
+    "### Arabic Copy",
+    "جدّد غرفة نومك بأطقم قطنية ناعمة تمنحك راحة يومية وتنفسًا طبيعيًا.",
+    "",
+    "## Post 2: Bath & Towels",
+    "",
+    "### English Copy",
+    "Soft combed cotton towels for your daily routine.",
+    "",
+    "### Arabic Copy",
+    "مناشف قطنية ناعمة لروتينك اليومي.",
+    "",
+    "## Post 3: Kitchen Linens",
+    "",
+    "### English Copy",
+    "Linen aprons and table runners for warm hosting.",
+    "",
+    "### Arabic Copy",
+    "مفارش ومآزر مطبخ أنيقة لاستقبال ضيوفك.",
+  ].join("\n");
+  const packExcerpt = truncateMarkdownAtWord(threePostPack, 320);
+  assert.match(packExcerpt, /## Post 1: Bedding Collection Launch/);
+  assert.match(packExcerpt, /### English Copy/);
+  assert.doesNotMatch(packExcerpt, /### Arabic Copy/);
+  const dedupedPack = withoutDuplicateHeading(threePostPack, ["Content Creator", "Campaign copy"], packExcerpt);
+  assert.doesNotMatch(dedupedPack, /## Post 1: Bedding Collection Launch/);
+  assert.match(dedupedPack, /Upgrade your bedroom sanctuary/);
+  assert.match(dedupedPack, /## Post 2: Bath & Towels/);
+  assert.match(dedupedPack, /## Post 3: Kitchen Linens/);
+  assert.equal((dedupedPack.match(/### English Copy/g) || []).length, 2, "Post 1 English Copy dropped; Posts 2 & 3 kept");
+  assert.equal((dedupedPack.match(/### Arabic Copy/g) || []).length, 3, "All 3 Arabic Copy subsections outside excerpt kept");
+
+  // Mid-heading truncation guard modeled on accd0264 seq=5.
+  const midTruncDoc = [
+    "# Customer Support Responder: Reusable Draft Answers",
+    "",
+    "## 1. What does the beginner photography course cover?",
+    "It covers camera exposure, composition, natural lighting, and guided practical assignments for first-time photographers in detail.",
+    "",
+    "## 2. Where is the studio located?",
+    "Our sessions take place online and in central Amman.",
+  ].join("\n");
+  const truncExcerpt = truncateMarkdownAtWord(midTruncDoc, 260);
+  assert.match(truncExcerpt, /## 2\. Where is the$/);
+  const dedupedTrunc = withoutDuplicateHeading(midTruncDoc, ["Support Responder"], truncExcerpt);
+  assert.doesNotMatch(dedupedTrunc, /Customer Support Responder/);
+  assert.doesNotMatch(dedupedTrunc, /1\. What does the beginner/);
+  assert.match(dedupedTrunc, /## 2\. Where is the studio located\?/);
+
+  // Legitimate child subsections (English Copy / Arabic Copy) under later posts stay intact when Post 1 is wholly in excerpt.
   const bilingualDoc = [
     "## Post 1",
     "",
@@ -257,9 +339,10 @@ test("Item 16: withoutDuplicateHeading drops excerpt-repeated and mid-document d
     "**الافتتاحية:** افتتاحية المنشور الثاني.",
   ].join("\n");
   const firstExcerpt = truncateMarkdownAtWord(bilingualDoc, 120);
+  assert.match(firstExcerpt, /### Arabic Copy/);
   const fullRendered = withoutDuplicateHeading(bilingualDoc, ["Content Creator"], firstExcerpt);
   assert.doesNotMatch(fullRendered, /^## Post 1$/m);
   assert.match(fullRendered, /## Post 2/);
-  assert.equal((fullRendered.match(/### English Copy/g) || []).length, 2, "English Copy subsection kept under each post");
-  assert.equal((fullRendered.match(/### Arabic Copy/g) || []).length, 2, "Arabic Copy subsection kept under each post");
+  assert.equal((fullRendered.match(/### English Copy/g) || []).length, 1, "Post 1 excerpt English Copy dropped; Post 2 kept");
+  assert.equal((fullRendered.match(/### Arabic Copy/g) || []).length, 1, "Post 1 excerpt Arabic Copy dropped; Post 2 kept");
 });

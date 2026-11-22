@@ -190,6 +190,7 @@ export function ApprovalWorkspace() {
     if (!active || !visible.some((item) => item.id === active.id)) {
       setActiveId(visible[0].id);
       syncUrl(visible[0].id);
+      setReason("");
     }
   }, [active, visible]);
 
