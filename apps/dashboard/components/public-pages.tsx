@@ -6,6 +6,7 @@ import { LocaleToggle } from "@/components/creative/locale-toggle";
 import { WaitlistForm } from "@/components/waitlist-form";
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { formatNumber } from "@/lib/i18n/format";
+import { SUPPORT_EMAIL, SUPPORT_EMAIL_HREF } from "@/lib/seo";
 
 type Locale = CreativeLocale;
 
@@ -68,6 +69,7 @@ export function PublicFooter({ locale, appOrigin = "" }: { locale: Locale; appOr
         </Link>
         <Link href="/privacy">{ar ? "الخصوصية" : "Privacy"}</Link>
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
+        <a href={SUPPORT_EMAIL_HREF}>{ar ? "الدعم: " : "Support: "}<bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>
         <AppNavLink appOrigin={appOrigin} path="/login">{ar ? "تسجيل الدخول" : "Sign in"}</AppNavLink>
       </nav>
       <p className="public-copyright">{ar ? `© ${new Date().getFullYear()} إعلاني` : `© ${new Date().getFullYear()} E3lani`}</p>
@@ -259,6 +261,7 @@ export function PublicLandingPage({ locale, launch100Active = true, cohortFull =
         <details><summary>{ar ? "ما الذي يفعله إعلاني بالضبط؟" : "What exactly does E3lani do?"}</summary><p>{ar ? "يدير تسويقك كدورة واحدة متصلة: يخطط الحملات، ويكتب النصوص، ويجهّز التصاميم بالإنجليزية والعربية، ثم ينتظر اعتماد إنسان لكل منشور قبل النشر." : "It runs your marketing as one connected loop: it plans campaigns, writes copy, prepares visuals in English and Arabic, and waits for a person to approve every post before publishing."}</p></details>
         <details><summary>{ar ? "هل العربية أصلية أم مترجمة؟" : "Is the Arabic native or translated?"}</summary><p>{ar ? "مساحة العمل مبنية للعربية من اليمين إلى اليسار، بخطوط عربية أصيلة. ويُنشأ المحتوى العربي والإنجليزي معاً، لا يُترجم في النهاية." : "The workspace is RTL-first, with Arabic typography including Cairo, Tajawal, IBM Plex Sans Arabic and Almarai. Arabic and English are created together, not translated at the end."}</p></details>
         <details><summary>{ar ? "هل أحتاج بطاقة للبدء؟" : "Do I need a card to start?"}</summary><p>{ar ? "ابدأ بتجربة مجانية لحملة متكاملة: حزمة حملة كاملة وثلاث عمليات توليد بالذكاء الاصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة." : "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required."}</p></details>
+        <details><summary>{ar ? "كيف أتواصل مع الدعم؟" : "How do I contact support?"}</summary><p>{ar ? <>راسلنا على <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a> لمساعدة التهيئة أو أسئلة الحساب أو دعم مساحة العمل.</> : <>Email us at <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a> for onboarding help, account questions, or workspace support.</>}</p></details>
       </section>
 
       <section className="public-cta">
@@ -319,7 +322,7 @@ export function PublicPrivacyPage({ locale, appOrigin = "" }: { locale: Locale; 
 
         <h2>{ar ? "فصل قنوات التواصل الاجتماعي وإبطال رموز الوصول" : "Disconnecting social channels and purging tokens"}</h2>
         <p>{ar ? "يمكنك فصل أي قناة اجتماعية في أي وقت من صفحة القنوات ضمن الإعدادات: افتح الإعدادات، واختر القنوات، ثم حدّد القناة وافصلها. يؤدي الفصل إلى إلغاء رموز OAuth الخاصة بها وحذفها من مساحة عملك، مع الاحتفاظ بمحتواك وسجل الموافقات." : "You can disconnect any social channel at any time from the Channels page in Settings: open Settings, choose Channels, select the channel, then disconnect. Disconnecting revokes and purges its OAuth tokens from your workspace; your content and approval history remain."}</p>
-        <p>{ar ? <>رابط مباشر: <bdi dir="ltr">/settings/channels</bdi>. إذا كنت تريد حذف مساحة العمل بالكامل أو لديك سؤال عن بياناتك، تواصل مع مشغّل إعلاني الذي أنشأ مساحتك.</> : <>Direct link: <bdi dir="ltr">/settings/channels</bdi>. If you want the whole workspace removed, or have a question about your data, contact the E3lani operator who provisioned your workspace.</>}</p>
+        <p>{ar ? <>رابط مباشر: <bdi dir="ltr">/settings/channels</bdi>. إذا كنت تريد حذف مساحة العمل بالكامل أو لديك سؤال عن بياناتك، راسل دعم إعلاني على <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</> : <>Direct link: <bdi dir="ltr">/settings/channels</bdi>. If you want the whole workspace removed, or have a question about your data, email E3lani support at <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</>}</p>
 
         <h2>{ar ? "المشاركة والاحتفاظ" : "Sharing and retention"}</h2>
         <p>{ar ? "نشارك البيانات فقط مع مزوّدي الخدمات اللازمين لتشغيل المنصة أو عندما يفرض القانون ذلك. نحتفظ بالبيانات ما دام حسابك نشطًا أو وفق ما تقتضيه الالتزامات القانونية، ثم نحذفها أو نزيل المعلومات التي تكشف هويتك." : "We share data only with service providers needed to operate the platform, and where law requires it. We keep data while your account is active or as required by legal obligations, then delete or anonymise it."}</p>
@@ -362,7 +365,7 @@ export function PublicTermsPage({ locale, appOrigin = "" }: { locale: Locale; ap
         <p>{ar ? "نقدّم المنصة كما هي، بالقدر الذي يسمح به القانون. لا نضمن نتائج تسويقية محددة، ولا نتحمل مسؤولية قرارات النشر التي تتخذها بعد الموافقة." : "We provide the platform as-is to the extent permitted by law. We do not guarantee specific marketing results and are not responsible for publishing decisions you make after approval."}</p>
 
         <h2>{ar ? "التغييرات والتواصل" : "Changes and contact"}</h2>
-        <p>{ar ? "قد نحدّث هذه الشروط لتعكس تغييرات في المنصة أو القانون، وسنوضح تاريخ التحديث. للأسئلة، تواصل مع مشغّل إعلاني الذي أنشأ مساحتك." : "We may update these terms to reflect platform or legal changes and will show the update date. For questions, contact the E3lani operator who provisioned your workspace."}</p>
+        <p>{ar ? <>قد نحدّث هذه الشروط لتعكس تغييرات في المنصة أو القانون، وسنوضح تاريخ التحديث. للأسئلة، راسل دعم إعلاني على <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</> : <>We may update these terms to reflect platform or legal changes and will show the update date. For questions, email E3lani support at <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</>}</p>
         <p className="public-document-note">{ar ? "آخر تحديث: 14 نوفمبر 2026." : "Last updated: 14 November 2026."}</p>
       </article>
       <PublicFooter locale={locale} appOrigin={appOrigin} />

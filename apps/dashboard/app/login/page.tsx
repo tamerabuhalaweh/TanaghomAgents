@@ -7,15 +7,18 @@ import { LocaleToggle } from "@/components/creative/locale-toggle";
 import { LoginForm } from "@/components/login-form";
 import { creativeLocale } from "@/lib/creative-locale";
 import { getMarketingOrigin, isSplitDomainMode } from "@/lib/public-urls";
+import { safeNextPath } from "@/lib/safe-next-path";
+import { SUPPORT_EMAIL, SUPPORT_EMAIL_HREF } from "@/lib/seo";
 
 export const metadata: Metadata = { title: "Sign in", robots: { index: false, follow: false } };
 
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ reset?: string; invite?: string }>;
+  searchParams: Promise<{ reset?: string; invite?: string; next?: string }>;
 }) {
   const params = await searchParams;
+  const nextPath = params.next ? safeNextPath(params.next) : undefined;
   const { locale, dir } = await creativeLocale();
   const ar = locale === "ar";
   const marketingOrigin = isSplitDomainMode() ? getMarketingOrigin() : "";
@@ -84,12 +87,12 @@ export default async function LoginPage({
               {ar ? "تم قبول الدعوة. سجّل الدخول إلى مساحة عملك." : "Invitation accepted. Sign in to enter your workspace."}
             </p>
           ) : null}
-          <LoginForm locale={locale} />
+          <LoginForm locale={locale} nextPath={nextPath} />
           <p className="login-support">
             {ar ? <>جديد هنا؟ <Link href="/signup">أنشئ مساحة عمل</Link></> : <>New to E3lani? <a href="/signup">Create a workspace</a></>}
           </p>
           <p className="login-support">
-            {ar ? "تتم إدارة الوصول بواسطة مسؤول إعلاني." : "Access is managed by your E3lani administrator."}
+            {ar ? <>هل تحتاج إلى مساعدة في تسجيل الدخول؟ راسلنا على <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</> : <>Need help signing in? Contact <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</>}
           </p>
           <nav className="auth-legal-links" aria-label={ar ? "روابط الأسعار والقانون" : "Legal and pricing links"}>
             {marketingOrigin ? (

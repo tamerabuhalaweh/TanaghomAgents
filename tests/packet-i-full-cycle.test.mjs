@@ -205,7 +205,7 @@ test("11: a test-account password reset can clear the forced password change", (
   assert.match(admin, /changePassword\(email, password, \{ mustChangePassword \}\)/);
   assert.match(admin, /mustChangePassword,\s*\}\);/);
   const login = read("apps/dashboard/components/login-form.tsx");
-  assert.match(login, /window\.location\.assign\(body\.must_change_password \? "\/settings\/security" : "\/"\)/);
+  assert.match(login, /window\.location\.assign\(body\.must_change_password \? "\/settings\/security" : destination\)/);
 });
 
 // Loads the pure card extractor out of the client component: transpile the

@@ -21,6 +21,7 @@ import {
 import { useCallback, useEffect, useState } from "react";
 
 import { LocaleToggle } from "@/components/creative/locale-toggle";
+import { startSessionKeepAlive } from "@/lib/client/authenticated-fetch";
 import type { CreativeLocale } from "@/lib/i18n/creative";
 import { formatArabicCount, formatDate, formatMoney, formatNumber, normalizeNumericInput, numericLocale } from "@/lib/i18n/format";
 
@@ -133,7 +134,7 @@ const COPY = {
     aiSpend: "Monthly AI token spend",
     tokens: "{tokens} tokens",
     tasks: "{ok} succeeded · {failed} failed",
-    database: "PostgreSQL",
+    database: "Database",
     aiWorker: "AI model worker",
     publishing: "Social publishing",
     billing: "Stripe billing",
@@ -223,7 +224,7 @@ const COPY = {
     aiSpend: "إنفاق وحدات الذكاء الاصطناعي الشهري",
     tokens: "{tokens} وحدة ذكاء اصطناعي",
     tasks: "نجحت {ok} · فشلت {failed}",
-    database: "PostgreSQL",
+    database: "قاعدة البيانات",
     aiWorker: "محرك الذكاء الاصطناعي",
     publishing: "النشر على منصات التواصل الاجتماعي",
     billing: "فوترة Stripe",
@@ -396,6 +397,8 @@ export function SuperAdminConsole({ initialLocale, dir }: { initialLocale: Creat
       setLoading(false);
     }
   }, [text.loadFailed, text.unauthorized]);
+
+  useEffect(() => startSessionKeepAlive(), []);
 
   useEffect(() => {
     void load();

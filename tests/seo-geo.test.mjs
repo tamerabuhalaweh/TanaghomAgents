@@ -155,8 +155,11 @@ test("JSON-LD emits Organization, WebSite, and FAQPage schemas cleanly in EN and
     assert.equal(home["@context"], "https://schema.org");
     const types = home["@graph"].map((node) => node["@type"]);
     assert.deepEqual(types, ["Organization", "WebSite", "FAQPage"]);
+    const orgNode = home["@graph"].find((node) => node["@type"] === "Organization");
+    assert.equal(orgNode.email, "Tamer@itis-uk.org");
     const faqNode = home["@graph"].find((node) => node["@type"] === "FAQPage");
-    assert.equal(faqNode.mainEntity.length, 6);
+    assert.equal(faqNode.mainEntity.length, 7);
+    assert.match(faqNode.mainEntity[6].acceptedAnswer.text, /Tamer@itis-uk\.org/);
 
     const pricing = pricingJsonLd(locale);
     assert.equal(pricing["@type"], "FAQPage");

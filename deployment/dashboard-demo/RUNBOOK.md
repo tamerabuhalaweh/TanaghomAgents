@@ -336,7 +336,7 @@ owner membership, and `app_users` profile in one transaction.
 
 | Setting | Default | Meaning |
 | --- | --- | --- |
-| `AUTH_ACCESS_TTL_SECONDS` | 900 | access-token lifetime; the browser refreshes it |
+| `AUTH_ACCESS_TTL_SECONDS` | 3600 | access-token lifetime; the browser refreshes it |
 | `AUTH_LOGIN_IP_LIMIT` | 20 | failed sign-ins per source IP per 15 minutes |
 | `AUTH_LOGIN_PAIR_LIMIT` | 8 | failed sign-ins per email+IP pair; there is no email-only lockout |
 | `AUTH_SIGNUP_IP_LIMIT` | 5 | public self-signups per source IP per 15 minutes |

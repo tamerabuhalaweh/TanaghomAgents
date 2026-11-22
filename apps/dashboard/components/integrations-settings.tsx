@@ -177,7 +177,7 @@ export function IntegrationsSettings() {
     {state === "ready" && payload ? <>
       <section className={`credential-safety ${payload.secure_storage_configured ? "" : "credential-safety-warning"}`}>
         <ShieldCheck size={20} />
-        <div><strong>{payload.secure_storage_configured ? "Write-only credential storage is ready" : "Credential storage requires server setup"}</strong><p>{payload.secure_storage_configured ? "Saved secrets are encrypted before PostgreSQL, masked after saving, and never returned to this browser." : "An administrator must install the encryption key before customer credentials can be saved."}</p></div>
+        <div><strong>{payload.secure_storage_configured ? "Write-only credential storage is ready" : "Credential storage requires server setup"}</strong><p>{payload.secure_storage_configured ? "Saved secrets are encrypted before storage in the database, masked after saving, and never returned to this browser." : "An administrator must install the encryption key before customer credentials can be saved."}</p></div>
         <StatusPill tone={payload.secure_storage_configured ? "success" : "attention"}>{payload.secure_storage_configured ? "Protected" : "Setup required"}</StatusPill>
       </section>
       <div className="integration-list">
