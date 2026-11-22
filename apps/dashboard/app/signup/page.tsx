@@ -73,18 +73,18 @@ export default async function SignupPage() {
           <p className="login-support">
             {copy.haveAccount} <Link href="/login">{copy.signIn}</Link>
           </p>
-          <nav className="auth-legal-links" aria-label={ar ? "روابط الأسعار والقانون" : "Legal and pricing links"}>
+          <nav className="auth-legal-links" aria-label={ar ? "روابط الأسعار والسياسات القانونية" : "Legal and pricing links"}>
             {marketingOrigin ? (
               <>
                 <a href={`${marketingOrigin}/pricing`}>{ar ? "الأسعار" : "Pricing"}</a>
                 <a href={`${marketingOrigin}/privacy`}>{ar ? "سياسة الخصوصية" : "Privacy Policy"}</a>
-                <a href={`${marketingOrigin}/terms`}>{ar ? "شروط الخدمة" : "Terms of Service"}</a>
+                <a href={`${marketingOrigin}/terms`}>{ar ? "شروط الاستخدام" : "Terms of Service"}</a>
               </>
             ) : (
               <>
                 <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
                 <Link href="/privacy">{ar ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
-                <Link href="/terms">{ar ? "شروط الخدمة" : "Terms of Service"}</Link>
+                <Link href="/terms">{ar ? "شروط الاستخدام" : "Terms of Service"}</Link>
               </>
             )}
           </nav>

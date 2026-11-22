@@ -39,9 +39,9 @@ type NavItem = { href: string; label: string; arabic: string; icon: typeof Layou
 // The five customer workflow pillars stay visible at all times.
 const customerNavigation: NavItem[] = [
   { href: "/", label: "Overview", arabic: "لوحة التحكم", icon: LayoutDashboard },
-  { href: "/workspace", label: "AI workspace", arabic: "مساحة العمل الذكية", icon: UsersRound },
+  { href: "/workspace", label: "AI workspace", arabic: "مساحة عمل الذكاء الاصطناعي", icon: UsersRound },
   { href: "/creative", label: "Creative Studio", arabic: "استوديو الإبداع", icon: Palette },
-  { href: "/approvals", label: "Approvals", arabic: "الاعتمادات", icon: CheckCheck },
+  { href: "/approvals", label: "Approvals", arabic: "الموافقات", icon: CheckCheck },
   { href: "/content", label: "Content", arabic: "المحتوى", icon: LibraryBig },
 ];
 
@@ -64,7 +64,7 @@ const helpLinks: NavItem[] = [
   { href: "/onboarding", label: "Workspace setup", arabic: "إعداد مساحة العمل", icon: UsersRound },
   { href: "/settings/channels", label: "Connect social channels", arabic: "ربط قنوات التواصل", icon: Bell },
   { href: "/creative/brand-kits", label: "Create a brand kit", arabic: "إنشاء هوية بصرية", icon: Palette },
-  { href: "/workspace", label: "Draft with your AI team", arabic: "اكتب مسودة مع فريق الذكاء الاصطناعي", icon: ClipboardCheck },
+  { href: "/workspace", label: "Draft with your AI team", arabic: "أنشئ مسودة مع فريق الذكاء الاصطناعي", icon: ClipboardCheck },
   { href: "/settings/billing", label: "Billing & plans", arabic: "الفوترة والخطط", icon: ShieldCheck },
 ];
 
@@ -154,7 +154,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           <button className="icon-button" type="button" aria-label={ar ? "فتح المساعدة" : "Open help"} aria-haspopup="dialog" onClick={openHelp}>
             <CircleHelp size={19} />
           </button>
-          <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? (ar ? "إغلاق التنقل" : "Close navigation") : (ar ? "فتح التنقل" : "Open navigation")}>
+          <button ref={menuButtonRef} className="icon-button" type="button" onClick={() => setMenuOpen(!menuOpen)} aria-expanded={menuOpen} aria-controls="primary-navigation" aria-label={menuOpen ? (ar ? "إغلاق التنقل" : "Close navigation") : (ar ? "فتح قائمة التنقل" : "Open navigation")}>
             {menuOpen ? <X size={20} /> : <Menu size={20} />}
           </button>
         </div>
@@ -169,7 +169,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <nav id="primary-navigation" className="primary-navigation" aria-label={ar ? "التنقل الأساسي" : "Primary navigation"}>
           {customerNavigation.map(renderNavLink)}
           <div className="nav-section">
-            <p className="nav-section-label">{ar ? "النمو وإدارة العملاء" : "Growth & CRM"}</p>
+            <p className="nav-section-label">{ar ? "النمو وإدارة علاقات العملاء (CRM)" : "Growth & CRM"}</p>
             {growthNavigation.map(renderNavLink)}
           </div>
           <details className="sidebar-more" open={moreActive}>
@@ -246,7 +246,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         <main id="main-content" className="main-content">{children}</main>
       </div>
 
-      <nav className="mobile-navigation" aria-label={ar ? "تنقل الجوال" : "Mobile navigation"}>
+      <nav className="mobile-navigation" aria-label={ar ? "التنقل عبر الهاتف" : "Mobile navigation"}>
         {customerNavigation.map((item) => {
           const { href, icon: Icon } = item;
           const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
@@ -261,7 +261,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
 
       <dialog ref={helpDialogRef} className="help-dialog" aria-modal="true" aria-labelledby="help-dialog-title" onClose={() => helpButtonRef.current?.focus()}>
         <header className="help-dialog-header">
-          <div><span className="help-dialog-eyebrow"><CircleHelp size={17} aria-hidden="true" />{ar ? "مساعدة سريعة" : "Quick help"}</span><h2 id="help-dialog-title">{ar ? "دليل مساحة العمل" : "Workspace quick guide"}</h2><p>{ar ? "كل ما تحتاجه للانتقال من الإعداد إلى أول حملة معتمدة." : "Everything you need to move from setup to your first approved campaign."}</p></div>
+          <div><span className="help-dialog-eyebrow"><CircleHelp size={17} aria-hidden="true" />{ar ? "المساعدة السريعة" : "Quick help"}</span><h2 id="help-dialog-title">{ar ? "دليل مساحة العمل" : "Workspace quick guide"}</h2><p>{ar ? "كل ما تحتاجه للانتقال من الإعداد إلى إطلاق حملتك الأولى بعد اعتمادها." : "Everything you need to move from setup to your first approved campaign."}</p></div>
           <button type="button" className="icon-button" onClick={closeHelp} aria-label={ar ? "إغلاق المساعدة" : "Close help"}><X size={19} /></button>
         </header>
         <nav className="help-dialog-links" aria-label={ar ? "روابط المساعدة" : "Help links"}>
@@ -271,7 +271,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <section className="help-dialog-note">
           <ShieldCheck size={20} aria-hidden="true" />
-          <div><strong>{ar ? "لماذا الاعتماد البشري؟" : "Why human-in-the-loop approval?"}</strong><p>{ar ? "يقترح فريق الذكاء الاصطناعي المحتوى، لكن لا يُنشر شيء إلا بعد مراجعة شخص مسؤول. يبقى الموجز والمصدر وسجل القرار مرتبطاً بكل مسودة لحماية علامتك." : "Your AI team proposes the work, but nothing publishes until a responsible person reviews it. The brief, sources, and decision history stay attached to every draft so your brand stays protected."}</p></div>
+          <div><strong>{ar ? "لماذا تتطلب عملية النشر موافقة بشرية؟" : "Why human-in-the-loop approval?"}</strong><p>{ar ? "يقترح فريق الذكاء الاصطناعي العمل، لكن لا يُنشر أي شيء قبل أن يراجعه شخص مسؤول. ويظل الموجز والمصادر وسجل القرارات مرتبطًا بكل مسودة لحماية علامتك التجارية." : "Your AI team proposes the work, but nothing publishes until a responsible person reviews it. The brief, sources, and decision history stay attached to every draft so your brand stays protected."}</p></div>
         </section>
       </dialog>
     </div>

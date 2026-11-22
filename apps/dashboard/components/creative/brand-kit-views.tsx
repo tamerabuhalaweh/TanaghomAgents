@@ -59,14 +59,14 @@ const emptyDraft: BrandDraft = {
 
 const palettes = [
   { id: "emerald", en: "Emerald & Gold", ar: "زمردي وذهبي", primary: "#0F766E", accent: "#D9A441", background: "#F8FAF7" },
-  { id: "ocean", en: "Ocean & Slate", ar: "محيطي ورمادي", primary: "#0E7490", accent: "#64748B", background: "#F8FAFC" },
+  { id: "ocean", en: "Ocean & Slate", ar: "أزرق بحري ورمادي أردوازي", primary: "#0E7490", accent: "#64748B", background: "#F8FAFC" },
   { id: "royal", en: "Royal & Sand", ar: "ملكي ورملي", primary: "#4338CA", accent: "#C2A878", background: "#FDFBF7" },
   { id: "mono", en: "Monochrome", ar: "أحادي اللون", primary: "#111827", accent: "#6B7280", background: "#FFFFFF" },
 ] as const;
 
 const toneChips = [
   { en: "Warm & confident", ar: "دافئة وواثقة" },
-  { en: "Professional & concise", ar: "مهنية ومختصرة" },
+  { en: "Professional & concise", ar: "احترافية وموجزة" },
   { en: "Friendly & conversational", ar: "ودودة وعفوية" },
 ] as const;
 
@@ -254,8 +254,8 @@ function VersionSwatches({ colors, locale }: { colors: unknown; locale: Creative
   const record = colorsRecord(colors);
   const slots = [
     { key: "primary", en: "Primary", ar: "الأساسي", optional: false },
-    { key: "accent", en: "Accent", ar: "التمييز", optional: true },
-    { key: "background", en: "Background / neutral", ar: "الخلفية / المحايد", optional: true },
+    { key: "accent", en: "Accent", ar: "اللون المميّز", optional: true },
+    { key: "background", en: "Background / neutral", ar: "الخلفية / اللون المحايد", optional: true },
   ];
   const known = new Set(slots.map((slot) => slot.key));
   const extras = Object.entries(record).filter(([key]) => !known.has(key));

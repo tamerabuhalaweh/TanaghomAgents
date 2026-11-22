@@ -28,9 +28,9 @@ const KINDS: readonly TemplateKind[] = ["ad", "carousel", "motion", "landing", "
 const KIND_COPY: Record<string, { en: [string, string]; ar: [string, string] }> = {
   ad: { en: ["Ad creative", "A single campaign visual with headline, offer, and call to action."], ar: ["إعلان إبداعي", "تصميم حملة واحد بعنوان وعرض ودعوة لاتخاذ إجراء."] },
   carousel: { en: ["Carousel", "A swipeable sequence for stories, launches, and explainers."], ar: ["كاروسيل", "سلسلة قابلة للتمرير للقصص والإطلاقات والشرح."] },
-  motion: { en: ["Motion", "A short animated treatment built from an existing design."], ar: ["حركة", "معالجة قصيرة متحركة مبنية على تصميم موجود."] },
+  motion: { en: ["Motion", "A short animated treatment built from an existing design."], ar: ["حركة", "معالجة متحركة قصيرة مبنية على تصميم موجود."] },
   landing: { en: ["Landing page", "A structured page layout for a campaign destination."], ar: ["صفحة هبوط", "تخطيط صفحة منظم لوجهة الحملة."] },
-  caption: { en: ["Caption", "A bilingual caption frame for social publishing."], ar: ["نص منشور", "قالب نص ثنائي اللغة للنشر الاجتماعي."] },
+  caption: { en: ["Caption", "A bilingual caption frame for social publishing."], ar: ["نص منشور", "قالب نصّي ثنائي اللغة لمنشورات التواصل الاجتماعي."] },
 };
 
 function kindCopy(locale: CreativeLocale, kind: string) {

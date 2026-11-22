@@ -123,8 +123,8 @@ export function KnowledgeManagement() {
   return <div className="page-stack knowledge-page">
     <PageHeading
       title={ar ? "معرفة المبيعات" : "Sales knowledge"}
-      description={ar ? "تحكم بدقة في الحقائق والسياسات والعروض وأمثلة اللغة التي يجوز لوكيل المبيعات استخدامها في مقترحات الردود." : "Control exactly which customer facts, policies, offers, and language examples the Sales Agent may use in response proposals."}
-      actions={<button className="primary-button" type="button" onClick={() => setComposerOpen((value) => !value)}><FilePlus2 size={17} /> {composerOpen ? (ar ? "إغلاق المسودة" : "Close draft") : (ar ? "إضافة معرفة" : "Add knowledge")}</button>}
+      description={ar ? "حدّد بدقة الحقائق والسياسات والعروض والأمثلة اللغوية التي يُسمح لوكيل المبيعات باستخدامها في مقترحات الردود." : "Control exactly which customer facts, policies, offers, and language examples the Sales Agent may use in response proposals."}
+      actions={<button className="primary-button" type="button" onClick={() => setComposerOpen((value) => !value)}><FilePlus2 size={17} /> {composerOpen ? (ar ? "إغلاق المسودة" : "Close draft") : (ar ? "أضف معرفة" : "Add knowledge")}</button>}
     />
 
     {state === "loading" ? <KnowledgeLoading /> : null}
@@ -132,13 +132,13 @@ export function KnowledgeManagement() {
     {state === "error" ? <KnowledgeState icon={<CircleAlert />} title="Knowledge catalog unavailable" copy="E3lani could not load the protected organization catalog." action={<button className="secondary-button" type="button" onClick={() => void load()}><RefreshCw size={16} /> Try again</button>} /> : null}
 
     {state === "ready" && payload ? <>
-      <section className="knowledge-safety" aria-label={ar ? "حدود أمان المعرفة" : "Knowledge safety boundary"}>
+      <section className="knowledge-safety" aria-label={ar ? "ضوابط أمان المعرفة" : "Knowledge safety boundary"}>
         <ShieldCheck size={20} />
-        <div><strong>{ar ? "الاعتماد على الحقائق الموثقة مفعّل" : "Strict factual grounding is enforced"}</strong><p>{ar ? "لا تُستخدم إلا النسخ النشطة، ويجب أن يستند كل رد إلى المعرفة الموثقة. الحالات غير المؤكدة أو الحساسة تُحال إلى مراجعة بشرية." : "Only active versions can be retrieved, and every factual response must rely on verified knowledge. Uncertain or sensitive cases go to a person for review."}</p></div>
-        <StatusPill tone="success">{ar ? "لا رد تلقائي" : "No auto-reply"}</StatusPill>
+        <div><strong>{ar ? "الاعتماد على الحقائق الموثقة مفعّل" : "Strict factual grounding is enforced"}</strong><p>{ar ? "لا يمكن الوصول إلا إلى الإصدارات النشطة، ويجب أن يستند كل رد يتضمن معلومات واقعية إلى معرفة موثّقة. تُحال الحالات غير الواضحة أو الحساسة إلى شخص لمراجعتها." : "Only active versions can be retrieved, and every factual response must rely on verified knowledge. Uncertain or sensitive cases go to a person for review."}</p></div>
+        <StatusPill tone="success">{ar ? "لا توجد ردود تلقائية" : "No auto-reply"}</StatusPill>
       </section>
 
-      {composerOpen ? <KnowledgeComposer hasExisting={payload.counts.sources > 0 || payload.versions.length > 0} onCreated={async () => { setComposerOpen(false); setFeedback(ar ? "أُنشئت المسودة. راجعها وفعّلها قبل أن يتمكن الوكلاء من استرجاعها." : "Draft created. Review and activate it before agents can retrieve it."); await load(); }} /> : null}
+      {composerOpen ? <KnowledgeComposer hasExisting={payload.counts.sources > 0 || payload.versions.length > 0} onCreated={async () => { setComposerOpen(false); setFeedback(ar ? "تم إنشاء المسودة. راجعها وفعّلها قبل أن يتمكن الوكلاء من استخدامها." : "Draft created. Review and activate it before agents can retrieve it."); await load(); }} /> : null}
 
       <section className="knowledge-overview" aria-label={ar ? "ملخص دليل المعرفة" : "Knowledge catalog summary"}>
         <dl>
@@ -149,16 +149,16 @@ export function KnowledgeManagement() {
         </dl>
         <div className="knowledge-policy-summary">
           <Languages size={18} />
-          <span><strong>{ar ? `سياسة المعرفة العربية والإنجليزية — الإصدار ${payload.policy?.version_number || "—"}` : `English and Arabic knowledge policy v${payload.policy?.version_number || "—"}`}</strong><small>{ar ? "الاعتماد على الحقائق الموثقة: تتطلب ردود الذكاء الاصطناعي معرفة موثقة ومراجعة بشرية عند عدم اليقين." : "Strict factual grounding: AI responses require verified knowledge and human review when uncertain."}</small></span>
+          <span><strong>{ar ? `سياسة المحتوى المعرفي بالعربية والإنجليزية — الإصدار ${payload.policy?.version_number || "—"}` : `English and Arabic knowledge policy v${payload.policy?.version_number || "—"}`}</strong><small>{ar ? "الاعتماد على الحقائق الموثقة: تتطلب ردود الذكاء الاصطناعي معرفة موثقة ومراجعة بشرية عند عدم اليقين." : "Strict factual grounding: AI responses require verified knowledge and human review when uncertain."}</small></span>
         </div>
       </section>
 
       <section className="knowledge-catalog" aria-labelledby="knowledge-catalog-title">
         <header className="knowledge-catalog-header">
           <div><h2 id="knowledge-catalog-title">{ar ? "دليل النسخ" : "Version catalog"}</h2><p>{ar ? "تبقى المسودات غير مرئية للوكلاء حتى تتم مراجعتها واعتمادها وتفعيلها." : "Drafts are invisible to agents until reviewed, approved, and activated."}</p></div>
-          <label><span className="sr-only">{ar ? "تصفية النسخ حسب الحالة" : "Filter versions by status"}</span><select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}><option value="all">{ar ? "جميع الحالات" : "All statuses"}</option>{Object.keys(nextActions).map((status) => <option value={status} key={status}>{ar ? ({ draft: "مسودة", reviewed: "مُراجعة", approved: "معتمدة", active: "نشطة", superseded: "مستبدلة", revoked: "ملغاة" } as Record<string, string>)[status] : status[0].toUpperCase() + status.slice(1)}</option>)}</select></label>
+          <label><span className="sr-only">{ar ? "صفِّ النسخ حسب الحالة" : "Filter versions by status"}</span><select value={filter} onChange={(event) => setFilter(event.target.value as typeof filter)}><option value="all">{ar ? "جميع الحالات" : "All statuses"}</option>{Object.keys(nextActions).map((status) => <option value={status} key={status}>{ar ? ({ draft: "مسودة", reviewed: "مُراجعة", approved: "معتمدة", active: "نشطة", superseded: "مستبدلة", revoked: "ملغاة" } as Record<string, string>)[status] : status[0].toUpperCase() + status.slice(1)}</option>)}</select></label>
         </header>
-        {visible.length ? <div className="knowledge-version-list">{visible.map((version) => <KnowledgeRow key={version.version_id} version={version} onChanged={async (message) => { setFeedback(message); await load(); }} />)}</div> : <div className="knowledge-empty"><BookCheck size={22} /><div><h3>{payload.versions.length ? (ar ? "لا توجد نسخ تطابق هذا التصفية" : "No versions match this filter") : (ar ? "ابنِ مجموعة الإجابات المعتمدة" : "Build the approved answer set")}</h3><p>{payload.versions.length ? (ar ? "اختر حالة دورة حياة أخرى للمتابعة." : "Choose another lifecycle status to continue.") : (ar ? "أضف حقيقة أو سياسة أو سؤالاً شائعاً أو عرضاً قدّمه العميل كمسودة." : "Add a customer-supplied fact, policy, FAQ, offer, or language example as a draft.")}</p></div>{!payload.versions.length ? <button className="primary-button" type="button" onClick={() => { setComposerOpen(true); window.setTimeout(() => document.getElementById("knowledge-composer")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}><FilePlus2 size={16} />{ar ? "أضف أول إجابة معتمدة" : "Add first approved answer"}</button> : null}</div>}
+        {visible.length ? <div className="knowledge-version-list">{visible.map((version) => <KnowledgeRow key={version.version_id} version={version} onChanged={async (message) => { setFeedback(message); await load(); }} />)}</div> : <div className="knowledge-empty"><BookCheck size={22} /><div><h3>{payload.versions.length ? (ar ? "لا توجد نسخ تطابق هذا المرشح." : "No versions match this filter") : (ar ? "أنشئ مجموعة الإجابات المعتمدة." : "Build the approved answer set")}</h3><p>{payload.versions.length ? (ar ? "اختر حالة أخرى ضمن دورة العمل للمتابعة." : "Choose another lifecycle status to continue.") : (ar ? "أضف مسودة تتضمن حقيقة أو سياسة أو سؤالًا شائعًا أو عرضًا أو مثالًا لغويًا قدّمه العميل." : "Add a customer-supplied fact, policy, FAQ, offer, or language example as a draft.")}</p></div>{!payload.versions.length ? <button className="primary-button" type="button" onClick={() => { setComposerOpen(true); window.setTimeout(() => document.getElementById("knowledge-composer")?.scrollIntoView({ behavior: "smooth", block: "start" }), 0); }}><FilePlus2 size={16} />{ar ? "أضف أول إجابة معتمدة" : "Add first approved answer"}</button> : null}</div>}
       </section>
       {feedback ? <p className="integration-feedback" role="status" aria-live="polite">{feedback}</p> : null}
     </> : null}
@@ -193,7 +193,7 @@ function KnowledgeComposer({ hasExisting, onCreated }: { hasExisting: boolean; o
   }
 
   return <form id="knowledge-composer" className="knowledge-composer" onSubmit={(event) => void submit(event)} dir={ar ? "rtl" : "ltr"} lang={locale}>
-    <header><div><h2>{hasExisting ? (ar ? "أضف مسودة إجابة معتمدة أخرى" : "Add another approved answer draft") : (ar ? "ابدأ مسودة جديدة" : "Start a new draft")}</h2><p>{hasExisting ? (ar ? "استخدم المعرّف المرجعي نفسه لإضافة نسخة جديدة. ولا يُعدَّل النص المعتمد الحالي في مكانه أبدًا." : "Reuse a source key to add a new version. Existing approved text is never edited in place.") : (ar ? "لم يُحفظ شيء بعد — ابدأ مسودة جديدة." : "Nothing saved yet — start a blank draft.")}</p></div><StatusPill tone="neutral">{ar ? "مسودة" : "Draft"}</StatusPill></header>
+    <header><div><h2>{hasExisting ? (ar ? "أضف مسودة لإجابة أخرى لاعتمادها." : "Add another approved answer draft") : (ar ? "ابدأ مسودة جديدة" : "Start a new draft")}</h2><p>{hasExisting ? (ar ? "استخدم المعرّف المرجعي نفسه لإضافة نسخة جديدة. ولا يُعدَّل النص المعتمد الحالي في مكانه أبدًا." : "Reuse a source key to add a new version. Existing approved text is never edited in place.") : (ar ? "لا شيء محفوظ بعد — ابدأ مسودة فارغة." : "Nothing saved yet — start a blank draft.")}</p></div><StatusPill tone="neutral">{ar ? "مسودة" : "Draft"}</StatusPill></header>
     <div className="knowledge-form-grid">
       <label><span>{ar ? "المعرّف المرجعي" : "Source key"}</span><input value={sourceKey} onChange={(event) => setSourceKey(event.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ""))} pattern="[a-z][a-z0-9_-]{2,79}" placeholder={ar ? "مثال: pricing_standard" : "e.g. pricing_standard"} required /><small>{ar ? "معرّف ثابت يتكوّن من حروف إنجليزية صغيرة وأرقام وشرطات أو شرطات سفلية." : "Stable identifier; lowercase letters, numbers, dashes, or underscores."}</small></label>
       <label><span>Title</span><input value={title} onChange={(event) => setTitle(event.target.value)} minLength={3} maxLength={200} placeholder={ar ? "مثال: التسعير القياسي للخدمة" : "e.g. Standard service pricing"} required /></label>
@@ -203,7 +203,7 @@ function KnowledgeComposer({ hasExisting, onCreated }: { hasExisting: boolean; o
       <label><span>{ar ? "المرجع المصدر" : "Source reference"} <em>{ar ? "اختياري" : "Optional"}</em></span><input value={provenanceRef} onChange={(event) => setProvenanceRef(event.target.value)} maxLength={1000} placeholder={ar ? "اسم المستند أو الرابط المعتمد" : "Document name or approved URL"} /></label>
       <label className="knowledge-content-field"><span>{ar ? "نص الإجابة المعتمدة" : "Approved-answer material"}</span><textarea dir={language === "ar" ? "rtl" : "ltr"} value={content} onChange={(event) => setContent(event.target.value)} minLength={3} maxLength={30000} rows={7} placeholder={ar ? "اكتب فقط الحقائق والصياغة التي قدّمها العميل ويمكن للمراجع التحقق منها." : "Enter only customer-supplied facts and wording that reviewers can verify."} required /><small>{ar ? "لا تُدرج كلمات مرور أو رموز وصول أو بيانات بطاقات دفع أو معلومات شخصية غير ضرورية." : "Do not include passwords, access tokens, payment card data, or unnecessary personal information."}</small></label>
     </div>
-    <footer><div>{error ? <p role="alert">{error}</p> : <p>{ar ? "الحفظ ينشئ مسودة فقط. لا يمكن للوكلاء استرجاعها." : "Saving creates a draft only. Agents cannot retrieve it."}</p>}</div><button className="primary-button" type="submit" disabled={busy}>{busy ? (ar ? "جارٍ إنشاء المسودة…" : "Creating draft…") : (ar ? "إنشاء مسودة" : "Create draft")}</button></footer>
+    <footer><div>{error ? <p role="alert">{error}</p> : <p>{ar ? "ينشئ الحفظ مسودة فقط، ولا يمكن للوكلاء الوصول إليها." : "Saving creates a draft only. Agents cannot retrieve it."}</p>}</div><button className="primary-button" type="submit" disabled={busy}>{busy ? (ar ? "جارٍ إنشاء المسودة…" : "Creating draft…") : (ar ? "إنشاء مسودة" : "Create draft")}</button></footer>
   </form>;
 }
 

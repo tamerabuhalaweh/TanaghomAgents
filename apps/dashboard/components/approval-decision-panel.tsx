@@ -79,7 +79,7 @@ export function ApprovalDecisionPanel({
               ? "يحتاج إلى تعديل — أدرج مدقّق الهوية تعديلات غير مطبّقة؛ اطلب تعديلات قبل الاعتماد."
               : "Needs changes — Brand Guardian listed unapplied corrections; request changes before approving.")
             : (ar
-              ? "يبقى النشر محظوراً حتى تعتمد هذه النسخة."
+              ? "يظل النشر محظورًا حتى تعتمد هذه النسخة."
               : "Publishing remains blocked until you approve this version.")}
         </p>
         <div className="decision-actions">

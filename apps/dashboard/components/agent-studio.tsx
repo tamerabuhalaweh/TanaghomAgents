@@ -409,7 +409,7 @@ export function AgentStudio() {
   return <div className="page-stack agent-studio-page">
     <PageHeading
       title={ar ? "استوديو الوكلاء" : "Agent Studio"}
-      description={ar ? "أنشئ وكلاء أعمال محكومين من خلال الجمع بين المهارات المعتمدة والتكاملات التي يديرها العميل والقواعد الواضحة ونسخة طرح غير قابلة للتغيير." : "Create governed business agents by combining approved Skills, customer-managed integrations, clear rules, and an immutable rollout version."}
+      description={ar ? "أنشئ وكلاء أعمال منضبطين يجمعون بين المهارات المعتمدة والتكاملات التي يديرها العميل والقواعد الواضحة وإصدار نشر ثابت لا يتغير." : "Create governed business agents by combining approved Skills, customer-managed integrations, clear rules, and an immutable rollout version."}
       actions={payload?.can_manage
         ? <button className="primary-button" type="button" onClick={() => composerOpen ? setComposerOpen(false) : openNew()}>
           {composerOpen ? <X size={17} /> : <Plus size={17} />}

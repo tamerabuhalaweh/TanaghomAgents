@@ -49,7 +49,7 @@ export function SessionProfile() {
   return (
     <button className="profile-switcher" type="button" onClick={() => void signOut()} disabled={signingOut} aria-label={user ? `${ar ? "تسجيل الخروج" : "Sign out"} ${user.displayName}` : (ar ? "تسجيل الخروج" : "Sign out")}>
       <span className="avatar">{user ? initials(user.displayName) : "—"}</span>
-      <span className="profile-copy"><strong>{user?.displayName || (ar ? "جارٍ تحميل الملف" : "Loading profile")}</strong><small>{role || (ar ? "جلسة موثّقة" : "Authenticated session")}</small></span>
+      <span className="profile-copy"><strong>{user?.displayName || (ar ? "جارٍ تحميل الملف الشخصي" : "Loading profile")}</strong><small>{role || (ar ? "جلسة موثّقة" : "Authenticated session")}</small></span>
       <LogOut size={16} aria-hidden="true" />
     </button>
   );
