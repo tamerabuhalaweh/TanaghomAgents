@@ -214,7 +214,7 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
                       className={`creative-format-pill ${previewFormat === format ? "creative-format-pill-active" : ""}`}
                       aria-pressed={previewFormat === format}
                       disabled={previewFormat !== format}
-                      title={previewFormat === format ? undefined : (ar ? `الحجم المحفوظ ${previewFormat}` : `Saved size is ${previewFormat}`)}
+                      title={previewFormat === format ? undefined : (ar ? `المقاس المحفوظ: ${previewFormat}` : `Saved size is ${previewFormat}`)}
                     >
                       {format}
                     </button>
@@ -236,7 +236,7 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
               </aside>
 
               <div className="creative-editor-controls">
-                <h2>{ar ? "عناصر التصميم" : "Design layers"}</h2>
+                <h2>{ar ? "طبقات التصميم" : "Design layers"}</h2>
                 {isCarousel ? (
                   <>
                     <h3>{t(locale, "designs.pages")} ({activeSpec.pages!.length})</h3>
@@ -289,8 +289,8 @@ export function DesignEditorView({ locale, dir, templateId }: { locale: Creative
 function layerLabel(locale: CreativeLocale, node: DesignNode) {
   const ar = locale === "ar";
   if (node.role === "headline") return ar ? "العنوان الرئيسي" : "Headline";
-  if (node.role === "body") return ar ? "النص التوضيحي" : "Body";
-  if (node.role === "cta") return ar ? "زر الدعوة" : "CTA";
+  if (node.role === "body") return ar ? "النص الأساسي" : "Body";
+  if (node.role === "cta") return ar ? "عبارة الحث على اتخاذ إجراء (CTA)" : "CTA";
   return node.type;
 }
 
@@ -314,7 +314,7 @@ function NodeList({ locale, nodes, editable, onPatch }: {
             </label>
           )}
           <details className="creative-meta-details">
-            <summary>{ar ? "الإحداثيات والأبعاد" : "Position & size"}</summary>
+            <summary>{ar ? "الموضع والحجم" : "Position & size"}</summary>
             <dl className="creative-meta">
               <dt>x/y</dt><dd dir="ltr">{node.x},{node.y}</dd>
               <dt>w×h</dt><dd dir="ltr">{node.width}×{node.height}</dd>

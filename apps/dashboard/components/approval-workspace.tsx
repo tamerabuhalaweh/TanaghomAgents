@@ -247,10 +247,10 @@ export function ApprovalWorkspace() {
       if (nextId) syncUrl(nextId);
       setReason("");
       setFeedback(decision === "approved"
-        ? (ar ? "تم حفظ الاعتماد، والعنصر متاح الآن في مكتبة المحتوى." : "Approval saved. The item is now available in the Content Library.")
-        : (ar ? "طُلب التعديل، وأُضيفت مهمة إعادة التوليد إلى قائمة الانتظار." : "Changes requested. Regeneration work has been queued."));
+        ? (ar ? "تم حفظ الموافقة بنجاح. أصبح العنصر متاحًا الآن في مكتبة المحتوى." : "Approval saved. The item is now available in the Content Library.")
+        : (ar ? "طُلبت تعديلات، وأُضيفت مهمة إعادة التوليد إلى قائمة الانتظار." : "Changes requested. Regeneration work has been queued."));
     } catch {
-      setFeedback(ar ? "لم يُحفظ القرار. يبقى العنصر محظوراً؛ حاول مرة أخرى." : "The decision was not saved. The item remains blocked; please try again.");
+      setFeedback(ar ? "لم يُحفظ القرار. ما زال العنصر محظورًا؛ يُرجى المحاولة مجددًا." : "The decision was not saved. The item remains blocked; please try again.");
     } finally {
       setSubmitting(false);
     }
@@ -260,11 +260,11 @@ export function ApprovalWorkspace() {
     ? (ar
       ? `${formatArabicCount(items.length, { zero: "لا عناصر محتوى بحاجة إلى قرار قبل النشر.", one: "عنصر محتوى واحد بحاجة إلى قرار قبل النشر.", two: "عنصرا محتوى بحاجة إلى قرار قبل النشر.", few: "{count} عناصر محتوى بحاجة إلى قرار قبل النشر.", many: "{count} عنصر محتوى بحاجة إلى قرار قبل النشر.", other: "{count} عنصر محتوى بحاجة إلى قرار قبل النشر." })}`
       : `${items.length} content ${items.length === 1 ? "item needs" : "items need"} a decision before publishing.`)
-    : (ar ? "راجع المحتوى قبل أن تتقدم أي أعمال نشر." : "Review content before any publishing work can move forward.");
+    : (ar ? "راجع المحتوى قبل بدء أي عملية نشر." : "Review content before any publishing work can move forward.");
 
   return (
     <div className="page-stack">
-      <PageHeading title={ar ? "الاعتمادات" : "Approvals"} description={description} />
+      <PageHeading title={ar ? "الموافقات" : "Approvals"} description={description} />
       <p className="sr-only" role="status" aria-live="polite">{feedback}</p>
 
       {loadState === "loading" ? <ApprovalLoadingState /> : null}
@@ -304,15 +304,15 @@ export function ApprovalWorkspace() {
 
           {activeInView && active ? <article className="review-canvas" aria-labelledby="review-title">
             <header className="review-header">
-              <div><StatusPill tone="attention">{ar ? "بحاجة إلى مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack") : contentTypeLabel(active.content_type, ar)} · {active.campaign_name}</p></div>
+              <div><StatusPill tone="attention">{ar ? "يتطلب مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack") : contentTypeLabel(active.content_type, ar)} · {active.campaign_name}</p></div>
               <div className="review-position"><button className="icon-button" type="button" aria-label={ar ? "العنصر السابق" : "Previous item"} onClick={() => move(-1)}><ChevronLeft size={19} /></button>{reviewPositionLabel(activeIndex, visible.length, locale) ? <span>{reviewPositionLabel(activeIndex, visible.length, locale)}</span> : null}<button className="icon-button" type="button" aria-label={ar ? "العنصر التالي" : "Next item"} onClick={() => move(1)}><ChevronRight size={19} /></button></div>
             </header>
 
             <dl className="review-metadata">
               <div><dt>{ar ? "القناة" : "Channel"}</dt><dd>{active.source === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : active.channel}</dd></div>
-              <div><dt>{ar ? "أُنشئ" : "Created"}</dt><dd>{formatCreatedAt(active.created_at, ar)}</dd></div>
-              <div><dt>{ar ? "أعدّه" : "Prepared by"}</dt><dd>{active.source === "ai_workspace" ? (ar ? "فريق المختصين" : "Specialist team") : (ar ? "كاتب المحتوى" : "Content Producer")}</dd></div>
-              <div><dt>{ar ? "سياسة الاعتماد" : "Approval policy"}</dt><dd>{ar ? "مراجعة بشرية مطلوبة" : "Human required"}</dd></div>
+              <div><dt>{ar ? "تم الإنشاء بنجاح." : "Created"}</dt><dd>{formatCreatedAt(active.created_at, ar)}</dd></div>
+              <div><dt>{ar ? "إعداد:" : "Prepared by"}</dt><dd>{active.source === "ai_workspace" ? (ar ? "فريق المختصين" : "Specialist team") : (ar ? "كاتب المحتوى" : "Content Producer")}</dd></div>
+              <div><dt>{ar ? "سياسة الموافقة" : "Approval policy"}</dt><dd>{ar ? "مراجعة بشرية مطلوبة" : "Human required"}</dd></div>
               {active.source === "ai_workspace" ? <div><dt>{ar ? "اللغة واللهجة" : "Language & dialect"}</dt><dd>{active.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")}{normalizeDialect(active.dialect) ? ` · ${dialectLabel(normalizeDialect(active.dialect)!, locale)}` : ""}</dd></div> : null}
             </dl>
 
@@ -349,7 +349,7 @@ export function ApprovalWorkspace() {
               <h3 id="decision-history-title">{ar ? "سياق القرار" : "Decision context"}</h3>
               {active.source === "ai_workspace"
                 ? <p><Clock3 size={16} /> {ar ? "الاعتماد يقبل هذه الحزمة تحديداً. لا ينشر محتوى ولا يرسل رسائل ولا يعتمد حقائق أعمال ناقصة." : "Approval records acceptance of this exact pack only. It does not publish content, send messages, or approve missing business facts."}</p>
-                : <p><Clock3 size={16} /> {ar ? `نسخة الاستراتيجية ${active.strategy_version}. لم يُسجَّل أي قرار لهذا التوليد.` : `Strategy version ${active.strategy_version}. No decision has been recorded for this generation.`}</p>}
+                : <p><Clock3 size={16} /> {ar ? `إصدار الاستراتيجية ${active.strategy_version}. لم يُسجّل أي قرار بخصوص هذا التوليد.` : `Strategy version ${active.strategy_version}. No decision has been recorded for this generation.`}</p>}
             </section>
 
             <ApprovalDecisionPanel
@@ -382,7 +382,7 @@ function ApprovalErrorState({ retry, ar }: { retry: () => Promise<void>; ar: boo
   return (
     <section className="approval-state approval-state-error" aria-labelledby="approval-error-title">
       <TriangleAlert size={25} aria-hidden="true" />
-      <div><h2 id="approval-error-title">{ar ? "قائمة الاعتماد غير متاحة" : "The approval queue is unavailable"}</h2><p>{ar ? "لا يمكن اتخاذ أي قرار حتى يُستعاد الاتصال بمصدر الحقيقة." : "No decision can be made until the source-of-truth connection is restored."}</p></div>
+      <div><h2 id="approval-error-title">{ar ? "قائمة الاعتماد غير متاحة" : "The approval queue is unavailable"}</h2><p>{ar ? "لا يمكن اتخاذ أي قرار حتى يُستعاد الاتصال بمصدر البيانات المعتمد." : "No decision can be made until the source-of-truth connection is restored."}</p></div>
       <button className="secondary-button" type="button" onClick={() => void retry()}><RefreshCw size={16} /> {ar ? "حاول مرة أخرى" : "Try again"}</button>
     </section>
   );
@@ -394,7 +394,7 @@ function ApprovalEmptyState({ feedback, ar }: { feedback: string; ar: boolean })
       <span className="approval-state-icon"><CheckCircle2 size={28} aria-hidden="true" /></span>
       <div><h2 id="approval-empty-title">{ar ? "قائمة الاعتماد فارغة" : "Approval queue is clear"}</h2><p>{feedback || (ar ? "لا يوجد محتوى بانتظار قرار بشري. ستظهر المسودات الجديدة هنا عندما يسلّمها كاتب المحتوى." : "There is no content waiting for a human decision. New drafts will appear here when the Content Producer submits them.")}</p></div>
       <a className="primary-button" href="/workspace">{ar ? "ابدأ موجز حملة" : "Start a campaign brief"}</a>
-      <span className="approval-state-meta">{ar ? "يبقى النشر محمياً بسياسة الاعتماد في قاعدة البيانات." : "Publishing remains protected by the database approval policy."}</span>
+      <span className="approval-state-meta">{ar ? "تظل عملية النشر محمية بسياسة الموافقة في قاعدة البيانات." : "Publishing remains protected by the database approval policy."}</span>
     </section>
   );
 }

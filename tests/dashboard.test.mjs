@@ -421,13 +421,13 @@ test("Packet B brand kits use visual controls and rendered versions, never raw J
   assert.doesNotMatch(editor, /Colors \(JSON\)|JSON\.stringify\(version\.colors\)/);
   assert.doesNotMatch(copy, /Colors \(JSON\)|الألوان \(JSON\)/);
   assert.match(copy, /Enter a brand kit name of at least 2 characters to save\./);
-  assert.match(copy, /أدخل اسم هوية من حرفين على الأقل للحفظ\./);
+  assert.match(copy, /أدخل اسمًا لهوية العلامة التجارية يتكوّن من حرفين على الأقل لحفظه\./);
 });
 
 test("Packet B promotes Growth & CRM and keeps operator diagnostics in a disclosure", async () => {
   const shell = await readFile(new URL("components/app-shell.tsx", dashboard), "utf8");
   assert.match(shell, /Growth & CRM/);
-  assert.match(shell, /النمو وإدارة العملاء/);
+  assert.match(shell, /النمو وإدارة علاقات العملاء \(CRM\)/);
   assert.match(shell, /Advanced operations/);
   assert.match(shell, /عمليات متقدمة/);
   assert.match(shell, /href="\/settings\/channels"/);
@@ -448,7 +448,7 @@ test("Packet B help dialog is accessible, bilingual, and links the customer jour
     assert.match(shell, new RegExp(`href: "${href}"`));
   }
   assert.match(shell, /Human-in-the-Loop|human-in-the-loop/);
-  assert.match(shell, /الاعتماد البشري/);
+  assert.match(shell, /لماذا تتطلب عملية النشر موافقة بشرية؟/);
 });
 
 test("Packet C seeds the overview locale on the server and exposes mobile help", async () => {
@@ -468,10 +468,10 @@ test("Packet B localizes session roles and removes duplicate creative locale tog
     assert.match(profile, new RegExp(arabic));
   }
   assert.match(profile, /Loading profile/);
-  assert.match(profile, /جارٍ تحميل الملف/);
+  assert.match(profile, /جارٍ تحميل الملف الشخصي/);
   assert.match(profile, /Sign out/);
   assert.match(subnav, /Studio Home/);
-  assert.match(subnav, /رئيسية الاستوديو/);
+  assert.match(subnav, /الصفحة الرئيسية للاستوديو/);
   const files = await readdir(new URL("app/creative/", dashboard), { recursive: true });
   const pages = files.filter((file) => file.endsWith("page.tsx"));
   assert.ok(pages.length >= 18);
@@ -488,7 +488,7 @@ test("Packet B removes jargon, duplication, and raw provider labels from custome
   assert.equal((channels.match(/\{text\.human\}/g) ?? []).length, 1);
   assert.doesNotMatch(channels, /Postiz/);
   assert.match(channels, /Social Publishing/);
-  assert.match(channels, /النشر على المنصات الاجتماعية/);
+  assert.match(channels, /النشر على منصات التواصل الاجتماعي/);
   assert.doesNotMatch(knowledge, /72%|confidence_threshold\) \* 100/);
   assert.match(knowledge, /Strict factual grounding/);
   assert.match(knowledge, /الاعتماد على الحقائق الموثقة مفعّل/);

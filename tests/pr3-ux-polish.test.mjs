@@ -67,7 +67,7 @@ test("the overview campaign table shows one status, not a duplicated stage", () 
   assert.doesNotMatch(overview, /: "Stage"\}/);
   // One campaignStage call: the Status pill. There is no second column.
   assert.equal((overview.match(/campaignStage\(campaign, ar\)/g) || []).length, 1);
-  const columns = [["الحملة", "Campaign"], ["الحالة", "Status"], ["المحتوى", "Content"], ["الاعتمادات", "Approvals"], ["العملاء المحتملون", "Leads"]];
+  const columns = [["الحملة", "Campaign"], ["الحالة", "Status"], ["المحتوى", "Content"], ["الموافقات", "Approvals"], ["العملاء المحتملون", "Leads"]];
   for (const [arabic, english] of columns) {
     assert.ok(overview.includes(`{ar ? "${arabic}" : "${english}"}`), `column ${english} kept`);
   }

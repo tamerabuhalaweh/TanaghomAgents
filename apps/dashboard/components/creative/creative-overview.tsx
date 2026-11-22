@@ -31,7 +31,7 @@ interface DesignRow {
 }
 
 const coreTools = [
-  { href: "/creative/designs", titleKey: "designs.title", en: "Ads and carousels ready to edit", ar: "إعلانات وكاروسيل جاهزة للتعديل" },
+  { href: "/creative/designs", titleKey: "designs.title", en: "Ads and carousels ready to edit", ar: "إعلانات ومنشورات متعددة الشرائح جاهزة للتعديل" },
   { href: "/creative/motion", titleKey: "motions.title", en: "Animate an existing design", ar: "حرّك تصميماً موجوداً" },
   { href: "/creative/brand-kits", titleKey: "nav.brands", en: "Colors, tone and fonts", ar: "الألوان والنبرة والخطوط" },
   { href: "/creative/templates", titleKey: "nav.templates", en: "Reusable layout templates", ar: "قوالب تخطيط قابلة لإعادة الاستخدام" },
@@ -56,7 +56,7 @@ export function CreativeOverview({ locale, dir }: { locale: CreativeLocale; dir:
         <div className="creative-head">
           <div>
             <h2>{ar ? "معرض التصاميم" : "Designs Gallery"}</h2>
-            <p className="creative-lede">{ar ? "تصاميم جاهزة للتعديل تظهر كما ستُنشر." : "Ready-to-edit designs, shown as they will render."}</p>
+            <p className="creative-lede">{ar ? "تصاميم جاهزة للتعديل، مع معاينة شكلها النهائي." : "Ready-to-edit designs, shown as they will render."}</p>
           </div>
           <Link className="creative-button creative-button-secondary" href="/creative/designs">{ar ? "كل التصاميم" : "All designs"}</Link>
         </div>
@@ -89,13 +89,13 @@ export function CreativeOverview({ locale, dir }: { locale: CreativeLocale; dir:
       </ul>
 
       <details className="creative-more">
-        <summary>{ar ? "أدوات المشغّل والمزيد" : "More creative tools"}</summary>
+        <summary>{ar ? "أدوات إبداعية إضافية" : "More creative tools"}</summary>
         <ul className="creative-grid">
           <li className="creative-card"><h2>{t(locale, "nav.jobs")}</h2><Link href="/creative/jobs">{t(locale, "overview.jobs")}</Link></li>
           <li className="creative-card"><h2>{t(locale, "nav.assets")}</h2><Link href="/creative/assets">{t(locale, "overview.assets")}</Link></li>
           <li className="creative-card"><h2>{t(locale, "video.title")}</h2><Link href="/creative/video">{t(locale, "video.title")}</Link></li>
-          <li className="creative-card"><h2>{ar ? "استوديو المتحدث" : "Talking Head Studio"}</h2><Link href="/creative/presenters">{ar ? "متحدث ومزامنة الشفاه" : "Talking head and lip sync"}</Link><p>{ar ? "معطل افتراضيًا؛ قبول المزود قيد الانتظار" : "Default off; provider acceptance pending"}</p></li>
-          <li className="creative-card"><h2>{ar ? "إدارة الشخصيات" : "Avatar Management"}</h2><Link href="/creative/avatars">{ar ? "الهويات والربط والموافقة" : "Identity, bindings and consent"}</Link></li>
+          <li className="creative-card"><h2>{ar ? "استوديو الشخصيات الناطقة" : "Talking Head Studio"}</h2><Link href="/creative/presenters">{ar ? "شخصية متحدثة ومزامنة حركة الشفاه" : "Talking head and lip sync"}</Link><p>{ar ? "معطّل افتراضيًا؛ بانتظار اعتماد المزوّد" : "Default off; provider acceptance pending"}</p></li>
+          <li className="creative-card"><h2>{ar ? "إدارة الشخصيات الافتراضية" : "Avatar Management"}</h2><Link href="/creative/avatars">{ar ? "الهويات والربط والموافقة" : "Identity, bindings and consent"}</Link></li>
           <li className="creative-card"><h2>{t(locale, "generate.title")}</h2><Link href="/creative/generate">{t(locale, "generate.title")}</Link></li>
           <li className="creative-card"><h2>{t(locale, "product.title")}</h2><Link href="/creative/product">{t(locale, "product.title")}</Link></li>
         </ul>

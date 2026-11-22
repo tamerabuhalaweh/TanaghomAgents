@@ -58,23 +58,23 @@ const quickStart = [
     title: "Brief AI Team",
     titleAr: "وجّه فريق الذكاء الاصطناعي",
     cta: "Open AI workspace",
-    ctaAr: "افتح مساحة الذكاء الاصطناعي",
+    ctaAr: "افتح مساحة عمل الذكاء الاصطناعي",
     href: "/workspace",
   },
   {
     step: "2",
     stepAr: "2",
     title: "Design Visuals",
-    titleAr: "صمّم الإعلانات البصرية",
+    titleAr: "صمّم المواد المرئية",
     cta: "Open Design Studio",
-    ctaAr: "افتح استوديو التصاميم",
+    ctaAr: "افتح استوديو التصميم",
     href: "/creative/designs",
   },
   {
     step: "3",
     stepAr: "3",
     title: "Review & Approve",
-    titleAr: "راجع واعتمد المحتوى",
+    titleAr: "راجع واعتمد",
     cta: "Review approvals",
     ctaAr: "راجع الاعتمادات",
     href: "/approvals",
@@ -129,8 +129,8 @@ export function OverviewDashboard() {
     };
   }, []);
 
-  if (operations.status === "loading") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "جارٍ تحميل الحالة المعتمدة الحالية." : "Loading the current source-of-truth state."} /><OperationsLoading label={ar ? "جارٍ تحميل العمليات المباشرة" : "Loading live operations"} /></div>;
-  if (operations.status === "error") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "حالة المصدر المعتمد مطلوبة قبل تشغيل الوكلاء." : "Source-of-truth status is required before operating agents."} /><OperationsError retry={operations.retry} /></div>;
+  if (operations.status === "loading") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "جارٍ تحميل الحالة الحالية من المصدر المعتمد." : "Loading the current source-of-truth state."} /><OperationsLoading label={ar ? "جارٍ تحميل العمليات المباشرة" : "Loading live operations"} /></div>;
+  if (operations.status === "error") return <div className="page-stack"><PageHeading title={ar ? "لوحة التحكم" : "Overview"} description={ar ? "يجب التحقق من حالة المصدر المعتمد قبل تشغيل الوكلاء." : "Source-of-truth status is required before operating agents."} /><OperationsError retry={operations.retry} /></div>;
 
   const { data } = operations;
   // The campaign cards exclude drafts, so the headline explains the difference
@@ -143,7 +143,7 @@ export function OverviewDashboard() {
     ? (ar
       ? `${formatArabicCount(totalCampaigns, { zero: "لا حملات", one: "حملة واحدة", two: "حملتان", few: "{count} حملات", many: "{count} حملة", other: "{count} حملة" })} (${formatArabicCount(data.summary.campaigns_active, { zero: "لا حملات نشطة", one: "حملة واحدة نشطة", two: "حملتان نشطتان", few: "{count} حملات نشطة", many: "{count} حملة نشطة", other: "{count} حملة نشطة" })}${changesRequested ? ` · ${formatArabicCount(changesRequested, { zero: "لا حملات طُلب تعديلها", one: "حملة طُلب تعديلها", two: "حملتان طُلب تعديلهما", few: "{count} حملات طُلب تعديلها", many: "{count} حملة طُلب تعديلها", other: "{count} حملة طُلب تعديلها" })}` : ""})، ${formatArabicCount(data.summary.jobs_open, { zero: "لا مهام مفتوحة", one: "مهمة واحدة مفتوحة", two: "مهمتان مفتوحتان", few: "{count} مهام مفتوحة", many: "{count} مهمة مفتوحة", other: "{count} مهمة مفتوحة" })}، و${formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" })}.`
       : `${totalCampaigns} ${totalCampaigns === 1 ? "campaign" : "campaigns"} (${data.summary.campaigns_active} active${changesRequested ? ` · ${changesRequested} changes requested` : ""}), ${data.summary.jobs_open} open jobs, and ${data.summary.approvals_pending} decisions waiting.`)
-    : (ar ? "لم تبدأ أي حملة أو مهمة وكيل بعد." : "No campaign or agent work has started yet.");
+    : (ar ? "لم يبدأ تنفيذ أي حملة أو مهمة للوكلاء بعد." : "No campaign or agent work has started yet.");
   const setupSteps = setup ? [
     { done: setup.profileDone, en: "Business profile", ar: "ملف النشاط التجاري" },
     { done: setup.brandDone, en: "Brand Kit", ar: "الهوية البصرية" },
@@ -163,7 +163,7 @@ export function OverviewDashboard() {
         <div>
           <h2 id="setup-banner-title">{ar ? "أكمل إعداد مساحة عملك" : "Continue workspace setup"}</h2>
           <p className="setup-banner-next">
-            <strong>{ar ? `الخطوة ${nextStepIndex + 1} من 4: ${nextStep.ar}` : `Step ${nextStepIndex + 1} of 4: ${nextStep.en}`}</strong>
+            <strong>{ar ? `الخطوة ${nextStepIndex + 1} من 4: ${nextStep.en}` : `Step ${nextStepIndex + 1} of 4: ${nextStep.en}`}</strong>
             <span>{ar ? `${formatArabicCount(remainingCount, { zero: "اكتمل الإعداد بالكامل.", one: "بقيت خطوة واحدة قبل أن يعمل فريقك بأكمل طاقته.", two: "بقيت خطوتان قبل أن يعمل فريقك بأكمل طاقته.", few: "بقيت {count} خطوات قبل أن يعمل فريقك بأكمل طاقته.", many: "بقيت {count} خطوة قبل أن يعمل فريقك بأكمل طاقته.", other: "بقيت {count} خطوة قبل أن يعمل فريقك بأكمل طاقته." })}` : `${remainingCount} ${remainingCount === 1 ? "step remains" : "steps remain"} before your workspace is fully ready.`}</span>
           </p>
         </div>
@@ -185,29 +185,29 @@ export function OverviewDashboard() {
       <section className="attention-section" aria-labelledby="attention-title">
         <div className="section-heading">
           <div><div className="title-with-count"><h2 id="attention-title">{ar ? "بحاجة إلى انتباهك" : "Needs your attention"}</h2><span>{data.summary.approvals_pending}</span></div><p>{ar ? "قرارات بشرية تعيق أعمال النشر حالياً." : "Human decisions that currently block publishing work."}</p></div>
-          <Link href="/approvals" className="text-link">{ar ? "فتح الاعتمادات" : "Open approvals"} <ArrowRight size={16} /></Link>
+          <Link href="/approvals" className="text-link">{ar ? "فتح الموافقات" : "Open approvals"} <ArrowRight size={16} /></Link>
         </div>
-        {data.summary.approvals_pending === 0 ? <div className="attention-clear"><CheckCircle2 size={20} /><div><strong>{ar ? "لا قرارات معلّقة" : "No decisions are waiting"}</strong><span>{ar ? "ستظهر المسودات الجديدة بعد بدء عمل الوكلاء في المرحلة الثالثة." : "New drafts will appear after Phase 3 agent work begins."}</span></div></div> : <div className="attention-clear"><div><strong>{ar ? formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" }) : `${data.summary.approvals_pending} decisions are waiting`}</strong><span>{ar ? "افتح مساحة الاعتمادات لمراجعة المصدر والسياق." : "Open the approval workspace to review source content and context."}</span></div></div>}
+        {data.summary.approvals_pending === 0 ? <div className="attention-clear"><CheckCircle2 size={20} /><div><strong>{ar ? "لا توجد قرارات بانتظار المراجعة" : "No decisions are waiting"}</strong><span>{ar ? "ستظهر المسودات الجديدة بعد بدء عمل الوكلاء في المرحلة الثالثة." : "New drafts will appear after Phase 3 agent work begins."}</span></div></div> : <div className="attention-clear"><div><strong>{ar ? formatArabicCount(data.summary.approvals_pending, { zero: "لا قرارات بانتظارك", one: "قرار واحد بانتظارك", two: "قراران بانتظارك", few: "{count} قرارات بانتظارك", many: "{count} قرارًا بانتظارك", other: "{count} قرار بانتظارك" }) : `${data.summary.approvals_pending} decisions are waiting`}</strong><span>{ar ? "افتح مساحة الموافقات لمراجعة محتوى المصدر وسياقه." : "Open the approval workspace to review source content and context."}</span></div></div>}
       </section>
 
       <section className="handoff-section" aria-labelledby="handoff-title">
-        <div className="section-heading compact-heading"><div><h2 id="handoff-title">{ar ? "تسليم الوكلاء" : "Agent handoff"}</h2><p>{ar ? "المهام الحالية من قائمة الوكلاء المعتمدة." : "Current jobs from the authoritative agent queue."}</p></div><Link href="/agents" className="text-link">{ar ? "عرض الوكلاء" : "View agents"} <ArrowRight size={16} /></Link></div>
-        {data.agents.length ? <ol className="handoff-rail">{data.agents.map((agent, index) => <li key={agent.id}><div className="agent-identity"><span className="agent-avatar">{agent.code.slice(0, 2).toUpperCase()}</span><div><strong>{agentDisplayName(agent.name, ar)}</strong><StatusPill tone={agent.current_job_status === "running" ? "working" : "neutral"}>{agentStatusLabel(agent.current_job_status || agent.status, ar)}</StatusPill></div></div><p>{agent.current_job_type ? agentStatusLabel(agent.current_job_type.replaceAll("_", " "), ar) : (ar ? "لا مهمة نشطة" : "No live job")}</p>{index < data.agents.length - 1 ? <ArrowRight className="handoff-arrow" size={18} aria-hidden="true" /> : null}</li>)}</ol> : <DomainEmpty title={ar ? "لا وكلاء مفعّلون" : "No agents are activated"} description={ar ? "أدوار الوكلاء محددة، لكن سير العمل يبدأ في المرحلة الثالثة." : "Agent roles are defined, but the live workflows begin in Phase 3."} detail={ar ? "لا تُعرض مهام مخفية أو محاكاة." : "No hidden or simulated jobs are shown."} />}
+        <div className="section-heading compact-heading"><div><h2 id="handoff-title">{ar ? "تسليم المهام بين الوكلاء" : "Agent handoff"}</h2><p>{ar ? "المهام الحالية من قائمة انتظار الوكلاء المعتمدة." : "Current jobs from the authoritative agent queue."}</p></div><Link href="/agents" className="text-link">{ar ? "عرض الوكلاء" : "View agents"} <ArrowRight size={16} /></Link></div>
+        {data.agents.length ? <ol className="handoff-rail">{data.agents.map((agent, index) => <li key={agent.id}><div className="agent-identity"><span className="agent-avatar">{agent.code.slice(0, 2).toUpperCase()}</span><div><strong>{agentDisplayName(agent.name, ar)}</strong><StatusPill tone={agent.current_job_status === "running" ? "working" : "neutral"}>{agentStatusLabel(agent.current_job_status || agent.status, ar)}</StatusPill></div></div><p>{agent.current_job_type ? agentStatusLabel(agent.current_job_type.replaceAll("_", " "), ar) : (ar ? "لا توجد مهام قيد التنفيذ" : "No live job")}</p>{index < data.agents.length - 1 ? <ArrowRight className="handoff-arrow" size={18} aria-hidden="true" /> : null}</li>)}</ol> : <DomainEmpty title={ar ? "لم يتم تفعيل أي وكيل بعد" : "No agents are activated"} description={ar ? "تم تحديد أدوار الوكلاء، لكن سير العمل الفعلي يبدأ في المرحلة 3." : "Agent roles are defined, but the live workflows begin in Phase 3."} detail={ar ? "لا تُعرض مهام مخفية أو محاكاة." : "No hidden or simulated jobs are shown."} />}
       </section>
 
       <section className="campaign-section" aria-labelledby="campaign-title">
-        <div className="section-heading compact-heading"><div><h2 id="campaign-title">{ar ? "الحملات" : "Campaigns"}</h2><p>{ar ? "التقدم والمخاطر والمحتوى وإجمالي العملاء المحتملين." : "Live progress, risk, content, and lead totals."}</p></div><Link href="/campaigns" className="text-link">{ar ? "عرض الحملات" : "View campaigns"} <ArrowRight size={16} /></Link></div>
-        {data.campaigns.length ? <div className="table-scroll" tabIndex={0} aria-label={ar ? "جدول الحملات، قابل للتمرير أفقياً على الشاشات الصغيرة" : "Campaign table, horizontally scrollable on small screens"}><table><thead><tr><th>{ar ? "الحملة" : "Campaign"}</th><th>{ar ? "الحالة" : "Status"}</th><th>{ar ? "المحتوى" : "Content"}</th><th>{ar ? "الاعتمادات" : "Approvals"}</th><th>{ar ? "العملاء المحتملون" : "Leads"}</th></tr></thead><tbody>{data.campaigns.map((campaign) => <tr key={campaign.id}><td><Link href={campaign.source === "ai_workspace" ? `/workspace?id=${campaign.id}` : `/campaigns/${campaign.id}`}>{campaign.name}</Link></td><td><StatusPill tone={campaignTone(campaign.status)}>{campaignStage(campaign, ar)}</StatusPill></td><td>{campaign.content_total}</td><td>{campaign.content_pending}</td><td>{campaign.leads_total}</td></tr>)}</tbody></table></div> : <DomainEmpty title={ar ? "لا حملات بعد" : "No campaigns yet"} description={ar ? "محفظة الحملات الحالية فارغة." : "The live campaign portfolio is empty."} detail={ar ? "موجز الحملة هو أول سجل تشغيلي." : "A campaign brief is the first operational record."} />}
+        <div className="section-heading compact-heading"><div><h2 id="campaign-title">{ar ? "الحملات" : "Campaigns"}</h2><p>{ar ? "ملخص مباشر للتقدم والمخاطر والمحتوى وإجمالي العملاء المحتملين." : "Live progress, risk, content, and lead totals."}</p></div><Link href="/campaigns" className="text-link">{ar ? "عرض الحملات" : "View campaigns"} <ArrowRight size={16} /></Link></div>
+        {data.campaigns.length ? <div className="table-scroll" tabIndex={0} aria-label={ar ? "جدول الحملات، قابل للتمرير أفقياً على الشاشات الصغيرة" : "Campaign table, horizontally scrollable on small screens"}><table><thead><tr><th>{ar ? "الحملة" : "Campaign"}</th><th>{ar ? "الحالة" : "Status"}</th><th>{ar ? "المحتوى" : "Content"}</th><th>{ar ? "الموافقات" : "Approvals"}</th><th>{ar ? "العملاء المحتملون" : "Leads"}</th></tr></thead><tbody>{data.campaigns.map((campaign) => <tr key={campaign.id}><td><Link href={campaign.source === "ai_workspace" ? `/workspace?id=${campaign.id}` : `/campaigns/${campaign.id}`}>{campaign.name}</Link></td><td><StatusPill tone={campaignTone(campaign.status)}>{campaignStage(campaign, ar)}</StatusPill></td><td>{campaign.content_total}</td><td>{campaign.content_pending}</td><td>{campaign.leads_total}</td></tr>)}</tbody></table></div> : <DomainEmpty title={ar ? "لا توجد حملات بعد" : "No campaigns yet"} description={ar ? "لا توجد حملات حالية في المحفظة." : "The live campaign portfolio is empty."} detail={ar ? "موجز الحملة هو أول سجل تشغيلي." : "A campaign brief is the first operational record."} />}
       </section>
 
       <div className="overview-footer-grid">
         <section className="performance-section" aria-labelledby="performance-title">
-          <div className="section-heading compact-heading"><div><h2 id="performance-title">{ar ? "الأداء المسجّل" : "Recorded performance"}</h2><p>{ar ? "إجماليات من سجلات النشر والعملاء المحتملين الفعلية." : "Totals from live published-post and lead records."}</p></div><Link href="/reports" className="text-link">{ar ? "التقرير الكامل" : "Full report"} <ArrowRight size={16} /></Link></div>
+          <div className="section-heading compact-heading"><div><h2 id="performance-title">{ar ? "الأداء المسجّل" : "Recorded performance"}</h2><p>{ar ? "إجماليات مستندة إلى سجلات المنشورات المنشورة والعملاء المحتملين الفعلية." : "Totals from live published-post and lead records."}</p></div><Link href="/reports" className="text-link">{ar ? "التقرير الكامل" : "Full report"} <ArrowRight size={16} /></Link></div>
           <dl className="metric-line"><div><dt>{ar ? "الظهور" : "Impressions"}</dt><dd>{formatNumber(Number(data.performance.impressions), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "النقرات" : "Clicks"}</dt><dd>{formatNumber(Number(data.performance.clicks), locale)}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "الإنفاق" : "Spend"}</dt><dd>{ar ? `${formatNumber(Number(data.performance.spend), locale)} دولارًا` : `$${formatNumber(Number(data.performance.spend), locale)}`}</dd><span>{ar ? "مسجّل" : "Recorded"}</span></div><div><dt>{ar ? "العملاء المحتملون" : "Leads"}</dt><dd>{formatNumber(data.summary.leads_total, locale)}</dd><span>{ar ? `${formatNumber(data.summary.leads_won, locale)} صفقات رابحة` : `${formatNumber(data.summary.leads_won, locale)} won`}</span></div></dl>
         </section>
         <section className="alerts-section" aria-labelledby="alerts-title">
           <div className="section-heading compact-heading"><div><h2 id="alerts-title">{ar ? "التنبيهات" : "Alerts"}</h2><p>{ar ? `${formatArabicCount(data.summary.notifications_unread, { zero: "لا إشعارات تشغيلية غير مقروءة.", one: "إشعار تشغيلي واحد غير مقروء.", two: "إشعاران تشغيليان غير مقروءين.", few: "{count} إشعارات تشغيلية غير مقروءة.", many: "{count} إشعارًا تشغيليًا غير مقروءًا.", other: "{count} إشعار تشغيلي غير مقروء." })}` : `${data.summary.notifications_unread} unread operational notifications.`}</p></div></div>
-          {data.notifications.length ? <ul className="alert-list">{data.notifications.slice(0, 5).map((notification) => <li key={notification.id}><div><strong>{notification.title}</strong><span>{notification.body}</span></div><time>{formatDateTime(notification.created_at, locale)}</time></li>)}</ul> : <DomainEmpty title={ar ? "لا تنبيهات نشطة" : "No active alerts"} description={ar ? "لا يوجد إشعار تشغيلي غير مقروء يحتاج انتباهك." : "No unread operational notification requires attention."} />}
+          {data.notifications.length ? <ul className="alert-list">{data.notifications.slice(0, 5).map((notification) => <li key={notification.id}><div><strong>{notification.title}</strong><span>{notification.body}</span></div><time>{formatDateTime(notification.created_at, locale)}</time></li>)}</ul> : <DomainEmpty title={ar ? "لا توجد تنبيهات نشطة" : "No active alerts"} description={ar ? "لا يوجد إشعار تشغيلي غير مقروء يتطلب انتباهك." : "No unread operational notification requires attention."} />}
         </section>
       </div>
     </div>

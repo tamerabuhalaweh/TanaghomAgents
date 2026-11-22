@@ -65,7 +65,7 @@ export function SecuritySettings() {
         <div>
           <p className="eyebrow">{ar ? "أمان الحساب" : "Account security"}</p>
           <h1>{ar ? "كلمة المرور" : "Password"}</h1>
-          <p>{ar ? "تغيير كلمة المرور يسجّل خروج كل الجلسات الأخرى لهذا الحساب." : "Changing your password signs out every other session for this account."}</p>
+          <p>{ar ? "سيؤدي تغيير كلمة المرور إلى تسجيل خروج جميع الجلسات الأخرى لهذا الحساب." : "Changing your password signs out every other session for this account."}</p>
         </div>
       </header>
 
@@ -73,8 +73,8 @@ export function SecuritySettings() {
         <section className="operations-state" role="status" aria-live="polite">
           <ShieldCheck size={22} aria-hidden="true" />
           <div>
-            <h2>{ar ? "تم تغيير كلمة المرور" : "Password changed"}</h2>
-            <p>{ar ? "سيتم تسجيل خروجك لاستخدام كلمة المرور الجديدة في كل مكان. ستعود إلى صفحة تسجيل الدخول." : "Signing you out so the new password is used everywhere. You will return to the sign-in page."}</p>
+            <h2>{ar ? "تم تغيير كلمة المرور بنجاح." : "Password changed"}</h2>
+            <p>{ar ? "سيتم تسجيل خروجك لتطبيق كلمة المرور الجديدة على جميع الجلسات. ستعود إلى صفحة تسجيل الدخول." : "Signing you out so the new password is used everywhere. You will return to the sign-in page."}</p>
           </div>
         </section>
       ) : (
@@ -105,7 +105,7 @@ export function SecuritySettings() {
                 value={newPassword}
                 onChange={(event) => setNewPassword(event.target.value)}
               />
-              <small>{ar ? "12 حرفاً على الأقل. لا تعد استخدام بريدك الإلكتروني أو عبارة شائعة." : "At least 12 characters. Do not reuse your email address or a common phrase."}</small>
+              <small>{ar ? "12 حرفًا على الأقل. لا تستخدم بريدك الإلكتروني أو عبارة شائعة ضمن كلمة المرور." : "At least 12 characters. Do not reuse your email address or a common phrase."}</small>
             </div>
             <div className="form-field">
               <label htmlFor="confirm-password">{ar ? "تأكيد كلمة المرور الجديدة" : "Confirm new password"}</label>

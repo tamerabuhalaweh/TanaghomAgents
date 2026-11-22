@@ -56,7 +56,7 @@ export function blankAdSpec(
   const ar = locale === "ar";
   const headline = copy?.headline?.trim() || (ar ? "عنوان رئيسي" : "Headline");
   const body = copy?.body?.trim() || (ar ? "نص توضيحي قصير" : "Short supporting copy");
-  const cta = copy?.cta?.trim() || (ar ? "اطلب الآن" : "Shop now");
+  const cta = copy?.cta?.trim() || (ar ? "تسوّق الآن" : "Shop now");
   return {
     locale, direction: locale === "ar" ? "rtl" : "ltr",
     canvas: { width, height },
@@ -84,7 +84,7 @@ export function blankCarouselSpec(locale: CreativeLocale, width: number, height:
     background: { color: "#ffffff" },
     pages: [
       page("slide-1", "cover", ar ? "غلاف" : "Cover", ar ? "ابدأ من هنا" : "Start here"),
-      page("slide-2", "body", ar ? "الفكرة" : "The idea", ar ? "شرح مختصر" : "Brief explainer"),
+      page("slide-2", "body", ar ? "الفكرة" : "The idea", ar ? "شرح موجز" : "Brief explainer"),
       page("slide-3", "end", ar ? "الخطوة التالية" : "Next step", ar ? "تواصل معنا" : "Get in touch"),
     ],
   };

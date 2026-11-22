@@ -53,9 +53,9 @@ test("Arabic super-admin maps operational circuit-breaker reasons", () => {
 test("public Arabic copy isolates Latin tokens and keeps launch copy", () => {
   const page = read("apps/dashboard/components/public-pages.tsx");
   assert.match(page, /<bdi dir="ltr">LAUNCH100<\/bdi>/);
-  assert.match(page, /لا يُنشر شيء حتى تقول نعم\./);
-  assert.match(page, /مبني بالعربية\. وليس مترجمًا إليها\./);
-  assert.match(page, /خطّط\. أنشئ\. وافق\. انشر\. قِس\. في مكان واحد\./);
+  assert.match(page, /لا يُنشر أي شيء قبل موافقتك\./);
+  assert.match(page, /صُمّم بالعربية من البداية، لا تُرجم إليها\./);
+  assert.match(page, /خطّط\. أنشئ\. وافق\. انشر\. قِس النتائج\. كل ذلك في مكان واحد\./);
 });
 
 test("public Arabic prices and the footer copyright read natively", () => {

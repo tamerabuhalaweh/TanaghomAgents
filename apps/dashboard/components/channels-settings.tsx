@@ -88,22 +88,22 @@ const copy = {
     disconnecting: "جارٍ إلغاء الربط…",
     refresh: "تحديث",
     mapped: "جاهزة للمسودات",
-    unmapped: "غير مرتبطة بالمسودات",
-    disabled: "معطلة للنشر",
-    socialPublishing: "النشر على المنصات الاجتماعية",
-    unavailableTitle: "ربط القنوات غير مهيأ على هذا الخادم",
-    unavailableCopy: "يمكن للمالك أو المشغل ربط القنوات بعد تهيئة خدمة النشر الاجتماعي وتشفير بيانات الاعتماد.",
-    providerMissing: "شبكة التواصل هذه غير مهيأة بعد. اطلب من مالك المنصة إكمال بيانات تطبيق المزود ثم حاول مجددًا.",
-    providerMissingTitle: "إعداد المزود غير مكتمل",
+    unmapped: "غير مهيّأة لإعداد المسودات",
+    disabled: "غير مفعّلة للنشر",
+    socialPublishing: "النشر على منصات التواصل الاجتماعي",
+    unavailableTitle: "لم تُهيّأ خدمة ربط القنوات على هذا الخادم.",
+    unavailableCopy: "يمكن لمالك مساحة العمل أو المشغّل ربط القنوات بعد تهيئة خدمة النشر الاجتماعي وتفعيل تشفير بيانات الاعتماد.",
+    providerMissing: "لم تتم تهيئة شبكة التواصل هذه بعد. اطلب من مالك المنصة استكمال بيانات اعتماد تطبيق المزوّد، ثم حاول مجددًا.",
+    providerMissingTitle: "لم تكتمل تهيئة المزوّد.",
     connectError: "تعذر على إعلاني بدء تسجيل الدخول. حاول بعد قليل.",
     loadError: "تعذر على إعلاني تحميل قنوات التواصل.",
-    forbidden: "يمكن للمالك أو المشغل فقط ربط أو فصل قنوات التواصل.",
+    forbidden: "لا يمكن ربط قنوات التواصل الاجتماعي أو فصلها إلا بواسطة مالك مساحة العمل أو المشغّل.",
     load: "جارٍ تحميل قنوات التواصل…",
     confirmDisconnect: "إلغاء ربط القناة؟ تبقى حسابات التواصل في خدمة النشر الاجتماعي ويمكن إعادة ربطها لاحقًا.",
-    revoke: "فصل القناة وإبطال الرمز",
-    revoking: "جارٍ الإبطال…",
+    revoke: "افصل القناة وأبطِل الرمز",
+    revoking: "جارٍ إبطال الرمز…",
     confirmRevoke: "هل تريد فصل هذه القناة وإبطال رمز الوصول المخزن نهائيًا؟ لن تتأثر القنوات الأخرى.",
-    channelMissing: "هذه القناة لم تعد متصلة. سيتم تحديث القائمة.",
+    channelMissing: "لم تعد هذه القناة متصلة. جارٍ تحديث القائمة.",
     sandboxTitle: "التجربة المجانية: حملة متكاملة واحدة",
     sandboxCopy: "يتاح ربط حسابات التواصل الحقيقية مع أي باقة مدفوعة — باقة البداية أو النمو أو التوسع. ارتقِ لنشر المسودات المعتمدة والاحتفاظ بسجل حملتك.",
     sandboxCta: "ترقية الخطة",
@@ -112,11 +112,11 @@ const copy = {
 
 function platformLabel(platform: Platform, arabic: boolean) {
   const labels: Record<Platform, [string, string]> = {
-    instagram: ["Instagram", "إنستغرام"],
-    facebook: ["Facebook", "فيسبوك"],
-    linkedin: ["LinkedIn", "لينكدإن"],
-    tiktok: ["TikTok", "تيك توك"],
-    x: ["X", "إكس"],
+    instagram: ["Instagram", "Instagram"],
+    facebook: ["Facebook", "Facebook"],
+    linkedin: ["LinkedIn", "LinkedIn"],
+    tiktok: ["TikTok", "TikTok"],
+    x: ["X", "X"],
   };
   return labels[platform][arabic ? 1 : 0];
 }
@@ -246,8 +246,8 @@ export function ChannelsSettings() {
               <button type="button" className="primary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect(item.platform)}>
                 {busy === item.platform ? <LoaderCircle className="spin" size={16} /> : <Link2 size={16} />} {busy === item.platform ? text.connecting : text.connect}
               </button>
-              {item.platform === "instagram" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("instagram", "instagram-standalone")}>{ar ? "إنستغرام مستقل" : "Instagram standalone"}</button> : null}
-              {item.platform === "linkedin" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("linkedin", "linkedin")}>{ar ? "لينكدإن شخصي" : "LinkedIn personal"}</button> : null}
+              {item.platform === "instagram" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("instagram", "instagram-standalone")}>{ar ? "حساب Instagram مستقل" : "Instagram standalone"}</button> : null}
+              {item.platform === "linkedin" ? <button type="button" className="secondary-button" disabled={busy !== null || !payload.provisioning_ready || !payload.can_manage || !payload.can_connect_live_channels} onClick={() => void connect("linkedin", "linkedin")}>{ar ? "حساب LinkedIn شخصي" : "LinkedIn personal"}</button> : null}
               </div>
             </article>)}
           </div>

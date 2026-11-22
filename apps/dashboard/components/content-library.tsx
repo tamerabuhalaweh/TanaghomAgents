@@ -86,7 +86,7 @@ const tabs: { value: LibraryFilter; label: string; arabic: string }[] = [
   { value: "pending_approval", label: "Pending", arabic: "قيد الانتظار" },
   { value: "approved", label: "Approved", arabic: "معتمد" },
   { value: "scheduled", label: "Scheduled", arabic: "مجدول" },
-  { value: "sent_to_postiz", label: "Social handoff", arabic: "تسليم النشر الاجتماعي" },
+  { value: "sent_to_postiz", label: "Social handoff", arabic: "إحالة النشر الاجتماعي" },
   { value: "posted", label: "Published", arabic: "منشور" },
   { value: "rejected", label: "Rejected", arabic: "مرفوض" },
   { value: "cancelled", label: "Cancelled", arabic: "ملغى" },
@@ -323,12 +323,12 @@ export function ContentLibrary() {
                 {item.rejection_reason ? <blockquote>{item.rejection_reason}</blockquote> : null}
               </section>
               <section>
-                <h3>{ar ? "تسليم النشر الاجتماعي" : "Social publishing handoff"}</h3>
+                <h3>{ar ? "إحالة النشر الاجتماعي" : "Social publishing handoff"}</h3>
                 <p>{item.post_status
-                  ? <><CheckCircle2 size={16} /> {ar ? "أُنشئت مسودة اجتماعية" : "Social draft created"} · {ar ? "آخر مزامنة" : "last synced"} {date(item.last_synced_at)}</>
+                  ? <><CheckCircle2 size={16} /> {ar ? "تم إنشاء المسودة الاجتماعية بنجاح." : "Social draft created"} · {ar ? "آخر مزامنة" : "last synced"} {date(item.last_synced_at)}</>
                   : item.handoff_status
                     ? <><Clock3 size={16} /> Publisher job {item.handoff_status.replaceAll("_", " ")} · updated {date(item.handoff_updated_at)}</>
-                    : (ar ? "لم يُرسل إلى النشر الاجتماعي." : "Not sent to social publishing.")}</p>
+                    : (ar ? "لم يُرسل إلى خدمة النشر الاجتماعي." : "Not sent to social publishing.")}</p>
                 {item.external_operation_status === "indeterminate" ? <p className="handoff-detail-error">
                   <TriangleAlert size={16} /> Delivery outcome is uncertain. E3lani will not retry automatically because that could create a duplicate draft.
                 </p> : null}

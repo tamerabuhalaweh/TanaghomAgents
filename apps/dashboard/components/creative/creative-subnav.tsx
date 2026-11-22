@@ -6,9 +6,9 @@ import { usePathname } from "next/navigation";
 import type { CreativeLocale } from "@/lib/i18n/creative";
 
 const items = [
-  { href: "/creative", en: "Studio Home", ar: "رئيسية الاستوديو" },
+  { href: "/creative", en: "Studio Home", ar: "الصفحة الرئيسية للاستوديو" },
   { href: "/creative/designs", en: "Design Studio & Carousels", ar: "استوديو التصاميم والكاروسيل" },
-  { href: "/creative/motion", en: "Motion Studio", ar: "استوديو الموشن" },
+  { href: "/creative/motion", en: "Motion Studio", ar: "استوديو الحركة" },
   { href: "/creative/brand-kits", en: "Brand Kits", ar: "الهوية البصرية" },
   { href: "/creative/templates", en: "Templates", ar: "القوالب" },
 ] as const;
@@ -17,7 +17,7 @@ export function CreativeSubnav({ locale }: { locale: CreativeLocale }) {
   const pathname = usePathname();
   const ar = locale === "ar";
   return (
-    <nav className="creative-subnav" aria-label={ar ? "تنقل استوديو الإبداع" : "Creative Studio navigation"}>
+    <nav className="creative-subnav" aria-label={ar ? "التنقل في استوديو الإبداع" : "Creative Studio navigation"}>
       {items.map((item) => {
         const active = item.href === "/creative" ? pathname === "/creative" : pathname.startsWith(item.href);
         return (

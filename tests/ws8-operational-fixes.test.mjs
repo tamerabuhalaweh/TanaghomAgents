@@ -54,7 +54,7 @@ test("workspace runtime never exposes the raw latch reason and labels draft-save
   assert.match(component, /Draft-save mode/);
   assert.match(component, /وضع حفظ المسودات/);
   assert.match(component, /AI specialists ready/);
-  assert.match(component, /المختصون جاهزون/);
+  assert.match(component, /مختصو الذكاء الاصطناعي جاهزون/);
   assert.match(component, /Save assignment brief/);
   assert.match(component, /حفظ موجز المهمة/);
   assert.match(component, /Save & start now.*activates when the live model worker is connected/s);
@@ -87,7 +87,7 @@ test("onboarding is four honest steps with a ready-to-launch tab title", () => {
   assert.equal(en.readyTabTitle, "Ready to launch");
   assert.equal(ar.stepLabel, "الخطوة 1 من 4 · ملف النشاط التجاري");
   assert.equal(ar.step2Label, "الخطوة 2 من 4 · الهوية البصرية");
-  assert.equal(ar.step3Label, "الخطوة 3 من 4 · أول معرفة");
+  assert.equal(ar.step3Label, "الخطوة 3 من 4 · أول محتوى معرفي");
   assert.match(ar.step4Label, /^الخطوة 4 من 4/);
   assert.equal(ar.readyTabTitle, "جاهز للانطلاق");
   for (const copy of [en, ar]) {
