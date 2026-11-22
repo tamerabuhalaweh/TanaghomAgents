@@ -91,7 +91,7 @@ if [ -n "$MARKETING_DOMAIN" ]; then
 		-Server
 	}
 
-	@marketingCanonical path /pricing /privacy /terms
+	@marketingCanonical path /pricing /privacy /terms /blog /blog/*
 	redir @marketingCanonical https://{$TANAGHOM_MARKETING_DOMAIN}{uri} 301
 
 	# The dashboard keeps its loopback-only binding; Caddy is the only public listener.
@@ -115,7 +115,7 @@ if [ -n "$MARKETING_DOMAIN" ]; then
 		-Server
 	}
 
-	@marketingPublic path / /pricing /privacy /terms /robots.txt /sitemap.xml /llms.txt /favicon.ico /google*.html /opengraph-image* /twitter-image* /_next/* /api/waitlist /api/csp-report /api/health
+	@marketingPublic path / /pricing /privacy /terms /blog /blog/* /robots.txt /sitemap.xml /llms.txt /favicon.ico /google*.html /opengraph-image* /twitter-image* /_next/* /api/waitlist /api/csp-report /api/health
 	handle @marketingPublic {
 		reverse_proxy dashboard:3000 {
 			header_up X-Forwarded-Proto {scheme}

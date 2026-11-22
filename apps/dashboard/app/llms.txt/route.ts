@@ -10,6 +10,11 @@ const LLMS_TXT = `# E3lani
 - [Pricing](${CANONICAL_SITE_URL}/pricing): Starter $15/month, Growth $25/month, Scale $50/month (LAUNCH100 launch prices), 15 / 50 / 200 AI campaigns per month
 - [FAQ](${CANONICAL_SITE_URL}/#faq): Human approval on every tier, bilingual Arabic/English workspace, launch offer, and data ownership
 
+## Guides
+
+- [AI Social Media Manager for Small Business (EN)](${CANONICAL_SITE_URL}/blog/ai-social-media-manager-small-business): What an AI social media manager does across the 5-step loop, what stays human, flat workspace pricing, and native EN/AR support
+- [إدارة السوشيال ميديا بالذكاء الاصطناعي للشركات الصغيرة (AR)](${CANONICAL_SITE_URL}/blog/ai-social-media-management-small-business): الدليل العربي حول ما تفعله أداة إدارة السوشيال ميديا بالذكاء الاصطناعي وما يبقى بيدك مع اعتماد بشري إلزامي
+
 ## What it is
 
 - AI marketing workspace: brand kit, knowledge base, AI campaign generation, human approval gate, multi-channel publishing, measurement

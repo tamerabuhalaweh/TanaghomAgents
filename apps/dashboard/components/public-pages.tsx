@@ -4,17 +4,17 @@ import { ArrowRight, Check, CircleCheck, ShieldCheck, Sparkles } from "lucide-re
 import { BrandMark } from "@/components/brand-mark";
 import { LocaleToggle } from "@/components/creative/locale-toggle";
 import { WaitlistForm } from "@/components/waitlist-form";
-import type { CreativeLocale } from "@/lib/i18n/creative";
+import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { formatNumber } from "@/lib/i18n/format";
 
 type Locale = CreativeLocale;
 
-function AppNavLink({ appOrigin, path, className, children }: { appOrigin: string; path: string; className?: string; children: React.ReactNode }) {
+export function AppNavLink({ appOrigin, path, className, children }: { appOrigin: string; path: string; className?: string; children: React.ReactNode }) {
   if (appOrigin) return <a className={className} href={`${appOrigin}${path}`}>{children}</a>;
   return <Link className={className} href={path}>{children}</Link>;
 }
 
-function PublicHeader({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: string }) {
+export function PublicHeader({ locale, appOrigin = "", alternateHref }: { locale: Locale; appOrigin?: string; alternateHref?: string }) {
   const ar = locale === "ar";
   return (
     <header className="public-header">
@@ -28,7 +28,24 @@ function PublicHeader({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: 
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
       </nav>
       <div className="public-actions">
-        <div className="public-locale"><LocaleToggle locale={locale} /></div>
+        <div className="public-locale">
+          {alternateHref ? (
+            <div className="creative-row" role="group" aria-label={t(locale, "locale.label")}>
+              {(["en", "ar"] as const).map((code) => {
+                const label = code === "en" ? t(locale, "locale.english") : t(locale, "locale.arabic");
+                return code === locale ? (
+                  <span key={code} className="creative-button" aria-current="page">{label}</span>
+                ) : (
+                  <Link key={code} className="creative-button creative-button-secondary" href={alternateHref} hrefLang={code}>
+                    {label}
+                  </Link>
+                );
+              })}
+            </div>
+          ) : (
+            <LocaleToggle locale={locale} />
+          )}
+        </div>
         <AppNavLink appOrigin={appOrigin} className="public-signin" path="/login">{ar ? "تسجيل الدخول" : "Sign in"}</AppNavLink>
         <AppNavLink appOrigin={appOrigin} className="public-button public-button-small" path="/signup">{ar ? "ابدأ الآن" : "Get started"}</AppNavLink>
       </div>
@@ -36,7 +53,7 @@ function PublicHeader({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: 
   );
 }
 
-function PublicFooter({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: string }) {
+export function PublicFooter({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: string }) {
   const ar = locale === "ar";
   return (
     <footer className="public-footer">
@@ -46,6 +63,9 @@ function PublicFooter({ locale, appOrigin = "" }: { locale: Locale; appOrigin?: 
       </div>
       <nav aria-label={ar ? "روابط التذييل" : "Footer links"}>
         <Link href="/pricing">{ar ? "الأسعار" : "Pricing"}</Link>
+        <Link href={ar ? "/blog/ai-social-media-management-small-business" : "/blog/ai-social-media-manager-small-business"}>
+          {ar ? "دليل السوشيال ميديا" : "AI Social Media Guide"}
+        </Link>
         <Link href="/privacy">{ar ? "الخصوصية" : "Privacy"}</Link>
         <Link href="/terms">{ar ? "الشروط" : "Terms"}</Link>
         <AppNavLink appOrigin={appOrigin} path="/login">{ar ? "تسجيل الدخول" : "Sign in"}</AppNavLink>

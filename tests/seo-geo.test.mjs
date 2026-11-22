@@ -1,9 +1,16 @@
 import assert from "node:assert/strict";
 import { existsSync, readFileSync } from "node:fs";
+import { createRequire } from "node:module";
 import path from "node:path";
 import test from "node:test";
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
 
-import {
+import * as creativeI18n from "../apps/dashboard/lib/i18n/creative.ts";
+import * as formatI18n from "../apps/dashboard/lib/i18n/format.ts";
+import * as seo from "../apps/dashboard/lib/seo.ts";
+
+const {
   buildPublicPageMetadata,
   CANONICAL_SITE_URL,
   DISALLOWED_CRAWL_PATHS,
@@ -11,9 +18,42 @@ import {
   OG_IMAGE_URL,
   pricingJsonLd,
   PUBLIC_SEO_COPY,
-} from "../apps/dashboard/lib/seo.ts";
+} = seo;
 
 const root = path.resolve(import.meta.dirname, "..");
+const requireCjs = createRequire(import.meta.url);
+const ts = requireCjs("typescript");
+
+function loadTsModule(relPath, extraImports = {}) {
+  const source = readFileSync(path.join(root, relPath), "utf8");
+  const js = ts.transpileModule(source, {
+    fileName: path.basename(relPath),
+    compilerOptions: {
+      module: ts.ModuleKind.CommonJS,
+      target: ts.ScriptTarget.ES2022,
+      jsx: ts.JsxEmit.ReactJSX,
+      esModuleInterop: true,
+    },
+  }).outputText;
+  const mod = { exports: {} };
+  const resolve = (id) => {
+    if (id in extraImports) return extraImports[id];
+    if (id === "react") return requireCjs("react");
+    if (id === "react/jsx-runtime") return requireCjs("react/jsx-runtime");
+    if (id === "@/lib/seo") return seo;
+    if (id === "@/lib/i18n/creative") return creativeI18n;
+    if (id === "@/lib/i18n/format") return formatI18n;
+    if (id === "lucide-react") return new Proxy({}, { get: () => () => null });
+    if (id === "next/link") {
+      return function LinkStub({ href, children, ...props }) {
+        return createElement("a", { href, ...props }, children);
+      };
+    }
+    throw new Error(`unexpected import in ${relPath}: ${id}`);
+  };
+  new Function("require", "module", "exports", js)(resolve, mod, mod.exports);
+  return mod.exports;
+}
 
 test("robots.ts merges SEO disallow list with GEO AI search crawlers and canonical sitemap", () => {
   assert.equal(existsSync(path.join(root, "apps/dashboard/public")), false, "apps/dashboard must not add a public/ directory");
@@ -153,4 +193,125 @@ test("Google Search Console HTML verification route and Caddy allowlist are wire
   const caddyEntry = readFileSync(path.join(root, "deployment/dashboard-demo/caddy/entrypoint.sh"), "utf8");
   assert.match(route, /google-site-verification: google0248b443482441b0\.html/);
   assert.match(caddyEntry, /\/google\*\.html/);
+});
+
+test("blog-articles module exposes exact EN/AR metadata, reciprocal hreflang, and BlogPosting + FAQPage JSON-LD", () => {
+  const blogArticlesMod = loadTsModule("apps/dashboard/lib/blog-articles.ts");
+  const { BLOG_ARTICLES, BLOG_ARTICLE_PATHS, buildBlogArticleMetadata, blogArticleJsonLd } = blogArticlesMod;
+
+  const enSlug = "ai-social-media-manager-small-business";
+  const arSlug = "ai-social-media-management-small-business";
+  assert.deepEqual([...BLOG_ARTICLE_PATHS], [`/blog/${enSlug}`, `/blog/${arSlug}`]);
+
+  const enUrl = `${CANONICAL_SITE_URL}/blog/${enSlug}`;
+  const arUrl = `${CANONICAL_SITE_URL}/blog/${arSlug}`;
+
+  const enMeta = buildBlogArticleMetadata(enSlug);
+  assert.equal(enMeta.title.absolute, "AI Social Media Manager for Small Business | E3lani");
+  assert.match(enMeta.description, /nothing publishes until you approve it/);
+  assert.equal(enMeta.alternates.canonical, enUrl);
+  assert.deepEqual(enMeta.alternates.languages, { en: enUrl, ar: arUrl, "x-default": enUrl });
+  assert.equal(enMeta.openGraph.type, "article");
+
+  const arMeta = buildBlogArticleMetadata(arSlug);
+  assert.equal(arMeta.title.absolute, "إدارة السوشيال ميديا بالذكاء الاصطناعي للشركات الصغيرة | إعلاني");
+  assert.match(arMeta.description, /ولا يُنشر شيء قبل موافقتك/);
+  assert.equal(arMeta.alternates.canonical, arUrl);
+  assert.deepEqual(arMeta.alternates.languages, { en: enUrl, ar: arUrl, "x-default": enUrl });
+  assert.equal(arMeta.openGraph.type, "article");
+
+  for (const [slug, expectedLocale, expectedUrl, honestPhrase] of [
+    [enSlug, "en", enUrl, /WhatsApp and Meta ad buying are not available yet/],
+    [arSlug, "ar", arUrl, /واتساب وشراء إعلانات ميتا غير متاحين بعد/],
+  ]) {
+    const schema = blogArticleJsonLd(slug);
+    assert.equal(schema["@context"], "https://schema.org");
+    const types = schema["@graph"].map((node) => node["@type"]);
+    assert.deepEqual(types, ["BlogPosting", "FAQPage"]);
+
+    const postNode = schema["@graph"].find((node) => node["@type"] === "BlogPosting");
+    assert.equal(postNode.inLanguage, expectedLocale);
+    assert.equal(postNode.url, expectedUrl);
+    assert.equal(postNode.headline, BLOG_ARTICLES[slug].h1);
+
+    const faqNode = schema["@graph"].find((node) => node["@type"] === "FAQPage");
+    assert.equal(faqNode.mainEntity.length, 5);
+    assert.deepEqual(
+      faqNode.mainEntity.map((q) => ({ question: q.name, answer: q.acceptedAnswer.text })),
+      BLOG_ARTICLES[slug].faqs,
+    );
+    assert.match(faqNode.mainEntity[4].acceptedAnswer.text, honestPhrase);
+  }
+});
+
+test("blog article pages render EN LTR and AR RTL HTML with cross-links, FAQ accordions, and footer guide links", () => {
+  const blogArticlesMod = loadTsModule("apps/dashboard/lib/blog-articles.ts");
+  const publicPagesMod = loadTsModule("apps/dashboard/components/public-pages.tsx", {
+    "@/components/brand-mark": { BrandMark: () => null },
+    "@/components/creative/locale-toggle": { LocaleToggle: () => null },
+    "@/components/waitlist-form": { WaitlistForm: () => null },
+  });
+  const blogPageMod = loadTsModule("apps/dashboard/components/public-blog-page.tsx", {
+    "@/components/public-pages": publicPagesMod,
+    "@/lib/blog-articles": blogArticlesMod,
+  });
+  const { PublicBlogArticlePage } = blogPageMod;
+
+  const enHtml = renderToStaticMarkup(
+    createElement(PublicBlogArticlePage, { slug: "ai-social-media-manager-small-business" }),
+  );
+  assert.match(enHtml, /<main class="public-page" dir="ltr" lang="en">/);
+  assert.match(enHtml, /<h1>AI Social Media Manager for a Small Business: What It Actually Does, What It Costs, and What Still Needs a Human<\/h1>/);
+  assert.match(enHtml, /<a [^>]*href="\/blog\/ai-social-media-management-small-business"[^>]*hrefLang="ar"/i);
+  assert.match(enHtml, /href="\/blog\/ai-social-media-manager-small-business">AI Social Media Guide<\/a>/);
+  assert.match(enHtml, /WhatsApp and Meta ad buying are not available yet\./);
+  assert.match(enHtml, /Nothing publishes until you approve it\./);
+
+  const arHtml = renderToStaticMarkup(
+    createElement(PublicBlogArticlePage, { slug: "ai-social-media-management-small-business" }),
+  );
+  assert.match(arHtml, /<main class="public-page" dir="rtl" lang="ar">/);
+  assert.match(arHtml, /<h1>إدارة السوشيال ميديا بالذكاء الاصطناعي للشركات الصغيرة: ما الذي تفعله الأداة، وما الذي يبقى بيدك؟<\/h1>/);
+  assert.match(arHtml, /<a [^>]*href="\/blog\/ai-social-media-manager-small-business"[^>]*hrefLang="en"/i);
+  assert.match(arHtml, /href="\/blog\/ai-social-media-management-small-business">دليل السوشيال ميديا<\/a>/);
+  assert.match(arHtml, /واتساب وشراء إعلانات ميتا غير متاحين بعد\./);
+  assert.match(arHtml, /لا يُنشر شيء قبل موافقتك\./);
+});
+
+test("sitemap, llms.txt, proxy, root-frame, route pages, and Caddy wire both /blog guides publicly", () => {
+  const sitemapMod = loadTsModule("apps/dashboard/app/sitemap.ts");
+  const entries = sitemapMod.default();
+  const urls = entries.map((entry) => entry.url);
+  const enUrl = `${CANONICAL_SITE_URL}/blog/ai-social-media-manager-small-business`;
+  const arUrl = `${CANONICAL_SITE_URL}/blog/ai-social-media-management-small-business`;
+  assert.ok(urls.includes(enUrl), "sitemap() missing EN blog URL");
+  assert.ok(urls.includes(arUrl), "sitemap() missing AR blog URL");
+  for (const url of [enUrl, arUrl]) {
+    const entry = entries.find((item) => item.url === url);
+    assert.ok(entry.lastModified instanceof Date);
+    assert.deepEqual(entry.alternates?.languages, { en: enUrl, ar: arUrl });
+  }
+
+  const llmsSource = readFileSync(path.join(root, "apps/dashboard/app/llms.txt/route.ts"), "utf8");
+  assert.match(llmsSource, /\/blog\/ai-social-media-manager-small-business/);
+  assert.match(llmsSource, /\/blog\/ai-social-media-management-small-business/);
+
+  const proxy = readFileSync(path.join(root, "apps/dashboard/proxy.ts"), "utf8");
+  const frame = readFileSync(path.join(root, "apps/dashboard/components/root-frame.tsx"), "utf8");
+  const caddyEntry = readFileSync(path.join(root, "deployment/dashboard-demo/caddy/entrypoint.sh"), "utf8");
+
+  for (const route of [
+    "/blog/ai-social-media-manager-small-business",
+    "/blog/ai-social-media-management-small-business",
+  ]) {
+    assert.ok(proxy.includes(`"${route}"`), `proxy.ts missing ${route}`);
+    assert.ok(frame.includes(`"${route}"`), `root-frame.tsx missing ${route}`);
+    const pageSource = readFileSync(path.join(root, `apps/dashboard/app${route}/page.tsx`), "utf8");
+    assert.match(pageSource, /export const dynamic = "force-dynamic"/);
+    assert.match(pageSource, /buildBlogArticleMetadata/);
+    assert.match(pageSource, /blogArticleJsonLd/);
+  }
+
+  assert.match(caddyEntry, /@marketingCanonical path \/pricing \/privacy \/terms \/blog \/blog\/\*/);
+  assert.match(caddyEntry, /@marketingPublic path \/ \/pricing \/privacy \/terms \/blog \/blog\/\*/);
 });

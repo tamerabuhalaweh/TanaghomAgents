@@ -10,6 +10,8 @@ const PUBLIC_PAGES = new Set([
   "/pricing",
   "/privacy",
   "/terms",
+  "/blog/ai-social-media-manager-small-business",
+  "/blog/ai-social-media-management-small-business",
   "/opengraph-image",
   "/twitter-image",
   "/login",
