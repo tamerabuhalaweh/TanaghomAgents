@@ -2,8 +2,9 @@ import "server-only";
 
 import { createHash, randomUUID } from "node:crypto";
 import { readFile } from "node:fs/promises";
-import path from "node:path";
 import type { NextRequest } from "next/server";
+
+import { resolveCreativeConfigPath } from "@/lib/server/creative/config-path";
 
 import { enforceSameOriginForCookieMutation } from "@/lib/server/auth";
 import { authorize } from "@/lib/server/authorization";
@@ -25,7 +26,7 @@ let presetCache: { codes: Set<string>; doc: unknown } | null = null;
 
 export async function imagePresets() {
   if (!presetCache) {
-    const raw = await readFile(path.join(process.cwd(), "config", "creative-image-presets.v1.json"), "utf8");
+    const raw = await readFile(resolveCreativeConfigPath("creative-image-presets.v1.json"), "utf8");
     const doc = JSON.parse(raw) as { presets?: Array<{ code?: string }> };
     presetCache = { codes: new Set((doc.presets ?? []).map((preset) => preset.code ?? "")), doc };
   }

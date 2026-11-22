@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 
+import { creativeErrorMessage } from "@/lib/creative-errors";
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 
 export class CreativeApiError extends Error {
@@ -14,7 +15,7 @@ export class CreativeApiError extends Error {
 }
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, init);
+  const response = await fetch(path, { cache: "no-store", ...init });
   const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) throw new CreativeApiError(response.status, typeof body.error === "string" ? body.error : "request_failed");
   return body as T;
@@ -68,7 +69,7 @@ export function Loading({ locale }: { locale: CreativeLocale }) {
 export function LoadError({ locale, error, onRetry }: { locale: CreativeLocale; error: string; onRetry: () => void }) {
   return (
     <div className="creative-notice creative-error" role="alert">
-      <p>{t(locale, "common.error")} ({error})</p>
+      <p>{creativeErrorMessage(error, locale)}</p>
       <button type="button" className="creative-button creative-button-secondary" onClick={onRetry}>
         {t(locale, "common.retry")}
       </button>

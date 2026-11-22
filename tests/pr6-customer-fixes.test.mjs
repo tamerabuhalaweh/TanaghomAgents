@@ -16,10 +16,12 @@ test("Item 8: Product Studio keeps its shell when image generation is disabled",
   const view = read("apps/dashboard/components/creative/product-view.tsx");
   assert.match(view, /GENERATION_DISABLED_CODES/);
   assert.match(view, /product\.disabledReason/);
-  // A preset failure no longer replaces the whole page with one error banner.
+  assert.match(view, /FALLBACK_PRODUCT_PRESETS/);
+  // A preset failure keeps the Product Studio form rendered using static presets
+  // and offers a human error banner + Retry.
   assert.match(view, /\{presets\.error \? <LoadError/);
   assert.match(view, /onRetry=\{presets\.reload\} \/> : null\}/);
-  assert.match(view, /\{!presets\.loading && !presets\.error && canOperate && \(/);
+  assert.match(view, /\{!presets\.loading && canOperate && \(/);
 });
 
 test("Item 9: previews scale the fixed creative canvas instead of cropping it", () => {
@@ -67,9 +69,12 @@ test("Item 10: Campaigns, Approvals and Agent actions gained search, filter and 
 
 test("Item 11: Request changes needs three characters in both review surfaces", () => {
   const approvals = read("apps/dashboard/components/approval-workspace.tsx");
-  assert.match(approvals, /const MIN_FEEDBACK = 3;/);
-  assert.match(approvals, /reason\.trim\(\)\.length < MIN_FEEDBACK \|\| submitting/);
-  assert.match(approvals, /review-feedback-hint/);
+  const panel = read("apps/dashboard/components/approval-decision-panel.tsx");
+  assert.match(panel, /export const MIN_FEEDBACK = 3;/);
+  assert.match(panel, /reason\.trim\(\)\.length >= MIN_FEEDBACK/);
+  assert.match(panel, /review-feedback-hint/);
+  assert.match(approvals, /<ApprovalDecisionPanel/);
+  assert.match(approvals, /reason\.trim\(\)\.length < MIN_FEEDBACK/);
 
   const workspace = read("apps/dashboard/components/agency-workspace.tsx");
   assert.match(workspace, /at least 3 characters/);
