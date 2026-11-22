@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useState } from "react";
 
+import { FALLBACK_PRODUCT_PRESETS, creativeErrorMessage } from "@/lib/creative-errors";
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 import { CreativeApiError, LoadError, Loading, api, idempotencyKey, useCreativeFetch, useSessionRole } from "@/components/creative/api";
 
@@ -30,7 +31,7 @@ const GENERATION_DISABLED_CODES = new Set([
 ]);
 
 function productError(code: string, locale: CreativeLocale) {
-  return GENERATION_DISABLED_CODES.has(code) ? t(locale, "product.disabledReason") : code;
+  return GENERATION_DISABLED_CODES.has(code) ? t(locale, "product.disabledReason") : creativeErrorMessage(code, locale);
 }
 
 export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl" | "ltr" }) {
@@ -49,6 +50,7 @@ export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
   const [jobId, setJobId] = useState<string | null>(null);
   const [segmentJobId, setSegmentJobId] = useState<string | null>(null);
   const canOperate = role === "owner" || role === "operator";
+  const presetOptions = presets.data?.presets?.length ? presets.data.presets : FALLBACK_PRODUCT_PRESETS;
   async function submit(event: React.FormEvent) {
     event.preventDefault();
     setWorking(true);
@@ -122,8 +124,9 @@ export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
       {presets.loading || assets.loading ? <Loading locale={locale} /> : null}
       {presets.error ? <LoadError locale={locale} error={presets.error} onRetry={presets.reload} /> : null}
       {assets.error ? <LoadError locale={locale} error={assets.error} onRetry={assets.reload} /> : null}
-      {!presets.loading && !presets.error && canOperate && (
+      {!presets.loading && canOperate && (
           <form className="creative-form" onSubmit={submit}>
+            {presets.error ? <p className="creative-notice" role="status">{t(locale, "product.presetsFallback")}</p> : null}
             <label>{t(locale, "product.source")}
               <select value={source} onChange={(event) => setSource(event.target.value)}>
                 <option value="">—</option>
@@ -136,7 +139,7 @@ export function ProductView({ locale, dir }: { locale: CreativeLocale; dir: "rtl
             </label>
             <label>{t(locale, "product.preset")}
               <select value={preset} onChange={(event) => setPreset(event.target.value)}>
-                {(presets.data?.presets ?? []).map((option) => (
+                {presetOptions.map((option) => (
                   <option key={option.code} value={option.code}>{option.display}</option>
                 ))}
               </select>

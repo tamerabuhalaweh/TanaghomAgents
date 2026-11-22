@@ -2666,6 +2666,32 @@ td a, td > strong { font-weight: 670; }
   line-height: inherit;
 }
 
+.review-decision-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  margin-block-start: 2rem;
+  padding: 1.15rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  background: var(--surface);
+}
+.review-decision-panel .review-decision-head h3 { font-size: 0.92rem; margin: 0; }
+.review-decision-panel .review-decision-head p { max-width: 68ch; margin-block-start: 0.25rem; color: var(--muted); font-size: 0.78rem; }
+.review-decision-panel label { margin-block-start: 0.25rem; font-size: 0.76rem; font-weight: 670; }
+.review-decision-panel textarea {
+  width: 100%;
+  min-height: 5.5rem;
+  resize: vertical;
+  padding: 0.75rem;
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  color: var(--ink);
+  font: inherit;
+}
+.review-decision-panel .review-footer { margin-block-start: 0.6rem; }
+
 .review-feedback-hint {
   margin-block-start: 0.35rem;
   color: var(--muted);

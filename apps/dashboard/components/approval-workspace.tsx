@@ -1,16 +1,13 @@
 "use client";
 
 import {
-  Check,
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
   Clock3,
   MessageSquareText,
   RefreshCw,
-  RotateCcw,
   TriangleAlert,
-  X,
 } from "lucide-react";
 import Link from "next/link";
 import { useCallback, useEffect, useMemo, useState } from "react";
@@ -18,9 +15,11 @@ import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { formatArabicCount, formatDateTime } from "@/lib/i18n/format";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
+import { withoutDuplicateHeading } from "@/lib/deliverable-headings";
 import { dialectLabel, normalizeDialect } from "@/lib/i18n/dialects";
 import { redactTaskReferences } from "@/lib/redact-task-references";
 import { clearedReviewFilters, reviewFiltersActive, reviewPositionLabel } from "@/lib/review-filter";
+import { ApprovalDecisionPanel, MIN_FEEDBACK } from "./approval-decision-panel";
 import { ReviewFilterBar } from "./review-filter-bar";
 import { FormattedText } from "./formatted-text";
 import { PageHeading } from "./page-heading";
@@ -94,8 +93,6 @@ function formatCreatedAt(value: string, ar: boolean) {
   });
 }
 
-const MIN_FEEDBACK = 3;
-
 const contentTypeLabelsAr: Record<string, string> = {
   work_pack: "حزمة عمل",
   social_post: "منشور اجتماعي",
@@ -123,18 +120,6 @@ function deliverableStatus(value: string, ar: boolean) {
   return ar ? deliverableStatusesAr[value] || spaced : spaced;
 }
 
-/** The full document often repeats the deliverable heading already shown above
- *  it, so drop a leading heading that only repeats the visible label. */
-function withoutDuplicateHeading(document: string, labels: Array<string | undefined>) {
-  const lines = document.split(/\r?\n/);
-  const first = lines[0]?.trim() ?? "";
-  if (!first) return document;
-  const heading = first.replace(/^#{1,6}\s*/, "").replace(/\*\*/g, "").replace(/[:：]\s*$/, "").trim().toLowerCase();
-  if (!heading) return document;
-  const duplicate = labels.some((label) => label && label.replaceAll("_", " ").trim().toLowerCase() === heading);
-  return duplicate ? lines.slice(1).join("\n").trim() || document : document;
-}
-
 function requestedId() {
   if (typeof window === "undefined") return "";
   const params = new URLSearchParams(window.location.search);
@@ -152,7 +137,6 @@ export function ApprovalWorkspace() {
   const [items, setItems] = useState<ApprovalItem[]>([]);
   const [activeId, setActiveId] = useState("");
   const [loadState, setLoadState] = useState<LoadState>("loading");
-  const [rejecting, setRejecting] = useState(false);
   const [reason, setReason] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [feedback, setFeedback] = useState("");
@@ -217,14 +201,13 @@ export function ApprovalWorkspace() {
   function select(id: string) {
     setActiveId(id);
     syncUrl(id);
+    setReason("");
   }
 
   function move(offset: number) {
     if (!visible.length) return;
     const nextIndex = (activeIndex + offset + visible.length) % visible.length;
     select(visible[nextIndex].id);
-    setRejecting(false);
-    setReason("");
   }
 
   async function decide(decision: "approved" | "rejected") {
@@ -261,7 +244,6 @@ export function ApprovalWorkspace() {
       const nextId = nextItems[Math.min(activeIndex, nextItems.length - 1)]?.id ?? "";
       setActiveId(nextId);
       if (nextId) syncUrl(nextId);
-      setRejecting(false);
       setReason("");
       setFeedback(decision === "approved"
         ? (ar ? "تم حفظ الاعتماد، والعنصر متاح الآن في مكتبة المحتوى." : "Approval saved. The item is now available in the Content Library.")
@@ -343,7 +325,7 @@ export function ApprovalWorkspace() {
                     {deliverable.excerpt ? <div className="approval-deliverable-excerpt">
                       <FormattedText text={redactTaskReferences(`${deliverable.excerpt}${deliverable.document && deliverable.document.length > deliverable.excerpt.length ? "…" : ""}`)} dir="auto" />
                       {deliverable.document && deliverable.document.length > deliverable.excerpt.length
-                        ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={redactTaskReferences(withoutDuplicateHeading(deliverable.document, [profileNames[deliverable.profile], profileDeliverables[deliverable.profile], agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)]))} dir="auto" /></details>
+                        ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={redactTaskReferences(withoutDuplicateHeading(deliverable.document, [profileNames[deliverable.profile], profileDeliverables[deliverable.profile], agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)], deliverable.excerpt))} dir="auto" /></details>
                         : null}
                     </div> : <p dir="auto">{ar ? "لا مسودة محفوظة بعد." : "No stored draft yet."}</p>}
                   </li>
@@ -369,22 +351,16 @@ export function ApprovalWorkspace() {
                 : <p><Clock3 size={16} /> {ar ? `نسخة الاستراتيجية ${active.strategy_version}. لم يُسجَّل أي قرار لهذا التوليد.` : `Strategy version ${active.strategy_version}. No decision has been recorded for this generation.`}</p>}
             </section>
 
-            {rejecting ? (
-              <div className="rejection-panel" role="region" aria-labelledby="rejection-title">
-                <div><h3 id="rejection-title">{ar ? "ما الذي يجب تغييره؟" : "What should change?"}</h3><p>{active.source === "ai_workspace" ? (ar ? "تُحفظ ملاحظاتك مع الحزمة، وأنشئ مهمة منقّحة لإنتاج نسخة جديدة." : "Your feedback is saved with the pack; create a revised assignment to produce a new version.") : (ar ? "يصبح سببك سياقاً للنسخة التالية." : "Your reason becomes context for the next generated version.")}</p></div>
-                <label htmlFor="rejection-reason">{ar ? "سبب الرفض" : "Rejection reason"}</label>
-                <textarea id="rejection-reason" value={reason} onChange={(event) => setReason(event.target.value)} placeholder={ar ? "كن محدداً بشأن النبرة أو الادعاءات أو الجمهور أو تعديلات الوسائط المطلوبة." : "Be specific about tone, claims, audience, or required media changes."} />
-                {reason.trim().length < MIN_FEEDBACK ? <p className="review-feedback-hint" role="status">{ar ? "اكتب 3 أحرف على الأقل لتفعيل «طلب تعديلات»." : "Type at least 3 characters to enable “Request changes”."}</p> : null}
-                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(false)} disabled={submitting}>{ar ? "متابعة المراجعة" : "Keep reviewing"}</button><button className="danger-button" type="button" disabled={reason.trim().length < MIN_FEEDBACK || submitting} onClick={() => void decide("rejected")}><RotateCcw size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "طلب تعديلات" : "Request changes") : (ar ? "ارفض وأعد التوليد" : "Reject and regenerate")}</button></div>
-              </div>
-            ) : (
-              <footer className="review-footer">
-                <p>{active.review_needs_changes
-                  ? (ar ? "يحتاج إلى تعديل — أدرج مدقّق الهوية تعديلات غير مطبّقة؛ اطلب تعديلات قبل الاعتماد." : "Needs changes — Brand Guardian listed unapplied corrections; request changes before approving.")
-                  : (ar ? "يبقى النشر محظوراً حتى تعتمد هذه النسخة." : "Publishing remains blocked until you approve this version.")}</p>
-                <div className="decision-actions"><button className="ghost-button" type="button" onClick={() => setRejecting(true)} disabled={submitting}><X size={17} /> {ar ? "طلب تعديلات" : "Request changes"}</button><button className="primary-button" type="button" onClick={() => void decide("approved")} disabled={submitting || Boolean(active.review_needs_changes)}><Check size={17} /> {submitting ? (ar ? "جارٍ الحفظ…" : "Saving…") : active.source === "ai_workspace" ? (ar ? "اعتماد حزمة العمل" : "Approve work pack") : (ar ? "اعتماد المحتوى" : "Approve content")}</button></div>
-              </footer>
-            )}
+            <ApprovalDecisionPanel
+              ar={ar}
+              source={active.source}
+              reason={reason}
+              onReasonChange={setReason}
+              submitting={submitting}
+              approvalBlocked={Boolean(active.review_needs_changes)}
+              onApprove={() => void decide("approved")}
+              onRequestChanges={() => void decide("rejected")}
+            />
           </article> : <article className="review-canvas review-canvas-empty"><p>{ar ? "لا عناصر تطابق هذا العرض. امسح عوامل التصفية لعرض قائمة المراجعة." : "No items match this view. Clear the filters to see the review queue."}</p></article>}
         </div>
       ) : null}
