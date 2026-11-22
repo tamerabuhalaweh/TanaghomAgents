@@ -29,9 +29,9 @@ function positiveInt(name, fallback) {
   return value;
 }
 
-// Access tokens are short-lived; the opaque refresh token is the Postgres
-// session row, so revocation is immediate and survives a restart.
-const ACCESS_TTL_SECONDS = positiveInt("AUTH_ACCESS_TTL_SECONDS", 900);
+// Access tokens refresh automatically via authenticatedFetch; the opaque refresh
+// token is the Postgres session row, so revocation is immediate and survives a restart.
+const ACCESS_TTL_SECONDS = positiveInt("AUTH_ACCESS_TTL_SECONDS", 3600);
 const LOGIN_WINDOW_MS = 15 * 60 * 1000;
 const LIMITS = {
   ip: positiveInt("AUTH_LOGIN_IP_LIMIT", 20),

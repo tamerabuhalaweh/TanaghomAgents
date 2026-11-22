@@ -40,6 +40,7 @@ function loadTsx(relPath, extraImports = {}) {
     if (id === "lucide-react") return { Check: () => null, RotateCcw: () => null };
     if (id === "@/lib/i18n/creative") return creativeI18n;
     if (id === "@/lib/creative-errors") return creativeErrors;
+    if (id === "@/lib/client/authenticated-fetch") return { authenticatedFetch: (...args) => fetch(...args) };
     throw new Error(`unexpected import in ${relPath}: ${id}`);
   };
   new Function("require", "module", "exports", js)(resolve, mod, mod.exports);

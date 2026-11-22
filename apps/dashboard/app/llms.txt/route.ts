@@ -1,4 +1,4 @@
-import { APP_SITE_URL, CANONICAL_SITE_URL } from "@/lib/seo";
+import { APP_SITE_URL, CANONICAL_SITE_URL, SUPPORT_EMAIL } from "@/lib/seo";
 
 const LLMS_TXT = `# E3lani
 
@@ -19,6 +19,7 @@ const LLMS_TXT = `# E3lani
 
 - AI marketing workspace: brand kit, knowledge base, AI campaign generation, human approval gate, multi-channel publishing, measurement
 - Languages: English and Arabic (RTL) throughout
+- Support: ${SUPPORT_EMAIL}
 - [App](${APP_SITE_URL}/): the signed-in workspace (requires an account)
 `;
 

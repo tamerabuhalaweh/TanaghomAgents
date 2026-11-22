@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 
 import { creativeErrorMessage } from "@/lib/creative-errors";
+import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
 import { t, type CreativeLocale } from "@/lib/i18n/creative";
 
 export class CreativeApiError extends Error {
@@ -15,7 +16,7 @@ export class CreativeApiError extends Error {
 }
 
 export async function api<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(path, { cache: "no-store", ...init });
+  const response = await authenticatedFetch(path, { cache: "no-store", ...init });
   const body = (await response.json().catch(() => ({}))) as Record<string, unknown>;
   if (!response.ok) throw new CreativeApiError(response.status, typeof body.error === "string" ? body.error : "request_failed");
   return body as T;

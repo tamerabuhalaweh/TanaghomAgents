@@ -5,8 +5,9 @@ import { ArrowRight, Eye, EyeOff, LockKeyhole } from "lucide-react";
 
 import { TurnstileWidget } from "@/components/turnstile-widget";
 import type { CreativeLocale } from "@/lib/i18n/creative";
+import { safeNextPath } from "@/lib/safe-next-path";
 
-export function LoginForm({ locale }: { locale: CreativeLocale }) {
+export function LoginForm({ locale, nextPath }: { locale: CreativeLocale; nextPath?: string }) {
   const ar = locale === "ar";
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -31,7 +32,9 @@ export function LoginForm({ locale }: { locale: CreativeLocale }) {
 
     if (response.ok) {
       const body = await response.json().catch(() => ({})) as { must_change_password?: boolean };
-      window.location.assign(body.must_change_password ? "/settings/security" : "/");
+      const searchNext = typeof window !== "undefined" ? new URLSearchParams(window.location.search).get("next") : null;
+      const destination = safeNextPath(searchNext ?? nextPath);
+      window.location.assign(body.must_change_password ? "/settings/security" : destination);
       return;
     }
 

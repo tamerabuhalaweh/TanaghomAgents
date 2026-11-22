@@ -30,9 +30,10 @@ import { LocalisedDocumentTitle } from "./localised-document-title";
 import { LocaleToggle } from "./creative/locale-toggle";
 import { SessionProfile } from "./session-profile";
 import { TenantName } from "./tenant-name";
-import { authenticatedFetch } from "@/lib/client/authenticated-fetch";
+import { authenticatedFetch, startSessionKeepAlive } from "@/lib/client/authenticated-fetch";
 import { loadSessionIdentity } from "@/lib/client/session-identity";
 import { useLocale } from "@/lib/client/use-locale";
+import { SUPPORT_EMAIL, SUPPORT_EMAIL_HREF } from "@/lib/seo";
 
 type NavItem = { href: string; label: string; arabic: string; icon: typeof LayoutDashboard };
 
@@ -78,6 +79,8 @@ export function AppShell({ children }: { children: React.ReactNode }) {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const helpButtonRef = useRef<HTMLButtonElement>(null);
   const helpDialogRef = useRef<HTMLDialogElement>(null);
+
+  useEffect(() => startSessionKeepAlive(), []);
 
   useEffect(() => {
     let active = true;
@@ -271,7 +274,11 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         </nav>
         <section className="help-dialog-note">
           <ShieldCheck size={20} aria-hidden="true" />
-          <div><strong>{ar ? "لماذا تتطلب عملية النشر موافقة بشرية؟" : "Why human-in-the-loop approval?"}</strong><p>{ar ? "يقترح فريق الذكاء الاصطناعي العمل، لكن لا يُنشر أي شيء قبل أن يراجعه شخص مسؤول. ويظل الموجز والمصادر وسجل القرارات مرتبطًا بكل مسودة لحماية علامتك التجارية." : "Your AI team proposes the work, but nothing publishes until a responsible person reviews it. The brief, sources, and decision history stay attached to every draft so your brand stays protected."}</p></div>
+          <div>
+            <strong>{ar ? "لماذا تتطلب عملية النشر موافقة بشرية؟" : "Why human-in-the-loop approval?"}</strong>
+            <p>{ar ? "يقترح فريق الذكاء الاصطناعي العمل، لكن لا يُنشر أي شيء قبل أن يراجعه شخص مسؤول. ويظل الموجز والمصادر وسجل القرارات مرتبطًا بكل مسودة لحماية علامتك التجارية." : "Your AI team proposes the work, but nothing publishes until a responsible person reviews it. The brief, sources, and decision history stay attached to every draft so your brand stays protected."}</p>
+            <p>{ar ? <>هل تحتاج إلى مساعدة؟ راسلنا على <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</> : <>Need help? Email <a href={SUPPORT_EMAIL_HREF}><bdi dir="ltr">{SUPPORT_EMAIL}</bdi></a>.</>}</p>
+          </div>
         </section>
       </dialog>
     </div>

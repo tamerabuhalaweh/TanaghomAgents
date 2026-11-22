@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState, type FormEvent } from "react"
 import { ArrowRight, BookOpen, Check, ChevronRight, ClipboardList, Download, FileText, Pause, Play, Plus, RefreshCw, UsersRound, X } from "lucide-react";
 import Link from "next/link";
 
+import { authenticatedFetch, markSessionActive } from "@/lib/client/authenticated-fetch";
 import { useLocale } from "@/lib/client/use-locale";
 import { agentDeliverableLabel, agentDisplayName } from "@/lib/i18n/agent-names";
 import { DIALECTS, dialectLabel, type DialectId } from "@/lib/i18n/dialects";
@@ -82,8 +83,8 @@ export function AgencyWorkspace() {
     abort.current = controller;
     if (!quiet) setLoading(true);
     try {
-      const r = await fetch(`/api/workspace${id ? `?id=${encodeURIComponent(id)}` : ""}`, { cache: "no-store", signal: controller.signal });
-      if (r.status === 401) { window.location.assign("/login"); return; }
+      const r = await authenticatedFetch(`/api/workspace${id ? `?id=${encodeURIComponent(id)}` : ""}`, { cache: "no-store", signal: controller.signal });
+      if (r.status === 401) return;
       const result = await r.json();
       if (!r.ok) throw new Error(result.error || "request_failed");
       if (generation === requestGeneration.current) { setData(result); setError(""); }
@@ -107,7 +108,12 @@ export function AgencyWorkspace() {
   // While the pack is queued or running, follow the step state every 2 seconds.
   useEffect(() => {
     if (!selected || !["queued", "running"].includes(selected.status)) return;
-    const timer = setInterval(() => { if (!document.hidden && !suspended.current) void load(selectedIdRef.current, true); }, 2000);
+    const timer = setInterval(() => {
+      if (!document.hidden && !suspended.current) {
+        markSessionActive();
+        void load(selectedIdRef.current, true);
+      }
+    }, 2000);
     return () => clearInterval(timer);
   }, [load, selected?.status, selected?.id]);
   const step = selected?.steps.find((s) => s.sequence === selectedStep) || selected?.steps[0];
@@ -136,8 +142,8 @@ export function AgencyWorkspace() {
     setBusy(true); setError(""); setNotice("");
     suspended.current = true;
     try {
-      const r = await fetch("/api/workspace", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
-      if (r.status === 401) { window.location.assign("/login"); return; }
+      const r = await authenticatedFetch("/api/workspace", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(body) });
+      if (r.status === 401) return;
       const result = await r.json();
       if (!r.ok) throw new Error(result.error || "request_failed");
       if (action === "create") {

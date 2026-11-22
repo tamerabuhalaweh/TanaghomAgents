@@ -4,6 +4,8 @@ import type { CreativeLocale } from "@/lib/i18n/creative";
 
 export const CANONICAL_SITE_URL = "https://www.e3lani.online";
 export const APP_SITE_URL = "https://app.e3lani.online";
+export const SUPPORT_EMAIL = "Tamer@itis-uk.org";
+export const SUPPORT_EMAIL_HREF = `mailto:${SUPPORT_EMAIL}`;
 export const OG_IMAGE_PATH = "/opengraph-image";
 export const OG_IMAGE_URL = `${CANONICAL_SITE_URL}${OG_IMAGE_PATH}`;
 
@@ -180,6 +182,11 @@ export function landingFaqEntries(locale: CreativeLocale): FaqEntry[] {
         answer:
           "ابدأ بتجربة مجانية لحملة متكاملة: حزمة حملة كاملة وثلاث عمليات توليد بالذكاء الاصطناعي، دون قنوات اجتماعية حقيقية ودون بطاقة.",
       },
+      {
+        question: "كيف أتواصل مع الدعم؟",
+        answer:
+          "راسلنا على Tamer@itis-uk.org لمساعدة التهيئة أو أسئلة الحساب أو دعم مساحة العمل.",
+      },
     ];
   }
   return [
@@ -212,6 +219,11 @@ export function landingFaqEntries(locale: CreativeLocale): FaqEntry[] {
       question: "Do I need a card to start?",
       answer:
         "Start with the Free 1-Campaign Sandbox: one complete AI Campaign Work Pack and three AI runs, with no live social channels and no card required.",
+    },
+    {
+      question: "How do I contact support?",
+      answer:
+        "Email us at Tamer@itis-uk.org for onboarding help, account questions, or workspace support.",
     },
   ];
 }
@@ -277,6 +289,7 @@ export function landingJsonLd(locale: CreativeLocale) {
         name: "E3lani",
         alternateName: "إعلاني",
         url: `${CANONICAL_SITE_URL}/`,
+        email: SUPPORT_EMAIL,
         logo: OG_IMAGE_URL,
         description: ar ? PUBLIC_SEO_COPY.home.ar.description : PUBLIC_SEO_COPY.home.en.description,
       },
