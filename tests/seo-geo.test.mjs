@@ -193,9 +193,13 @@ test("auth pages carry noindex and proxy permits /opengraph-image", () => {
 
 test("Google Search Console HTML verification route and Caddy allowlist are wired", () => {
   const route = readFileSync(path.join(root, "apps/dashboard/app/google0248b443482441b0.html/route.ts"), "utf8");
+  const metaRoute = readFileSync(path.join(root, "apps/dashboard/app/due1swre8czqrg0shsxt95n3vd44po.html/route.ts"), "utf8");
   const caddyEntry = readFileSync(path.join(root, "deployment/dashboard-demo/caddy/entrypoint.sh"), "utf8");
   assert.match(route, /google-site-verification: google0248b443482441b0\.html/);
+  assert.match(metaRoute, /const VERIFICATION_BODY = "due1swre8czqrg0shsxt95n3vd44po"/);
   assert.match(caddyEntry, /\/google\*\.html/);
+  assert.match(caddyEntry, /\/due1swre8czqrg0shsxt95n3vd44po\.html/);
+  assert.match(caddyEntry, /@apexVerify path \/due1swre8czqrg0shsxt95n3vd44po\.html/);
 });
 
 test("blog-articles module exposes exact EN/AR metadata, reciprocal hreflang, and BlogPosting + FAQPage JSON-LD", () => {

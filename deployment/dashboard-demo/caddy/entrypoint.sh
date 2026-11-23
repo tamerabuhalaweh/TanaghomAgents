@@ -115,7 +115,7 @@ if [ -n "$MARKETING_DOMAIN" ]; then
 		-Server
 	}
 
-	@marketingPublic path / /pricing /privacy /terms /blog /blog/* /robots.txt /sitemap.xml /llms.txt /favicon.ico /google*.html /opengraph-image* /twitter-image* /_next/* /api/waitlist /api/csp-report /api/health
+	@marketingPublic path / /pricing /privacy /terms /blog /blog/* /robots.txt /sitemap.xml /llms.txt /favicon.ico /google*.html /due1swre8czqrg0shsxt95n3vd44po.html /opengraph-image* /twitter-image* /_next/* /api/waitlist /api/csp-report /api/health
 	handle @marketingPublic {
 		reverse_proxy dashboard:3000 {
 			header_up X-Forwarded-Proto {scheme}
@@ -140,7 +140,18 @@ EOF
 		-Server
 	}
 
-	redir https://{$TANAGHOM_MARKETING_DOMAIN}{uri} 301
+	@apexVerify path /due1swre8czqrg0shsxt95n3vd44po.html
+	handle @apexVerify {
+		reverse_proxy dashboard:3000 {
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Forwarded-Host {host}
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	handle {
+		redir https://{$TANAGHOM_MARKETING_DOMAIN}{uri} 301
+	}
 }
 EOF
   fi
