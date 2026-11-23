@@ -147,3 +147,29 @@ test("the Stripe server module adds no npm dependency", () => {
   assert.doesNotMatch(source, /from "stripe"|require\("stripe"\)|@stripe\//);
   assert.doesNotMatch(source, /node_modules/);
 });
+
+test("Stripe helper supports GET subscription lookup and logs rejection details safely", () => {
+  const source = readFileSync(
+    new URL("../apps/dashboard/lib/server/stripe-billing.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(source, /export async function findActiveStripeSubscription/);
+  assert.match(source, /\/v1\/subscriptions\?\$\{params\.toString\(\)\}/);
+  assert.match(source, /status: "active"/);
+  assert.match(source, /limit: "1"/);
+  assert.match(source, /const method = body \? "POST" : "GET"/);
+  assert.match(source, /requestId/);
+  assert.match(source, /type/);
+  assert.match(source, /param/);
+  assert.match(source, /message/);
+});
+
+test("checkout routes to Billing Portal only when an active Stripe subscription exists", () => {
+  const route = readFileSync(
+    new URL("../apps/dashboard/app/api/billing/checkout/route.ts", import.meta.url),
+    "utf8",
+  );
+  assert.match(route, /findActiveStripeSubscription\(row\.stripe_customer_id\)/);
+  assert.match(route, /if \(row\.stripe_customer_id && activeSubscription\)/);
+  assert.doesNotMatch(route, /if \(row\.status === "active" && row\.stripe_customer_id\)/);
+});

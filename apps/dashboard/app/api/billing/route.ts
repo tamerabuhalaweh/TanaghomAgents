@@ -82,6 +82,9 @@ export async function GET(request: NextRequest) {
       current_period_end: text(payload.current_period_end),
       cancel_at_period_end: payload.cancel_at_period_end === true,
       has_stripe_customer: Boolean(row.stripe_customer_id),
+      has_active_subscription: status === "active"
+        && Boolean(row.stripe_customer_id)
+        && Boolean(text(payload.stripe_subscription_id)),
       stripe_customer_id_masked: owner ? maskStripeCustomerId(row.stripe_customer_id) : null,
       billing_configured: isStripeCheckoutConfigured(),
       can_manage_billing: owner,
