@@ -43,6 +43,7 @@ interface BillingPayload {
   current_period_end: string | null;
   cancel_at_period_end: boolean;
   has_stripe_customer: boolean;
+  has_active_subscription?: boolean;
   stripe_customer_id_masked: string | null;
   billing_configured: boolean;
   can_manage_billing: boolean;
@@ -353,7 +354,7 @@ export function BillingSettings() {
 
         <section className="billing-plans-section" aria-labelledby="billing-plans-title">
           <div className="billing-plans-head"><div><h2 id="billing-plans-title">{text.currentPlanSection}</h2><p>{text.secure}</p></div></div>
-          {payload.subscription_status === "active" && payload.has_stripe_customer ? <p className="billing-plan-switch-note">{text.portalSwitch}</p> : null}
+          {payload.has_active_subscription ? <p className="billing-plan-switch-note">{text.portalSwitch}</p> : null}
           <div className="billing-plans">
             {payload.plans.map((plan) => {
               const current = payload.plan_tier === plan.id;

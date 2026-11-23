@@ -16,6 +16,7 @@ import {
   createStripeCheckoutSession,
   createStripeCustomer,
   createStripePortalSession,
+  findActiveStripeSubscription,
   isStripeCheckoutConfigured,
   stripePriceIdFor,
   updateStripeCustomerMetadata,
@@ -93,7 +94,10 @@ export async function POST(request: NextRequest) {
         await client.query("ROLLBACK");
         return noStore({ error: "organization_not_found" }, { status: 404 });
       }
-      if (row.status === "active" && row.stripe_customer_id) {
+      const activeSubscription = row.stripe_customer_id
+        ? await findActiveStripeSubscription(row.stripe_customer_id)
+        : null;
+      if (row.stripe_customer_id && activeSubscription) {
         const portalSession = await createStripePortalSession(row.stripe_customer_id);
         await client.query(
           `INSERT INTO tanaghom.agent_actions_log
@@ -106,6 +110,7 @@ export async function POST(request: NextRequest) {
             JSON.stringify({
               requested_plan_tier: planId,
               stripe_customer_id: row.stripe_customer_id,
+              stripe_subscription_id: activeSubscription.id,
               portal_url_host: new URL(portalSession.url).host,
               current_status: row.status,
             }),

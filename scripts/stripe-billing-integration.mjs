@@ -44,6 +44,8 @@ let lastCustomerForm;
 let lastPortalForm;
 let lastSessionOrganization;
 let checkoutSessions = 0;
+let failNextCheckoutSession = false;
+const activeSubscriptionsByCustomer = new Map();
 
 async function token(subject, email) {
   return new SignJWT({ role: "authenticated", email })
@@ -74,6 +76,20 @@ const authServer = createServer((request, response) => {
 const stripeServer = createServer(async (request, response) => {
   stripeRequests += 1;
   assert.equal(request.headers.authorization, `Bearer ${stripeSecret}`);
+  if (request.method === "GET") {
+    const parsed = new URL(request.url || "/", stripeOrigin);
+    if (parsed.pathname === "/v1/subscriptions") {
+      const customer = parsed.searchParams.get("customer") || "";
+      const status = parsed.searchParams.get("status") || "";
+      const sub = activeSubscriptionsByCustomer.get(customer);
+      const data = sub && (!status || sub.status === status) ? [sub] : [];
+      response.writeHead(200, { "Content-Type": "application/json" });
+      response.end(JSON.stringify({ object: "list", data }));
+      return;
+    }
+    response.writeHead(404).end();
+    return;
+  }
   assert.equal(request.headers["content-type"], "application/x-www-form-urlencoded");
   const body = new URLSearchParams(await requestBody(request));
   if (request.method !== "POST") {
@@ -86,7 +102,24 @@ const stripeServer = createServer(async (request, response) => {
     response.end(JSON.stringify({ id: "cus_TenantAIntegration" }));
     return;
   }
+  if (request.url?.startsWith("/v1/customers/")) {
+    const customerId = decodeURIComponent(request.url.slice("/v1/customers/".length));
+    response.writeHead(200, { "Content-Type": "application/json" });
+    response.end(JSON.stringify({ id: customerId }));
+    return;
+  }
   if (request.url === "/v1/checkout/sessions") {
+    if (failNextCheckoutSession) {
+      failNextCheckoutSession = false;
+      response.writeHead(400, { "Content-Type": "application/json", "request-id": "req_sim_checkout_fail" });
+      response.end(JSON.stringify({
+        error: {
+          type: "invalid_request_error",
+          message: "Simulated checkout session rejection",
+        },
+      }));
+      return;
+    }
     checkoutSessions += 1;
     lastCheckoutForm = body;
     lastSessionOrganization = body.get("client_reference_id");
@@ -467,6 +500,29 @@ try {
   assert.equal((await webhook(recoveredEvent)).response.status, 200);
   assert.equal((await billing(ownerToken)).subscription_status, "active");
 
+  const sessionsBeforeNoSubRetry = checkoutSessions;
+  failNextCheckoutSession = true;
+  const rejectedRetry = await fetch(`${dashboardOrigin}/api/billing/checkout`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ plan_tier: "starter", company_name: "Tenant A Holdings Ltd", locale: "en" }),
+  });
+  assert.equal(rejectedRetry.status, 502);
+  assert.equal((await rejectedRetry.json()).error, "stripe_request_failed");
+  const checkoutWithoutSubscription = await fetch(`${dashboardOrigin}/api/billing/checkout`, {
+    method: "POST",
+    headers: { ...cookieHeaderFromToken(ownerToken), "Content-Type": "application/json" },
+    body: JSON.stringify({ plan_tier: "starter", company_name: "Tenant A Holdings Ltd", locale: "en" }),
+  });
+  assert.equal(checkoutWithoutSubscription.status, 200);
+  const retryBody = await checkoutWithoutSubscription.json();
+  assert.equal(retryBody.via, undefined, "active org with Stripe customer but no active Stripe subscription must not open portal");
+  assert.equal(retryBody.url, "https://checkout.stripe.test/session/cs_test_tenant_a");
+  assert.equal(checkoutSessions, sessionsBeforeNoSubRetry + 1);
+
+  activeSubscriptionsByCustomer.set("cus_TenantAIntegration", { id: "sub_tenant_a", status: "active" });
+  assert.equal((await billing(ownerToken)).has_active_subscription, true);
+
   const sessionsBeforeSwitch = checkoutSessions;
   const switchPlan = await fetch(`${dashboardOrigin}/api/billing/checkout`, {
     method: "POST",
@@ -481,13 +537,14 @@ try {
   assert.equal(lastPortalForm.get("customer"), "cus_TenantAIntegration");
   assert.equal(lastPortalForm.get("return_url"), `${dashboardOrigin}/settings/billing`);
   const upgradeLog = await pool.query(
-    `SELECT payload->>'requested_plan_tier' AS tier
+    `SELECT payload->>'requested_plan_tier' AS tier, payload->>'stripe_subscription_id' AS sub_id
        FROM tanaghom.agent_actions_log
       WHERE organization_id = $1::uuid AND action_type = 'billing.portal_upgrade_opened'
       ORDER BY created_at DESC LIMIT 1`,
     [organizationId],
   );
   assert.equal(upgradeLog.rows[0]?.tier, "scale");
+  assert.equal(upgradeLog.rows[0]?.sub_id, "sub_tenant_a");
 
   const beforeDuplicate = await pool.query(
     `SELECT count(*)::int AS count FROM tanaghom.agent_actions_log
@@ -524,6 +581,7 @@ try {
   assert.equal(refundRow.rows[0].payload.refunded, true);
   assert.equal(refundRow.rows[0].payload.full_refund, true);
 
+  activeSubscriptionsByCustomer.delete("cus_TenantAIntegration");
   const deletedEvent = event("customer.subscription.deleted", startedAt + 60, {
     id: "sub_tenant_a",
     customer: "cus_TenantAIntegration",

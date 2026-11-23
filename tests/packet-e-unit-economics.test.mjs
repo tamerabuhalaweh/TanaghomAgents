@@ -85,12 +85,16 @@ test("cockpit renders the bilingual Customer Unit Economics & Cost Center table"
 test("active subscribers switch plans through Stripe Billing Portal without a second Checkout", () => {
   const route = read("apps/dashboard/app/api/billing/checkout/route.ts");
   const ui = read("apps/dashboard/components/billing-settings.tsx");
-  assert.match(route, /row\.status === "active" && row\.stripe_customer_id/);
+  assert.doesNotMatch(route, /if \(row\.status === "active" && row\.stripe_customer_id\)/);
+  assert.match(route, /findActiveStripeSubscription\(row\.stripe_customer_id\)/);
+  assert.match(route, /row\.stripe_customer_id && activeSubscription/);
   assert.match(route, /createStripePortalSession\(row\.stripe_customer_id\)/);
   assert.match(route, /billing\.portal_upgrade_opened/);
   assert.match(route, /requested_plan_tier: planId/);
+  assert.match(route, /stripe_subscription_id: activeSubscription\.id/);
   assert.match(route, /via: "portal"/);
   assert.match(ui, /via\?: "portal"/);
+  assert.match(ui, /payload\.has_active_subscription/);
   assert.match(ui, /Plan upgrades and downgrades modify your active subscription/);
   assert.match(ui, /يعدّل تغيير خطتك اشتراكك الحالي/);
   assert.match(ui, /التناسب الزمني تلقائيًا/);

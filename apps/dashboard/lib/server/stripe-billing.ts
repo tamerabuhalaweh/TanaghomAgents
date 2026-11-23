@@ -182,21 +182,22 @@ function stripeForm(values: Record<string, string | number | boolean | undefined
 
 async function stripeRequest<T>(
   path: string,
-  body: URLSearchParams,
+  body?: URLSearchParams,
   idempotencyKey?: string,
 ): Promise<T> {
   const key = stripeSecretKey();
   if (!key) throw new StripeBillingError("stripe_not_configured", 409);
+  const method = body ? "POST" : "GET";
   let response: Response;
   try {
     response = await fetch(`${stripeApiBaseUrl()}${path}`, {
-      method: "POST",
+      method,
       headers: {
         Authorization: `Bearer ${key}`,
-        "Content-Type": "application/x-www-form-urlencoded",
+        ...(body ? { "Content-Type": "application/x-www-form-urlencoded" } : {}),
         ...(idempotencyKey ? { "Idempotency-Key": idempotencyKey } : {}),
       },
-      body: body.toString(),
+      ...(body ? { body: body.toString() } : {}),
       cache: "no-store",
       redirect: "error",
       signal: AbortSignal.timeout(REQUEST_TIMEOUT_MS),
@@ -204,6 +205,7 @@ async function stripeRequest<T>(
   } catch (error) {
     console.error("Stripe API request failed", {
       path,
+      method,
       reason: error instanceof Error ? error.name : "network_error",
     });
     throw new StripeBillingError("stripe_unavailable", 502);
@@ -217,14 +219,62 @@ async function stripeRequest<T>(
     payload = {};
   }
   if (!response.ok) {
-    const upstream = payload as { error?: { code?: unknown; type?: unknown } };
+    const upstream = payload as {
+      error?: { code?: unknown; type?: unknown; param?: unknown; message?: unknown };
+    };
     const code = typeof upstream.error?.code === "string"
       ? upstream.error.code.slice(0, 120)
       : "stripe_request_failed";
-    console.error("Stripe API rejected a request", { path, status: response.status, code });
+    const type = typeof upstream.error?.type === "string"
+      ? upstream.error.type.slice(0, 80)
+      : undefined;
+    const param = typeof upstream.error?.param === "string"
+      ? upstream.error.param.slice(0, 80)
+      : undefined;
+    const message = typeof upstream.error?.message === "string"
+      ? upstream.error.message.slice(0, 300)
+      : undefined;
+    const requestId = response.headers.get("request-id")?.slice(0, 120) || undefined;
+    console.error("Stripe API rejected a request", {
+      path,
+      method,
+      status: response.status,
+      code,
+      ...(type ? { type } : {}),
+      ...(param ? { param } : {}),
+      ...(requestId ? { requestId } : {}),
+      ...(message ? { message } : {}),
+    });
     throw new StripeBillingError("stripe_request_failed", 502, response.status);
   }
   return payload as T;
+}
+
+export interface StripeActiveSubscription {
+  id: string;
+  status: "active";
+}
+
+/**
+ * Look up whether the Stripe customer actually holds an active subscription.
+ * Returns null if none exists so customers without a live subscription go through Checkout.
+ */
+export async function findActiveStripeSubscription(
+  customerId: string,
+): Promise<StripeActiveSubscription | null> {
+  const params = new URLSearchParams({
+    customer: customerId,
+    status: "active",
+    limit: "1",
+  });
+  const list = await stripeRequest<{ data?: Array<{ id?: unknown; status?: unknown }> }>(
+    `/v1/subscriptions?${params.toString()}`,
+  );
+  const first = list?.data?.[0];
+  if (typeof first?.id === "string" && first.id.startsWith("sub_") && first.status === "active") {
+    return { id: first.id, status: "active" };
+  }
+  return null;
 }
 
 export interface StripeCustomer {
