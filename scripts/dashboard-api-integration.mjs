@@ -239,9 +239,17 @@ try {
     SET emergency_stop=false, reason='Disposable dashboard integration test'
     WHERE provider IN ('postiz','ghl')`);
 
+  const foreignLogin = await fetch(`${dashboardOrigin}/api/auth/login`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: "https://evil.example" },
+    body: JSON.stringify({ email: "owner@example.test", password: "integration-only" }),
+  });
+  assert.equal(foreignLogin.status, 403);
+  assert.equal((await foreignLogin.json()).error, "invalid_origin");
+
   const login = await fetch(`${dashboardOrigin}/api/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Origin: dashboardOrigin },
     body: JSON.stringify({ email: "owner@example.test", password: "integration-only" }),
   });
   assert.equal(login.status, 200);
@@ -912,7 +920,7 @@ try {
   // only its own.
   const tenantBLogin = await fetch(`${dashboardOrigin}/api/auth/login`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Origin: dashboardOrigin },
     body: JSON.stringify({ email: "tenant-b@example.test", password: "integration-tenant-b" }),
   });
   assert.equal(tenantBLogin.status, 200);

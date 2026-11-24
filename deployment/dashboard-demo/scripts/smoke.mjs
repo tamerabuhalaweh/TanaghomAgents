@@ -76,7 +76,7 @@ async function login(email, password) {
   const response = await request("/api/auth/login", {
     method: "POST",
     jar,
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Origin: baseUrl },
     body: JSON.stringify({ email, password }),
   });
   assert.equal(response.status, 200, `login failed for ${email}`);
@@ -106,7 +106,7 @@ if (!authenticated) {
   for (const account of retired) {
     const refused = await request("/api/auth/login", {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json", Origin: baseUrl },
       body: JSON.stringify({ email: account.email, password: account.password }),
     });
     assert.equal(
@@ -124,7 +124,7 @@ const owner = { email: smokeEmail, password: smokePassword };
 
 const badLogin = await request("/api/auth/login", {
   method: "POST",
-  headers: { "Content-Type": "application/json" },
+  headers: { "Content-Type": "application/json", Origin: baseUrl },
   body: JSON.stringify({ email: owner.email, password: "wrong-demo-password" }),
 });
 assert.equal(badLogin.status, 401);

@@ -2407,6 +2407,9 @@ td a, td > strong { font-weight: 670; }
 .waitlist-fields .primary-button { min-block-size: 2.6rem; white-space: nowrap; }
 .waitlist-success { padding: 1rem 1.1rem; border: 1px solid color-mix(in srgb, var(--success) 30%, var(--border)); border-radius: var(--radius-lg); background: var(--success-soft); }
 .waitlist-success > svg { color: var(--success); }
+.waitlist-privacy { color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
+.waitlist-privacy a { color: inherit; text-decoration: underline; text-underline-offset: 0.18rem; }
+.waitlist-privacy a:hover { color: var(--ink); }
 .waitlist-error { color: var(--danger); font-size: 0.76rem; }
 .public-waitlist { max-width: 62rem; margin: 1rem auto 0; }
 .super-admin-page { min-block-size: 100dvh; padding: clamp(1rem, 3vw, 2.5rem); background: var(--bg); }

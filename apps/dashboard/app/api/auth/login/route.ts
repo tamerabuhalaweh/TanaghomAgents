@@ -1,4 +1,5 @@
 import type { NextRequest } from "next/server";
+import { hasValidSameOrigin } from "@/lib/server/auth";
 import {
   clearAuthFailures,
   recordAuthFailure,
@@ -11,6 +12,9 @@ import { isTurnstileConfigured, rightmostForwardedIp, verifyTurnstileToken } fro
 export const runtime = "nodejs";
 
 export async function POST(request: NextRequest) {
+  if (!hasValidSameOrigin(request)) {
+    return noStore({ error: "invalid_origin" }, { status: 403 });
+  }
   const supabaseUrl = process.env.SUPABASE_URL?.replace(/\/$/, "");
   const publishableKey = process.env.SUPABASE_PUBLISHABLE_KEY;
   if (!supabaseUrl || !publishableKey) {

@@ -1,5 +1,6 @@
 import type { NextRequest } from "next/server";
 
+import { hasValidSameOrigin } from "@/lib/server/auth";
 import { database } from "@/lib/server/database";
 import { joinWaitlist, lockLaunchControl } from "@/lib/server/launch-control";
 import { noStore } from "@/lib/server/responses";
@@ -38,6 +39,9 @@ function rateLimited(key: string) {
 
 export async function POST(request: NextRequest) {
   try {
+    if (!hasValidSameOrigin(request)) {
+      return noStore({ error: "invalid_origin" }, { status: 403 });
+    }
     if (rateLimited(sourceKey(request))) {
       return noStore({ error: "too_many_requests" }, { status: 429 });
     }

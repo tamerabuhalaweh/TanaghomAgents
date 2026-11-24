@@ -3,6 +3,7 @@ import { resolve } from "node:path";
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  poweredByHeader: false,
   output: "standalone",
   serverExternalPackages: ["@tanaghom/agent-runtime"],
   turbopack: {

@@ -1,7 +1,9 @@
+import Link from "next/link";
 import { ShieldCheck } from "lucide-react";
 
 import { BrandMark } from "@/components/brand-mark";
 import type { CreativeLocale } from "@/lib/i18n/creative";
+import { getMarketingOrigin, isSplitDomainMode } from "@/lib/public-urls";
 
 export function AuthShell({
   locale,
@@ -19,6 +21,7 @@ export function AuthShell({
   children: React.ReactNode;
 }) {
   const ar = locale === "ar";
+  const marketingOrigin = isSplitDomainMode() ? getMarketingOrigin() : "";
   return (
     <main className="login-page" dir={dir} lang={locale}>
       <section className="login-context" aria-labelledby="auth-context-title">
@@ -47,6 +50,19 @@ export function AuthShell({
           <p className="login-intro">{lede}</p>
           {children}
           <p className="login-support"><a href="/login">Back to sign in</a></p>
+          <nav className="auth-legal-links" aria-label={ar ? "الروابط القانونية" : "Legal links"}>
+            {marketingOrigin ? (
+              <>
+                <a href={`${marketingOrigin}/privacy`}>{ar ? "سياسة الخصوصية" : "Privacy Policy"}</a>
+                <a href={`${marketingOrigin}/terms`}>{ar ? "شروط الخدمة" : "Terms of Service"}</a>
+              </>
+            ) : (
+              <>
+                <Link href="/privacy">{ar ? "سياسة الخصوصية" : "Privacy Policy"}</Link>
+                <Link href="/terms">{ar ? "شروط الخدمة" : "Terms of Service"}</Link>
+              </>
+            )}
+          </nav>
         </div>
       </section>
     </main>
