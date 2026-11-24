@@ -713,9 +713,21 @@ try {
   assert.equal(blockedBody.cohort_cap, 20);
   assert.equal(blockedBody.queue_position, 1);
 
+  const foreignWaitlist = await fetch(`${dashboardOrigin}/api/waitlist`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", Origin: "https://evil.example" },
+    body: JSON.stringify({
+      email: "priority@example.test",
+      company_name: "Priority Holdings",
+      locale: "ar",
+    }),
+  });
+  assert.equal(foreignWaitlist.status, 403);
+  assert.equal((await foreignWaitlist.json()).error, "invalid_origin");
+
   const publicWaitlist = await fetch(`${dashboardOrigin}/api/waitlist`, {
     method: "POST",
-    headers: { "Content-Type": "application/json" },
+    headers: { "Content-Type": "application/json", Origin: dashboardOrigin },
     body: JSON.stringify({
       email: "priority@example.test",
       company_name: "Priority Holdings",
@@ -728,7 +740,7 @@ try {
 
   const disposableWaitlist = await fetch(`${dashboardOrigin}/api/waitlist`, {
     method: "POST",
-    headers: { "Content-Type": "application/json", "X-Forwarded-For": "203.0.113.9, 198.51.100.7" },
+    headers: { "Content-Type": "application/json", Origin: dashboardOrigin, "X-Forwarded-For": "203.0.113.9, 198.51.100.7" },
     body: JSON.stringify({ email: "burner@mailinator.com", company_name: "Temporary", locale: "en" }),
   });
   assert.equal(disposableWaitlist.status, 400);

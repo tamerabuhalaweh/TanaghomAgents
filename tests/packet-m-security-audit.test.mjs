@@ -139,3 +139,25 @@ test("Packet M Item 13: email verification enforcement flag, AppShell unverified
   assert.match(compose, /AUTH_SIGNUP_ACCOUNT_LIMIT:/);
   assert.match(compose, /AUTH_TURNSTILE_FAILURE_THRESHOLD:/);
 });
+
+test("ScanMySaaS hardening disables X-Powered-By, enforces same-origin on login and waitlist, and links privacy on email forms", () => {
+  const nextConfig = read("apps/dashboard/next.config.ts");
+  assert.match(nextConfig, /poweredByHeader:\s*false/);
+
+  for (const routePath of [
+    "apps/dashboard/app/api/auth/login/route.ts",
+    "apps/dashboard/app/api/waitlist/route.ts",
+  ]) {
+    const route = read(routePath);
+    assert.match(route, /hasValidSameOrigin\(request\)/, `${routePath} must enforce hasValidSameOrigin`);
+    assert.match(route, /error:\s*"invalid_origin"[\s\S]*?status:\s*403/, `${routePath} must reject foreign origins with 403`);
+  }
+
+  const authShell = read("apps/dashboard/components/auth-shell.tsx");
+  assert.match(authShell, /\/privacy/);
+  assert.match(authShell, /auth-legal-links/);
+
+  const waitlistForm = read("apps/dashboard/components/waitlist-form.tsx");
+  assert.match(waitlistForm, /href="\/privacy"/);
+  assert.match(waitlistForm, /waitlist-privacy/);
+});

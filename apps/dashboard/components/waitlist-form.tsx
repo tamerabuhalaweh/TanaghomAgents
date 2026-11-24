@@ -18,6 +18,8 @@ const copy = {
     error: "The waitlist could not be joined. Try again shortly.",
     disposable: "Temporary email addresses are not accepted. Use a permanent work email.",
     captcha: "The security check could not be completed. Complete it again and retry.",
+    privacyPrefix: "We use your email only to notify you when a launch spot opens.",
+    privacyLink: "Privacy Policy",
   },
   ar: {
     title: "انضم إلى قائمة الأولوية",
@@ -31,6 +33,8 @@ const copy = {
     error: "تعذّر الانضمام إلى قائمة الانتظار. حاول مجددًا بعد قليل.",
     disposable: "لا نقبل عناوين البريد المؤقتة. استخدم بريد عمل دائمًا.",
     captcha: "تعذر إكمال التحقق الأمني. أكمله مرة أخرى ثم أعد المحاولة.",
+    privacyPrefix: "نستخدم بريدك الإلكتروني فقط لإبلاغك عند توفر مكان في الدفعة.",
+    privacyLink: "سياسة الخصوصية",
   },
 } as const;
 
@@ -94,6 +98,7 @@ export function WaitlistForm({ locale }: { locale: "en" | "ar" }) {
         </button>
       </div>
       <TurnstileWidget locale={locale} onToken={setTurnstileToken} />
+      <p className="waitlist-privacy">{text.privacyPrefix}{" "}<a href="/privacy">{text.privacyLink}</a>.</p>
       {error ? <p className="waitlist-error" role="alert">{error}</p> : null}
     </form>
   );
