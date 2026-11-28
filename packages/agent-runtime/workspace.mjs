@@ -62,16 +62,24 @@ export function workspaceRequest(task, contextLimit, outputLimit = workspaceMani
     ? compactHookCatalogForPrompt({ language: task.language, dialect, bilingual: bilingually })
     : '';
   const reelSections = bilingually
-    ? ` Format clearly separated "### English" and "### Arabic (${dialectLabel(dialect, 'en')})" subsections so both languages stay pure, using native Arabic hook phrasing (never literal translations) with these exact section headings inside each language:`
+    ? ` Format clearly separated "### English" and "### Arabic (${dialectLabel(dialect, 'en')})" subsections so both languages stay pure, using native Arabic hook phrasing (never literal translations). Inside each language subsection, output ONLY exact markdown headings starting directly with ## (no leading numbers or instructions appended to the heading):`
     : task.language === 'ar'
-      ? ' Use these exact Arabic headings:'
-      : ' Use these exact English headings:';
+      ? ' Output each exact Arabic markdown heading cleanly on its own line starting directly with ## (no trailing instructions or parentheses on heading lines):'
+      : ' Output each exact English markdown heading cleanly on its own line starting directly with ## (no numbers or instructions on the heading line):';
+  const h1 = task.language === 'ar' && !bilingually ? '## خيارات الخطاف' : '## Hook Options';
+  const h2 = task.language === 'ar' && !bilingually ? '## النص المنطوق المختار' : '## Chosen Reel Script';
+  const h3 = task.language === 'ar' && !bilingually ? '## النص على الشاشة' : '## On-Screen Text';
+  const h4 = task.language === 'ar' && !bilingually ? '## وصف إنستغرام' : '## Instagram Caption';
   const reelCopyRule = contentType === 'reel_script' && task.profile === 'content_creator'
-    ? ` REEL SCRIPT MODE (~30s Instagram Reel draft, NO static feed posts, NO Missing Information Notice header, NO parenthetical "(Note: ...)" disclaimers inside spoken lines or caption copy). Never invent missing metrics, prices, dates, clients or outcomes: leave a {{your number}} (or {{رقمك}} in Arabic) placeholder wherever an unconfirmed fact would otherwise appear.${reelSections}
-(1) ${task.language === 'ar' && !bilingually ? '## خيارات الخطاف' : '## Hook Options'} — Provide 3 hooks from 3 DISTINCT formula IDs from the 26 Hook Formulas Playbook below. For each option include exact lines: "Option N — Formula #ID (Name)", "Spoken Hook:" (5–12 spoken words, <=3 seconds, concrete number/price/name + stakes + frontloaded payoff + direct plural-polite viewer address; zero greetings, zero preambles like "in this video", zero "stop scrolling", zero hashtags, zero emojis), "On-Screen Text:" (<=6 words, shorter/blunter than spoken), and "Why / Trap avoided:" (1 sentence).
-(2) ${task.language === 'ar' && !bilingually ? '## النص المنطوق المختار' : '## Chosen Reel Script'} — Name which option wins ("Chosen Hook: Option N") in one sentence, then write the full spoken script with ONE short beat per line (~30 seconds total: Beat 1 <=3s, every single beat <=4s to prevent static drop-off, avoid 3 abstract beats in a row, include ONE clear call to action at the end, and echo a keyword from Beat 1 in the final beat so the Reel loops back cleanly).
-(3) ${task.language === 'ar' && !bilingually ? '## النص على الشاشة' : '## On-Screen Text'} — Separate timed visual overlay cards ("0:00:", "0:03:", ...) with <=6 words per card; place the hook card right at frame 1 (0:00) inside the 1080x1920 safe zone (y=230..1440, clear of right 230px).
-(4) ${task.language === 'ar' && !bilingually ? '## وصف إنستغرام' : '## Instagram Caption'} — Job A caption (the Reel already hooks viewers; caption gives clear context, 2–3 natural search terms woven into prose, ONE call to action, NO dead URLs/links). Keep Line 1 under 125 characters with zero greetings/#/@ so it survives the Instagram "... more" fold whole, and end with 0 to 5 specific topic hashtags on the last line (never over 5, never generic filler tags like #viral, #fyp, #explorepage, #اكسبلور or #ترند).
+    ? ` REEL SCRIPT MODE (~30s Instagram Reel draft, NO static feed posts, NO Missing Information Notice header, NO parenthetical "(Note: ...)" disclaimers inside spoken lines or caption copy; use Western digits 0-9 for numbers and timecodes). Never invent missing metrics, prices, dates, clients or outcomes: leave a {{your number}} (or {{رقمك}} in Arabic) placeholder wherever an unconfirmed fact would otherwise appear.${reelSections}
+${h1}
+Provide 3 hooks from 3 DISTINCT formula IDs from the 26 Hook Formulas Playbook below. For each option include exact lines: "Option N — Formula #ID (Name)", "Spoken Hook:" (5–12 spoken words, <=3 seconds, concrete number/price/name + stakes + frontloaded payoff + direct plural-polite viewer address; zero greetings, zero preambles like "in this video", zero "stop scrolling", zero hashtags, zero emojis), "On-Screen Text:" (<=6 words, shorter/blunter than spoken), and "Why / Trap avoided:" (1 sentence).
+${h2}
+First line: "Chosen Hook: Option N" with a 1-sentence reason, then immediately write the spoken beats with ONE short spoken line per beat (~30s total: Beat 1 <=3s, every beat <=4s, avoid 3 abstract beats in a row, ONE clear CTA, and echo one key word from Beat 1 inside the final beat for the loop). Do not add a "Spoken script:" subheader line.
+${h3}
+Separate timed visual overlay cards ("0:00:", "0:03:", ...) with <=6 words per card; place the hook card right at frame 1 (0:00) inside the 1080x1920 safe zone (y=230..1440, clear of right 230px).
+${h4}
+Job A caption (the Reel already hooks viewers; caption gives context, 2–3 natural search terms woven into prose, ONE call to action, NO dead URLs/links). Start with ONE standalone opening sentence under 115 characters followed by a blank line so Line 1 lands whole before Instagram truncates at 125 characters (never open with greetings, # or @). End with 0 to 5 specific topic hashtags on the last line (never over 5, never generic filler tags like #viral, #fyp, #explorepage, #اكسبلور or #ترند).
 ${reelCatalog}`
     : '';
   const reelStrategistRule = contentType === 'reel_script' && task.profile === 'social_media_strategist'

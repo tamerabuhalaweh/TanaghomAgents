@@ -482,7 +482,7 @@ function checkAddress(text: string, isAr: boolean): HookCheckResult {
   if (IMPERATIVES_AR.has(arFirst) || /^(?:لا\s+(?:تضيعوا|تنشروا|تدفعوا|تشتروا|تصرفوا))/u.test(normalizeArabicToken(text.trim()))) {
     return { id: "ADDRESS", score: 90, detail_en: `Imperative opener ("${tokens[0]}")`, detail_ar: `بداية بفعل أمر موجه للجمهور («${tokens[0]}»)` };
   }
-  if (/(?:^|\s)(?:أنا|نحن|إحنا|حنا|فريقنا|تجربتنا|متجرنا|خسرنا|جرّبنا|جربنا|قضينا|أنفقنا|صرفنا)(?:\s|[.,،]|$)/u.test(text)) {
+  if (/(?:^|\s)(?:أنا|نحن|إحنا|حنا|فريقنا|تجربتنا|متجرنا|خسرنا|جرّبنا|جربنا|قضينا|أنفقنا|صرفنا|علينا|منا|منّا|معنا|لنا|عندنا|فينا|حسابنا)(?:\s|[.,،]|$)/u.test(text)) {
     return { id: "ADDRESS", score: 70, detail_en: "First-person story; consider naming the viewer too", detail_ar: "تجربة شخصية؛ يفضّل ربطها بمصلحة المشاهد" };
   }
   return { id: "ADDRESS", score: 35, detail_en: "Third person — no direct viewer address", detail_ar: "خطاب عام بصيغة الغائب دون توجيه للمشاهد" };
@@ -796,7 +796,7 @@ function splitMarkdownSections(doc: string): { heading: string; level: number; b
   let current: { heading: string; level: number; lines: string[] } | null = null;
 
   for (const line of doc.replace(/\r\n/g, "\n").split("\n")) {
-    const m = /^\s*(#{1,4})\s+(.+?)\s*$/u.exec(line);
+    const m = /^\s*(?:\(\d+\)\s*|\d+[.)]\s*)?(#{1,4})\s+(.+?)\s*$/u.exec(line);
     if (m) {
       current = { heading: m[2], level: m[1].length, lines: [] };
       sections.push(current);
@@ -809,8 +809,8 @@ function splitMarkdownSections(doc: string): { heading: string; level: number; b
 
 function selectLanguageSlice(doc: string, language: "en" | "ar"): { slice: string; hasEn: boolean; hasAr: boolean } {
   const normalized = doc.replace(/\r\n/g, "\n");
-  const enMarker = /^#{2,3}\s*(?:english(?:\s+(?:version|reel script|copy|draft))?|النسخة الإنجليزية)\b.*$/imu;
-  const arMarker = /^#{2,3}\s*(?:arabic(?:\s+(?:version|reel script|copy|draft))?|النسخة العربية)\b.*$/imu;
+  const enMarker = /^\s*(?:\(\d+\)\s*)?#{2,3}\s*(?:english(?:\s+(?:version|reel script|copy|draft))?|النسخة الإنجليزية)\b.*$/imu;
+  const arMarker = /^\s*(?:\(\d+\)\s*)?#{2,3}\s*(?:arabic(?:\s+(?:version|reel script|copy|draft))?|النسخة العربية)\b.*$/imu;
   const enMatch = enMarker.exec(normalized);
   const arMatch = arMarker.exec(normalized);
   const hasEn = Boolean(enMatch);
@@ -869,7 +869,7 @@ function parseHooksSection(body: string, language: "en" | "ar"): ParsedHookOptio
         spoken = cleanFieldValue(line.replace(/^[^:：]+[:：]\s*/, ""));
       } else if (/^(?:on[\s-]*screen(?:\s+(?:text|card|line))?|النص على الشاشة|على الشاشة)\s*[:：]/iu.test(line)) {
         onScreen = cleanFieldValue(line.replace(/^[^:：]+[:：]\s*/, ""));
-      } else if (/^(?:why|trap avoided|best for|السبب|الفخ الذي تم تجنبه|ملاحظة)\s*[:：]/iu.test(line)) {
+      } else if (/^(?:why(?:\s*\/\s*trap avoided)?|trap avoided|best for|السبب|الفخ الذي تم تجنبه|ملاحظة)\s*[:：]/iu.test(line)) {
         why = cleanFieldValue(line.replace(/^[^:：]+[:：]\s*/, ""));
       } else if (!spoken && !optionStart.test(line) && !/^formula\s*#/i.test(line)) {
         spoken = cleanFieldValue(line);
@@ -903,7 +903,7 @@ function parseHooksSection(body: string, language: "en" | "ar"): ParsedHookOptio
 function parseOnScreenSection(body: string): ParsedOnScreenCard[] {
   const cards: ParsedOnScreenCard[] = [];
   for (const rawLine of body.split("\n")) {
-    const trimmed = rawLine.trim().replace(/^[-*•]\s*/, "").replace(/\*\*/g, "");
+    const trimmed = toLatinDigits(rawLine.trim()).replace(/^[-*•]\s*/, "").replace(/\*\*/g, "");
     if (!trimmed || /^safe zone|المنطقة الآمنة|ملاحظة/iu.test(trimmed)) continue;
     const tcMatch = /^(?:\[?(\d+:\d{2}(?:\.\d+)?(?:\s*[-–]\s*\d+:\d{2}(?:\.\d+)?)?)\]?|(?:card|frame|شريحة|إطار|بطاقة)\s*\d+\s*\(?([^)]*)\)?)\s*[:：\-–]?\s*(.+)$/iu.exec(trimmed);
     const timecode = tcMatch ? (tcMatch[1] || tcMatch[2] || `${cards.length + 1}`).trim() : `${cards.length + 1}`;
@@ -927,12 +927,16 @@ function stripScriptMeta(body: string): { note: string; spokenLines: string } {
   for (const rawLine of body.split("\n")) {
     const trimmed = rawLine.trim();
     if (!trimmed) continue;
-    if (/^\*{0,2}(?:chosen hook|selected hook|الخطاف المختار|سبب الاختيار)\s*[:：]/iu.test(trimmed.replace(/^[-*•]\s*/, ""))) {
-      noteLines.push(trimmed.replace(/^[-*•]\s*/, "").replace(/\*\*/g, ""));
+    const unstyled = trimmed.replace(/^[-*•]\s*/, "").replace(/\*\*/g, "").trim();
+    if (/^(?:spoken\s*script|script|النص\s*المنطوق|السكربت)\s*[:：]?\s*$/iu.test(unstyled)) {
       continue;
     }
-    if (/^\*{0,2}(?:target|length|wpm|المدة المستهدفة)\s*[:：]/iu.test(trimmed.replace(/^[-*•]\s*/, ""))) {
-      noteLines.push(trimmed.replace(/^[-*•]\s*/, "").replace(/\*\*/g, ""));
+    if (/^(?:chosen hook|selected hook|الخطاف المختار|سبب الاختيار)\s*[:：]/iu.test(unstyled)) {
+      noteLines.push(unstyled);
+      continue;
+    }
+    if (/^(?:target|length|wpm|المدة المستهدفة)\s*[:：]/iu.test(unstyled)) {
+      noteLines.push(unstyled);
       continue;
     }
     spoken.push(rawLine);
