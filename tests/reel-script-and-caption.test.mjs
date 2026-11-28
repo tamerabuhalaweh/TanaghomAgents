@@ -296,3 +296,72 @@ test("Runtime & Server: Reel script prompt fits budgets, preserves social_posts 
   assert.match(studioSource, /HOOK_FILTER_SCOPE\.winner_auc/);
   assert.doesNotMatch(studioSource, /will go viral|سيصبح فيرال/i);
 });
+
+test("Regression: numbered headings, Spoken script header, Why/Trap avoided labels, and live EN/AR CTAs parse cleanly", () => {
+  const liveEnNumbered = [
+    "(1) ## Hook Options — Provide 3 hooks from 3 DISTINCT formula IDs",
+    "Option 1 — Formula #1 (Cost Confession)",
+    "Spoken Hook: 180 JOD is what waiting past January 20th costs founders joining Excellence Camp.",
+    "On-Screen Text: 180 JOD DEADLINE",
+    "Why / Trap avoided: Uses a strict, genuine price point rather than fake cost.",
+    "",
+    "(2) ## Chosen Reel Script — Name which option wins",
+    "Chosen Hook: Option 1.",
+    "180 JOD is what waiting past January 20th costs founders.",
+    "Secure your spot before January 20th at 180 JOD.",
+    "",
+    "(3) ## On-Screen Text — Separate cards",
+    "0:00: 180 JOD DEADLINE",
+    "",
+    "(4) ## Instagram Caption — Job A caption",
+    "Join Excellence Camp for a 4-week cohort. Secure your seat today before registration closes.",
+    "#AICamp #Founders",
+  ].join("\n");
+
+  const enParsed = reelScript.parseReelScriptDocument(liveEnNumbered, { language: "en" });
+  assert.equal(enParsed.hooks.length, 1);
+  assert.match(enParsed.hooks[0].why, /Uses a strict, genuine price point/);
+  assert.equal(enParsed.beatSheet.beats.length, 2);
+  assert.equal(enParsed.onScreenCards.length, 1);
+  const enCap = captionLib.analyzeInstagramCaption(enParsed.caption);
+  assert.equal(enCap.asks.length, 1);
+  assert.equal(enCap.checks.find((c) => c.id === "ONE_ASK").status, "PASS");
+
+  const arLive = [
+    "## خيارات الخطاف",
+    "Option 1 — Formula #1 (اعتراف التكلفة)",
+    "Spoken Hook: ١٨٠ ديناراً راحت علينا قبل ما نعرف هالغلطة بالتسويق.",
+    "On-Screen Text: غلطة بـ ١٨٠ ديناراً",
+    "Why / Trap avoided: يربط خسارة محددة بتكلفة البرنامج.",
+    "## النص المنطوق المختار",
+    "Chosen Hook: Option 1",
+    "Spoken script:",
+    "١٨٠ ديناراً راحت علينا قبل ما نعرف هالغلطة بالتسويق.",
+    "احجزوا مقاعدكم اليوم بنفس السعر.",
+    "## وصف إنستغرام",
+    "اطلبوا التفاصيل الآن واحجزوا مقاعدكم قبل اكتمال العدد.",
+    "#مخيم_التميز",
+  ].join("\n");
+  const arParsed = reelScript.parseReelScriptDocument(arLive, { language: "ar" });
+  assert.equal(arParsed.hooks[0].scored.checks.ADDRESS.score, 70);
+  assert.equal(arParsed.beatSheet.beats.length, 2);
+  assert.doesNotMatch(arParsed.beatSheet.beats[0].text, /Spoken script/i);
+  const arCap = captionLib.analyzeInstagramCaption(arParsed.caption);
+  assert.equal(arCap.asks.length, 1);
+  assert.equal(arCap.checks.find((c) => c.id === "ONE_ASK").status, "PASS");
+
+  // Clean prompt emits headings without (1) prefix right before ##
+  const enReq = workspaceRequest({
+    profile: "content_creator",
+    language: "en",
+    dialect: "msa",
+    content_type: "reel_script",
+    model: "gemini-3.5-flash-lite",
+    title: "Test",
+    brief: "Organic ~30s Reel script for product launch.",
+    source_facts: "Product costs 99 USD.",
+    shared_context: [],
+    context_hash: `sha256:${"5".repeat(64)}`,
+  }, 32768);
+  assert.doesNotMatch(enReq.systemInstruction.parts[0].text, /\(1\)\s*## Hook Options/);
+});

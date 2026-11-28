@@ -151,7 +151,7 @@ const ASK_PATTERNS: { key: string; pattern: RegExp; label_en: string; label_ar: 
   },
   {
     key: "book_shop",
-    pattern: /\b(?:book|shop|order|register|enroll)\s+(?:now|today|your)\b|(?:احجزوا|تسوّقوا|تسوقوا|اطلبوا|سجّلوا|سجلوا)\s+(?:الآن|اليوم|مقعدكم|طلبكم)/iu,
+    pattern: /\b(?:book|shop|order|register|enroll)\s+(?:now|today|your)\b|\bsecure\s+(?:your\s+)?(?:seat|spot|place)\b|\bjoin\s+[^.!?\n]{1,40}\b(?:now|today)\b|(?:احجزوا|تسوّقوا|تسوقوا|اطلبوا|سجّلوا|سجلوا)\s+(?:الآن|اليوم|مقعدكم|مقاعدكم|طلبكم|التفاصيل|في\b)/iu,
     label_en: "book / order / register",
     label_ar: "حجز / طلب / تسجيل",
   },
