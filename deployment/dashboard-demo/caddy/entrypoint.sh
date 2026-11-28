@@ -180,6 +180,30 @@ EOF
 	}
 }
 EOF
+  cat >> "$CONFIG_FILE" <<'EOF'
+
+# --- FounderOS demo (standalone exploration app: /opt/founderos, port 4100).
+# --- Added 2026-11-28, additive only: no existing site block above was changed.
+# --- Delete this heredoc and restart caddy to drop the route.
+smartyai.16.192.10.126.sslip.io {
+	encode zstd gzip
+
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "SAMEORIGIN"
+		Referrer-Policy "strict-origin-when-cross-origin"
+		-Server
+	}
+
+	reverse_proxy 172.17.0.1:4100 {
+		header_up X-Forwarded-Proto {scheme}
+		header_up X-Forwarded-Host {host}
+		header_up X-Forwarded-For {remote_host}
+	}
+}
+EOF
+
 fi
 
 if [ "${CADDY_ENTRYPOINT_RENDER_ONLY:-0}" = "1" ]; then
