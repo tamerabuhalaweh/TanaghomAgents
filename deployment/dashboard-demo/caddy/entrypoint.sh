@@ -207,7 +207,7 @@ EOF
 
 # --- SmartyAI dev (second instance: /opt/smartyai-dev, port 4101).
 # --- Added 2026-11-28, additive only: no existing site block above was changed.
-# --- Not committed to the Wazfni repo yet; delete this heredoc and restart caddy to drop it.
+# --- Committed to the Wazfni repo; to drop the dev route, delete this block and restart Caddy.
 dev-smartyai.16.192.10.126.sslip.io {
 	encode zstd gzip
 
