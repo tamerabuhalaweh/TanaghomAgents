@@ -15,4 +15,5 @@ export class WorkspaceOutputError extends Error {
 export function workspaceRequest(task:Record<string,any>,contextLimit:number,outputLimit?:number):Record<string,any>|null;
 export function workspaceArtifact(task:Record<string,any>,response:unknown,elapsedMs:number):Record<string,any>;
 export function bilingualRequested(task:Record<string,any>):boolean;
+export function normalizeContentType(value:unknown):"social_posts"|"reel_script"|null;
 export function keyExcerpt(document:string,limit?:number):string;

@@ -83,6 +83,11 @@ export async function GET(request: NextRequest) {
        )
        SELECT workspace.id,workspace.id AS campaign_id,workspace.title AS campaign_name,
               'ai_workspace'::text AS channel,'work_pack'::text AS content_type,
+              coalesce((SELECT l.payload->>'content_type' FROM tanaghom.agent_actions_log l
+                         WHERE l.organization_id=workspace.organization_id
+                           AND l.action_type='workspace.brief_configured'
+                           AND l.entity_id=workspace.id
+                         ORDER BY l.created_at DESC,l.id DESC LIMIT 1),'social_posts')::text AS work_pack_type,
               coalesce(documents.document,workspace.brief) AS draft_copy,documents.deliverables,
               'Approved AI Workspace work pack'::text AS media_brief,NULL::text AS media_url,
               'approved'::text AS status,'workspace'::text AS generation,NULL::timestamptz AS scheduled_time,
@@ -119,7 +124,7 @@ export async function GET(request: NextRequest) {
       const draft_copy = deliverables
         .map((deliverable) => `## ${deliverable.sequence}. ${heading(deliverable.profile_code)}\n\n${deliverable.document}`)
         .join("\n\n---\n\n");
-      return { ...row, draft_copy, deliverables };
+      return { ...row, work_pack_type: row.work_pack_type === "reel_script" ? "reel_script" : "social_posts", draft_copy, deliverables };
     });
     const items = [...result.rows, ...workspaceItems]
       .sort((left, right) => new Date(right.updated_at).getTime() - new Date(left.updated_at).getTime())

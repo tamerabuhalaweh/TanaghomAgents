@@ -20,6 +20,8 @@ import { dialectLabel, normalizeDialect } from "@/lib/i18n/dialects";
 import { redactTaskReferences } from "@/lib/redact-task-references";
 import { clearedReviewFilters, reviewFiltersActive, reviewPositionLabel } from "@/lib/review-filter";
 import { ApprovalDecisionPanel, MIN_FEEDBACK } from "./approval-decision-panel";
+import { CaptionPreviewLinter, WorkspaceCaptionCheck } from "./caption-preview-linter";
+import { ReelScriptStudio } from "./reel-script-studio";
 import { ReviewFilterBar } from "./review-filter-bar";
 import { FormattedText } from "./formatted-text";
 import { PageHeading } from "./page-heading";
@@ -49,6 +51,7 @@ interface ApprovalItem {
   title: string | null;
   language: "en" | "ar" | null;
   dialect: string | null;
+  work_pack_type?: "social_posts" | "reel_script" | null;
   result_hash: string | null;
   deliverables: WorkspaceDeliverable[];
   review_needs_changes?: boolean;
@@ -95,10 +98,14 @@ function formatCreatedAt(value: string, ar: boolean) {
 
 const contentTypeLabelsAr: Record<string, string> = {
   work_pack: "حزمة عمل",
+  reel_script: "نص ريلز",
+  social_posts: "منشورات اجتماعية",
   social_post: "منشور اجتماعي",
   blog_post: "مقال",
   email: "بريد إلكتروني",
   caption: "نص منشور",
+  post: "منشور",
+  ad_copy: "نص إعلاني",
 };
 
 function contentTypeLabel(value: string, ar: boolean) {
@@ -304,7 +311,7 @@ export function ApprovalWorkspace() {
 
           {activeInView && active ? <article className="review-canvas" aria-labelledby="review-title">
             <header className="review-header">
-              <div><StatusPill tone="attention">{ar ? "يتطلب مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack") : contentTypeLabel(active.content_type, ar)} · {active.campaign_name}</p></div>
+              <div><StatusPill tone="attention">{ar ? "يتطلب مراجعة" : "Needs review"}</StatusPill><h2 id="review-title" dir="auto">{itemTitle(active)}</h2><p>{active.source === "ai_workspace" ? (active.work_pack_type === "reel_script" ? (ar ? "نص ريلز من مساحة الذكاء الاصطناعي" : "AI workspace Reel script") : (ar ? "حزمة عمل من مساحة الذكاء الاصطناعي" : "AI workspace work pack")) : contentTypeLabel(active.content_type, ar)} · {active.campaign_name}</p></div>
               <div className="review-position"><button className="icon-button" type="button" aria-label={ar ? "العنصر السابق" : "Previous item"} onClick={() => move(-1)}><ChevronLeft size={19} /></button>{reviewPositionLabel(activeIndex, visible.length, locale) ? <span>{reviewPositionLabel(activeIndex, visible.length, locale)}</span> : null}<button className="icon-button" type="button" aria-label={ar ? "العنصر التالي" : "Next item"} onClick={() => move(1)}><ChevronRight size={19} /></button></div>
             </header>
 
@@ -328,6 +335,20 @@ export function ApprovalWorkspace() {
                       {deliverable.document && deliverable.document.length > deliverable.excerpt.length
                         ? <details className="approval-deliverable-full"><summary>{ar ? "اقرأ المخرج كاملاً" : "Read the full deliverable"}</summary><FormattedText text={redactTaskReferences(withoutDuplicateHeading(deliverable.document, [profileNames[deliverable.profile], profileDeliverables[deliverable.profile], agentDeliverableLabel(profileDeliverables[deliverable.profile] || deliverable.profile, ar)], deliverable.excerpt))} dir="auto" /></details>
                         : null}
+                      {deliverable.profile === "content_creator" && deliverable.document ? (
+                        <details className="approval-deliverable-full">
+                          <summary>
+                            {active.work_pack_type === "reel_script"
+                              ? (ar ? "فحص الخطاف والجدول الزمني ووصف 125 حرفاً" : "Inspect Reel hooks, beat sheet & 125-char caption")
+                              : (ar ? "معاينة أول 125 حرفاً لوصف إنستغرام" : "Inspect Instagram 125-char caption preview")}
+                          </summary>
+                          {active.work_pack_type === "reel_script" ? (
+                            <ReelScriptStudio document={deliverable.document} language={active.language === "ar" ? "ar" : "en"} dialect={normalizeDialect(active.dialect) ?? "msa"} compact />
+                          ) : (
+                            <WorkspaceCaptionCheck document={deliverable.document} language={active.language === "ar" ? "ar" : "en"} compact />
+                          )}
+                        </details>
+                      ) : null}
                     </div> : <p dir="auto">{ar ? "لا مسودة محفوظة بعد." : "No stored draft yet."}</p>}
                   </li>
                 ))}</ul> : <p>{ar ? "لم يُسلَّم أي مخرج بعد." : "No deliverable has been stored yet."}</p>}
@@ -337,6 +358,12 @@ export function ApprovalWorkspace() {
               <section className="content-preview" aria-labelledby="draft-copy-title">
                 <div className="content-preview-heading"><h3 id="draft-copy-title">{ar ? "نص المسودة" : "Draft copy"}</h3><span>{ar ? "النسخة" : "Version"} {active.generation}</span></div>
                 <p dir="auto">{active.draft_copy}</p>
+                <CaptionPreviewLinter
+                  initialCaption={active.draft_copy}
+                  language={/[\u0600-\u06ff]/u.test(active.draft_copy) ? "ar" : "en"}
+                  job={active.content_type === "reel_script" ? "reel" : "post"}
+                  compact
+                />
               </section>
             )}
 

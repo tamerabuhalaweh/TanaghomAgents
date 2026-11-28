@@ -18,8 +18,10 @@ import { useLocale } from "@/lib/client/use-locale";
 import { agentDisplayName } from "@/lib/i18n/agent-names";
 import { redactTaskReferences } from "@/lib/redact-task-references";
 import { markdownExcerpt } from "@/lib/truncate";
+import { CaptionPreviewLinter, WorkspaceCaptionCheck } from "./caption-preview-linter";
 import { FormattedText } from "./formatted-text";
 import { PageHeading } from "./page-heading";
+import { ReelScriptStudio } from "./reel-script-studio";
 import { StatusPill } from "./status-pill";
 
 type ContentStatus = "draft" | "pending_approval" | "approved" | "rejected" | "scheduled" | "posted" | "cancelled";
@@ -57,6 +59,7 @@ interface ContentItem {
   handoff_updated_at: string | null;
   external_operation_status: "pending" | "in_progress" | "succeeded" | "failed" | "indeterminate" | null;
   postiz_channel_ready: boolean;
+  work_pack_type?: "social_posts" | "reel_script" | null;
   deliverables?: WorkspaceDeliverable[] | null;
 }
 
@@ -284,7 +287,7 @@ export function ContentLibrary() {
             <header>
               <div className="content-record-title">
                 <span className="channel-tile">{item.channel.slice(0, 2).toUpperCase()}</span>
-                <div><p>{item.campaign_name}</p><h2>{item.channel === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : item.channel} · {item.content_type === "work_pack" ? (ar ? "حزمة عمل" : "Work pack") : item.content_type.replaceAll("_", " ")}</h2></div>
+                <div><p>{item.campaign_name}</p><h2>{item.channel === "ai_workspace" ? (ar ? "مساحة الذكاء الاصطناعي" : "AI workspace") : item.channel} · {item.content_type === "work_pack" ? (ar ? "حزمة عمل" : "Work pack") : item.content_type === "reel_script" ? (ar ? "نص ريلز" : "Reel script") : item.content_type.replaceAll("_", " ")}{item.work_pack_type === "reel_script" ? (ar ? " · نص ريلز" : " · Reel script") : ""}</h2></div>
               </div>
               <StatusPill tone={statusTone[item.status]}>{ar ? statusLabelAr[item.status] : statusLabel[item.status]}</StatusPill>
             </header>
@@ -295,6 +298,20 @@ export function ContentLibrary() {
               {deliverables.map((deliverable) => <section key={deliverable.sequence}>
                 <h3>{ar ? `المهمة ${deliverable.sequence}` : `Task ${deliverable.sequence}`} · {specialistName(deliverable.profile_code, ar)}</h3>
                 <div className="content-deliverable-copy" dir="auto"><FormattedText text={redactTaskReferences(deliverable.document)} /></div>
+                {deliverable.profile_code === "content_creator" ? (
+                  <details className="approval-deliverable-full">
+                    <summary>
+                      {item.work_pack_type === "reel_script"
+                        ? (ar ? "استوديو الريلز وفحص 125 حرفاً" : "Reel hooks, beat sheet & 125-char caption")
+                        : (ar ? "معاينة أول 125 حرفاً لوصف إنستغرام" : "Instagram 125-char caption preview")}
+                    </summary>
+                    {item.work_pack_type === "reel_script" ? (
+                      <ReelScriptStudio document={deliverable.document} language={/[\u0600-\u06ff]/u.test(deliverable.document) ? "ar" : "en"} compact />
+                    ) : (
+                      <WorkspaceCaptionCheck document={deliverable.document} language={/[\u0600-\u06ff]/u.test(deliverable.document) ? "ar" : "en"} compact />
+                    )}
+                  </details>
+                ) : null}
               </section>)}
               <Link className="primary-button compact-button" href={`/workspace?id=${item.id}`}>
                 {ar ? "افتح الحزمة في مساحة العمل" : "Open work pack in AI Workspace"} <ExternalLink size={14} />
@@ -315,6 +332,16 @@ export function ContentLibrary() {
             </div>
             {isExpanded ? <div className="content-details">
               <section><h3>{ar ? "توصيف الوسائط والتصميم" : "Media brief"}</h3><p dir="auto">{item.media_brief}</p></section>
+              {item.content_type !== "work_pack" && item.draft_copy ? (
+                <section>
+                  <CaptionPreviewLinter
+                    initialCaption={item.draft_copy}
+                    language={/[\u0600-\u06ff]/u.test(item.draft_copy) ? "ar" : "en"}
+                    job={item.content_type === "reel_script" ? "reel" : "post"}
+                    compact
+                  />
+                </section>
+              ) : null}
               <section>
                 <h3>{ar ? "القرار البشري" : "Human decision"}</h3>
                 {item.decision
