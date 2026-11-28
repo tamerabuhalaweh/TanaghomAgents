@@ -35,6 +35,7 @@ export async function GET(request: NextRequest) {
               NULL::text AS title,
               NULL::text AS language,
               NULL::text AS dialect,
+              NULL::text AS work_pack_type,
               NULL::text AS result_hash,
               NULL::jsonb AS deliverables
          FROM tanaghom.content_items AS content
@@ -70,6 +71,11 @@ export async function GET(request: NextRequest) {
                   AND log.action_type = 'workspace.brief_configured'
                   AND log.entity_id = workspace.id
                 ORDER BY log.created_at DESC, log.id DESC LIMIT 1) AS dialect,
+              coalesce((SELECT log.payload->>'content_type' FROM tanaghom.agent_actions_log log
+                WHERE log.organization_id = workspace.organization_id
+                  AND log.action_type = 'workspace.brief_configured'
+                  AND log.entity_id = workspace.id
+                ORDER BY log.created_at DESC, log.id DESC LIMIT 1), 'social_posts')::text AS work_pack_type,
               tanaghom.agency_workspace_result_hash(workspace.id) AS result_hash,
               (SELECT jsonb_agg(jsonb_build_object(
                         'sequence', step.sequence,
@@ -103,6 +109,7 @@ export async function GET(request: NextRequest) {
       );
       return {
         ...row,
+        work_pack_type: row.work_pack_type === "reel_script" ? "reel_script" : "social_posts",
         review_needs_changes: corrected.summary.needs_changes,
         review_unresolved_count: corrected.summary.unresolved.length,
         deliverables: corrected.steps.map((entry) => ({

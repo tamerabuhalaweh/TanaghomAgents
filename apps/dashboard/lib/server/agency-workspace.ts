@@ -12,7 +12,7 @@ import { ensureWorkspacePostImages,listWorkspacePostImages,loadWorkspaceImageUsa
 import { mapWorkspaceStateError } from "@/lib/server/workspace-state-error";
 import { applyWorkspaceReviewCorrections } from "@/lib/workspace-review-corrections";
 const requireRuntime=process.getBuiltinModule("module").createRequire(`${process.cwd()}/package.json`);
-const { workspaceManifest, workspaceRequest, workspaceArtifact, WorkspaceOutputError, bilingualRequested }: typeof import("@tanaghom/agent-runtime/workspace")
+const { workspaceManifest, workspaceRequest, workspaceArtifact, WorkspaceOutputError, bilingualRequested, normalizeContentType }: typeof import("@tanaghom/agent-runtime/workspace")
  = requireRuntime("@tanaghom/agent-runtime/workspace");
 const { createGeminiWorkspaceClient, GeminiWorkspaceError }: typeof import("@tanaghom/agent-runtime/gemini-workspace")
  = requireRuntime("@tanaghom/agent-runtime/gemini-workspace");
@@ -79,7 +79,10 @@ export async function workspaceRead(request:NextRequest){
  const list=await database().query(`SELECT id,title,language,profile_codes,status,error_code,created_at,started_at,finished_at,
   (SELECT l.payload->>'dialect' FROM tanaghom.agent_actions_log l WHERE l.organization_id=$1
     AND l.action_type='workspace.brief_configured' AND l.entity_id=tanaghom.agency_workspaces.id
-    ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_dialect
+    ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_dialect,
+  (SELECT l.payload->>'content_type' FROM tanaghom.agent_actions_log l WHERE l.organization_id=$1
+    AND l.action_type='workspace.brief_configured' AND l.entity_id=tanaghom.agency_workspaces.id
+    ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_content_type
   FROM tanaghom.agency_workspaces WHERE organization_id=$1 ORDER BY created_at DESC,id LIMIT 40`,[actor.organizationId]);
  const id=requested||list.rows[0]?.id;
  const [control,record,dialectDefault]=await Promise.all([
@@ -87,14 +90,17 @@ export async function workspaceRead(request:NextRequest){
   id?database().query(`SELECT *,tanaghom.agency_workspace_result_hash(id) AS result_hash,
     (SELECT l.payload->>'dialect' FROM tanaghom.agent_actions_log l WHERE l.organization_id=$2
       AND l.action_type='workspace.brief_configured' AND l.entity_id=tanaghom.agency_workspaces.id
-      ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_dialect
+      ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_dialect,
+    (SELECT l.payload->>'content_type' FROM tanaghom.agent_actions_log l WHERE l.organization_id=$2
+      AND l.action_type='workspace.brief_configured' AND l.entity_id=tanaghom.agency_workspaces.id
+      ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS configured_content_type
     FROM tanaghom.agency_workspaces WHERE id=$1 AND organization_id=$2`,[id,actor.organizationId]):Promise.resolve({rows:[]}),
   defaultArabicDialect(actor.organizationId),
  ]);
  if(requested&&!record.rows[0])throw new WorkspaceError("workspace_not_found",404);
  const rawSelected=record.rows[0]||null;
- const selected=rawSelected?(({configured_dialect,...row})=>({...row,dialect:normalizeDialect(configured_dialect)||dialectDefault.dialect}))(rawSelected):null;
- const assignments=list.rows.map(({configured_dialect,...row})=>({...row,dialect:normalizeDialect(configured_dialect)||dialectDefault.dialect}));
+ const selected=rawSelected?(({configured_dialect,configured_content_type,...row})=>({...row,dialect:normalizeDialect(configured_dialect)||dialectDefault.dialect,content_type:normalizeContentType(configured_content_type)||"social_posts"}))(rawSelected):null;
+ const assignments=list.rows.map(({configured_dialect,configured_content_type,...row})=>({...row,dialect:normalizeDialect(configured_dialect)||dialectDefault.dialect,content_type:normalizeContentType(configured_content_type)||"social_posts"}));
  const [steps,events]=selected?await Promise.all([
   database().query(`SELECT s.sequence,s.profile_code,t.id AS task_id,t.status,t.attempt,t.claimed_at,t.finished_at,t.error_code,t.result,t.response_hash,
     t.prepared->'shared_context' AS shared_context FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_pilot_tasks t ON t.id=s.task_id
@@ -131,7 +137,7 @@ export async function workspaceRead(request:NextRequest){
   const reviewed=selected?applyWorkspaceReviewCorrections(steps.rows):null;
   const creatorDoc=reviewed?.steps.find((s)=>s.profile_code==="content_creator")?.result?.document;
   const shouldEnsureImages=Boolean(
-   selected&&creatorDoc&&imagesLimit>imagesUsed&&(
+   selected&&selected.content_type!=="reel_script"&&creatorDoc&&imagesLimit>imagesUsed&&(
     resolvedPostImages.some((img)=>img.status==="fallback"&&img.fallback_reason==="provider_error")||
     (resolvedPostImages.length===0&&new Date(selected.created_at).getTime()>=Date.parse("2026-11-19T12:40:00Z"))
    )
@@ -174,11 +180,13 @@ export async function workspaceWrite(request:NextRequest){
  const body=await boundedBody(request);
  const actor=await authorize(request,body.action==="approve"||body.action==="reject"?["owner","reviewer"]:["owner"]);
  if(body.action==="create"){
-  closed(body,["action","title","brief","source_facts","language","profile","dialect","idempotency_key"]);
+  closed(body,["action","title","brief","source_facts","language","profile","content_type","dialect","idempotency_key"]);
   for(const [key,min,max] of [["title",3,120],["brief",30,6000],["source_facts",20,6000]] as const)
    if(typeof body[key]!=="string"||body[key].trim().length<min||body[key].length>max)throw new WorkspaceError(`workspace_${key}_invalid`,400);
   if(!["en","ar"].includes(String(body.language)))throw new WorkspaceError("workspace_language_invalid",400);
   if(body.dialect!==undefined&&normalizeDialect(body.dialect)===null)throw new WorkspaceError("workspace_dialect_invalid",400);
+  const contentType=normalizeContentType(body.content_type);
+  if(!contentType)throw new WorkspaceError("workspace_content_type_invalid",400);
   const profiles=body.profile==="team"?workspaceManifest.profiles.map(p=>p.code):[String(body.profile)];
   if(profiles.some(c=>!workspaceManifest.profiles.some(p=>p.code===c)))throw new WorkspaceError("workspace_profile_invalid",400);
   const r=await database().query("SELECT tanaghom.create_agency_workspace($1,$2,$3,$4,$5,$6,$7) AS id",
@@ -195,11 +203,11 @@ export async function workspaceWrite(request:NextRequest){
     SELECT $1,$2,'workspace.brief_configured','agency_workspace',$3,$4,$5::jsonb,'success'
     WHERE NOT EXISTS (SELECT 1 FROM tanaghom.agent_actions_log WHERE organization_id=$4
       AND action_type='workspace.brief_configured' AND entity_id=$3)`,
-    [randomUUID(),actor.id,id,actor.organizationId,JSON.stringify({dialect})]);
+    [randomUUID(),actor.id,id,actor.organizationId,JSON.stringify({dialect,content_type:contentType})]);
   };
   if(body.language==="ar"||body.dialect!==undefined||bilingualRequested({brief:String(body.brief),source_facts:String(body.source_facts)})){
    await logBriefDialect();
-  }else if(bilingualRequested({title:String(body.title)})){
+  }else if(bilingualRequested({title:String(body.title)})||contentType==="reel_script"){
    await logBriefDialect();
   }
   return r.rows[0];
@@ -312,6 +320,12 @@ export async function workspaceTick(request:NextRequest){
  const claimed=(await pool.query("SELECT tanaghom.claim_agency_workspace_task_for_models($1::uuid[]) AS task",[availableModels])).rows[0].task;
  if(!claimed)return {claimed:false};
  let task=claimed;
+ try{
+  const briefMeta=(await database().query(`SELECT (SELECT l.payload->>'content_type' FROM tanaghom.agent_actions_log l WHERE l.organization_id=w.organization_id
+    AND l.action_type='workspace.brief_configured' AND l.entity_id=w.id ORDER BY l.created_at DESC,l.id DESC LIMIT 1) AS content_type
+    FROM tanaghom.agency_workspace_steps s JOIN tanaghom.agency_workspaces w ON w.id=s.workspace_id WHERE s.task_id=$1`,[task.task_id])).rows[0];
+  task={...task,content_type:normalizeContentType(briefMeta?.content_type)||"social_posts"};
+ }catch{task={...task,content_type:"social_posts"};}
  if(task.language==="ar"||bilingualRequested(task)){
   try{
    const context=(await database().query(`SELECT o.location,
@@ -395,7 +409,7 @@ export async function workspaceTick(request:NextRequest){
  // Task 2 is already complete and durable at this point. Generating its post
  // images is additive: any quota, provider or storage problem records a
  // fallback and cannot fail the pack or block Tasks 3-6.
- if(!errorCode&&task.profile==="content_creator"&&artifact?.document){
+ if(!errorCode&&task.profile==="content_creator"&&task.content_type!=="reel_script"&&artifact?.document){
   try{
    const meta=(await database().query(`SELECT w.id AS workspace_id,w.organization_id,w.title,w.brief,
     (SELECT jsonb_build_object('name',kit.name,'brand_name',org.name,'colors',version.colors,'tone',version.tone)

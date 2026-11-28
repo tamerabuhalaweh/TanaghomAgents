@@ -13,10 +13,13 @@ import { redactTaskReferences } from "@/lib/redact-task-references";
 import type { AppliedReviewCorrection, WorkspaceReviewCorrectionsSummary } from "@/lib/workspace-review-corrections";
 import { WorkspacePostCards, type WorkspaceBrandKit } from "./workspace-post-cards";
 import { WorkspaceImageQuota, postImageSlots, type WorkspaceImageQuotaStatus } from "./workspace-ai-images";
+import { WorkspaceCaptionCheck } from "./caption-preview-linter";
+import { ReelScriptStudio } from "./reel-script-studio";
 import { FormattedText } from "./formatted-text";
 
 type Profile = { code: string; name: string; role: string; deliverable: string };
-type Assignment = { id: string; title: string; language: "en" | "ar"; profile_codes: string[]; status: string; error_code: string | null; created_at: string; dialect?: DialectId | null };
+type WorkspaceContentType = "social_posts" | "reel_script";
+type Assignment = { id: string; title: string; language: "en" | "ar"; profile_codes: string[]; status: string; error_code: string | null; created_at: string; dialect?: DialectId | null; content_type?: WorkspaceContentType };
 type Artifact = { document: string; kind: string; provider: string | null; model: string | null; context_hash: string; source_tasks: string[]; procedure_version: string; elapsed_ms: number; usage: { total_tokens: number } | null };
 type Step = { sequence: number; profile_code: string; task_id: string; status: string; attempt: number; claimed_at: string | null; finished_at: string | null; error_code: string | null; result: Artifact | null; response_hash: string | null; shared_context: { profile: string; task_id: string; document: string; response_hash: string }[] | null; applied_corrections?: AppliedReviewCorrection[] };
 type Event = { id: number; event_type: string; actor_kind: string; actor_ref: string; evidence: { feedback?: string; sequence?: number; task_id?: string; error?: string; reason?: string }; occurred_at: string };
@@ -29,8 +32,8 @@ type Data = { profiles: Profile[]; assignments: Assignment[]; selected: Detail |
 // One status vocabulary everywhere (Overview, /campaigns, /content, /workspace).
 const labels: Record<string, string> = { draft: "Brief saved", queued: "Queued", running: "Working", paused: "Paused", waiting_review: "Ready for your review", approved: "Approved", rejected: "Changes requested", failed: "Needs attention", cancelled: "Cancelled", in_progress: "Working", succeeded: "Draft ready" };
 const labelsAr: Record<string, string> = { draft: "تم حفظ الموجز", queued: "في الانتظار", running: "قيد التنفيذ", paused: "متوقف مؤقتًا", waiting_review: "جاهز للمراجعة", approved: "معتمدة", rejected: "مطلوب إجراء تعديلات", failed: "يتطلب الانتباه", cancelled: "أُلغي", in_progress: "قيد التنفيذ", succeeded: "المسودة جاهزة" };
-const errorText: Record<string, string> = { workspace_dialect_invalid: "Choose a valid Arabic content dialect.", workspace_model_not_configured: "The Gemini model worker is not connected. Your brief is saved; no generation has started.", workspace_not_found: "This assignment was not found in your workspace.", workspace_brief_invalid: "Write a brief between 30 and 6,000 characters.", workspace_source_facts_invalid: "Add source facts between 20 and 6,000 characters.", workspace_title_invalid: "Use a title between 3 and 120 characters.", inference_outcome_unknown: "The Gemini request timed out before a confirmed result. Completed work is preserved; click “Retry failed step” to continue.", output_rejected: "The result did not meet the document or context limits. Completed work is preserved; an operator must review the failure.", model_unavailable: "The configured Gemini connection or model identity could not be verified.", provider_request_rejected: "Google Gemini rejected the request. No automatic retry was made.", provider_quota_exceeded: "Gemini remained over quota after bounded retries. Completed work is preserved; retry when capacity is available.", workspace_cancelled: "This task was cancelled. Earlier completed work is preserved.", subscription_required_for_more_campaigns: "The Free Sandbox includes one complete campaign and three AI runs. Upgrade to continue.", plan_monthly_campaign_limit_reached: "This plan's monthly campaign limit has been reached. Upgrade or wait for the next month.", plan_monthly_token_limit_reached: "This plan's monthly AI token limit has been reached. Completed work is preserved; upgrade or wait until next month.", workspace_retry_limit_reached: "This campaign has reached its three-retry limit. Review the saved result or start a new campaign.", workspace_not_retryable: "Only a failed work pack can be retried.", workspace_runtime_stopped: "AI generation is paused by the platform. Your completed work is preserved; retry when generation resumes.", workspace_review_corrections_unapplied: "Brand Guardian flagged corrections that could not be applied automatically. Request changes so a revised pack applies them before approval." };
-const errorTextAr: Record<string, string> = { workspace_dialect_invalid: "اختر لهجة محتوى عربية صحيحة.", workspace_model_not_configured: "محرك الذكاء الاصطناعي غير متصل. حُفظ موجزك ولم يبدأ أي توليد.", workspace_not_found: "لم نعثر على هذه المهمة في مساحة عملك.", workspace_brief_invalid: "اكتب موجزًا يتراوح طوله بين 30 و6,000 حرف.", workspace_source_facts_invalid: "أدخل حقائق المصدر بطول يتراوح بين 20 و6,000 حرف.", workspace_title_invalid: "استخدم عنوانًا يتراوح طوله بين 3 و120 حرفًا.", inference_outcome_unknown: "انتهت مهلة طلب Gemini قبل تأكيد النتيجة. عملك المكتمل محفوظ؛ اضغط «إعادة محاولة الخطوة المتوقفة» للمتابعة.", output_rejected: "لم تستوفِ النتيجة حدود المستند أو السياق. العمل المكتمل محفوظ ويحتاج إلى مراجعة المشغّل.", provider_quota_exceeded: "تجاوز Gemini الحصة المسموح بها حتى بعد محاولات إعادة محدودة. حُفظ العمل المكتمل؛ أعد المحاولة عند توفر السعة.", workspace_cancelled: "أُلغيت هذه المهمة، مع الاحتفاظ بالأعمال المكتملة.", subscription_required_for_more_campaigns: "تشمل التجربة المجانية حملة متكاملة واحدة وثلاث عمليات توليد بالذكاء الاصطناعي. ارتقِ للمتابعة.", plan_monthly_campaign_limit_reached: "بلغت هذه الخطة الحد الشهري للحملات. رقِّ خطتك أو انتظر حتى الشهر المقبل.", plan_monthly_token_limit_reached: "بلغت خطتك حد وحدات الذكاء الاصطناعي الشهري. عملك المكتمل محفوظ؛ ارتقِ بالخطة أو انتظر الشهر التالي.", workspace_retry_limit_reached: "بلغت هذه الحملة حد المحاولات الثلاث. راجع النتيجة المحفوظة أو ابدأ حملة جديدة.", workspace_not_retryable: "لا يمكن إعادة محاولة حزمة العمل إلا إذا فشلت.", workspace_runtime_stopped: "توليد المحتوى متوقف مؤقتًا من المنصة. عملك المكتمل محفوظ؛ يمكنك إعادة المحاولة بعد استئناف التوليد.", workspace_review_corrections_unapplied: "أدرج مدقّق الهوية تعديلات تعذّر تطبيقها تلقائيًا. اطلب تعديلات لإصدار نسخة منقّحة قبل الاعتماد." };
+const errorText: Record<string, string> = { workspace_content_type_invalid: "Choose a valid content type (Social posts or Reel script).", workspace_dialect_invalid: "Choose a valid Arabic content dialect.", workspace_model_not_configured: "The Gemini model worker is not connected. Your brief is saved; no generation has started.", workspace_not_found: "This assignment was not found in your workspace.", workspace_brief_invalid: "Write a brief between 30 and 6,000 characters.", workspace_source_facts_invalid: "Add source facts between 20 and 6,000 characters.", workspace_title_invalid: "Use a title between 3 and 120 characters.", inference_outcome_unknown: "The Gemini request timed out before a confirmed result. Completed work is preserved; click “Retry failed step” to continue.", output_rejected: "The result did not meet the document or context limits. Completed work is preserved; an operator must review the failure.", model_unavailable: "The configured Gemini connection or model identity could not be verified.", provider_request_rejected: "Google Gemini rejected the request. No automatic retry was made.", provider_quota_exceeded: "Gemini remained over quota after bounded retries. Completed work is preserved; retry when capacity is available.", workspace_cancelled: "This task was cancelled. Earlier completed work is preserved.", subscription_required_for_more_campaigns: "The Free Sandbox includes one complete campaign and three AI runs. Upgrade to continue.", plan_monthly_campaign_limit_reached: "This plan's monthly campaign limit has been reached. Upgrade or wait for the next month.", plan_monthly_token_limit_reached: "This plan's monthly AI token limit has been reached. Completed work is preserved; upgrade or wait until next month.", workspace_retry_limit_reached: "This campaign has reached its three-retry limit. Review the saved result or start a new campaign.", workspace_not_retryable: "Only a failed work pack can be retried.", workspace_runtime_stopped: "AI generation is paused by the platform. Your completed work is preserved; retry when generation resumes.", workspace_review_corrections_unapplied: "Brand Guardian flagged corrections that could not be applied automatically. Request changes so a revised pack applies them before approval." };
+const errorTextAr: Record<string, string> = { workspace_content_type_invalid: "اختر نوع محتوى صحيحاً (منشورات اجتماعية أو نص ريلز).", workspace_dialect_invalid: "اختر لهجة محتوى عربية صحيحة.", workspace_model_not_configured: "محرك الذكاء الاصطناعي غير متصل. حُفظ موجزك ولم يبدأ أي توليد.", workspace_not_found: "لم نعثر على هذه المهمة في مساحة عملك.", workspace_brief_invalid: "اكتب موجزًا يتراوح طوله بين 30 و6,000 حرف.", workspace_source_facts_invalid: "أدخل حقائق المصدر بطول يتراوح بين 20 و6,000 حرف.", workspace_title_invalid: "استخدم عنوانًا يتراوح طوله بين 3 و120 حرفًا.", inference_outcome_unknown: "انتهت مهلة طلب Gemini قبل تأكيد النتيجة. عملك المكتمل محفوظ؛ اضغط «إعادة محاولة الخطوة المتوقفة» للمتابعة.", output_rejected: "لم تستوفِ النتيجة حدود المستند أو السياق. العمل المكتمل محفوظ ويحتاج إلى مراجعة المشغّل.", provider_quota_exceeded: "تجاوز Gemini الحصة المسموح بها حتى بعد محاولات إعادة محدودة. حُفظ العمل المكتمل؛ أعد المحاولة عند توفر السعة.", workspace_cancelled: "أُلغيت هذه المهمة، مع الاحتفاظ بالأعمال المكتملة.", subscription_required_for_more_campaigns: "تشمل التجربة المجانية حملة متكاملة واحدة وثلاث عمليات توليد بالذكاء الاصطناعي. ارتقِ للمتابعة.", plan_monthly_campaign_limit_reached: "بلغت هذه الخطة الحد الشهري للحملات. رقِّ خطتك أو انتظر حتى الشهر المقبل.", plan_monthly_token_limit_reached: "بلغت خطتك حد وحدات الذكاء الاصطناعي الشهري. عملك المكتمل محفوظ؛ ارتقِ بالخطة أو انتظر الشهر التالي.", workspace_retry_limit_reached: "بلغت هذه الحملة حد المحاولات الثلاث. راجع النتيجة المحفوظة أو ابدأ حملة جديدة.", workspace_not_retryable: "لا يمكن إعادة محاولة حزمة العمل إلا إذا فشلت.", workspace_runtime_stopped: "توليد المحتوى متوقف مؤقتًا من المنصة. عملك المكتمل محفوظ؛ يمكنك إعادة المحاولة بعد استئناف التوليد.", workspace_review_corrections_unapplied: "أدرج مدقّق الهوية تعديلات تعذّر تطبيقها تلقائيًا. اطلب تعديلات لإصدار نسخة منقّحة قبل الاعتماد." };
 const date = (value: string, locale: "ar" | "en") => formatDateTime(value, locale, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
 // The header badge must flip the moment a decision is accepted, not after the
 // next poll returns.
@@ -50,6 +53,7 @@ export function AgencyWorkspace() {
   const [creating, setCreating] = useState(false);
   const [feedback, setFeedback] = useState("");
   const [profile, setProfile] = useState("team");
+  const [contentType, setContentType] = useState<WorkspaceContentType>("social_posts");
   const [language, setLanguage] = useState("en");
   const [dialect, setDialect] = useState<DialectId>("msa");
   const [title, setTitle] = useState("");
@@ -160,8 +164,8 @@ export function AgencyWorkspace() {
           window.history.replaceState(null, "", `/workspace?id=${created}`);
           setData((current) => current ? {
             ...current,
-            assignments: [{ id: created, title, language: createdLanguage, profile_codes: codes, status: "draft", error_code: null, created_at: createdAt, dialect }, ...current.assignments.filter((item) => item.id !== created)],
-            selected: { id: created, title, language: createdLanguage, profile_codes: codes, status: "draft", error_code: null, created_at: createdAt, dialect, brief, source_facts: facts, result_hash: "", retries_used: 0, steps: [], events: [] },
+            assignments: [{ id: created, title, language: createdLanguage, profile_codes: codes, status: "draft", error_code: null, created_at: createdAt, dialect, content_type: contentType }, ...current.assignments.filter((item) => item.id !== created)],
+            selected: { id: created, title, language: createdLanguage, profile_codes: codes, status: "draft", error_code: null, created_at: createdAt, dialect, content_type: contentType, brief, source_facts: facts, result_hash: "", retries_used: 0, steps: [], events: [] },
           } : current);
         }
         setTitle(""); setBrief(""); setFacts("");
@@ -195,7 +199,7 @@ export function AgencyWorkspace() {
     const startNow = startAfterSave.current;
     startAfterSave.current = false;
     void (async () => {
-      const id = await command({ action: "create", title, brief, source_facts: facts, language, profile, dialect, idempotency_key: key.current });
+      const id = await command({ action: "create", title, brief, source_facts: facts, language, profile, content_type: contentType, dialect, idempotency_key: key.current });
       if (startNow && id) await command({ action: "start", id });
     })();
   }
@@ -205,6 +209,7 @@ export function AgencyWorkspace() {
     setCreating(true); setError(""); setNotice(""); key.current = null;
     const nextLanguage = locale === "ar" ? "ar" : "en";
     setLanguage(nextLanguage);
+    setContentType("social_posts");
     // English output defaults to White Arabic for any Arabic it carries.
     setDialect(nextLanguage === "en" ? "msa" : data?.default_dialect ?? "msa");
     setConfirmingReject(false);
@@ -220,17 +225,29 @@ export function AgencyWorkspace() {
   }
 
   function fillExample(kind: "ar" | "en") {
-    const example = kind === "ar"
-      ? {
-        title: "حملة دورة التسويق الرقمي — دفعة يناير",
-        brief: "أطلق حملة عضوية لدورة التسويق الرقمي (8 جلسات، حضوريًا وعبر الإنترنت) لرواد الأعمال في الأردن. نريد مسودات عربية لـ Instagram وLinkedIn: منشور إعلاني، ومنشور متعدد الشرائح من 4 شرائح، ونص لصفحة هبوط. دون إعلانات مدفوعة أو ادعاءات غير مثبتة.",
-        facts: "السعر 180 دينارًا بدلًا من 240 عند التسجيل قبل 20 يناير. تشمل الدورة 8 جلسات أسبوعية وورشة عملية وشهادة حضور. تبدأ في 3 فبراير في عمّان، مع 18 مقعدًا. المدرب ممارس معتمد في التسويق الرقمي. لا يوجد ضمان للتوظيف، ولا يجوز ذكر أرقام مبيعات غير مؤكدة.",
-      }
-      : {
-        title: "Digital marketing course — January cohort",
-        brief: "Launch an organic campaign for our 8-session digital marketing course (in person and online) aimed at small-business owners in Jordan. Prepare English Instagram and LinkedIn drafts: one announcement post, a 4-slide carousel, and landing-page copy. No paid ads and no unverified claims.",
-        facts: "The price is 180 JOD instead of 240 when registering before 20 January. The course includes 8 weekly sessions, a hands-on workshop and an attendance certificate. It starts on 3 February in Amman with 18 seats. The trainer is a certified digital marketing practitioner. There is no job guarantee, and unverified sales figures must not be used.",
-      };
+    const example = contentType === "reel_script"
+      ? (kind === "ar"
+        ? {
+          title: "نص ريلز: مخيّم التميّز للبرمجة — 30 ثانية",
+          brief: "اكتب نص ريلز على Instagram مدته ~30 ثانية للترويج لمخيّم التميّز العملي لأصحاب المشاريع والطلاب. نريد 3 خطافات قوية، النص المنطوق، نصوص الشاشة (بحد أقصى 6 كلمات)، ووصف إنستغرام مع 125 حرفاً أولى واضحة.",
+          facts: "اسم البرنامج: مخيّم التميّز. المدة: 4 أسابيع، 8 جلسات عملية. الرسوم: 180 ديناراً عند التسجيل المبكر قبل 20 يناير. لا توجد أرقام مبيعات أو نسب توظيف مؤكدة للخريجين — اتركوا {{رقمك}} عند الحاجة لأي نسبة.",
+        }
+        : {
+          title: "Instagram Reel script: Excellence Camp — 30s launch",
+          brief: "Write a ~30-second organic Instagram Reel script promoting Excellence Camp for founders and learners. Deliver 3 distinct hook options, a timed spoken beat sheet, separate on-screen text (<=6 words per card), and a Job A Instagram caption with <=5 hashtags.",
+          facts: "Program: Excellence Camp, 4 weeks (8 live workshops). Early-bird fee is 180 JOD before 20 January, capped at 18 seats. No graduate conversion rate or client ROI metric is confirmed — leave {{your number}} wherever a metric is unconfirmed.",
+        })
+      : (kind === "ar"
+        ? {
+          title: "حملة دورة التسويق الرقمي — دفعة يناير",
+          brief: "أطلق حملة عضوية لدورة التسويق الرقمي (8 جلسات، حضوريًا وعبر الإنترنت) لرواد الأعمال في الأردن. نريد مسودات عربية لـ Instagram وLinkedIn: منشور إعلاني، ومنشور متعدد الشرائح من 4 شرائح، ونص لصفحة هبوط. دون إعلانات مدفوعة أو ادعاءات غير مثبتة.",
+          facts: "السعر 180 دينارًا بدلًا من 240 عند التسجيل قبل 20 يناير. تشمل الدورة 8 جلسات أسبوعية وورشة عملية وشهادة حضور. تبدأ في 3 فبراير في عمّان، مع 18 مقعدًا. المدرب ممارس معتمد في التسويق الرقمي. لا يوجد ضمان للتوظيف، ولا يجوز ذكر أرقام مبيعات غير مؤكدة.",
+        }
+        : {
+          title: "Digital marketing course — January cohort",
+          brief: "Launch an organic campaign for our 8-session digital marketing course (in person and online) aimed at small-business owners in Jordan. Prepare English Instagram and LinkedIn drafts: one announcement post, a 4-slide carousel, and landing-page copy. No paid ads and no unverified claims.",
+          facts: "The price is 180 JOD instead of 240 when registering before 20 January. The course includes 8 weekly sessions, a hands-on workshop and an attendance certificate. It starts on 3 February in Amman with 18 seats. The trainer is a certified digital marketing practitioner. There is no job guarantee, and unverified sales figures must not be used.",
+        });
     setTitle(example.title); setBrief(example.brief); setFacts(example.facts); setLanguage(kind);
     setDialect(kind === "en" ? "msa" : data?.default_dialect ?? "msa");
     key.current = null; startAfterSave.current = false; setError("");
@@ -311,7 +328,7 @@ export function AgencyWorkspace() {
         <aside className="aw-assignments" aria-label={ar ? "المهام" : "Assignments"}>
           <h2>{ar ? "المهام" : "Assignments"} <span>{data.assignments.length}</span></h2>
           {data.assignments.length ? data.assignments.map((a) => <button key={a.id} onClick={() => select(a.id)} className={`aw-assignment ${selected?.id === a.id && !creating ? "aw-selected" : ""}`} aria-pressed={selected?.id === a.id && !creating}>
-            <strong>{a.title}</strong><span>{stateLabel(a.status)}</span>
+            <strong>{a.title}</strong><span>{stateLabel(a.status)}{a.content_type === "reel_script" ? (ar ? " · نص ريلز" : " · Reel script") : ""}</span>
             <small>{a.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")} · {a.profile_codes.length === 1 ? (ar ? "مختص" : "Specialist") : (ar ? "فريق" : "Team")} · {date(a.created_at, locale)}</small>
           </button>) : <p className="aw-muted">{ar ? "ستجد موجزاتك المحفوظة وأعمالك المكتملة هنا." : "Your saved briefs and completed work will stay here."}</p>}
         </aside>
@@ -325,6 +342,19 @@ export function AgencyWorkspace() {
             <div className="aw-form-row">
               <label>{ar ? "عنوان المهمة" : "Assignment title"}<input required minLength={3} maxLength={120} value={title} onChange={(e) => { setTitle(e.target.value); key.current = null; }} placeholder={ar ? "مثال: حزمة عمل حملة الدورة الصيفية" : "e.g. Summer course campaign work pack"} /></label>
               <label>{ar ? "لغة المخرجات" : "Output language"}<select value={language} onChange={(e) => { const next = e.target.value; setLanguage(next); setDialect(next === "en" ? "msa" : data?.default_dialect ?? "msa"); key.current = null; }}><option value="en">English</option><option value="ar">العربية — Arabic</option></select></label>
+            </div>
+            <div className="aw-content-type-field">
+              <label>{ar ? "نوع المحتوى" : "Content type"}<select value={contentType} onChange={(e) => { setContentType(e.target.value as WorkspaceContentType); key.current = null; }}>
+                <option value="social_posts">{ar ? "منشورات اجتماعية (3 مسودات + بطاقات بصرية)" : "Social posts (3 drafts + visual cards)"}</option>
+                <option value="reel_script">{ar ? "نص ريلز (~30ث: 3 خطافات + توقيت + فحص 125 حرفاً)" : "Reel script (~30s: 3 hooks + beat sheet + 125-char caption)"}</option>
+              </select></label>
+              <small>{contentType === "reel_script"
+                ? (ar
+                  ? "يُنشئ 3 خيارات خطاف من 26 صيغة، ومصفاة استبعاد الخطافات الضعيفة (AUC 0.83)، وجدول توقيت ~30 ثانية، ونص الشاشة، ومعاينة 125 حرفاً — بدون استهلاك حصة الصور."
+                  : "Generates 3 hooks from 26 formulas with weak-hook filtering (AUC 0.83), a ~30s timed beat sheet, on-screen cards, and a 125-char caption preview — uses zero image quota.")
+                : (ar
+                  ? "ينتج 3 منشورات جاهزة للمراجعة مع معاينة أول 125 حرفاً لوصف إنستغرام والبطاقات البصرية."
+                  : "Produces 3 review-ready posts with an Instagram 125-char caption check and brand visual cards.")}</small>
             </div>
             <div className="aw-dialect-field">
               <label>{language === "ar" ? (ar ? "لهجة المحتوى" : "Content dialect") : (ar ? "لهجة المحتوى العربي (عند طلب محتوى عربي أو ثنائي اللغة)" : "Arabic content dialect (used for Arabic or bilingual output)")}<select value={dialect} onChange={(e) => { setDialect(e.target.value as DialectId); key.current = null; }}>{DIALECTS.map((item) => <option key={item.id} value={item.id}>{dialectLabel(item.id, locale)}</option>)}</select></label>
@@ -344,7 +374,9 @@ export function AgencyWorkspace() {
               <p className="aw-muted">{ar ? "مثال على الحقائق: «السعر 180 ديناراً عند التسجيل قبل 20 يناير، وتشمل الدورة 8 جلسات وورشة عملية، وتبدأ في 3 فبراير في عمّان، ولا يوجد ضمان توظيف». أضف فقط ما هو مؤكد." : "Fact example: “The price is 180 JOD before 20 January, the course includes 8 sessions and a hands-on workshop, it starts on 3 February in Amman, and there is no job guarantee.” Add only confirmed facts."}</p>
               <button type="button" className="button button-secondary" onClick={insertFactsTemplate}>{ar ? "إدراج قالب حقائق سريعة" : "Insert quick facts template"}</button>
             </div>
-            <p className="aw-muted aw-visuals-note">{ar ? "ملاحظة حول المرئيات: ينشئ الفريق مسودات المنشورات وتوصيفات الصور وبطاقات تصميم جاهزة بهويتك البصرية (SVG/PNG). باقات النمو والتوسع تضيف صورة ذكاء اصطناعي واحدة لكل منشور ضمن الحصة الشهرية، وعند نفاد الحصة تُعرض البطاقة النصية كما هي." : "Visuals note: Your team produces post copy, photo briefs, and brand-styled social cards (SVG/PNG). Growth and Scale also generate one AI photo per post within the monthly image quota; when the quota is used up, posts keep the brand-styled text card."}</p>
+            <p className="aw-muted aw-visuals-note">{contentType === "reel_script"
+              ? (ar ? "ملاحظة حول نص الريلز: ينشئ هذا التكليف نصاً وتوقيتاً ووصفاً فقط (مسودة دون أي نشر تلقائي أو استهلاك لصور الذكاء الاصطناعي)." : "Reel script mode: Generates structured script drafts, hook filter scores, beat timing, and caption preview only (no AI image quota spend and no publishing).")
+              : (ar ? "ملاحظة حول المرئيات: ينشئ الفريق مسودات المنشورات وتوصيفات الصور وبطاقات تصميم جاهزة بهويتك البصرية (SVG/PNG). باقات النمو والتوسع تضيف صورة ذكاء اصطناعي واحدة لكل منشور ضمن الحصة الشهرية، وعند نفاد الحصة تُعرض البطاقة النصية كما هي." : "Visuals note: Your team produces post copy, photo briefs, and brand-styled social cards (SVG/PNG). Growth and Scale also generate one AI photo per post within the monthly image quota; when the quota is used up, posts keep the brand-styled text card.")}</p>
             <p className="aw-muted">{ar ? "تُحفظ الحقائق المرجعية والموجز في إصدار ثابت لا يمكن تعديله. وتُشارك مخرجات المختصين السابقة كمقترحات غير معتمدة، لا كحقائق جديدة. لا يتم نشر محتوى أو إرسال رسائل أو إجراء مشتريات أو تحديث سجلات CRM." : "Source facts and the brief are saved as an immutable version. Earlier specialist outputs are shared as unapproved proposals—not new facts. No publishing, messaging, purchases or CRM updates."}</p>
             <div className="aw-actions">
               <button type="submit" className="button button-primary" disabled={busy} onClick={() => { startAfterSave.current = data.runtime.ready; }} title={data.runtime.ready ? undefined : data.runtime.reason}>{busy ? (ar ? "جارٍ الحفظ…" : "Saving…") : data.runtime.ready ? (ar ? "احفظ وابدأ الآن" : "Save & start now") : (ar ? "حفظ موجز المهمة" : "Save assignment brief")}<ChevronRight size={17} /></button>
@@ -356,7 +388,7 @@ export function AgencyWorkspace() {
               : (ar ? "يُحفظ موجزك فوراً ويمكنك العودة إليه في أي وقت. يتاح زر «احفظ وابدأ الآن» عندما يصبح محرك الذكاء الاصطناعي متصلاً." : "Your brief is saved immediately and stays available in your workspace. “Save & start now” activates when the live model worker is connected.")}</p>
           </form> : selected ? <>
             <header className="aw-assignment-header">
-              <div><span className={`aw-state aw-state-${selected.status}`}>{stateLabel(selected.status)}</span><h2>{selected.title}</h2><p>{selected.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")}{selected.language === "ar" ? ` · ${dialectLabel(selected.dialect ?? "msa", locale)}` : ""} · {ar ? formatArabicCount(selected.profile_codes.length, { zero: "لا مختصين", one: "مختص", two: "مختصان", few: "{count} مختصين", many: "{count} مختصًا", other: "{count} مختص" }) : `${selected.profile_codes.length} specialist${selected.profile_codes.length === 1 ? "" : "s"}`} · {ar ? "تم الإنشاء بنجاح." : "Created"} {date(selected.created_at, locale)}</p></div>
+              <div><div className="aw-assignment-badges"><span className={`aw-state aw-state-${selected.status}`}>{stateLabel(selected.status)}</span>{selected.content_type === "reel_script" ? <span className="aw-state aw-state-reel">{ar ? "نص ريلز" : "Reel script"}</span> : null}</div><h2>{selected.title}</h2><p>{selected.language === "ar" ? (ar ? "العربية" : "Arabic") : (ar ? "الإنجليزية" : "English")}{selected.language === "ar" ? ` · ${dialectLabel(selected.dialect ?? "msa", locale)}` : ""} · {ar ? formatArabicCount(selected.profile_codes.length, { zero: "لا مختصين", one: "مختص", two: "مختصان", few: "{count} مختصين", many: "{count} مختصًا", other: "{count} مختص" }) : `${selected.profile_codes.length} specialist${selected.profile_codes.length === 1 ? "" : "s"}`} · {ar ? "تم الإنشاء بنجاح." : "Created"} {date(selected.created_at, locale)}</p></div>
               <div className="aw-actions">
                 {selected.steps.some((s) => s.result) ? <button className="button button-secondary" onClick={download}><Download size={16} />{ar ? "تصدير الحزمة" : "Export pack"}</button> : null}
                 {data.can_manage && selected.status === "draft" ? <button className="button button-primary" disabled={busy || !data.runtime.ready} onClick={() => void command({ action: "start", id: selected.id })}><Play size={16} />{busy ? (ar ? "جارٍ البدء…" : "Starting…") : (ar ? "بدء المهمة" : "Start assignment")}</button> : null}
@@ -392,7 +424,9 @@ export function AgencyWorkspace() {
                           </details>
                         </aside> : null}
                         <article className="aw-document" dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language}><FormattedText text={redactTaskReferences(step.result.document)} dir={selected.language === "ar" ? "rtl" : "ltr"} lang={selected.language} /></article>
-                        {step.profile_code === "content_creator" ? <WorkspacePostCards document={step.result.document} kit={data.brand_kit} language={selected.language} images={postImageSlots(data.post_images)} /> : null}
+                        {step.profile_code === "content_creator" ? <WorkspacePostCards document={step.result.document} kit={data.brand_kit} language={selected.language} images={postImageSlots(data.post_images)} contentType={selected.content_type} /> : null}
+                        {step.profile_code === "content_creator" && selected.content_type === "reel_script" ? <ReelScriptStudio document={step.result.document} language={selected.language} dialect={selected.dialect ?? "msa"} /> : null}
+                        {step.profile_code === "content_creator" && selected.content_type !== "reel_script" ? <WorkspaceCaptionCheck document={step.result.document} language={selected.language} /> : null}
                         <footer className="aw-artifact-meta">
                           <span>{step.result.kind === "deterministic_summary" ? (ar ? "ملخص التسليم التنفيذي" : "Executive delivery summary") : (ar ? "أُنتج بالذكاء الاصطناعي" : "AI-generated")}</span>
                           <span>{step.result.kind === "deterministic_summary"

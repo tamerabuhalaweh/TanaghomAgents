@@ -689,14 +689,17 @@ export function WorkspacePostCards({
   kit,
   language,
   images,
+  contentType = "social_posts",
 }: {
   document: string;
   kit: WorkspaceBrandKit | null;
   language: "en" | "ar";
   images?: Record<number, { url: string }>;
+  contentType?: "social_posts" | "reel_script";
 }) {
   const { locale } = useLocale();
   const ar = locale === "ar";
+  if (contentType === "reel_script") return null;
   const cards = socialPostCards(document, kit, language);
   if (!cards.length) return null;
   const brandName = kit?.brand_name || kit?.name || "E3lani";
